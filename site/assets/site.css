@@ -259,9 +259,7 @@ svg.ic { width: 20px; height: 20px; flex: none; }
 
 .layout {
   display: grid;
-  grid-template-columns: 272px minmax(0, 1fr) 236px;
-  max-width: 1440px;
-  margin: 0 auto;
+  grid-template-columns: 300px minmax(0, 1fr) 260px;
   align-items: start;
 }
 
@@ -855,7 +853,7 @@ kbd {
 /* ---------- จอกลาง ไม่มีคอลัมน์ขวา ---------- */
 
 @media (max-width: 1219px) {
-  .layout { grid-template-columns: 260px minmax(0, 1fr); }
+  .layout { grid-template-columns: 290px minmax(0, 1fr); }
   .toc { display: none; }
   .toc-inline:not(:empty) {
     display: block;
