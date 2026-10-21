@@ -6,19 +6,21 @@
 
 ## โครงสร้าง
 
+เว็บเขียนด้วย HTML CSS และ JS เองทั้งหมด ไม่มีขั้นตอน build
+
 | ที่อยู่ | คืออะไร |
 |---|---|
-| `docs/` | เนื้อหาทุกบท เขียนเป็น Markdown |
-| `docs/c/` | ช่วงภาษา C |
-| `mkdocs.yml` | ตั้งค่าเว็บและสารบัญ |
-| `.github/workflows/pages.yml` | build และขึ้น GitHub Pages ทุกครั้งที่ push เข้า `main` |
+| `site/` | ตัวเว็บทั้งหมด หนึ่งไฟล์ HTML ต่อหนึ่งหน้า |
+| `site/c/` | ช่วงภาษา C |
+| `site/assets/site.css` `site/assets/site.js` | หน้าตาและการทำงานที่ทุกหน้าใช้ร่วมกัน |
+| `.github/workflows/pages.yml` | ขึ้นโฟลเดอร์ `site/` ไป GitHub Pages ทุกครั้งที่ push เข้า `main` |
+
+เพิ่มหน้าใหม่ต้องแก้แถบสารบัญซ้ายและปุ่มก่อนหน้า ถัดไป ในทุกหน้าที่เกี่ยวข้องด้วย
 
 ## เปิดดูในเครื่อง
 
 ```bash
-python -m venv .venv
-.venv/Scripts/pip install -r requirements.txt
-.venv/Scripts/mkdocs serve
+python -m http.server 8000 --directory site
 ```
 
 แล้วเปิด http://127.0.0.1:8000
