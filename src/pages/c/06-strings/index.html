@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 6 ตัวอักษรและสตริง</h1>
+
+      <p>จบบทนี้ น้องจะเขียนโปรแกรมที่ทำงานกับข้อความได้ รับคำหรือรับทั้งบรรทัด นับตัวอักษร เปลี่ยนตัวพิมพ์ใหญ่เล็ก กลับคำ เช็ก palindrome นับคำ และเข้ารหัสข้อความ ซึ่งเป็นโจทย์แนวที่เจอบ่อยใน TOI Zero และจะรู้กับดักที่ทำให้โปรแกรมสตริงผิดหรือช้าโดยไม่มีคำเตือน เช่น <code>'\n'</code> ที่ค้างหลัง <code>scanf</code> และการเรียก <code>strlen</code> ในเงื่อนไขลูป โจทย์แข่งขันใช้แค่ตัวอักษรภาษาอังกฤษ ทั้งบทจึงใช้ภาษาอังกฤษในข้อมูลเข้าและผลลัพธ์</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="chars.html">6.1 ตัวอักษรคือตัวเลข</a></td><td>คำนวณกับตัวอักษร เปลี่ยนตัวพิมพ์ แปลงตัวเลข เลื่อนแบบวนรอบ และ ctype.h</td></tr>
+            <tr><td><a href="strings.html">6.2 สตริงคืออาเรย์ของ char</a></td><td><code>'\0'</code> ปิดท้าย ขนาดอาเรย์ที่ต้องใช้ รับคำด้วย %s และวนลูปทีละตัว</td></tr>
+            <tr><td><a href="input.html">6.3 รับข้อความทั้งบรรทัด</a></td><td>fgets ตัด <code>'\n'</code> ทิ้ง และกับดักเมื่อใช้ scanf ตามด้วย fgets</td></tr>
+            <tr><td><a href="string-h.html">6.4 ฟังก์ชันใน string.h</a></td><td>strlen strcpy strcmp strcat และเวลาที่วัดจริงเมื่อเรียก strlen ในลูป</td></tr>
+            <tr><td><a href="algorithms.html">6.5 อัลกอริทึมกับสตริง</a></td><td>นับตัวอักษร กลับคำ palindrome นับคำ Caesar cipher และ run-length</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>รับประโยคหนึ่งบรรทัดแล้วพิมพ์ออกมาโดยสลับตัวพิมพ์ใหญ่เล็ก ทั้งแบบคำนวณเองด้วย <code>c - 'a' + 'A'</code> และแบบใช้ <code>toupper</code> <code>tolower</code></span></label></li>
+        <li><label><input type="checkbox"><span>ประกาศ <code>char name[8] = "Somchai";</code> แล้วพิมพ์ทุกช่องด้วย <code>%d</code> จนเห็นเลข 0 ในช่องสุดท้าย</span></label></li>
+        <li><label><input type="checkbox"><span>รับเลขห้องด้วย <code>scanf</code> แล้วรับชื่อเต็มด้วย <code>fgets</code> ได้ชื่อครบ ไม่ใช่บรรทัดว่าง และไม่มี <code>'\n'</code> ติดท้าย</span></label></li>
+        <li><label><input type="checkbox"><span>แก้โปรแกรมที่เขียน <code>i &lt; strlen(word)</code> ในเงื่อนไขลูป ให้เรียก <code>strlen</code> แค่ครั้งเดียว</span></label></li>
+        <li><label><input type="checkbox"><span>รับประโยคแล้วพิมพ์จำนวนครั้งของตัวอักษรแต่ละตัวด้วยอาเรย์ 26 ช่อง โดยนับ H กับ h เป็นตัวเดียวกัน</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ</span></label></li>
+      </ul>
+    </article>

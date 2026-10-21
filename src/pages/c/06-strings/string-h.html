@@ -1,0 +1,336 @@
+<article class="doc">
+      <h1>6.4 ฟังก์ชันใน string.h</h1>
+
+      <p>หาความยาว คัดลอก เปรียบเทียบ และต่อข้อความ เป็นงานที่ทำบ่อยจนภาษา C มีฟังก์ชันสำเร็จรูปให้ใน <code>string.h</code> หน้านี้ใช้สี่ตัวที่เจอในโจทย์บ่อยที่สุด แล้วปิดท้ายด้วยเรื่องที่ทำให้โปรแกรมถูกแต่ได้ Time Limit Exceeded คือเรียก <code>strlen</code> ในเงื่อนไขลูป ซึ่งวัดเวลาจริงให้ดู</p>
+
+      <h2 id="strlen">strlen หาความยาว</h2>
+
+      <p>ในหน้า 6.2 นับความยาวด้วยการเดินจนเจอ <code>'\0'</code> <code>strlen</code> ทำแบบเดียวกันให้ ได้จำนวนตัวอักษรที่ไม่นับ <code>'\0'</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="length"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+int main()
+{
+    char word[105];
+    scanf("%s", word);
+    int length = strlen(word);
+    printf("%s has %d letters\n", word, length);
+    printf("first %c last %c\n", word[0], word[length - 1]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="length" data-title="ข้อมูลเข้า"><pre><code>banana
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="length" data-title="C:\code\length.exe"><pre><code>banana has 6 letters
+first b last a
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>ตัวสุดท้ายอยู่ที่ช่อง <code>length - 1</code> เพราะช่องเริ่มที่ 0 ช่อง <code>word[length]</code> คือ <code>'\0'</code></li>
+        <li>เก็บผลของ <code>strlen</code> ไว้ในตัวแปร <code>int</code> ก่อนใช้เสมอ เหตุผลมีสองข้อ อยู่ในหัวข้อท้ายหน้าและในส่วนลองทำให้พัง</li>
+        <li><code>strlen</code> ต่างจาก <code>sizeof</code> ที่ใช้กับ <code>fgets</code> ในหน้าที่แล้ว <code>sizeof word</code> ได้ 105 เสมอเพราะเป็นขนาดของอาเรย์ ส่วน <code>strlen(word)</code> คือความยาวของข้อความที่อยู่ในอาเรย์ตอนนี้</li>
+      </ul>
+
+      <h2 id="strcpy">strcpy คัดลอก</h2>
+
+      <p>ตัวแปร <code>int</code> คัดลอกด้วย <code>=</code> ได้ แต่อาเรย์ทำแบบนั้นไม่ได้ ลองดู</p>
+
+      <div class="code" data-lang="c"><pre><code>char name[20];
+name = "Somchai";
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>copy.c:6:10: error: assignment to expression with array type
+    6 |     name = "Somchai";
+      |          ^
+</code></pre></div>
+
+      <p>compiler บอกว่ากำหนดค่าให้สิ่งที่เป็นอาเรย์ไม่ได้ ต้องคัดลอกทีละช่อง ซึ่ง <code>strcpy(ปลายทาง, ต้นทาง)</code> ทำให้ จำลำดับว่า <strong>ปลายทางอยู่หน้า</strong> เหมือน <code>ปลายทาง = ต้นทาง</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="strcpy"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+int main()
+{
+    char name[20];
+    strcpy(name, "Somchai");
+    printf("%s\n", name);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="strcpy" data-title="C:\code\copy.exe"><pre><code>Somchai
+</code></pre></div>
+
+      <p>งานที่ต้องใช้ <code>strcpy</code> จริงๆ คือ "จำคำที่ดีที่สุดไว้" เช่น หาชื่อที่ยาวที่สุดในห้อง แบบเดียวกับหาค่ามากสุดในบทที่ 5 ต่างกันแค่ตอนเจอค่าที่ดีกว่า ต้องคัดลอกทั้งคำมาเก็บแทนการใช้ <code>=</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="longest"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+int main()
+{
+    int n;
+    char name[25], longest[25] = "";
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s", name);
+        if (strlen(name) &gt; strlen(longest)) {
+            strcpy(longest, name);
+        }
+    }
+    printf("%s\n", longest);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="longest" data-title="ข้อมูลเข้า"><pre><code>4
+Nok Somchai Pim Kanokwan
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="longest" data-title="C:\code\longest.exe"><pre><code>Kanokwan
+</code></pre></div>
+      </div>
+
+      <p><code>longest</code> เริ่มเป็น <code>""</code> คือสตริงว่าง มีแค่ <code>'\0'</code> ช่องแรก ความยาว 0 ชื่อแรกที่อ่านเข้ามาจึงยาวกว่าเสมอ ทำหน้าที่เหมือนตั้งค่าเริ่มต้นของค่ามากสุดให้น้อยกว่าทุกค่า</p>
+
+      <p>ปลายทางต้องใหญ่พอใส่ต้นทางบวก <code>'\0'</code> <code>strcpy</code> ไม่ตรวจให้ ถ้าเล็กไปจะเขียนทับหน่วยความจำส่วนอื่นเงียบๆ</p>
+
+      <h2 id="strcmp">strcmp เปรียบเทียบ</h2>
+
+      <p><code>strcmp(a, b)</code> เทียบสองข้อความตามลำดับในพจนานุกรม ได้ผลเป็นตัวเลข</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ผลของ <code>strcmp(a, b)</code></th><th>แปลว่า</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>น้อยกว่า 0</td><td>a มาก่อน b</td></tr>
+            <tr><td>เท่ากับ 0</td><td>a กับ b เหมือนกันทุกตัว</td></tr>
+            <tr><td>มากกว่า 0</td><td>a มาหลัง b</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-test="compare"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+int main()
+{
+    char first[105], second[105];
+    while (scanf("%s %s", first, second) == 2) {
+        int result = strcmp(first, second);
+        if (result &lt; 0) {
+            printf("%s comes before %s\n", first, second);
+        } else if (result &gt; 0) {
+            printf("%s comes after %s\n", first, second);
+        } else {
+            printf("%s is the same\n", first);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="compare" data-title="ข้อมูลเข้า"><pre><code>apple apricot
+apple app
+Zebra apple
+mango mango
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="compare" data-title="C:\code\compare.exe"><pre><code>apple comes before apricot
+apple comes after app
+Zebra comes before apple
+mango is the same
+</code></pre></div>
+      </div>
+
+      <p><code>strcmp</code> เทียบจากซ้ายทีละช่อง ช่องแรกที่ต่างกันเป็นตัวตัดสิน โดยดูว่ารหัส ASCII ของใครน้อยกว่า</p>
+
+      <ul>
+        <li><code>apple</code> กับ <code>apricot</code> เหมือนกันสองตัวแรก ช่องที่ 2 คือ <code>p</code> กับ <code>r</code> และ <code>p</code> มาก่อน</li>
+        <li><code>apple</code> กับ <code>app</code> เหมือนกันจน <code>app</code> หมดก่อน ช่องที่ 3 คือ <code>l</code> กับ <code>'\0'</code> ซึ่งมีรหัส 0 น้อยที่สุด คำที่สั้นกว่าจึงมาก่อน</li>
+        <li><code>Zebra</code> มาก่อน <code>apple</code> เพราะ <code>'Z'</code> คือ 90 แต่ <code>'a'</code> คือ 97 ตัวพิมพ์ใหญ่ทุกตัวมาก่อนตัวพิมพ์เล็กทุกตัว ถ้าโจทย์ให้เทียบโดยไม่สนตัวพิมพ์ ต้องแปลงเป็นตัวพิมพ์เล็กทั้งสองคำก่อน</li>
+      </ul>
+
+      <p>ใช้แค่ว่าผลน้อยกว่า เท่ากับ หรือมากกว่า 0 อย่าเขียน <code>strcmp(a, b) == -1</code> เพราะไม่ได้สัญญาว่าจะได้ -1 พอดี แบบเดียวกับเรื่อง <code>isalpha</code> ในหน้า 6.1</p>
+
+      <h2 id="strcat">strcat ต่อท้าย</h2>
+
+      <p><code>strcat(ปลายทาง, ต้นทาง)</code> เอาต้นทางไปต่อท้ายข้อความที่อยู่ในปลายทาง โดยเริ่มเขียนทับตรง <code>'\0'</code> เดิม แล้วปิดท้ายด้วย <code>'\0'</code> ใหม่</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="fullname"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+int main()
+{
+    char first[25], last[25], full[55];
+    scanf("%s %s", first, last);
+    strcpy(full, first);
+    strcat(full, " ");
+    strcat(full, last);
+    int length = strlen(full);
+    printf("%s\n", full);
+    printf("%d\n", length);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="fullname" data-title="ข้อมูลเข้า"><pre><code>Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="fullname" data-title="C:\code\fullname.exe"><pre><code>Somchai Jaidee
+14
+</code></pre></div>
+      </div>
+
+      <p>ขนาดของ <code>full</code> คิดจากกรณีมากสุด ชื่อ 24 ตัว ช่องว่าง 1 นามสกุล 24 และ <code>'\0'</code> อีก 1 รวม 50 ช่อง ประกาศ 55 เผื่อไว้ <code>strcat</code> ไม่ตรวจขนาดให้เหมือน <code>strcpy</code></p>
+
+      <h2 id="strlen-loop">ทำไมเรียก strlen ในเงื่อนไขลูปถึงช้า</h2>
+
+      <p>โจทย์ให้แปลงคำยาวไม่เกิน 1000000 ตัวเป็นตัวพิมพ์ใหญ่ สองโปรแกรมนี้ต่างกันแค่บรรทัดเดียว และได้คำตอบเหมือนกันทุกตัวอักษร</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="upper-slow" data-allow-warnings><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;ctype.h&gt;
+
+char word[1000005];
+
+int main()
+{
+    scanf("%s", word);
+    for (int i = 0; i &lt; strlen(word); i++) {
+        word[i] = toupper(word[i]);
+    }
+    printf("%s\n", word);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="c" data-linenums data-test="upper-fast"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;ctype.h&gt;
+
+char word[1000005];
+
+int main()
+{
+    scanf("%s", word);
+    int length = strlen(word);
+    for (int i = 0; i &lt; length; i++) {
+        word[i] = toupper(word[i]);
+    }
+    printf("%s\n", word);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="upper-slow" data-title="ข้อมูลเข้า"><pre><code>hello
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="upper-slow" data-title="C:\code\upper.exe"><pre><code>HELLO
+</code></pre></div>
+      </div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="upper-fast" data-title="ข้อมูลเข้า"><pre><code>hello
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="upper-fast" data-title="C:\code\upper.exe"><pre><code>HELLO
+</code></pre></div>
+      </div>
+
+      <p>กับคำสั้นๆ สองแบบเร็วพอกัน แต่พอวัดกับคำยาวที่สุ่มจากตัวพิมพ์เล็ก ได้ตามตารางนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ความยาวคำ</th><th><code>strlen</code> ในเงื่อนไขลูป</th><th>เก็บความยาวไว้ก่อนลูป</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10,000</td><td>0.017 วินาที</td><td>0.013 วินาที</td></tr>
+            <tr><td>100,000</td><td>0.33 วินาที</td><td>0.013 วินาที</td></tr>
+            <tr><td>200,000</td><td>1.23 วินาที</td><td>0.014 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>30.9 วินาที</td><td>0.024 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks ตามค่าที่ตั้งในบทที่ 0 (<code>-Wall</code> ไม่มี <code>-O2</code>) แต่ละช่องคือค่ากลางของการรันสามครั้ง นับรวมเวลาเปิดโปรแกรมและอ่านข้อมูลเข้า ซึ่งกินราว 0.013 วินาทีอยู่แล้ว</p>
+
+      <p>สาเหตุคือ <code>strlen</code> ไม่ได้จำความยาวไว้ที่ไหน ทุกครั้งที่เรียก มันเดินจากช่อง 0 ไปจนเจอ <code>'\0'</code> ใหม่ คำยาว n ตัวจึงเดิน n ก้าวต่อการเรียกหนึ่งครั้ง และเงื่อนไขลูปถูกเช็กทุกรอบ รวม n + 1 ครั้ง งานทั้งหมดจึงประมาณ n × n ก้าว คำยาวขึ้น 10 เท่า เวลาเพิ่มราว 100 เท่า ดูได้จากแถว 100,000 กับ 1,000,000 ในตาราง ส่วนแบบที่เก็บความยาวไว้ก่อน เดินแค่ n ก้าวตอนเรียก <code>strlen</code> ครั้งเดียว บวกอีก n รอบในลูป</p>
+
+      <p>grader ส่วนใหญ่ให้เวลาข้อละ 1 วินาที แบบแรกตกตั้งแต่คำยาวสองแสนตัว ทั้งที่คำตอบถูกทุกตัว</p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">-O2 ช่วยได้บางครั้ง อย่าหวัง</p>
+        <p>ถ้าลูปแค่อ่าน <code>word</code> ไม่แก้ เช่น นับว่ามีตัว a กี่ตัว คอมไพล์ด้วย <code>-O2</code> แล้ว compiler ย้าย <code>strlen</code> ออกไปนอกลูปให้เอง วัดได้ 0.013 วินาทีที่ 200,000 ตัว แต่ลูปที่แก้ <code>word</code> แบบในตัวอย่าง compiler ไม่กล้าย้าย ยังใช้ 1.23 วินาทีแม้เปิด <code>-O2</code> และ Code::Blocks ของน้องไม่ได้เปิด <code>-O2</code> จึงช้าทั้งสองแบบ เขียนให้เร็วเองตั้งแต่แรกปลอดภัยกว่า</p>
+      </div>
+
+      <p>มีสองวิธีที่ใช้ได้เสมอ เลือกแบบไหนก็ได้</p>
+
+      <ul>
+        <li>เก็บ <code>int length = strlen(word);</code> ไว้ก่อนลูป แล้วใช้ <code>i &lt; length</code></li>
+        <li>ไม่เรียก <code>strlen</code> เลย ใช้ <code>word[i] != '\0'</code> เป็นเงื่อนไขแบบในหน้า 6.2</li>
+      </ul>
+
+      <p>ถ้าคอมไพล์แบบแรกด้วย <code>-Wextra</code> จะได้คำเตือนเรื่องเทียบ <code>int</code> กับชนิดของ <code>strlen</code> ด้วย ซึ่ง Code::Blocks ที่เปิดแค่ <code>-Wall</code> ไม่แสดง เป็นอีกเหตุผลที่ให้เก็บผลไว้ใน <code>int</code> ก่อน</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="strlen-format">แบบที่ 1 พิมพ์ strlen ด้วย %d ตรงๆ</h3>
+
+      <p>ในโปรแกรม length ลบตัวแปร <code>length</code> ทิ้ง แล้วเขียน <code>printf("%s has %d letters\n", word, strlen(word));</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>length.c:8:21: warning: format '%d' expects argument of type 'int', but argument 3 has type 'size_t' {aka 'long long unsigned int'} [-Wformat=]
+    8 |     printf("%s has %d letters\n", word, strlen(word));
+      |                    ~^                   ~~~~~~~~~~~~
+      |                     |                   |
+      |                     int                 size_t {aka long long unsigned int}
+      |                    %lld
+</code></pre></div>
+
+      <p><code>strlen</code> ไม่ได้คืน <code>int</code> แต่คืนชนิดชื่อ <code>size_t</code> ซึ่งบนเครื่องนี้คือจำนวนเต็มไม่ติดลบขนาด 8 byte บนเครื่องที่เขียนเอกสารนี้บังเอิญพิมพ์ <code>banana has 6 letters</code> ถูก แต่เปลี่ยนเครื่องแล้วอาจผิด compiler แนะนำ <code>%lld</code> ซึ่งก็ไม่ตรงชนิดทีเดียว วิธีที่ง่ายและถูกเสมอคือเก็บลง <code>int</code> ก่อนแบบในตัวอย่าง ความยาวในโจทย์ไม่มีทางเกิน <code>int</code> อยู่แล้ว</p>
+
+      <h3 id="compare-equals">แบบที่ 2 เทียบสตริงด้วย ==</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char answer[10];
+    scanf("%s", answer);
+    if (answer == "yes") {
+        printf("OK\n");
+    } else {
+        printf("NO\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>answer.c:7:16: warning: comparison with string literal results in unspecified behavior [-Waddress]
+    7 |     if (answer == "yes") {
+      |                ^~
+</code></pre></div>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ พิมพ์ <code>yes</code> แล้วได้ <code>NO</code> เพราะ <code>==</code> กับอาเรย์ไม่ได้เทียบตัวอักษร แต่เทียบว่าเป็นอาเรย์ก้อนเดียวกันในหน่วยความจำไหม ซึ่ง <code>answer</code> กับ <code>"yes"</code> อยู่คนละที่เสมอ เรื่องที่อยู่นี้จะเข้าใจชัดในบทที่ 10 ตอนนี้จำว่าเทียบสตริงต้องใช้ <code>strcmp(answer, "yes") == 0</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>strlen(s)</code> ได้ความยาวไม่นับ <code>'\0'</code> เก็บลง <code>int</code> ก่อนใช้</li>
+        <li><code>strcpy(dest, src)</code> คัดลอก ปลายทางอยู่หน้า และต้องใหญ่พอ เพราะอาเรย์ใช้ <code>=</code> ไม่ได้</li>
+        <li><code>strcmp(a, b)</code> ได้น้อยกว่า 0 เท่ากับ 0 หรือมากกว่า 0 ตามลำดับพจนานุกรม ตัวพิมพ์ใหญ่มาก่อนตัวพิมพ์เล็ก ห้ามเทียบสตริงด้วย <code>==</code></li>
+        <li><code>strcat(dest, src)</code> ต่อท้าย dest ต้องมีที่พอสำหรับทั้งสองข้อความ</li>
+        <li>ห้ามเรียก <code>strlen</code> ในเงื่อนไขลูป คำยาว n ตัวจะกลายเป็นงาน n × n เก็บความยาวไว้ก่อน หรือใช้ <code>word[i] != '\0'</code></li>
+      </ul>
+    </article>

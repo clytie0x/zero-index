@@ -1,0 +1,373 @@
+<article class="doc">
+      <h1>6.1 ตัวอักษรคือตัวเลข</h1>
+
+      <p>ในหน้า 1.4 น้องเห็นแล้วว่า <code>char</code> เก็บรหัส ASCII ของตัวอักษร <code>'B' + 1</code> ได้ <code>'C'</code> และ <code>'7' - '0'</code> ได้ 7 หน้านี้เอาความจริงข้อเดียวนี้ไปทำงานจริง คือดูว่าตัวอักษรเป็นชนิดไหน เปลี่ยนตัวพิมพ์ใหญ่เล็ก แปลงตัวอักษรตัวเลขเป็นค่าจริง และเลื่อนตัวอักษรแบบวนรอบ ทั้งหมดนี้คือชิ้นส่วนที่โจทย์สตริงทุกข้อในหน้าต่อๆ ไปต้องใช้</p>
+
+      <h2 id="char-is-number">char เป็นตัวเลขขนาดเล็ก</h2>
+
+      <p><code>char</code> คือจำนวนเต็มขนาด 1 byte ที่ <code>printf</code> แสดงเป็นตัวอักษรได้เมื่อใช้ <code>%c</code> เพราะเป็นจำนวนเต็ม จึงบวก ลบ เปรียบเทียบ และใช้เป็นตัวนับในลูปได้เหมือน <code>int</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="alphabet"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    for (char letter = 'a'; letter &lt;= 'z'; letter++) {
+        printf("%c", letter);
+    }
+    printf("\n");
+    for (char letter = 'Z'; letter &gt;= 'A'; letter--) {
+        printf("%c", letter);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="alphabet" data-title="C:\code\alphabet.exe"><pre><code>abcdefghijklmnopqrstuvwxyz
+ZYXWVUTSRQPONMLKJIHGFEDCBA
+</code></pre></div>
+
+      <p><code>letter++</code> คือบวกรหัสทีละหนึ่ง ได้ตัวถัดไปเรื่อยๆ ลูปนี้ทำงานได้เพราะตาราง ASCII เรียงตัวอักษรภาษาอังกฤษติดกันครบ 26 ตัว ทั้งชุดตัวพิมพ์เล็กและชุดตัวพิมพ์ใหญ่</p>
+
+      <p>ตารางในหน้า 1.4 มีสามช่วง หน้านี้เพิ่มรหัสที่จะเจอบ่อยในบทนี้อีกสองตัว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวอักษร</th><th>รหัส</th><th>ทำไมต้องรู้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>' '</code> ช่องว่าง</td><td>32</td><td>คั่นคำในประโยค ใช้ตอนนับคำ</td></tr>
+            <tr><td><code>'\n'</code> ขึ้นบรรทัดใหม่</td><td>10</td><td>ติดมากับข้อความที่รับทั้งบรรทัด จะเจอในหน้า 6.3</td></tr>
+            <tr><td><code>'0'</code> ถึง <code>'9'</code></td><td>48 ถึง 57</td><td>ตัวเลขในรูปตัวอักษร</td></tr>
+            <tr><td><code>'A'</code> ถึง <code>'Z'</code></td><td>65 ถึง 90</td><td>ตัวพิมพ์ใหญ่มาก่อน</td></tr>
+            <tr><td><code>'a'</code> ถึง <code>'z'</code></td><td>97 ถึง 122</td><td>ตัวพิมพ์เล็กห่างจากตัวพิมพ์ใหญ่ 32 เสมอ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>สังเกตว่าระหว่าง <code>'Z'</code> (90) กับ <code>'a'</code> (97) มีช่องว่างอยู่ 6 รหัส เป็นเครื่องหมาย <code>[ \ ] ^ _ `</code> เรื่องนี้จะกลับมากัดในส่วนลองทำให้พัง</p>
+
+      <h2 id="check-range">ดูว่าเป็นตัวอักษรชนิดไหน</h2>
+
+      <p>ตัวพิมพ์เล็กทุกตัวมีรหัสอยู่ระหว่าง <code>'a'</code> ถึง <code>'z'</code> การถามว่า <code>c</code> เป็นตัวพิมพ์เล็กไหม จึงเขียนเป็นเงื่อนไขช่วงได้ <code>c &gt;= 'a' &amp;&amp; c &lt;= 'z'</code> ตัวพิมพ์ใหญ่กับตัวเลขก็ทำแบบเดียวกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="kind"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char c;
+    while (scanf(" %c", &amp;c) == 1) {
+        if (c &gt;= 'a' &amp;&amp; c &lt;= 'z') {
+            printf("%c lowercase\n", c);
+        } else if (c &gt;= 'A' &amp;&amp; c &lt;= 'Z') {
+            printf("%c uppercase\n", c);
+        } else if (c &gt;= '0' &amp;&amp; c &lt;= '9') {
+            printf("%c digit\n", c);
+        } else {
+            printf("%c other\n", c);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="kind" data-title="ข้อมูลเข้า"><pre><code>q 7 M ?
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="kind" data-title="C:\code\kind.exe"><pre><code>q lowercase
+7 digit
+M uppercase
+? other
+</code></pre></div>
+      </div>
+
+      <p><code>" %c"</code> ที่มีช่องว่างข้างหน้าข้ามช่องว่างและการขึ้นบรรทัดให้ตามที่เรียนในบทที่ 2 จึงได้ทีละตัวที่ไม่ใช่ช่องว่าง ในโค้ดเขียน <code>'a'</code> กับ <code>'z'</code> ตรงๆ ไม่ต้องจำว่าเป็น 97 กับ 122</p>
+
+      <h2 id="change-case">เปลี่ยนตัวพิมพ์ใหญ่เล็กเอง</h2>
+
+      <p>ถ้า <code>c</code> เป็นตัวพิมพ์เล็ก <code>c - 'a'</code> คือลำดับของมันในตัวอักษร นับจาก 0 เช่น <code>'a'</code> ได้ 0 <code>'g'</code> ได้ 6 พอรู้ลำดับแล้ว เอาไปบวก <code>'A'</code> ก็ได้ตัวพิมพ์ใหญ่ที่ลำดับเดียวกัน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>นิพจน์</th><th>เมื่อ c คือ <code>'g'</code></th><th>ความหมาย</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>c - 'a'</code></td><td>6</td><td>ลำดับนับจาก 0 ใช้เป็นเลขช่องของอาเรย์ได้</td></tr>
+            <tr><td><code>c - 'a' + 1</code></td><td>7</td><td>ลำดับแบบที่คนนับ g เป็นตัวที่ 7</td></tr>
+            <tr><td><code>c - 'a' + 'A'</code></td><td><code>'G'</code></td><td>ตัวพิมพ์ใหญ่ที่ลำดับเดียวกัน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>โปรแกรมนี้สลับตัวพิมพ์ใหญ่เป็นเล็กและเล็กเป็นใหญ่ ตัวอื่นพิมพ์ตามเดิม</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="toggle"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char c;
+    while (scanf("%c", &amp;c) == 1 &amp;&amp; c != '\n') { // (1)!
+        if (c &gt;= 'a' &amp;&amp; c &lt;= 'z') {
+            c = c - 'a' + 'A';
+        } else if (c &gt;= 'A' &amp;&amp; c &lt;= 'Z') {
+            c = c - 'A' + 'a';
+        }
+        printf("%c", c);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>"%c"</code> ที่ไม่มีช่องว่างข้างหน้า อ่านทุกตัวรวมทั้งช่องว่างและ <code>'\n'</code> ลูปจึงหยุดเองเมื่อเจอ <code>'\n'</code> ซึ่งก็คือจบบรรทัด รูปแบบนี้ใช้อ่านทั้งบรรทัดทีละตัวได้ทุกครั้ง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="toggle" data-title="ข้อมูลเข้า"><pre><code>Hello World 2026
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="toggle" data-title="C:\code\toggle.exe"><pre><code>hELLO wORLD 2026
+</code></pre></div>
+      </div>
+
+      <p>บางคนเขียน <code>c - 32</code> แทน <code>c - 'a' + 'A'</code> ได้ผลเท่ากันเพราะ <code>'a' - 'A'</code> คือ 32 แต่คนอ่านต้องหยุดคิดว่า 32 มาจากไหน เขียนด้วยตัวอักษรอ่านง่ายกว่าและไม่ต้องจำเลข</p>
+
+      <h2 id="digits">ตัวอักษรตัวเลขกับค่าจริง</h2>
+
+      <p><code>'7' - '0'</code> ได้ 7 ทำให้อ่านตัวเลขทีละหลักแล้วประกอบเป็นค่าเองได้ วิธีคือทุกครั้งที่ได้หลักใหม่ ให้คูณค่าเดิมด้วย 10 แล้วบวกหลักใหม่ต่อท้าย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="year"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char c;
+    int year = 0;
+    while (scanf("%c", &amp;c) == 1 &amp;&amp; c != '\n') {
+        year = year * 10 + (c - '0');
+    }
+    printf("%d\n", year + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="year" data-title="ข้อมูลเข้า"><pre><code>2569
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="year" data-title="C:\code\year.exe"><pre><code>2570
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>อ่านได้</th><th><code>c - '0'</code></th><th><code>year</code> หลังบรรทัดที่ 8</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>'2'</code></td><td>2</td><td>0 × 10 + 2 = 2</td></tr>
+            <tr><td><code>'5'</code></td><td>5</td><td>2 × 10 + 5 = 25</td></tr>
+            <tr><td><code>'6'</code></td><td>6</td><td>25 × 10 + 6 = 256</td></tr>
+            <tr><td><code>'9'</code></td><td>9</td><td>256 × 10 + 9 = 2569</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>บวก 1 แล้วได้ 2570 แปลว่า <code>year</code> เป็นตัวเลขจริง ไม่ใช่ตัวอักษรสี่ตัว <code>scanf("%d")</code> ข้างในก็ทำแบบนี้ แต่การรู้วิธีเองมีประโยชน์ตอนโจทย์ให้ตัวเลขปนกับตัวอักษร เช่น <code>a12b3</code> ซึ่ง <code>%d</code> อ่านตรงๆ ไม่ได้</p>
+
+      <p>ทางกลับก็ใช้หลักเดียวกัน ค่า 0 ถึง 9 บวก <code>'0'</code> ได้ตัวอักษรตัวเลข</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="digit-char"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int digit = 7;
+    char c = '0' + digit;
+    printf("%c %d\n", c, c);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="digit-char" data-title="C:\code\digit_char.exe"><pre><code>7 55
+</code></pre></div>
+
+      <h2 id="shift">เลื่อนตัวอักษรแบบวนรอบ</h2>
+
+      <p>โจทย์รหัสลับชอบให้เลื่อนตัวอักษรไปข้างหน้า k ตัว โดยเลยจาก z แล้ววนกลับมา a ถ้าบวกตรงๆ จะเลยออกไปนอกตัวอักษร ต้องแปลงเป็นลำดับ 0 ถึง 25 ก่อน บวก k แล้วใช้ <code>% 26</code> ให้วนกลับ แล้วค่อยแปลงกลับเป็นตัวอักษร</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="shift"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char letter;
+    int steps;
+    scanf(" %c %d", &amp;letter, &amp;steps);
+    printf("%c\n", letter + steps);
+    int position = letter - 'a';
+    position = (position + steps) % 26;
+    printf("%c\n", 'a' + position);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="shift" data-title="ข้อมูลเข้า"><pre><code>x 5
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="shift" data-title="C:\code\shift.exe"><pre><code>}
+c
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดแรกบวกตรงๆ <code>'x'</code> คือ 120 บวก 5 ได้ 125 ซึ่งคือ <code>}</code> ส่วนบรรทัดที่สอง x อยู่ลำดับ 23 บวก 5 ได้ 28 เอา 28 mod 26 ได้ 2 คือ c ถูกต้องตามที่ต้องการ y z a b c</p>
+
+      <h2 id="ctype">ctype.h ทำให้ไม่ต้องเขียนช่วงเอง</h2>
+
+      <p>การเช็กช่วงและเปลี่ยนตัวพิมพ์ใช้บ่อยจนภาษา C มีให้ใน <code>ctype.h</code> แล้ว ใส่ <code>#include &lt;ctype.h&gt;</code> ไว้บนโปรแกรมก็ใช้ได้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เรียก</th><th>ได้อะไร</th><th>เขียนเองได้ว่า</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>isdigit(c)</code></td><td>จริงถ้าเป็นตัวเลข</td><td><code>c &gt;= '0' &amp;&amp; c &lt;= '9'</code></td></tr>
+            <tr><td><code>isalpha(c)</code></td><td>จริงถ้าเป็นตัวอักษรภาษาอังกฤษ ใหญ่หรือเล็ก</td><td>ตัวพิมพ์เล็กหรือตัวพิมพ์ใหญ่</td></tr>
+            <tr><td><code>isupper(c)</code></td><td>จริงถ้าเป็นตัวพิมพ์ใหญ่</td><td><code>c &gt;= 'A' &amp;&amp; c &lt;= 'Z'</code></td></tr>
+            <tr><td><code>islower(c)</code></td><td>จริงถ้าเป็นตัวพิมพ์เล็ก</td><td><code>c &gt;= 'a' &amp;&amp; c &lt;= 'z'</code></td></tr>
+            <tr><td><code>isspace(c)</code></td><td>จริงถ้าเป็นช่องว่าง <code>'\n'</code> หรือตัวเว้นวรรคอื่น</td><td>หลายตัว เขียนเองยาว</td></tr>
+            <tr><td><code>toupper(c)</code></td><td>ตัวพิมพ์ใหญ่ของ c ถ้า c ไม่ใช่ตัวพิมพ์เล็กได้ c คืนมาเหมือนเดิม</td><td>หัวข้อที่แล้ว</td></tr>
+            <tr><td><code>tolower(c)</code></td><td>ตัวพิมพ์เล็กของ c ถ้า c ไม่ใช่ตัวพิมพ์ใหญ่ได้ c คืนมาเหมือนเดิม</td><td>หัวข้อที่แล้ว</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-test="ctype"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;ctype.h&gt;
+
+int main()
+{
+    char c;
+    int letters = 0, digits = 0;
+    while (scanf("%c", &amp;c) == 1 &amp;&amp; c != '\n') {
+        if (isalpha(c)) {
+            letters++;
+        } else if (isdigit(c)) {
+            digits++;
+        }
+        printf("%c", toupper(c));
+    }
+    printf("\n%d letters %d digits\n", letters, digits);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="ctype" data-title="ข้อมูลเข้า"><pre><code>Room 4B, floor 12
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="ctype" data-title="C:\code\ctype.exe"><pre><code>ROOM 4B, FLOOR 12
+10 letters 3 digits
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>toupper</code> ไม่แตะตัวที่ไม่ใช่ตัวพิมพ์เล็ก ช่องว่าง จุลภาค และตัวเลขจึงออกมาเหมือนเดิม ไม่ต้องเช็กก่อนเรียก</li>
+        <li><code>is...</code> ทุกตัวใช้ใน <code>if</code> ได้ตรงๆ แต่อย่าเอาไปเทียบกับ 1 เหตุผลอยู่ในส่วนลองทำให้พัง</li>
+      </ul>
+
+      <p>เขียนเองกับใช้ <code>ctype.h</code> ได้ผลเท่ากัน ใช้แบบไหนก็ได้ แต่ <strong>ต้องเข้าใจแบบเขียนเองก่อน</strong> เพราะ <code>ctype.h</code> ไม่มีฟังก์ชันหาลำดับของตัวอักษรหรือเลื่อนแบบวนรอบ งานสองอย่างนั้นต้องใช้ <code>c - 'a'</code> อยู่ดี</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="wrong-range">แบบที่ 1 เช็กตัวอักษรด้วยช่วง 'A' ถึง 'z'</h3>
+
+      <p>อยากนับตัวอักษรทั้งใหญ่และเล็ก แล้วคิดว่าเขียนช่วงเดียวจาก <code>'A'</code> ถึง <code>'z'</code> ก็ครอบคลุมทั้งหมด</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="wrong-range"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char c;
+    int letters = 0;
+    while (scanf("%c", &amp;c) == 1 &amp;&amp; c != '\n') {
+        if (c &gt;= 'A' &amp;&amp; c &lt;= 'z') {
+            letters++;
+        }
+    }
+    printf("%d\n", letters);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="wrong-range" data-title="ข้อมูลเข้า"><pre><code>top_score[1]
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="wrong-range" data-title="C:\code\letters.exe"><pre><code>11
+</code></pre></div>
+      </div>
+
+      <p>ตัวอักษรจริงมี 8 ตัว คือ topscore แต่ได้ 11 เพราะ <code>_</code> <code>[</code> และ <code>]</code> มีรหัส 95 91 และ 93 ซึ่งอยู่ในช่องว่างระหว่าง <code>'Z'</code> กับ <code>'a'</code> ที่เห็นในตารางตอนต้น ต้องแยกเป็นสองช่วงเชื่อมด้วย <code>||</code> หรือใช้ <code>isalpha(c)</code></p>
+
+      <h3 id="minus-zero">แบบที่ 2 ลบ 0 แทน '0'</h3>
+
+      <p>ในโปรแกรม year แก้บรรทัดที่ 8 เป็น <code>year = year * 10 + (c - 0);</code> ลืมเครื่องหมายคำพูดไปคู่เดียว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="year-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char c;
+    int year = 0;
+    while (scanf("%c", &amp;c) == 1 &amp;&amp; c != '\n') {
+        year = year * 10 + (c - 0);
+    }
+    printf("%d\n", year + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="year-bug" data-title="ข้อมูลเข้า"><pre><code>2569
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="year-bug" data-title="C:\code\year.exe"><pre><code>55898
+</code></pre></div>
+      </div>
+
+      <p>ไม่มีคำเตือน เพราะลบ 0 เป็นเรื่องถูกไวยากรณ์ แต่ <code>c - 0</code> ก็คือรหัสของ <code>c</code> เอง <code>'2'</code> จึงกลายเป็น 50 แทนที่จะเป็น 2 ถ้าเห็นคำตอบที่ใหญ่ผิดปกติในโจทย์ที่อ่านตัวเลขทีละตัว ให้ดูจุดนี้ก่อน</p>
+
+      <h3 id="compare-one">แบบที่ 3 เทียบผลของ isalpha กับ 1</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+#include &lt;ctype.h&gt;
+
+int main()
+{
+    char c;
+    int letters = 0;
+    while (scanf("%c", &amp;c) == 1 &amp;&amp; c != '\n') {
+        if (isalpha(c) == 1) {
+            letters++;
+        }
+    }
+    printf("%d\n", letters);
+    return 0;
+}
+</code></pre></div>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ ป้อน <code>Hello</code> แล้วได้ <code>1</code> แทนที่จะเป็น 5 เพราะ <code>isalpha</code> ไม่ได้สัญญาว่าจะคืน 1 เมื่อจริง สัญญาแค่ว่า <strong>ไม่ใช่ 0</strong> บนเครื่องนี้ <code>isalpha('H')</code> ได้ 1 แต่ <code>isalpha('e')</code> ได้ 2 จึงนับได้แค่ H ตัวเดียว เครื่องอื่นอาจได้ค่าอื่น ใช้ <code>if (isalpha(c))</code> ตรงๆ ถูกเสมอ ส่วนถ้าอยากได้เท็จ ใช้ <code>if (!isalpha(c))</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>char</code> เป็นจำนวนเต็ม บวก ลบ เปรียบเทียบ และใช้เป็นตัวนับในลูปได้</li>
+        <li>เช็กชนิดด้วยช่วง เช่น <code>c &gt;= 'a' &amp;&amp; c &lt;= 'z'</code> อย่ารวมสองช่วงเป็น <code>'A'</code> ถึง <code>'z'</code></li>
+        <li><code>c - 'a'</code> คือลำดับ 0 ถึง 25 บวก <code>'A'</code> ได้ตัวพิมพ์ใหญ่ บวก k แล้ว <code>% 26</code> ได้การเลื่อนแบบวนรอบ</li>
+        <li><code>c - '0'</code> แปลงตัวอักษรตัวเลขเป็นค่า และ <code>value * 10 + digit</code> ประกอบหลักเป็นตัวเลข</li>
+        <li><code>ctype.h</code> มี <code>isdigit</code> <code>isalpha</code> <code>isupper</code> <code>islower</code> <code>isspace</code> <code>toupper</code> <code>tolower</code> ใช้ใน <code>if</code> ตรงๆ อย่าเทียบกับ 1</li>
+      </ul>
+    </article>

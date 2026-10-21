@@ -1,0 +1,293 @@
+<article class="doc">
+      <h1>6.3 รับข้อความทั้งบรรทัด</h1>
+
+      <p><code>%s</code> รับได้ทีละคำ แต่ชื่อนามสกุล ที่อยู่ หรือประโยคยาวๆ มีช่องว่างอยู่ข้างใน โจทย์แบบ "นับคำในประโยค" หรือ "เข้ารหัสข้อความ" จึงต้องรับทั้งบรรทัดรวมช่องว่าง เครื่องมือที่ใช้คือ <code>fgets</code> ซึ่งมีนิสัยแปลกอยู่หนึ่งอย่าง และมีกับดักเมื่อใช้ต่อจาก <code>scanf</code> หน้านี้จะเจอทั้งสองเรื่องกับตา</p>
+
+      <h2 id="s-stops">%s หยุดที่ช่องว่าง</h2>
+
+      <div class="code" data-lang="c" data-linenums data-test="greet-s"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char name[105];
+    scanf("%s", name);
+    printf("Hello, %s!\n", name);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="greet-s" data-title="ข้อมูลเข้า"><pre><code>Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="greet-s" data-title="C:\code\greet.exe"><pre><code>Hello, Somchai!
+</code></pre></div>
+      </div>
+
+      <p>นามสกุลหายไป <code>%s</code> หยุดอ่านเมื่อเจอช่องว่าง คำว่า Jaidee ยังค้างอยู่ในข้อมูลเข้า รอให้ใครมาอ่านต่อ</p>
+
+      <h2 id="fgets">fgets รับทั้งบรรทัด</h2>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="greet-fgets"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char name[105];
+    fgets(name, sizeof name, stdin); // (1)!
+    printf("Hello, %s!\n", name);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อ่านว่า "อ่านหนึ่งบรรทัดจาก <code>stdin</code> ใส่ <code>name</code> ใช้ไม่เกิน <code>sizeof name</code> ช่อง" <code>stdin</code> (standard input) คือข้อมูลเข้าที่ <code>scanf</code> อ่านอยู่ทุกวัน ส่วน <code>sizeof name</code> คือขนาดของอาเรย์ <code>name</code> เป็น byte ซึ่ง <code>char</code> ช่องละ 1 byte จึงได้ 105 พอดี</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="greet-fgets" data-title="ข้อมูลเข้า"><pre><code>Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="greet-fgets" data-title="C:\code\greet.exe"><pre><code>Hello, Somchai Jaidee
+!
+</code></pre></div>
+      </div>
+
+      <p>ได้ชื่อเต็มแล้ว แต่เครื่องหมาย <code>!</code> ตกไปอยู่บรรทัดใหม่ นี่คือนิสัยแปลกของ <code>fgets</code> มันอ่านไปจน <strong>รวมตัว <code>'\n'</code> ด้วย</strong> แล้วค่อยใส่ <code>'\0'</code> ปิดท้าย ข้อความ 14 ตัวจึงใช้ 16 ช่อง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ช่อง</th><th>0 ถึง 12</th><th>13</th><th>14</th><th>15</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เก็บ</td><td><code>Somchai Jaide</code></td><td><code>'e'</code></td><td><code>'\n'</code></td><td><code>'\0'</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เรื่องขนาดอาเรย์จึงต่างจาก <code>%s</code> นิดหนึ่ง ถ้าโจทย์บอกว่าบรรทัดยาวไม่เกิน 100 ตัว ต้องมีที่ให้ 100 ตัว บวก <code>'\n'</code> บวก <code>'\0'</code> คือ 102 ช่องเป็นอย่างน้อย เผื่อเป็น 105 ก็ได้</p>
+
+      <p>ใช้ <code>sizeof name</code> ดีกว่าเขียน 105 ซ้ำ เพราะวันหลังเปลี่ยนขนาดอาเรย์แล้ว <code>fgets</code> ก็เปลี่ยนตามเอง <code>sizeof</code> แบบนี้ใช้ได้กับอาเรย์ที่ประกาศไว้ใน <code>main</code> หรือนอก <code>main</code> อย่างในบทนี้ ส่วนกรณีที่ใช้ไม่ได้จะเจอตอนส่งอาเรย์ให้ฟังก์ชันในบทที่ 8 และเข้าใจเหตุผลในบทที่ 10</p>
+
+      <h2 id="strip">ตัด '\n' ทิ้ง</h2>
+
+      <p>แทบทุกครั้งที่ใช้ <code>fgets</code> ต้องตัด <code>'\n'</code> ทิ้งก่อน ไม่อย่างนั้นจะนับความยาวเกินหนึ่ง กลับคำแล้วได้ <code>'\n'</code> ขึ้นหน้า หรือเทียบคำแล้วไม่เท่ากัน วิธีตัดคือเดินหาแล้วเขียน <code>'\0'</code> ทับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="strip"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char name[105];
+    fgets(name, sizeof name, stdin);
+    for (int i = 0; name[i] != '\0'; i++) {
+        if (name[i] == '\n' || name[i] == '\r') {
+            name[i] = '\0';
+        }
+    }
+    printf("Hello, %s!\n", name);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="strip" data-title="ข้อมูลเข้า"><pre><code>Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="strip" data-title="C:\code\greet.exe"><pre><code>Hello, Somchai Jaidee!
+</code></pre></div>
+      </div>
+
+      <p>ตัด <code>'\r'</code> ด้วยเผื่อไว้ ไฟล์ข้อมูลเข้าที่สร้างบน Windows จบบรรทัดด้วยสองตัวคือ <code>'\r'</code> ตามด้วย <code>'\n'</code> โปรแกรมบน Windows แปลงให้เหลือ <code>'\n'</code> ตัวเดียวโดยอัตโนมัติ แต่ grader ส่วนใหญ่รันบน Linux ซึ่งไม่แปลง ถ้าไม่ตัด <code>'\r'</code> ก็จะได้ตัวเกินมาหนึ่งตัวแบบที่มองไม่เห็น</p>
+
+      <h2 id="many-lines">อ่านหลายบรรทัดจนหมด</h2>
+
+      <p><code>fgets</code> คืนค่าพิเศษชื่อ <code>NULL</code> เมื่ออ่านต่อไม่ได้แล้ว ใช้แบบเดียวกับ <code>while (scanf(...) == 1)</code> ในบทที่ 4 ได้ ส่วน <code>NULL</code> หมายถึงอะไรจริงๆ จะเรียนในบทที่ 10</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="lines"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char line[105];
+    int count = 0;
+    while (fgets(line, sizeof line, stdin) != NULL) {
+        count++;
+        printf("%d %s", count, line);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="lines" data-title="ข้อมูลเข้า"><pre><code>rice 2 kg
+eggs 10
+fish sauce
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="lines" data-title="C:\code\lines.exe"><pre><code>1 rice 2 kg
+2 eggs 10
+3 fish sauce
+</code></pre></div>
+      </div>
+
+      <p>คราวนี้ <code>printf</code> ไม่มี <code>\n</code> เพราะ <code>line</code> มี <code>'\n'</code> ติดมาแล้ว เป็นกรณีเดียวที่นิสัยของ <code>fgets</code> ช่วยเรา</p>
+
+      <h2 id="scanf-then-fgets">กับดัก scanf ตามด้วย fgets</h2>
+
+      <p>โจทย์จำนวนมากให้ตัวเลขบรรทัดแรก แล้วตามด้วยข้อความหนึ่งบรรทัด เช่น เลขห้อง แล้วตามด้วยชื่อเต็มของคนที่พักห้องนั้น วิธีที่ทุกคนเขียนครั้งแรกคือ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="room-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int room;
+    char name[105];
+    scanf("%d", &amp;room);
+    fgets(name, sizeof name, stdin);
+    printf("room %d\n", room);
+    printf("name [%s]\n", name);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="room-bug" data-title="ข้อมูลเข้า"><pre><code>5
+Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="room-bug" data-title="C:\code\room.exe"><pre><code>room 5
+name [
+]
+</code></pre></div>
+      </div>
+
+      <p>วงเล็บเหลี่ยมใส่ไว้ให้เห็นขอบของข้อความ ชื่อว่างเปล่า มีแค่ <code>'\n'</code> ตัวเดียว ถ้ารันใน Code::Blocks เองจะยิ่งงง เพราะโปรแกรมไม่รอให้พิมพ์ชื่อเลยด้วยซ้ำ สาเหตุอยู่ที่ข้อมูลเข้าคือตัวอักษรเรียงต่อกันหนึ่งสาย</p>
+
+      <figure>
+        <svg viewBox="0 0 470 150" width="470" style="max-width:100%;height:auto" role="img" aria-label="ข้อมูลเข้าเรียงเป็นสาย 5 ขึ้นบรรทัดใหม่ S o m c h a i scanf อ่านเลข 5 แล้วหยุดก่อนตัวขึ้นบรรทัดใหม่ fgets จึงอ่านได้แค่ตัวขึ้นบรรทัดใหม่แล้วจบ">
+          <g style="font-family:var(--font-code)">
+            <rect x="20" y="20" width="40" height="44" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="40" y="49" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="64" y="20" width="40" height="44" rx="5" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/>
+            <text x="84" y="48" text-anchor="middle" style="fill:var(--accent-ink);font-size:15px">\n</text>
+            <rect x="108" y="20" width="40" height="44" rx="5" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="128" y="49" text-anchor="middle" style="fill:var(--ink);font-size:18px">S</text>
+            <rect x="152" y="20" width="40" height="44" rx="5" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="172" y="49" text-anchor="middle" style="fill:var(--ink);font-size:18px">o</text>
+            <rect x="196" y="20" width="40" height="44" rx="5" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="216" y="49" text-anchor="middle" style="fill:var(--ink);font-size:18px">m</text>
+            <rect x="240" y="20" width="40" height="44" rx="5" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="260" y="49" text-anchor="middle" style="fill:var(--ink);font-size:18px">c</text>
+            <rect x="284" y="20" width="40" height="44" rx="5" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="304" y="49" text-anchor="middle" style="fill:var(--ink);font-size:18px">h</text>
+            <rect x="328" y="20" width="40" height="44" rx="5" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="348" y="49" text-anchor="middle" style="fill:var(--ink);font-size:18px">a</text>
+            <rect x="372" y="20" width="40" height="44" rx="5" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="392" y="49" text-anchor="middle" style="fill:var(--ink);font-size:18px">i</text>
+            <text x="440" y="49" text-anchor="middle" style="fill:var(--muted);font-size:18px">...</text>
+            <path d="M40 72 V92" style="stroke:var(--brand);stroke-width:2"/>
+            <text x="40" y="110" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">scanf</text>
+            <text x="40" y="128" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">%d</text>
+            <path d="M84 72 V92" style="stroke:var(--accent);stroke-width:2"/>
+            <text x="84" y="110" text-anchor="middle" style="fill:var(--accent-ink);font-size:13px">fgets</text>
+            <text x="84" y="128" text-anchor="middle" style="fill:var(--accent-ink);font-size:13px">stops</text>
+            <text x="260" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">never read</text>
+          </g>
+        </svg>
+      </figure>
+
+      <ol>
+        <li><code>scanf("%d")</code> อ่าน <code>5</code> แล้วหยุดทันทีที่เจอตัวที่ไม่ใช่ตัวเลข คือ <code>'\n'</code> และ <strong>ไม่อ่านตัวนั้น</strong> ทิ้งไว้ในสาย</li>
+        <li><code>fgets</code> อ่านจนถึง <code>'\n'</code> ตัวแรกที่เจอ ซึ่งก็คือตัวที่ค้างอยู่ จึงได้บรรทัดว่างแล้วจบ ชื่อจริงไม่ถูกอ่านเลย</li>
+      </ol>
+
+      <p>สองตัวนี้ทำงานถูกตามที่ออกแบบไว้ทั้งคู่ ปัญหาคือ <code>'\n'</code> ท้ายบรรทัดแรกไม่มีใครเก็บ วิธีแก้คือเก็บเองก่อนเรียก <code>fgets</code> ด้วย <code>getchar()</code> ซึ่งอ่านตัวอักษรหนึ่งตัวจากข้อมูลเข้าแล้วคืนรหัสของมันมา เหมือน <code>scanf("%c")</code> แบบสั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="room"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int room;
+    char name[105];
+    scanf("%d", &amp;room);
+    while (getchar() != '\n') { // (1)!
+    }
+    fgets(name, sizeof name, stdin);
+    for (int i = 0; name[i] != '\0'; i++) {
+        if (name[i] == '\n' || name[i] == '\r') {
+            name[i] = '\0';
+        }
+    }
+    printf("room %d\n", room);
+    printf("name [%s]\n", name);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อ่านทิ้งทีละตัวจนกว่าจะได้ <code>'\n'</code> ซึ่งก็อ่านทิ้งไปด้วย ใช้ลูปแทน <code>getchar()</code> ครั้งเดียว เพราะหลังเลข 5 อาจมีช่องว่างหรือ <code>'\r'</code> ค้างอยู่ก่อนถึง <code>'\n'</code> ลูปนี้ไม่มีคำสั่งในปีกกา งานทั้งหมดเกิดในเงื่อนไข</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="room" data-title="ข้อมูลเข้า"><pre><code>5
+Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="room" data-title="C:\code\room.exe"><pre><code>room 5
+name [Somchai Jaidee]
+</code></pre></div>
+      </div>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">จำง่ายๆ</p>
+        <p>หลัง <code>scanf</code> ที่จบบรรทัดแล้ว ถ้าคำสั่งถัดไปคือ <code>fgets</code> ต้องอ่านทิ้งให้ถึง <code>'\n'</code> ก่อนเสมอ ส่วน <code>scanf</code> ตามด้วย <code>scanf("%d")</code> หรือ <code>scanf("%s")</code> ไม่มีปัญหานี้ เพราะสองแบบนั้นข้ามช่องว่างและ <code>'\n'</code> ข้างหน้าให้เอง เหมือน <code>" %c"</code> ที่เรียนในบทที่ 2</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="small-buffer">แบบที่ 1 อาเรย์เล็กกว่าบรรทัด</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="small"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char name[10];
+    fgets(name, sizeof name, stdin);
+    printf("[%s]\n", name);
+    fgets(name, sizeof name, stdin);
+    printf("[%s]\n", name);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="small" data-title="ข้อมูลเข้า"><pre><code>Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="small" data-title="C:\code\small.exe"><pre><code>[Somchai J]
+[aidee
+]
+</code></pre></div>
+      </div>
+
+      <p><code>fgets</code> ไม่เขียนเกินอาเรย์ ข้อดีคือโปรแกรมไม่พัง แต่อ่านได้แค่ 9 ตัวแล้วเก็บช่องสุดท้ายไว้ให้ <code>'\0'</code> ส่วนที่เหลือของบรรทัดค้างอยู่ <code>fgets</code> ครั้งถัดไปจึงได้ <code>aidee</code> แทนที่จะได้บรรทัดใหม่ อาเรย์ต้องมีอย่างน้อยความยาวมากสุดในโจทย์บวกสอง</p>
+
+      <h3 id="gets">แบบที่ 2 ใช้ gets ตามเว็บเก่า</h3>
+
+      <p>เว็บและหนังสือเก่าหลายเล่มสอนให้รับทั้งบรรทัดด้วย <code>gets(name);</code> ลองเปลี่ยนบรรทัด <code>fgets</code> ในโปรแกรม greet เป็นแบบนั้น</p>
+
+      <div class="code" data-lang="gcc"><pre><code>greet.c:6:5: warning: call to 'gets' declared with attribute warning: Using gets() is always unsafe - use fgets() instead [-Wattribute-warning]
+    6 |     gets(name);
+      |     ^~~~~~~~~~
+</code></pre></div>
+
+      <p>compiler บอกตรงๆ ว่า <code>gets</code> ไม่ปลอดภัยเสมอ เพราะ <code>gets</code> ไม่รู้ขนาดของอาเรย์ บรรทัดยาวเท่าไรก็เขียนลงไปหมด จนทับหน่วยความจำของตัวแปรอื่น มาตรฐานภาษา C ถอด <code>gets</code> ออกไปแล้วตั้งแต่ C11 ใช้ <code>fgets</code> แล้วตัด <code>'\n'</code> เองแทน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>fgets(line, sizeof line, stdin)</code> รับทั้งบรรทัดรวมช่องว่าง และรวม <code>'\n'</code> ท้ายบรรทัดด้วย</li>
+        <li>อาเรย์ต้องมีขนาดอย่างน้อยความยาวบรรทัดบวกสอง สำหรับ <code>'\n'</code> กับ <code>'\0'</code></li>
+        <li>ตัด <code>'\n'</code> และ <code>'\r'</code> ทิ้งด้วยการเขียน <code>'\0'</code> ทับก่อนใช้งาน</li>
+        <li><code>while (fgets(...) != NULL)</code> อ่านทุกบรรทัดจนหมด</li>
+        <li>หลัง <code>scanf</code> ถ้าจะใช้ <code>fgets</code> ต้องอ่านทิ้งถึง <code>'\n'</code> ก่อน ด้วย <code>while (getchar() != '\n')</code></li>
+        <li>ห้ามใช้ <code>gets</code></li>
+      </ul>
+    </article>

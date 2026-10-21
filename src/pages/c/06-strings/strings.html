@@ -1,0 +1,267 @@
+<article class="doc">
+      <h1>6.2 สตริงคืออาเรย์ของ char</h1>
+
+      <p>ชื่อคน คำศัพท์ ประโยค คือตัวอักษรหลายตัวเรียงกัน ภาษา C ไม่มีชนิดพิเศษสำหรับข้อความ แต่เก็บเป็น <strong>อาเรย์ของ char</strong> ที่มีตัวปิดท้ายพิเศษหนึ่งตัว ข้อความแบบนี้เรียกว่า <strong>สตริง (string)</strong> น้องรู้จักอาเรย์จากบทที่ 5 และรู้จัก <code>char</code> จากหน้าที่แล้ว หน้านี้คือเอาสองเรื่องมาต่อกัน</p>
+
+      <h2 id="string-array">เก็บคำในอาเรย์ของ char</h2>
+
+      <div class="code" data-lang="c" data-linenums data-test="cells"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char name[8] = "Somchai";
+    for (int i = 0; i &lt; 8; i++) {
+        printf("name[%d] = %d\n", i, name[i]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="cells" data-title="C:\code\cells.exe"><pre><code>name[0] = 83
+name[1] = 111
+name[2] = 109
+name[3] = 99
+name[4] = 104
+name[5] = 97
+name[6] = 105
+name[7] = 0
+</code></pre></div>
+
+      <p>Somchai มี 7 ตัว แต่ขออาเรย์ 8 ช่อง เพราะเมื่อเขียนข้อความในเครื่องหมายคำพูดคู่ compiler จะเติมช่องสุดท้ายเป็นรหัส 0 ให้เองเสมอ ช่องรหัส 0 นี้เขียนในโค้ดว่า <code>'\0'</code> อ่านว่า null character</p>
+
+      <figure>
+        <svg viewBox="0 0 560 160" width="560" style="max-width:100%;height:auto" role="img" aria-label="อาเรย์ name 8 ช่อง ช่อง 0 ถึง 6 เก็บตัวอักษร S o m c h a i รหัส 83 111 109 99 104 97 105 ช่อง 7 เก็บ null character รหัส 0">
+          <g style="font-family:var(--font-code)">
+            <text x="20" y="66" text-anchor="middle" style="fill:var(--muted);font-size:13px">name</text>
+            <text x="68" y="22" text-anchor="middle" style="fill:var(--muted);font-size:13px">[0]</text>
+            <rect x="40" y="32" width="56" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="68" y="68" text-anchor="middle" style="fill:var(--ink);font-size:22px">S</text>
+            <text x="68" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">83</text>
+            <text x="128" y="22" text-anchor="middle" style="fill:var(--muted);font-size:13px">[1]</text>
+            <rect x="100" y="32" width="56" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="128" y="68" text-anchor="middle" style="fill:var(--ink);font-size:22px">o</text>
+            <text x="128" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">111</text>
+            <text x="188" y="22" text-anchor="middle" style="fill:var(--muted);font-size:13px">[2]</text>
+            <rect x="160" y="32" width="56" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="188" y="68" text-anchor="middle" style="fill:var(--ink);font-size:22px">m</text>
+            <text x="188" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">109</text>
+            <text x="248" y="22" text-anchor="middle" style="fill:var(--muted);font-size:13px">[3]</text>
+            <rect x="220" y="32" width="56" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="248" y="68" text-anchor="middle" style="fill:var(--ink);font-size:22px">c</text>
+            <text x="248" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">99</text>
+            <text x="308" y="22" text-anchor="middle" style="fill:var(--muted);font-size:13px">[4]</text>
+            <rect x="280" y="32" width="56" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="308" y="68" text-anchor="middle" style="fill:var(--ink);font-size:22px">h</text>
+            <text x="308" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">104</text>
+            <text x="368" y="22" text-anchor="middle" style="fill:var(--muted);font-size:13px">[5]</text>
+            <rect x="340" y="32" width="56" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="368" y="68" text-anchor="middle" style="fill:var(--ink);font-size:22px">a</text>
+            <text x="368" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">97</text>
+            <text x="428" y="22" text-anchor="middle" style="fill:var(--muted);font-size:13px">[6]</text>
+            <rect x="400" y="32" width="56" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="428" y="68" text-anchor="middle" style="fill:var(--ink);font-size:22px">i</text>
+            <text x="428" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">105</text>
+            <text x="488" y="22" text-anchor="middle" style="fill:var(--muted);font-size:13px">[7]</text>
+            <rect x="460" y="32" width="56" height="56" rx="6" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/>
+            <text x="488" y="67" text-anchor="middle" style="fill:var(--accent-ink);font-size:18px">\0</text>
+            <text x="488" y="110" text-anchor="middle" style="fill:var(--accent-ink);font-size:13px">0</text>
+            <text x="248" y="146" text-anchor="middle" style="fill:var(--muted);font-size:13px">7 letters</text>
+            <text x="488" y="146" text-anchor="middle" style="fill:var(--accent-ink);font-size:13px">end</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ช่องเริ่มที่ 0 เหมือนอาเรย์ทุกตัวในบทที่ 5 ตัวอักษรตัวแรกจึงอยู่ที่ <code>name[0]</code> และตัวสุดท้ายของ Somchai อยู่ที่ <code>name[6]</code></p>
+
+      <h2 id="null">'\0' บอกว่าข้อความจบตรงไหน</h2>
+
+      <p>ทำไมต้องมีตัวปิดท้าย เพราะส่วนใหญ่เราไม่รู้ล่วงหน้าว่าข้อความจะยาวเท่าไร จึงขออาเรย์เผื่อไว้ใหญ่ๆ เช่น 20 ช่อง แต่ใส่ชื่อแค่ 7 ตัว โปรแกรมต้องมีวิธีรู้ว่าข้อความจริงจบที่ช่องไหน คำตอบคือหยุดที่ <code>'\0'</code> ตัวแรก <code>printf</code> กับ <code>%s</code> ก็ทำแบบนั้น พิมพ์ทีละช่องไปจนเจอ <code>'\0'</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="cut"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char name[20] = "Somchai";
+    printf("%s\n", name);
+    name[3] = '\0';
+    printf("%s\n", name);
+    name[3] = 'c';
+    printf("%s\n", name);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="cut" data-title="C:\code\cut.exe"><pre><code>Somchai
+Som
+Somchai
+</code></pre></div>
+
+      <p>บรรทัดที่ 7 ใส่ <code>'\0'</code> ทับตัว c ข้อความจึงเหลือแค่ Som แต่ตัว h a i ยังอยู่ในช่อง 4 ถึง 6 เหมือนเดิม แค่ <code>printf</code> หยุดก่อนถึง พอใส่ c กลับคืนในบรรทัดที่ 9 ชื่อเต็มก็กลับมา ส่วนช่อง 7 ถึง 19 ที่ไม่ได้ใช้ compiler เติม 0 ไว้ให้ทั้งหมด เพราะประกาศพร้อมกำหนดค่า</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">'\0' ไม่ใช่ '0'</p>
+        <p><code>'\0'</code> คือรหัส 0 ใช้ปิดท้ายข้อความ ส่วน <code>'0'</code> คือตัวอักษรเลขศูนย์ รหัส 48 เครื่องหมาย <code>\</code> ทำงานแบบเดียวกับใน <code>'\n'</code> คือบอกว่าตัวถัดไปมีความหมายพิเศษ</p>
+      </div>
+
+      <p>กฎที่ต้องจำจากเรื่องนี้ <strong>อาเรย์ต้องมีขนาดอย่างน้อยความยาวข้อความบวกหนึ่ง</strong> โจทย์บอกว่าคำยาวไม่เกิน 100 ตัว ต้องประกาศอย่างน้อย <code>char word[101]</code> คนส่วนใหญ่เผื่อเป็น 105 ไว้กันนับพลาด</p>
+
+      <h2 id="scanf-s">รับคำด้วย %s</h2>
+
+      <p>บทที่ 2 ใช้ <code>%s</code> รับคำมาแล้ว ทบทวนสั้นๆ <code>scanf("%s", word)</code> ข้ามช่องว่างข้างหน้า อ่านตัวอักษรไปจนเจอช่องว่างหรือขึ้นบรรทัดใหม่ แล้วเติม <code>'\0'</code> ปิดท้ายให้เอง ไม่ต้องมี <code>&amp;</code> หน้าชื่ออาเรย์ เพราะชื่ออาเรย์บอกที่อยู่ในหน่วยความจำอยู่แล้ว เหตุผลเต็มๆ อยู่ในบทที่ 10</p>
+
+      <p>พอได้คำมาแล้ว งานเกือบทุกอย่างคือวนลูปทีละช่องตั้งแต่ช่อง 0 <strong>จนกว่าจะเจอ <code>'\0'</code></strong> ต่างจากอาเรย์ตัวเลขในบทที่ 5 ที่ต้องรู้จำนวนช่องล่วงหน้า สตริงบอกจุดจบได้เอง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="vowels"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char word[105];
+    scanf("%s", word);
+    int length = 0, vowels = 0;
+    for (int i = 0; word[i] != '\0'; i++) {
+        length++;
+        char c = word[i];
+        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
+            vowels++;
+        }
+    }
+    printf("length %d vowels %d\n", length, vowels);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="vowels" data-title="ข้อมูลเข้า"><pre><code>programming
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="vowels" data-title="C:\code\vowels.exe"><pre><code>length 11 vowels 3
+</code></pre></div>
+      </div>
+
+      <p>ลูป <code>for</code> นี้มีเงื่อนไขเป็น <code>word[i] != '\0'</code> แทนที่จะเป็น <code>i &lt; n</code> อ่านว่า "ทำไปเรื่อยๆ ตราบที่ช่องนี้ยังไม่ใช่ตัวปิดท้าย" ความยาวจึงนับได้ไปพร้อมกัน</p>
+
+      <p>เพราะ <code>%s</code> หยุดที่ช่องว่าง ถ้าเอาไปใส่ใน <code>while</code> แบบที่เรียนในบทที่ 4 จะได้ข้อความทีละคำจนหมด ไม่ว่าคำจะคั่นด้วยช่องว่างกี่ช่องหรือขึ้นบรรทัดใหม่</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="words"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char word[105];
+    while (scanf("%s", word) == 1) {
+        int length = 0;
+        while (word[length] != '\0') {
+            length++;
+        }
+        printf("%s %d\n", word, length);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="words" data-title="ข้อมูลเข้า"><pre><code>I love   programming
+very much
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="words" data-title="C:\code\words.exe"><pre><code>I 1
+love 4
+programming 11
+very 4
+much 4
+</code></pre></div>
+      </div>
+
+      <p>ลูป <code>while</code> ตัวในนับความยาวด้วยการเดินไปจนเจอ <code>'\0'</code> ที่ช่อง <code>word[length]</code> พอดี เพราะตัวสุดท้ายอยู่ที่ช่อง length - 1 งานนับความยาวนี้มีฟังก์ชันสำเร็จรูปชื่อ <code>strlen</code> ซึ่งจะเรียนในหน้า 6.4</p>
+
+      <h2 id="long-string">สตริงยาวประกาศนอก main</h2>
+
+      <p>อาเรย์ <code>char</code> ช่องละ 1 byte สตริงยาวหนึ่งล้านตัวจึงใช้ราว 1 MB บนเครื่องที่เขียนเอกสารนี้ ตัวแปรใน <code>main</code> มีที่รวมกันราว 2 MB สตริงหนึ่งล้านตัวในหนึ่ง <code>main</code> ยังรอด แต่ขยายเป็นสามล้านตัวโปรแกรมพังทันทีตอนเริ่มรัน และเครื่อง grader อาจให้ที่น้อยกว่านี้ ไม่ต้องมานั่งคำนวณ ใช้วิธีเดียวกับอาเรย์ใหญ่ในบทที่ 5 คือสตริงที่ยาวหลักแสนขึ้นไปให้ประกาศไว้นอก <code>main</code> เสมอ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="votes"><pre><code>#include &lt;stdio.h&gt;
+
+char votes[1000005];
+
+int main()
+{
+    scanf("%s", votes);
+    int yes = 0, no = 0;
+    for (int i = 0; votes[i] != '\0'; i++) {
+        if (votes[i] == 'Y') {
+            yes++;
+        } else {
+            no++;
+        }
+    }
+    printf("yes %d no %d\n", yes, no);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="votes" data-title="ข้อมูลเข้า"><pre><code>YNYYNYY
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="votes" data-title="C:\code\votes.exe"><pre><code>yes 5 no 2
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรมนับผลโหวตนี้รับได้ถึงหนึ่งล้านเสียงในบรรทัดเดียว ขนาด 1000005 คือหนึ่งล้านตัวบวกช่อง <code>'\0'</code> และเผื่ออีกนิด</p>
+
+      <h2 id="english-only">ทำไมโจทย์ใช้แต่ตัวอักษรภาษาอังกฤษ</h2>
+
+      <p>ตาราง ASCII มีแค่ 128 ตัว ไม่มีภาษาไทย ตัวอักษรไทยหนึ่งตัวในรหัส UTF-8 ที่เว็บและไฟล์ส่วนใหญ่ใช้กินที่ 3 byte เก็บใน <code>char</code> ตัวเดียวไม่ได้ ถ้าวนลูปทีละช่อง หนึ่งช่องจะได้แค่ชิ้นส่วนหนึ่งในสามของตัวอักษร นับความยาวหรือกลับคำก็ผิดหมด</p>
+
+      <p>โจทย์ TOI Zero และโจทย์ค่ายจึงใช้แค่ตัวอักษรภาษาอังกฤษ ตัวเลข และเครื่องหมายใน ASCII ผลลัพธ์ที่น้องพิมพ์ก็ควรเป็นภาษาอังกฤษด้วย เพราะหน้าต่างสีดำของ Windows แสดงภาษาไทยเพี้ยน ทุกตัวอย่างในเอกสารนี้จึงพิมพ์เป็นภาษาอังกฤษ</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-room">แบบที่ 1 ไม่เหลือช่องให้ '\0'</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char word[5] = "hello";
+    int score = 7;
+    printf("%s\n", word);
+    printf("%d\n", score);
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านด้วย <code>-Wall</code> โดยไม่มีคำเตือน ภาษา C ยอมให้ข้อความยาวเท่าอาเรย์พอดี แล้วไม่ใส่ <code>'\0'</code> ให้ บนเครื่องที่เขียนเอกสารนี้ พิมพ์ <code>hello</code> แล้วมีรหัสแปลกๆ ที่ไม่ได้สั่งต่อท้าย คอมไพล์เพิ่ม <code>-O2</code> ได้ห้าตัว คอมไพล์ตามที่ตั้งใน Code::Blocks ได้รหัส 7 ตัวเดียวซึ่งเป็นเสียงบี๊บ เพราะ <code>printf</code> หา <code>'\0'</code> ไม่เจอในห้าช่องของ <code>word</code> จึงพิมพ์เลยไปเรื่อยๆ ในหน่วยความจำที่อยู่ถัดไป จนบังเอิญเจอรหัส 0 ที่ไหนสักแห่ง</p>
+
+      <p>ถ้าลดเหลือ <code>char word[4]</code> ซึ่งเล็กกว่าข้อความ compiler ถึงจะเตือน</p>
+
+      <div class="code" data-lang="gcc"><pre><code>word.c:5:20: warning: initializer-string for array of 'char' is too long
+    5 |     char word[4] = "hello";
+      |                    ^~~~~~~
+</code></pre></div>
+
+      <p>สองแบบนี้แก้เหมือนกัน นับตัวอักษรแล้วบวกหนึ่ง หรือไม่ใส่ขนาดเลย เขียน <code>char word[] = "hello";</code> แล้วให้ compiler นับให้ ได้ 6 ช่องพอดี</p>
+
+      <h3 id="ampersand">แบบที่ 2 ใส่ &amp; หน้าชื่ออาเรย์ใน scanf</h3>
+
+      <p>ติดนิสัยจาก <code>%d</code> ที่ต้องมี <code>&amp;</code> เสมอ ในโปรแกรม vowels แก้บรรทัดที่ 6 เป็น <code>scanf("%s", &amp;word);</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>vowels.c:6:13: warning: format '%s' expects argument of type 'char *', but argument 2 has type 'char (*)[105]' [-Wformat=]
+    6 |     scanf("%s", &amp;word);
+      |            ~^   ~~~~~
+      |             |   |
+      |             |   char (*)[105]
+      |             char *
+</code></pre></div>
+
+      <p><code>char *</code> กับ <code>char (*)[105]</code> คือชนิดของที่อยู่สองแบบ จะเข้าใจเต็มๆ ในบทที่ 10 ตอนนี้จำแค่ว่า <code>%s</code> ต้องได้ชื่ออาเรย์เปล่าๆ บนเครื่องที่เขียนเอกสารนี้โปรแกรมบังเอิญยังทำงานถูก แต่คำเตือนเรื่อง format ทุกอันต้องแก้ ไม่ต้องรอให้พัง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>สตริงคืออาเรย์ของ <code>char</code> ที่ปิดท้ายด้วย <code>'\0'</code> ซึ่งคือรหัส 0</li>
+        <li>ข้อความในเครื่องหมายคำพูดคู่มี <code>'\0'</code> ต่อท้ายเสมอ อาเรย์จึงต้องใหญ่กว่าความยาวอย่างน้อยหนึ่งช่อง</li>
+        <li><code>%s</code> พิมพ์จนเจอ <code>'\0'</code> และรับคำทีละคำ หยุดที่ช่องว่าง ไม่มี <code>&amp;</code> หน้าชื่ออาเรย์</li>
+        <li>วนลูปสตริงด้วยเงื่อนไข <code>word[i] != '\0'</code></li>
+        <li>สตริงยาวหลักแสนหลักล้านประกาศนอก <code>main</code></li>
+        <li>โจทย์แข่งขันใช้ตัวอักษร ASCII เท่านั้น ผลลัพธ์พิมพ์เป็นภาษาอังกฤษ</li>
+      </ul>
+    </article>

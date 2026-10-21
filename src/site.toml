@@ -89,7 +89,15 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "6"
 title = "บทที่ 6 ตัวอักษรและสตริง"
 summary = "char รหัส ASCII ข้อความ นับตัวอักษร กลับคำ"
-# dir = "c/06-strings"
+path = "c/06-strings/index.html"
+pages = [
+  { num = "6.1", title = "ตัวอักษรคือตัวเลข", path = "c/06-strings/chars.html" },
+  { num = "6.2", title = "สตริงคืออาเรย์ของ char", path = "c/06-strings/strings.html" },
+  { num = "6.3", title = "รับข้อความทั้งบรรทัด", path = "c/06-strings/input.html" },
+  { num = "6.4", title = "ฟังก์ชันใน string.h", path = "c/06-strings/string-h.html" },
+  { num = "6.5", title = "อัลกอริทึมกับสตริง", path = "c/06-strings/algorithms.html" },
+  { num = "6.6", title = "แบบฝึกหัด", path = "c/06-strings/exercises.html", exercises = "c/06-strings" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"

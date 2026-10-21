@@ -1,0 +1,349 @@
+<article class="doc">
+      <h1>6.5 อัลกอริทึมกับสตริง</h1>
+
+      <p>โจทย์สตริงในระดับ TOI Zero ส่วนใหญ่ประกอบจากท่าไม่กี่ท่า นับว่าตัวอักษรแต่ละตัวมีกี่ตัว กลับคำ เช็กว่าอ่านกลับหลังได้เหมือนเดิมไหม นับคำ เลื่อนตัวอักษรเข้ารหัส และย่อตัวที่ซ้ำติดกัน หน้านี้เขียนทั้งหกท่าให้เห็นเป็นโปรแกรมเต็ม ทุกท่าเดินผ่านแต่ละช่องของสตริงแค่ไม่กี่ครั้ง จึงเร็วพอสำหรับสตริงยาวหลักแสน</p>
+
+      <h2 id="count-letters">นับตัวอักษรแต่ละตัวด้วยอาเรย์ 26 ช่อง</h2>
+
+      <p>บทที่ 5 นับความถี่ของตัวเลขด้วย counting array คือใช้ค่าเป็นเลขช่อง ตัวอักษรก็ทำได้เหมือนกัน เพราะ <code>c - 'a'</code> แปลง a ถึง z เป็นเลขช่อง 0 ถึง 25 พอดี</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="frequency"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;ctype.h&gt;
+
+char line[100005];
+
+int main()
+{
+    int count[26] = {0};
+    fgets(line, sizeof line, stdin);
+    for (int i = 0; line[i] != '\0'; i++) {
+        if (isalpha(line[i])) {
+            count[tolower(line[i]) - 'a']++;
+        }
+    }
+    for (int i = 0; i &lt; 26; i++) {
+        if (count[i] &gt; 0) {
+            printf("%c %d\n", 'a' + i, count[i]);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="frequency" data-title="ข้อมูลเข้า"><pre><code>Hello World
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="frequency" data-title="C:\code\frequency.exe"><pre><code>d 1
+e 1
+h 1
+l 3
+o 2
+r 1
+w 1
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>tolower</code> ก่อนลบ <code>'a'</code> ทำให้ H กับ h ตกช่องเดียวกัน</li>
+        <li>ช่องว่างและ <code>'\n'</code> ที่ <code>fgets</code> ติดมาไม่ผ่าน <code>isalpha</code> จึงไม่ต้องตัด <code>'\n'</code> ก่อนในโปรแกรมนี้</li>
+        <li>ลูปที่สองไล่ช่อง 0 ถึง 25 ผลจึงเรียงตามตัวอักษรเอง และ <code>'a' + i</code> แปลงเลขช่องกลับเป็นตัวอักษร</li>
+      </ul>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">เลขช่องต้องอยู่ใน 0 ถึง 25 เสมอ</p>
+        <p>ถ้าลืม <code>tolower</code> แล้วเจอ <code>'H'</code> จะได้ <code>'H' - 'a'</code> เท่ากับ -25 ซึ่งไม่ใช่ช่องของอาเรย์ โปรแกรมจะเขียนทับหน่วยความจำส่วนอื่นโดยไม่มีอะไรเตือน ก่อนใช้ <code>c - 'a'</code> เป็นเลขช่อง ต้องแน่ใจว่า c เป็นตัวพิมพ์เล็กจริง</p>
+      </div>
+
+      <h2 id="reverse">กลับคำ</h2>
+
+      <p>ถ้าแค่ต้องพิมพ์กลับหลัง วนจากช่อง <code>length - 1</code> ลงไปถึง 0 ก็พอ แต่ถ้าต้องการให้ตัวสตริงเองกลับด้าน เพื่อเอาไปใช้ต่อ ให้ใช้สองตัวชี้ตำแหน่ง <code>left</code> เริ่มจากซ้ายสุด <code>right</code> เริ่มจากขวาสุด สลับตัวอักษรสองช่องนั้น แล้วขยับเข้าหากันจนสวนกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="reverse"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char word[100005];
+
+int main()
+{
+    scanf("%s", word);
+    int length = strlen(word);
+    int left = 0, right = length - 1;
+    while (left &lt; right) {
+        char temp = word[left];
+        word[left] = word[right];
+        word[right] = temp;
+        left++;
+        right--;
+    }
+    printf("%s\n", word);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="reverse" data-title="ข้อมูลเข้า"><pre><code>stressed
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="reverse" data-title="C:\code\reverse.exe"><pre><code>desserts
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>รอบ</th><th>left</th><th>right</th><th><code>word</code> หลังสลับ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>0</td><td>7</td><td><code>dtresses</code></td></tr>
+            <tr><td>2</td><td>1</td><td>6</td><td><code>deressts</code></td></tr>
+            <tr><td>3</td><td>2</td><td>5</td><td><code>desesrts</code></td></tr>
+            <tr><td>4</td><td>3</td><td>4</td><td><code>desserts</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>หลังรอบที่ 4 <code>left</code> เป็น 4 และ <code>right</code> เป็น 3 สวนกันแล้ว ลูปจึงหยุด ถ้าคำยาวคี่ สองตัวจะมาเจอกันที่ตัวกลางพอดี ซึ่งไม่ต้องสลับกับใคร เงื่อนไข <code>left &lt; right</code> จัดการให้ทั้งสองกรณี</p>
+
+      <p><code>temp</code> คือที่พักชั่วคราว ถ้าไม่มี ค่าของช่องซ้ายจะหายไปทันทีที่เขียนทับ ลองดูได้ในส่วนลองทำให้พัง</p>
+
+      <h2 id="palindrome">palindrome อ่านกลับหลังได้เหมือนเดิม</h2>
+
+      <p>คำอย่าง level หรือ noon อ่านจากหลังมาหน้าได้เหมือนเดิม เรียกว่า <strong>palindrome</strong> ไม่ต้องกลับคำจริงแล้วค่อยเทียบ ใช้ตำแหน่งแบบเดียวกับการกลับคำ เทียบช่อง <code>i</code> กับช่อง <code>length - 1 - i</code> ถ้าคู่ไหนไม่เท่ากันก็ไม่ใช่ palindrome</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="palindrome"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char word[100005];
+
+int main()
+{
+    while (scanf("%s", word) == 1) {
+        int length = strlen(word);
+        int is_palindrome = 1;
+        for (int i = 0; i &lt; length / 2; i++) {
+            if (word[i] != word[length - 1 - i]) {
+                is_palindrome = 0;
+            }
+        }
+        if (is_palindrome) {
+            printf("%s YES\n", word);
+        } else {
+            printf("%s NO\n", word);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="palindrome" data-title="ข้อมูลเข้า"><pre><code>level racecar banana noon a
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="palindrome" data-title="C:\code\palindrome.exe"><pre><code>level YES
+racecar YES
+banana NO
+noon YES
+a YES
+</code></pre></div>
+      </div>
+
+      <p>วนแค่ครึ่งแรก <code>length / 2</code> ก็พอ เพราะคู่ในครึ่งหลังคือคู่เดิมที่เทียบไปแล้ว คำยาวคี่อย่าง racecar มีตัวกลางคือ e ซึ่งไม่มีคู่และไม่ต้องเทียบ หาร 7 ด้วย 2 แบบจำนวนเต็มได้ 3 จึงข้ามตัวกลางไปเอง</p>
+
+      <h2 id="count-words">นับคำในประโยค</h2>
+
+      <p>ประโยคที่มีช่องว่างหลายช่องติดกัน หรือขึ้นต้นด้วยช่องว่าง นับช่องว่างแล้วบวกหนึ่งจะผิด วิธีที่ถูกคือนับ <strong>จุดเริ่มคำ</strong> ช่องที่ไม่ใช่ช่องว่าง และตัวก่อนหน้าเป็นช่องว่างหรือไม่มีตัวก่อนหน้าเลย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="count-words"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;ctype.h&gt;
+
+char line[100005];
+
+int main()
+{
+    fgets(line, sizeof line, stdin);
+    int words = 0;
+    for (int i = 0; line[i] != '\0'; i++) {
+        if (!isspace(line[i]) &amp;&amp; (i == 0 || isspace(line[i - 1]))) {
+            words++;
+        }
+    }
+    printf("%d\n", words);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="count-words" data-title="ข้อมูลเข้า"><pre><code>  I  love   C programming
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="count-words" data-title="C:\code\words.exe"><pre><code>4
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>isspace</code> นับ <code>'\n'</code> เป็นช่องว่างด้วย จึงไม่ต้องตัด <code>'\n'</code> ก่อน</li>
+        <li>ถ้า <code>i == 0</code> เป็นจริง ภาษา C จะไม่ไปดู <code>line[i - 1]</code> เลย เพราะ <code>||</code> รู้ผลแล้วว่าจริง จึงไม่มีการแตะช่อง -1</li>
+      </ul>
+
+      <p>ถ้าข้อมูลเข้าทั้งหมดคือประโยคนี้บรรทัดเดียว ใช้ <code>while (scanf("%s", word) == 1)</code> นับคำก็ได้ผลเท่ากันและสั้นกว่า เพราะ <code>%s</code> ข้ามช่องว่างให้เอง วิธีนับจุดเริ่มคำใช้ตอนต้องรู้ตำแหน่งของคำในบรรทัด หรือตอนข้อมูลเข้ามีหลายบรรทัดแล้วต้องนับแยกทีละบรรทัด</p>
+
+      <h2 id="caesar">Caesar cipher เลื่อนตัวอักษร</h2>
+
+      <p>รหัสลับแบบ Caesar เลื่อนตัวอักษรทุกตัวไปข้างหน้า K ตัวแบบวนรอบ ตัวพิมพ์ใหญ่ยังเป็นตัวพิมพ์ใหญ่ ตัวที่ไม่ใช่ตัวอักษรคงเดิม ท่านี้คือสูตรเลื่อนวนรอบจากหน้า 6.1 ใส่ในลูป บวกกับการรับเลขแล้วตามด้วยบรรทัดข้อความจากหน้า 6.3</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="caesar"><pre><code>#include &lt;stdio.h&gt;
+
+char text[1005];
+
+int main()
+{
+    int shift;
+    scanf("%d", &amp;shift);
+    while (getchar() != '\n') {
+    }
+    fgets(text, sizeof text, stdin);
+    shift = shift % 26;
+    for (int i = 0; text[i] != '\0'; i++) {
+        char c = text[i];
+        if (c &gt;= 'a' &amp;&amp; c &lt;= 'z') {
+            text[i] = (c - 'a' + shift) % 26 + 'a';
+        } else if (c &gt;= 'A' &amp;&amp; c &lt;= 'Z') {
+            text[i] = (c - 'A' + shift) % 26 + 'A';
+        }
+    }
+    printf("%s", text);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="caesar" data-title="ข้อมูลเข้า"><pre><code>3
+Meet me at noon
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="caesar" data-title="C:\code\caesar.exe"><pre><code>Phhw ph dw qrrq
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>shift % 26</code> ก่อนเริ่ม ทำให้ K ใหญ่แค่ไหนก็เหลือแค่ 0 ถึง 25 เลื่อน 26 ตัวคือกลับมาที่เดิม</li>
+        <li><code>printf("%s", text)</code> ไม่มี <code>\n</code> เพราะ <code>text</code> มี <code>'\n'</code> จาก <code>fgets</code> ติดมาแล้ว</li>
+        <li>ถอดรหัสคือเลื่อนถอยหลัง K ตัว ซึ่งเท่ากับเลื่อนไปข้างหน้า 26 - K % 26 ตัว ใช้สูตรเดิมได้ ไม่ต้องยุ่งกับเลขติดลบ</li>
+      </ul>
+
+      <h2 id="run-length">run-length ย่อตัวที่ซ้ำติดกัน</h2>
+
+      <p>ข้อความที่มีตัวซ้ำติดกันยาวๆ อย่าง <code>aaabccdddd</code> ย่อได้เป็นตัวอักษรตามด้วยจำนวนที่ซ้ำ ได้ <code>a3b1c2d4</code> เรียกว่า run-length encoding กลุ่มตัวที่ซ้ำติดกันหนึ่งกลุ่มเรียกว่า run</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="run-length"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char word[100005];
+
+int main()
+{
+    scanf("%s", word);
+    int length = strlen(word);
+    int i = 0;
+    while (i &lt; length) {
+        int j = i; // (1)!
+        while (j &lt; length &amp;&amp; word[j] == word[i]) {
+            j++;
+        }
+        printf("%c%d", word[i], j - i); // (2)!
+        i = j; // (3)!
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>i</code> คือช่องแรกของ run ปัจจุบัน <code>j</code> เดินไปทางขวาตราบที่ยังเป็นตัวเดียวกับ <code>word[i]</code></li>
+        <li>พอหยุด <code>j</code> อยู่ที่ช่องแรกของ run ถัดไป ความยาวของ run จึงเป็น <code>j - i</code> พอดี</li>
+        <li>กระโดดไปเริ่ม run ถัดไปที่ <code>j</code> เลย ไม่ต้องย้อนไปดูช่องที่นับแล้ว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="run-length" data-title="ข้อมูลเข้า"><pre><code>aaabccdddd
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="run-length" data-title="C:\code\rle.exe"><pre><code>a3b1c2d4
+</code></pre></div>
+      </div>
+
+      <p>ดูเหมือนลูปซ้อนที่น่าจะช้า แต่ <code>j</code> เดินไปข้างหน้าอย่างเดียว และ <code>i</code> กระโดดตาม <code>j</code> ทุกช่องจึงถูกดูแค่ครั้งเดียว งานรวมคือประมาณ n ก้าว ไม่ใช่ n × n</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-temp">แบบที่ 1 สลับโดยไม่มีที่พัก</h3>
+
+      <p>ในโปรแกรม reverse ตัด <code>temp</code> ทิ้ง เหลือสองบรรทัดนี้ในลูป</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="reverse-bug"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char word[100005];
+
+int main()
+{
+    scanf("%s", word);
+    int length = strlen(word);
+    int left = 0, right = length - 1;
+    while (left &lt; right) {
+        word[left] = word[right];
+        word[right] = word[left];
+        left++;
+        right--;
+    }
+    printf("%s\n", word);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="reverse-bug" data-title="ข้อมูลเข้า"><pre><code>stressed
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="reverse-bug" data-title="C:\code\reverse.exe"><pre><code>dessssed
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 12 เขียนตัวขวาทับตัวซ้ายไปแล้ว พอบรรทัดที่ 13 เอาตัวซ้ายไปใส่ช่องขวา ก็ได้ตัวขวาตัวเดิมกลับไป ครึ่งหลังของคำจึงไม่เปลี่ยน ส่วนครึ่งแรกกลายเป็นสำเนาของครึ่งหลังที่กลับด้าน คำตอบดูใกล้เคียงจนอาจไม่ทันสังเกต ทดสอบด้วยคำที่ไม่ใช่ palindrome เสมอ</p>
+
+      <h3 id="char-overflow">แบบที่ 2 เลื่อนตัวอักษรใน char จนล้น</h3>
+
+      <p>เขียน Caesar แบบบวกตรงๆ แล้วค่อยเช็กว่าเลย z หรือยัง ดูเหมือนถูก ลองเลื่อน y ไป 10 ตัว คำตอบที่ถูกคือ i ซึ่งมีรหัส 105</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char letter = 'y';
+    letter = letter + 10;
+    printf("%d\n", letter);
+    if (letter &gt; 'z') {
+        letter = letter - 26;
+    }
+    printf("%d\n", letter);
+    return 0;
+}
+</code></pre></div>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ได้ <code>-125</code> ทั้งสองบรรทัด <code>'y'</code> คือ 121 บวก 10 ได้ 131 แต่ <code>char</code> บนเครื่องนี้เก็บได้แค่ -128 ถึง 127 จึงล้นวนไปฝั่งติดลบ แบบเดียวกับ <code>int</code> ล้นในหน้า 1.3 พอเป็นค่าติดลบ เงื่อนไข <code>letter &gt; 'z'</code> ก็เป็นเท็จ ไม่ได้ลบ 26 ทั้งที่ควรลบ ไม่มีคำเตือนจาก <code>-Wall</code> เลย</p>
+
+      <p>กับดักนี้เกิดเฉพาะตอนเลื่อนไกล z คือ 122 เหลือที่ก่อนถึง 127 แค่ 5 การเลื่อน 3 ตัวแบบในตัวอย่างจึงดูเหมือนใช้ได้ แล้วไปพังในชุดทดสอบที่ K ใหญ่ วิธีแก้คือใช้สูตร <code>(c - 'a' + shift) % 26 + 'a'</code> แบบในโปรแกรม caesar ซึ่งคำนวณเป็น <code>int</code> ทั้งหมด และ <code>shift % 26</code> ก่อนเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>นับตัวอักษรด้วย <code>int count[26]</code> และ <code>count[c - 'a']++</code> ต้องแน่ใจว่า c เป็นตัวพิมพ์เล็กก่อน</li>
+        <li>กลับคำด้วย <code>left</code> กับ <code>right</code> สลับผ่าน <code>temp</code> แล้วขยับเข้าหากัน</li>
+        <li>palindrome เทียบช่อง <code>i</code> กับ <code>length - 1 - i</code> แค่ครึ่งแรก</li>
+        <li>นับคำด้วยการนับจุดเริ่มคำ ไม่ใช่นับช่องว่าง</li>
+        <li>Caesar ใช้ <code>(c - 'a' + shift) % 26 + 'a'</code> โดย <code>shift % 26</code> ก่อน และอย่าบวกลงใน <code>char</code> ตรงๆ</li>
+        <li>run-length ใช้ <code>i</code> จุดเริ่ม run กับ <code>j</code> ที่เดินไปข้างหน้าอย่างเดียว งานรวมแค่ n ก้าว</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>
