@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 8 ฟังก์ชัน</h1>
+
+      <p>จบบทนี้ น้องจะแบ่งโปรแกรมยาวๆ ออกเป็นฟังก์ชันเล็กที่แต่ละตัวทำงานเดียว เช่น <code>is_prime</code> <code>gcd</code> <code>max_of_array</code> <code>print_row</code> แล้วประกอบกันใน <code>main</code> ให้อ่านเหมือนลำดับขั้นตอน โจทย์ TOI Zero ระดับ A2 ส่วนใหญ่มีหลายขั้นตอนซ้อนกัน เช่น ตรวจจำนวนเฉพาะของเลขที่กลับหลักแล้ว นับวันระหว่างสองวันที่ หรือวาดรูปจากชิ้นส่วนซ้ำๆ ถ้าเขียนกองรวมใน <code>main</code> จะยาวและหาบั๊กยาก บทนี้ยังอธิบายว่าทำไมฟังก์ชันแก้ตัวแปรที่ส่งเข้าไปไม่ได้ แต่แก้อาเรย์ได้ และตัวแปร global ที่ชื่อซ้ำกันทำให้คำตอบผิดเงียบๆ ได้อย่างไร</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="basics.html">8.1 เขียนและเรียกฟังก์ชัน</a></td><td>ทำไมต้องแบ่งโค้ด <code>void</code> พารามิเตอร์ <code>return</code> ลำดับการทำงานตอนเรียก และ prototype</td></tr>
+            <tr><td><a href="pass-by-value.html">8.2 ส่งค่าแบบสำเนา</a></td><td>เห็นกับตาว่าแก้พารามิเตอร์แล้วตัวแปรข้างนอกไม่เปลี่ยน คืนค่าแทน และชนิดที่ถูกแปลงตอนส่ง</td></tr>
+            <tr><td><a href="arrays.html">8.3 ส่งอาเรย์และสตริงให้ฟังก์ชัน</a></td><td>ส่งความยาวไปด้วย ฟังก์ชันแก้อาเรย์ได้ ชุดฟังก์ชัน <code>read_array</code> <code>max_of_array</code> อาเรย์สองมิติ และสตริง</td></tr>
+            <tr><td><a href="scope.html">8.4 ขอบเขตของตัวแปร</a></td><td>local global static ชื่อซ้ำกัน และบั๊กจากตัวแปร global ที่เจอบ่อยในโค้ดแข่งขัน</td></tr>
+            <tr><td><a href="math.html">8.5 math.h และฟังก์ชันคณิตศาสตร์ที่ใช้บ่อย</a></td><td><code>sqrt</code> <code>pow</code> <code>fabs</code> กับดักของ <code>pow</code> กับจำนวนเต็มใหญ่ <code>is_prime</code> และ <code>gcd</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>เขียน <code>print_row(symbol, count)</code> แล้ววาดพีระมิดสูง 4 ได้ จากนั้นย้ายฟังก์ชันไปไว้หลัง <code>main</code> เติม prototype แล้วยังคอมไพล์ผ่านและได้รูปเดิม</span></label></li>
+        <li><label><input type="checkbox"><span>รันโปรแกรม <code>add_bonus</code> แบบ <code>void</code> แล้วเห็น <code>inside add_bonus: 75</code> กับ <code>in main: 70</code> จากนั้นแก้ให้ฟังก์ชันคืนค่าจน <code>main</code> พิมพ์ 75</span></label></li>
+        <li><label><input type="checkbox"><span>เขียน <code>max_of_array(values, n)</code> แล้วเรียกกับคะแนนสองห้องในหน้า 8.3 ได้ 91 และ 95 และอธิบายได้ว่าทำไมต้องส่ง <code>n</code> แทนการใช้ <code>sizeof</code></span></label></li>
+        <li><label><input type="checkbox"><span>รันโปรแกรมที่ประกาศ <code>int n;</code> ซ้ำใน <code>main</code> ในหน้า 8.4 แล้วได้ <code>over 160 = 0</code> จากนั้นลบบรรทัดนั้นออกจนได้ <code>over 160 = 3</code></span></label></li>
+        <li><label><input type="checkbox"><span>ป้อน <code>3 39</code> แล้วเห็นว่า <code>pow</code> กับ <code>power</code> ที่เขียนเองได้ค่าต่างกัน และเรียก <code>gcd(84, 36)</code> ได้ 12</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 6 ข้อจาก 8 ข้อ</span></label></li>
+      </ul>
+    </article>

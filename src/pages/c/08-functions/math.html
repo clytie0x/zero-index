@@ -1,0 +1,422 @@
+<article class="doc">
+      <h1>8.5 math.h และฟังก์ชันคณิตศาสตร์ที่ใช้บ่อย</h1>
+
+      <p>ภาษา C มีฟังก์ชันคณิตศาสตร์สำเร็จรูปให้ใน <code>math.h</code> เช่น รากที่สองและยกกำลัง ใช้คำนวณระยะทาง พื้นที่ ดอกเบี้ย ซึ่งออกในโจทย์บ่อย แต่มีกับดักใหญ่เรื่องจำนวนเต็มที่ทำให้คนเสียคะแนนกันมาก ครึ่งหลังของหน้าเป็นฟังก์ชันที่ไม่มีในไลบรารี แต่น้องจะได้เขียนเองซ้ำแล้วซ้ำอีกในโจทย์แข่งขัน คือตรวจจำนวนเฉพาะและหา ห.ร.ม.</p>
+
+      <h2 id="sqrt">sqrt รากที่สอง</h2>
+
+      <p>บ้านอยู่ที่พิกัด (0, 0) โรงเรียนอยู่ที่ (3, 5) ระยะทางเป็นเส้นตรงหาได้จากทฤษฎีบทพีทาโกรัส คือรากที่สองของ dx<sup>2</sup> + dy<sup>2</sup> ฟังก์ชัน <code>sqrt</code> (มาจาก square root) รับ <code>double</code> และส่ง <code>double</code> กลับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="route"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt; // (1)!
+
+double distance(double x1, double y1, double x2, double y2)
+{
+    double dx = x2 - x1;
+    double dy = y2 - y1;
+    return sqrt(dx * dx + dy * dy);
+}
+
+int main()
+{
+    double home_x, home_y, school_x, school_y, tutor_x, tutor_y;
+    scanf("%lf %lf", &amp;home_x, &amp;home_y);
+    scanf("%lf %lf", &amp;school_x, &amp;school_y);
+    scanf("%lf %lf", &amp;tutor_x, &amp;tutor_y);
+    double first = distance(home_x, home_y, school_x, school_y);
+    double second = distance(school_x, school_y, tutor_x, tutor_y);
+    printf("home to school %.2f\n", first);
+    printf("school to tutor %.2f\n", second);
+    printf("total %.2f\n", first + second);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ฟังก์ชันใน <code>math.h</code> ต้อง include ไฟล์นี้ก่อน เหมือน <code>string.h</code> ในบทที่ 6</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="route" data-title="ข้อมูลเข้า"><pre><code>0 0
+3 5
+7 2
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="route" data-title="C:\code\route.exe"><pre><code>home to school 5.83
+school to tutor 5.00
+total 10.83
+</code></pre></div>
+      </div>
+
+      <p>ห่อสูตรไว้ในฟังก์ชัน <code>distance</code> แล้ว <code>main</code> ก็ไม่ต้องเขียนสูตรยาวๆ ซ้ำ โจทย์ที่ต้องหาระยะระหว่างจุดหลายคู่จะสั้นลงมาก</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">เทียบระยะไม่ต้องใช้ sqrt</p>
+        <p>ถ้าโจทย์แค่ถามว่าจุดไหนใกล้กว่า ให้เทียบ dx<sup>2</sup> + dy<sup>2</sup> ตรงๆ เพราะระยะที่มากกว่าก็มีกำลังสองมากกว่าเสมอ ถ้าพิกัดเป็นจำนวนเต็ม ค่านี้เป็นจำนวนเต็มด้วย เทียบได้แม่นยำ ไม่มีปัญหาทศนิยมคลาดแบบหน้า 1.4</p>
+      </div>
+
+      <h2 id="pow">pow ยกกำลัง</h2>
+
+      <p><code>pow(x, y)</code> คือ x ยกกำลัง y รับ <code>double</code> สองตัว ส่ง <code>double</code> กลับ เหมาะกับงานที่เป็นทศนิยมอยู่แล้ว เช่น ฝากเงินได้ดอกเบี้ยทบต้นปีละ r เปอร์เซ็นต์ ผ่านไป y ปีจะมีเงิน เงินต้น × (1 + r/100)<sup>y</sup></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="interest"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+
+int main()
+{
+    double money, rate;
+    int years;
+    scanf("%lf %lf %d", &amp;money, &amp;rate, &amp;years);
+    double result = money * pow(1 + rate / 100, years);
+    printf("%.2f\n", result);
+    printf("%f\n", pow(2, 10));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="interest" data-title="ข้อมูลเข้า"><pre><code>1000 2 10
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="interest" data-title="C:\code\interest.exe"><pre><code>1218.99
+1024.000000
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดสุดท้ายสังเกตว่า <code>pow(2, 10)</code> ได้ <code>1024.000000</code> ไม่ใช่ <code>1024</code> แม้จะส่งจำนวนเต็มเข้าไป เพราะ <code>pow</code> ส่ง <code>double</code> กลับเสมอ ต้องพิมพ์ด้วย <code>%f</code> ถ้าพิมพ์ด้วย <code>%d</code> จะได้คำเตือนเรื่อง format แบบหน้า 1.4</p>
+
+      <h2 id="pow-trap">กับดัก pow กับจำนวนเต็มใหญ่</h2>
+
+      <p>เพราะ <code>pow</code> คำนวณเป็น <code>double</code> ซึ่งแม่นได้ราว 15 ถึง 16 หลักตามหน้า 1.4 ถ้าคำตอบเป็นจำนวนเต็มที่ยาวกว่านั้น หลักท้ายๆ จะเพี้ยน ลองเทียบกับฟังก์ชันยกกำลังที่เขียนเองด้วยการคูณซ้ำแบบ <code>long long</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="pow-trap"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+
+long long power(long long base, int exponent)
+{
+    long long result = 1;
+    for (int i = 0; i &lt; exponent; i++) {
+        result *= base;
+    }
+    return result;
+}
+
+int main()
+{
+    int base, exponent;
+    scanf("%d %d", &amp;base, &amp;exponent);
+    long long by_pow = (long long)pow(base, exponent);
+    long long by_loop = power(base, exponent);
+    printf("pow  = %lld\n", by_pow);
+    printf("loop = %lld\n", by_loop);
+    printf("%.1f\n", pow(base, exponent));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="pow-trap" data-title="ข้อมูลเข้า"><pre><code>3 39
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="pow-trap" data-title="C:\code\power.exe"><pre><code>pow  = 4052555153018976256
+loop = 4052555153018976267
+4052555153018976256.0
+</code></pre></div>
+      </div>
+
+      <p>3<sup>39</sup> เป็นเลข 19 หลัก <code>long long</code> เก็บได้พอดี แต่ <code>double</code> เก็บได้แค่ค่าที่ใกล้ที่สุด บรรทัดสุดท้ายแสดงค่าใน <code>double</code> ตรงๆ จะเห็นว่าหลักท้ายเพี้ยนไปตั้งแต่ก่อนแปลงเป็น <code>long long</code> แล้ว ผลต่างแค่ 11 จากเลขหลักล้านล้านล้านดูเล็กมาก แต่ grader เทียบทุกหลัก ผิดหลักเดียวก็ผิดทั้งข้อ</p>
+
+      <p>กฎจึงเหมือนเรื่อง <code>double</code> ในหน้า 1.4 <strong>คำตอบเป็นจำนวนเต็ม ห้ามคำนวณผ่าน <code>pow</code></strong> ให้เขียน <code>power</code> เองแบบข้างบน และระวังว่าผลต้องไม่เกิน <code>long long</code> ด้วย ถ้าโจทย์ให้เลขชี้กำลังใหญ่ระดับ 10<sup>9</sup> ลูปนี้จะช้าเกินไป วิธีที่เร็วกว่าจะเรียนในบทที่ 9 และบทที่ 12</p>
+
+      <h2 id="abs">abs กับ fabs ค่าสัมบูรณ์</h2>
+
+      <p>ค่าสัมบูรณ์คือระยะห่างจาก 0 โดยไม่สนเครื่องหมาย ใช้หาว่าสองค่าห่างกันเท่าไร โดยไม่ต้องรู้ว่าตัวไหนมากกว่า มีสองฟังก์ชันที่ชื่อคล้ายกันแต่ใช้คนละชนิด</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ฟังก์ชัน</th><th>ใช้กับ</th><th>อยู่ใน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>abs(x)</code></td><td><code>int</code></td><td><code>stdlib.h</code></td></tr>
+            <tr><td><code>fabs(x)</code></td><td><code>double</code> (f มาจาก floating point)</td><td><code>math.h</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-test="abs"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+int main()
+{
+    int floor_from, floor_to;
+    double temp_morning, temp_noon;
+    scanf("%d %d", &amp;floor_from, &amp;floor_to);
+    scanf("%lf %lf", &amp;temp_morning, &amp;temp_noon);
+    printf("floors = %d\n", abs(floor_to - floor_from));
+    printf("change = %.1f\n", fabs(temp_noon - temp_morning));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="abs" data-title="ข้อมูลเข้า"><pre><code>7 2
+31.5 26.8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="abs" data-title="C:\code\abs.exe"><pre><code>floors = 5
+change = 4.7
+</code></pre></div>
+      </div>
+
+      <p>ลิฟต์ลงจากชั้น 7 ไปชั้น 2 ผลลบคือ -5 แต่จำนวนชั้นที่ผ่านคือ 5 อุณหภูมิลดลง 4.7 องศาก็เช่นกัน ใช้ผิดตัวแล้วจะเกิดอะไรขึ้น ดูแบบที่ 2 ในส่วนลองทำให้พัง</p>
+
+      <h2 id="is-prime">is_prime ตรวจจำนวนเฉพาะ</h2>
+
+      <p>ในหน้า 4.5 เราตรวจจำนวนเฉพาะด้วยลูปที่หยุดที่ √n โจทย์จริงมักถามต่อจากนั้น เช่น นับจำนวนเฉพาะในช่วง หาจำนวนเฉพาะคู่แฝด หรือตรวจว่าเลขกลับหลังยังเป็นจำนวนเฉพาะไหม ทุกแบบต้องตรวจซ้ำหลายครั้ง จึงควรเป็นฟังก์ชัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="twin"><pre><code>#include &lt;stdio.h&gt;
+
+int is_prime(int n)
+{
+    if (n &lt; 2) { // (1)!
+        return 0;
+    }
+    for (long long i = 2; i * i &lt;= n; i++) {
+        if (n % i == 0) {
+            return 0; // (2)!
+        }
+    }
+    return 1;
+}
+
+int main()
+{
+    int limit;
+    scanf("%d", &amp;limit);
+    for (int p = 2; p + 2 &lt;= limit; p++) {
+        if (is_prime(p) &amp;&amp; is_prime(p + 2)) { // (3)!
+            printf("%d %d\n", p, p + 2);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>0 กับ 1 ไม่ใช่จำนวนเฉพาะ และลูปข้างล่างจะไม่ทำงานเลยกับสองค่านี้ ต้องแยกไว้ตั้งแต่ต้น</li>
+        <li>เจอตัวหารตัวแรกก็ตอบได้เลย <code>return</code> จบฟังก์ชันและออกจากลูปไปพร้อมกัน ไม่ต้องใช้ <code>break</code> กับตัวแปร flag แบบหน้า 4.5</li>
+        <li>ฟังก์ชันคืน 1 เมื่อจริง และ 0 เมื่อเท็จ ตามหน้า 3.1 จึงใช้ในเงื่อนไขได้ตรงๆ อ่านออกเสียงได้ว่า "ถ้า p เป็นจำนวนเฉพาะ และ p + 2 เป็นจำนวนเฉพาะ"</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="twin" data-title="ข้อมูลเข้า"><pre><code>50
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="twin" data-title="C:\code\twin.exe"><pre><code>3 5
+5 7
+11 13
+17 19
+29 31
+41 43
+</code></pre></div>
+      </div>
+
+      <p>ฟังก์ชันที่ตอบใช่หรือไม่ใช่แบบนี้ นิยมตั้งชื่อขึ้นต้นด้วย <code>is_</code> เช่น <code>is_prime</code> <code>is_leap</code> <code>is_vowel</code> อ่านในเงื่อนไขแล้วเป็นประโยคเลย เทียบกับการเขียนลูปตรวจจำนวนเฉพาะสองชุดซ้อนอยู่ใน <code>main</code> แบบนี้ทั้งสั้นและผิดยากกว่ามาก</p>
+
+      <h2 id="gcd">gcd หา ห.ร.ม.</h2>
+
+      <p>ห.ร.ม. (ตัวหารร่วมมาก) หรือ gcd (greatest common divisor) ใช้ทำเศษส่วนให้เป็นอย่างต่ำ หา ค.ร.น. และโจทย์แบ่งของเป็นกองเท่าๆ กัน วิธีลองหารทุกตัวก็ได้ แต่มีวิธีที่เร็วกว่ามากเรียกว่า <strong>วิธีของยุคลิด (Euclid)</strong> ซึ่งใช้แค่ <code>%</code></p>
+
+      <p>ความคิดคือ ตัวเลขใดที่หารทั้ง a และ b ลงตัว จะหาร a % b ลงตัวด้วย เพราะ a % b คือ a ลบด้วย b หลายๆ เท่า และกลับกันก็จริง ห.ร.ม. ของ a กับ b จึงเท่ากับ ห.ร.ม. ของ b กับ a % b ซึ่งเป็นเลขที่เล็กลง ทำซ้ำไปจนตัวหลังเป็น 0 ตัวหน้าคือคำตอบ ลองกับ 84 และ 36</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>a</th><th>b</th><th>a % b</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>84</td><td>36</td><td>12</td></tr>
+            <tr><td>36</td><td>12</td><td>0</td></tr>
+            <tr><td>12</td><td>0</td><td>หยุด ได้ 12</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="gcd"><pre><code>#include &lt;stdio.h&gt;
+
+int gcd(int a, int b)
+{
+    while (b != 0) {
+        int remainder = a % b;
+        a = b; // (1)!
+        b = remainder;
+    }
+    return a;
+}
+
+int main()
+{
+    int top, bottom;
+    scanf("%d %d", &amp;top, &amp;bottom);
+    int g = gcd(top, bottom);
+    printf("gcd = %d\n", g);
+    printf("fraction = %d/%d\n", top / g, bottom / g);
+    printf("lcm = %d\n", top / g * bottom); // (2)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>แก้ค่า <code>a</code> กับ <code>b</code> ได้ตามสบาย เพราะเป็นสำเนาตามหน้า 8.2 <code>top</code> กับ <code>bottom</code> ใน <code>main</code> ยังอยู่ครบ</li>
+        <li>ค.ร.น. คือ a × b ÷ ห.ร.ม. แต่หารก่อนแล้วค่อยคูณ ผลระหว่างทางจะได้ไม่ใหญ่เกิน ดูแบบที่ 3 ในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="gcd" data-title="ข้อมูลเข้า"><pre><code>84 36
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="gcd" data-title="C:\code\gcd.exe"><pre><code>gcd = 12
+fraction = 7/3
+lcm = 252
+</code></pre></div>
+      </div>
+
+      <p>84/36 ทำเป็นอย่างต่ำได้ 7/3 ด้วยการหารทั้งเศษและส่วนด้วย ห.ร.ม. วิธีของยุคลิดเร็วมาก คู่ 1836311903 กับ 1134903170 ซึ่งเป็นคู่ที่ต้องวนนานที่สุดในช่วงของ <code>int</code> ยังวนแค่ 44 รอบ เหตุผลว่าทำไมเร็ว และเรื่องจำนวนเฉพาะกับ ห.ร.ม. ที่ลึกกว่านี้ อยู่ในบทที่ 12</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-math-h">แบบที่ 1 ลืม include math.h</h3>
+
+      <p>ในโปรแกรม route ลบบรรทัด <code>#include &lt;math.h&gt;</code> ออก</p>
+
+      <div class="code" data-lang="gcc"><pre><code>route.c:7:12: error: implicit declaration of function 'sqrt' [-Wimplicit-function-declaration]
+    7 |     return sqrt(dx * dx + dy * dy);
+      |            ^~~~
+route.c:2:1: note: include '&lt;math.h&gt;' or provide a declaration of 'sqrt'
+    1 | #include &lt;stdio.h&gt;
+  +++ |+#include &lt;math.h&gt;
+    2 | 
+route.c:7:12: warning: incompatible implicit declaration of built-in function 'sqrt' [-Wbuiltin-declaration-mismatch]
+    7 |     return sqrt(dx * dx + dy * dy);
+      |            ^~~~
+route.c:7:12: note: include '&lt;math.h&gt;' or provide a declaration of 'sqrt'
+</code></pre></div>
+
+      <p>เป็น error แบบเดียวกับแบบที่ 1 ในหน้า 8.1 เพราะไม่มี prototype ของ <code>sqrt</code> ต่างกันตรงที่ compiler รู้จักฟังก์ชันมาตรฐานตัวนี้ จึงบอกเลยว่าต้อง include ไฟล์ไหน และชี้ตำแหน่งที่ควรเติม บรรทัดที่มี <code>+</code> คือบรรทัดที่มันแนะนำให้เพิ่ม</p>
+
+      <h3 id="abs-double">แบบที่ 2 ใช้ abs กับ double</h3>
+
+      <p>ในโปรแกรม abs เปลี่ยน <code>fabs</code> เป็น <code>abs</code> และพิมพ์ด้วย <code>%d</code> เพราะคิดว่า <code>abs</code> ใช้ได้กับทุกอย่าง</p>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="abs-bug"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+    double temp_morning, temp_noon;
+    scanf("%lf %lf", &amp;temp_morning, &amp;temp_noon);
+    printf("change = %d\n", abs(temp_noon - temp_morning));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="abs-bug" data-title="ข้อมูลเข้า"><pre><code>31.5 26.8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="abs-bug" data-title="C:\code\abs.exe"><pre><code>change = 4
+</code></pre></div>
+      </div>
+
+      <p><code>abs</code> รับ <code>int</code> ค่า -4.7 จึงถูกตัดทศนิยมเหลือ -4 ตั้งแต่ตอนส่งเข้าตามหน้า 8.2 ได้ผล 4 แทน 4.7 และ <code>-Wall</code> ไม่เตือนเลย ถ้าเปิด <code>-Wextra</code> แบบที่เห็นในหน้า 3.4 จะได้</p>
+
+      <div class="code" data-lang="gcc"><pre><code>abs.c:8:29: warning: using integer absolute value function 'abs' when argument is of floating-point type 'double' [-Wabsolute-value]
+    8 |     printf("change = %d\n", abs(temp_noon - temp_morning));
+      |                             ^~~
+</code></pre></div>
+
+      <h3 id="lcm-overflow">แบบที่ 3 คูณก่อนหารจนล้น</h3>
+
+      <p>ในโปรแกรม gcd เขียน ค.ร.น. ตามสูตรตรงๆ เป็น <code>top * bottom / g</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="lcm-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int gcd(int a, int b)
+{
+    while (b != 0) {
+        int remainder = a % b;
+        a = b;
+        b = remainder;
+    }
+    return a;
+}
+
+int main()
+{
+    int top, bottom;
+    scanf("%d %d", &amp;top, &amp;bottom);
+    int g = gcd(top, bottom);
+    printf("multiply first = %d\n", top * bottom / g);
+    printf("divide first = %d\n", top / g * bottom);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="lcm-bug" data-title="ข้อมูลเข้า"><pre><code>60000 90000
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="lcm-bug" data-title="C:\code\lcm.exe"><pre><code>multiply first = 36834
+divide first = 180000
+</code></pre></div>
+      </div>
+
+      <p>ค.ร.น. ของ 60000 กับ 90000 คือ 180000 ซึ่ง <code>int</code> เก็บได้สบาย แต่ <code>top * bottom</code> เป็นห้าพันสี่ร้อยล้าน เกิน <code>int</code> ไปแล้วตั้งแต่ก่อนหาร ล้นแบบหน้า 1.3 คราวนี้ค่าที่วนกลับบังเอิญเป็นบวก ผลจึงดูเหมือนตัวเลขปกติ ซึ่งอันตรายกว่าค่าติดลบที่เห็นแล้วรู้ทันทีว่าผิด การหารด้วย <code>g</code> ก่อนทำให้ผลระหว่างทางไม่เคยใหญ่กว่าคำตอบ และหารลงตัวเสมอเพราะ <code>g</code> หาร <code>top</code> ลงตัวแน่นอน</p>
+
+      <h3 id="prime-one">แบบที่ 4 ลืมเช็ก n &lt; 2</h3>
+
+      <p>ในโปรแกรม twin ลบสามบรรทัดแรกของ <code>is_prime</code> ออก แล้วลองตรวจเลข 0 ถึง 5</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="prime-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int is_prime(int n)
+{
+    for (long long i = 2; i * i &lt;= n; i++) {
+        if (n % i == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int main()
+{
+    for (int n = 0; n &lt;= 5; n++) {
+        printf("%d %d\n", n, is_prime(n));
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="prime-bug" data-title="C:\code\prime.exe"><pre><code>0 1
+1 1
+2 1
+3 1
+4 0
+5 1
+</code></pre></div>
+
+      <p>0 กับ 1 ได้ 1 ซึ่งแปลว่าเป็นจำนวนเฉพาะ ผิดทั้งคู่ เพราะ <code>2 * 2 &lt;= 0</code> และ <code>2 * 2 &lt;= 1</code> เป็นเท็จ ลูปไม่ทำงานเลย แล้วตกลงมาที่ <code>return 1;</code> ชุดทดสอบที่มีเลข 1 อยู่ในช่วงจะจับบั๊กนี้ได้ทันที ทุกครั้งที่เขียนฟังก์ชันเสร็จ ให้ลองเรียกกับค่าน้อยสุดที่โจทย์อนุญาตก่อน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>math.h</code> มี <code>sqrt</code> <code>pow</code> <code>fabs</code> ทุกตัวรับและส่ง <code>double</code> ส่วน <code>abs</code> สำหรับ <code>int</code> อยู่ใน <code>stdlib.h</code></li>
+        <li><code>pow</code> ใช้กับงานทศนิยม คำตอบเป็นจำนวนเต็มใหญ่ให้เขียน <code>power</code> เองด้วย <code>long long</code></li>
+        <li>เทียบระยะทางใช้กำลังสองของระยะ ไม่ต้อง <code>sqrt</code></li>
+        <li><code>is_prime</code> ต้องจัดการ n &lt; 2 แยก และลูปถึงแค่ <code>i * i &lt;= n</code></li>
+        <li><code>gcd</code> แบบยุคลิดคือแทน (a, b) ด้วย (b, a % b) จน b เป็น 0 ค.ร.น. คือ <code>a / gcd(a, b) * b</code> หารก่อนคูณ</li>
+        <li>ฟังก์ชันที่ตอบใช่หรือไม่ ตั้งชื่อขึ้นต้นด้วย <code>is_</code> แล้วใช้ในเงื่อนไขได้ตรงๆ</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

@@ -127,7 +127,15 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "8"
 title = "บทที่ 8 ฟังก์ชัน"
 summary = "แบ่งโค้ดเป็นส่วน ส่งค่า คืนค่า และขอบเขตตัวแปร"
-# dir = "c/08-functions"
+path = "c/08-functions/index.html"
+pages = [
+  { num = "8.1", title = "เขียนและเรียกฟังก์ชัน", path = "c/08-functions/basics.html" },
+  { num = "8.2", title = "ส่งค่าแบบสำเนา", path = "c/08-functions/pass-by-value.html" },
+  { num = "8.3", title = "ส่งอาเรย์และสตริงให้ฟังก์ชัน", path = "c/08-functions/arrays.html" },
+  { num = "8.4", title = "ขอบเขตของตัวแปร", path = "c/08-functions/scope.html" },
+  { num = "8.5", title = "math.h และฟังก์ชันคณิตศาสตร์ที่ใช้บ่อย", path = "c/08-functions/math.html" },
+  { num = "8.6", title = "แบบฝึกหัด", path = "c/08-functions/exercises.html", exercises = "c/08-functions" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"

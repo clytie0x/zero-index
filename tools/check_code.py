@@ -42,7 +42,7 @@ RUN_TIMEOUT = 10
 
 BLOCK = re.compile(r'<div class="code"([^>]*)><pre><code>(.*?)</code></pre></div>', re.S)
 ATTR = re.compile(r'([\w-]+)(?:="([^"]*)")?')
-ANNO = re.compile(r"\s*//\s*\(\d+\)!\s*$", re.M)
+ANNO = re.compile(r"[ \t]*//[ \t]*\(\d+\)![ \t]*$", re.M)  # ห้ามกินขึ้นบรรทัดใหม่ เลขบรรทัดจะเลื่อน
 # Code::Blocks เติมสองบรรทัดนี้ท้ายหน้าต่างผลลัพธ์ โปรแกรมไม่ได้พิมพ์เอง
 CB_FOOTER = re.compile(r"\n*Process returned -?\d+ \(0x[0-9A-Fa-f]+\)\s+execution time : [\d.]+ s\nPress any key to continue\.\s*$")
 

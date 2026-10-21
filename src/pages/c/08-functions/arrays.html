@@ -1,0 +1,435 @@
+<article class="doc">
+      <h1>8.3 ส่งอาเรย์และสตริงให้ฟังก์ชัน</h1>
+
+      <p>โจทย์ส่วนใหญ่ตั้งแต่บทที่ 5 เป็นต้นมาเก็บข้อมูลไว้ในอาเรย์ งานที่ทำซ้ำบ่อยที่สุดจึงเป็นงานกับอาเรย์ เช่น อ่านเข้า หาผลรวม หาค่ามากสุด พิมพ์ออก หน้านี้จะย้ายงานพวกนี้ไปเป็นฟังก์ชันที่ใช้ซ้ำได้ทุกอาเรย์ และจะเห็นว่าอาเรย์มีกติกาต่างจากตัวแปรธรรมดาในหน้า 8.2 สองข้อ ข้อแรกฟังก์ชันไม่รู้ขนาดของอาเรย์ ข้อสองฟังก์ชันแก้อาเรย์ของคนเรียกได้</p>
+
+      <h2 id="pass-array">ส่งอาเรย์เข้าฟังก์ชัน</h2>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="sum-array"><pre><code>#include &lt;stdio.h&gt;
+
+int sum_of_array(int values[], int n) // (1)!
+{
+    int sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        sum += values[i];
+    }
+    return sum;
+}
+
+int main()
+{
+    int scores[1000];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;scores[i]);
+    }
+    printf("total = %d\n", sum_of_array(scores, n)); // (2)!
+    printf("first three = %d\n", sum_of_array(scores, 3));
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>พารามิเตอร์ที่เป็นอาเรย์เขียนวงเล็บเหลี่ยมว่างๆ ไม่ต้องบอกขนาด ส่วน <code>n</code> คือจำนวนช่องที่ใช้จริง</li>
+        <li>ตอนเรียกใส่แค่ชื่ออาเรย์ ไม่มีวงเล็บเหลี่ยม</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="sum-array" data-title="ข้อมูลเข้า"><pre><code>5
+70 85 90 60 75
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sum-array" data-title="C:\code\sum.exe"><pre><code>total = 380
+first three = 245
+</code></pre></div>
+      </div>
+
+      <p>ฟังก์ชันตัวเดียวใช้กับอาเรย์ขนาดไหนก็ได้ เพราะขนาดถูกส่งเข้ามาทาง <code>n</code> บรรทัดที่ 21 ส่ง 3 เข้าไปแทน <code>n</code> ฟังก์ชันก็รวมแค่สามช่องแรก</p>
+
+      <h2 id="length">ต้องส่งความยาวไปด้วยเสมอ</h2>
+
+      <p>ทำไมไม่ให้ฟังก์ชันนับขนาดเอง เพราะสิ่งที่ส่งเข้าไปจริงๆ ไม่ใช่ทั้งอาเรย์ แต่เป็นแค่ <strong>ตำแหน่งของช่องแรก</strong> ในหน่วยความจำ ฟังก์ชันรู้ว่าอาเรย์เริ่มตรงไหน แต่ไม่รู้ว่าจบตรงไหน เหมือนบอกเพื่อนว่าบ้านเราอยู่ต้นซอย แต่ไม่ได้บอกว่าซอยยาวกี่หลัง</p>
+
+      <p>ผลที่ตามมาคือ</p>
+
+      <ul>
+        <li>ฟังก์ชันที่รับอาเรย์ต้องมีพารามิเตอร์บอกความยาวคู่กันเสมอ เกือบทุกตัวในหน้านี้จึงมี <code>int n</code></li>
+        <li><code>sizeof</code> ที่ใช้หาขนาดอาเรย์ได้ใน <code>main</code> ตามหน้า 6.3 <strong>ใช้ในฟังก์ชันไม่ได้</strong> ดูแบบที่ 1 ในส่วนลองทำให้พัง</li>
+        <li>ถ้าส่ง <code>n</code> ผิด ฟังก์ชันจะเดินเลยขอบอาเรย์ไปโดยไม่มีใครห้าม ได้ผลแบบหน้า 5.5</li>
+      </ul>
+
+      <p>รายละเอียดว่าตำแหน่งในหน่วยความจำคืออะไร และทำไมภาษา C ออกแบบมาแบบนี้ จะเรียนในบทที่ 10</p>
+
+      <h2 id="modify">ฟังก์ชันแก้อาเรย์ของคนเรียกได้</h2>
+
+      <p>หน้า 8.2 เห็นแล้วว่าแก้พารามิเตอร์ <code>int</code> ไม่ทำให้ตัวแปรของ <code>main</code> เปลี่ยน อาเรย์ไม่เป็นแบบนั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="bonus-all"><pre><code>#include &lt;stdio.h&gt;
+
+void add_bonus_all(int scores[], int n, int bonus)
+{
+    for (int i = 0; i &lt; n; i++) {
+        scores[i] += bonus; // (1)!
+    }
+}
+
+void print_array(int values[], int n)
+{
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" "); // (2)!
+        }
+        printf("%d", values[i]);
+    }
+    printf("\n");
+}
+
+int main()
+{
+    int scores[3] = {70, 85, 90};
+    print_array(scores, 3);
+    add_bonus_all(scores, 3, 5);
+    print_array(scores, 3);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>แก้ช่องของอาเรย์ที่ส่งเข้ามา คือแก้ช่องของ <code>scores</code> ใน <code>main</code> ตัวจริง</li>
+        <li>พิมพ์ช่องว่างก่อนทุกตัว ยกเว้นตัวแรก จะได้ไม่มีช่องว่างเกินท้ายบรรทัด grader บางระบบนับช่องว่างท้ายบรรทัดเป็นคำตอบผิด</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="bonus-all" data-title="C:\code\bonus.exe"><pre><code>70 85 90
+75 90 95
+</code></pre></div>
+
+      <p>คะแนนใน <code>main</code> เพิ่มขึ้นทุกช่อง เหตุผลมาจากหัวข้อที่แล้ว ฟังก์ชันได้ตำแหน่งของช่องแรกของอาเรย์ตัวจริง ไม่ได้ได้สำเนา <code>scores[i]</code> ในฟังก์ชันจึงเป็นกล่องเดียวกับ <code>scores[i]</code> ใน <code>main</code></p>
+
+      <p>ภาษา C ไม่คัดลอกอาเรย์ เพราะอาเรย์อาจใหญ่เป็นล้านช่อง ถ้าต้องคัดลอกทุกครั้งที่เรียกฟังก์ชันจะทั้งช้าและเปลืองหน่วยความจำ แต่ต้องระวังด้านกลับด้วย ฟังก์ชันที่ตั้งใจแค่อ่านอาเรย์ ห้ามเผลอเขียนทับช่องไหน เพราะ <code>main</code> จะได้ข้อมูลที่ถูกเปลี่ยนไปแล้ว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ส่งอะไร</th><th>ฟังก์ชันได้อะไร</th><th>แก้ในฟังก์ชันแล้วข้างนอกเปลี่ยนไหม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>int</code> <code>double</code> <code>char</code></td><td>สำเนาของค่า</td><td>ไม่เปลี่ยน</td></tr>
+            <tr><td>อาเรย์</td><td>ตำแหน่งของช่องแรกของอาเรย์ตัวจริง</td><td>เปลี่ยน</td></tr>
+            <tr><td>ช่องเดียวของอาเรย์ เช่น <code>scores[2]</code></td><td>สำเนาของค่าในช่องนั้น</td><td>ไม่เปลี่ยน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="toolbox">ชุดฟังก์ชันสำหรับอาเรย์</h2>
+
+      <p>เพราะฟังก์ชันเขียนลงอาเรย์ได้ จึงแยกส่วนอ่านข้อมูลออกเป็นฟังก์ชันได้ด้วย ตัวอย่างนี้เปรียบเทียบคะแนนสองห้อง ใช้ฟังก์ชันชุดเดียวกับทั้งสองห้อง ห้องละครั้ง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="two-rooms"><pre><code>#include &lt;stdio.h&gt;
+
+int room_a[1000];
+int room_b[1000];
+
+void read_array(int values[], int n)
+{
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;values[i]);
+    }
+}
+
+int max_of_array(int values[], int n)
+{
+    int best = values[0];
+    for (int i = 1; i &lt; n; i++) {
+        if (values[i] &gt; best) {
+            best = values[i];
+        }
+    }
+    return best;
+}
+
+int index_of_max(int values[], int n)
+{
+    int best_index = 0;
+    for (int i = 1; i &lt; n; i++) {
+        if (values[i] &gt; values[best_index]) {
+            best_index = i;
+        }
+    }
+    return best_index;
+}
+
+int main()
+{
+    int n, m;
+    scanf("%d", &amp;n);
+    read_array(room_a, n); // (1)!
+    scanf("%d", &amp;m);
+    read_array(room_b, m);
+    printf("room A best %d at seat %d\n", max_of_array(room_a, n), index_of_max(room_a, n) + 1); // (2)!
+    printf("room B best %d at seat %d\n", max_of_array(room_b, m), index_of_max(room_b, m) + 1);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>read_array</code> เขียนค่าลงช่องของ <code>room_a</code> โดยตรง อ่านเสร็จแล้ว <code>main</code> ใช้ได้ทันที</li>
+        <li>ฟังก์ชันคืนตำแหน่งแบบเริ่มที่ 0 ตามอาเรย์ แต่คนนับที่นั่งเริ่มที่ 1 จึงบวก 1 ตอนพิมพ์</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="two-rooms" data-title="ข้อมูลเข้า"><pre><code>5
+62 88 75 91 70
+4
+80 95 95 60
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="two-rooms" data-title="C:\code\rooms.exe"><pre><code>room A best 91 at seat 4
+room B best 95 at seat 2
+</code></pre></div>
+      </div>
+
+      <p>สังเกตสามเรื่อง</p>
+
+      <ul>
+        <li><code>max_of_array</code> เริ่มจากช่องแรกแบบหน้า 5.2 ไม่ได้เริ่มจาก 0 จึงใช้กับคะแนนติดลบได้ด้วย ฟังก์ชันนี้จึงต้องถูกเรียกกับอาเรย์ที่มีอย่างน้อยหนึ่งช่องเสมอ</li>
+        <li>ห้อง B มี 95 สองคน <code>index_of_max</code> ใช้ <code>&gt;</code> ไม่ใช่ <code>&gt;=</code> จึงได้คนแรก ถ้าโจทย์อยากได้คนสุดท้ายให้เปลี่ยนเป็น <code>&gt;=</code></li>
+        <li>อาเรย์สองตัวประกาศไว้นอก <code>main</code> ตามนิสัยจากหน้า 5.5 ก็ยังส่งเข้าฟังก์ชันเป็นพารามิเตอร์ได้ตามปกติ การส่งเป็นพารามิเตอร์ทำให้ฟังก์ชันเดียวใช้ได้กับทั้ง <code>room_a</code> และ <code>room_b</code></li>
+      </ul>
+
+      <p>ฟังก์ชันอย่าง <code>read_array</code> <code>max_of_array</code> <code>print_array</code> เขียนครั้งเดียวแล้วใช้ได้แทบทุกโจทย์ หลายคนเก็บไว้เป็นชุดเครื่องมือของตัวเองแล้วคัดลอกมาใช้ตอนซ้อม</p>
+
+      <h2 id="two-d">อาเรย์สองมิติต้องบอกจำนวนคอลัมน์</h2>
+
+      <p>อาเรย์สองมิติส่งได้เหมือนกัน แต่วงเล็บเหลี่ยมคู่ที่สองต้องมีจำนวนคอลัมน์ และต้องเท่ากับตอนประกาศ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="field"><pre><code>#include &lt;stdio.h&gt;
+
+int field[100][100];
+
+int row_sum(int grid[][100], int row, int cols) // (1)!
+{
+    int sum = 0;
+    for (int c = 0; c &lt; cols; c++) {
+        sum += grid[row][c];
+    }
+    return sum;
+}
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            scanf("%d", &amp;field[r][c]);
+        }
+    }
+    int best_row = 0;
+    for (int r = 1; r &lt; rows; r++) {
+        if (row_sum(field, r, cols) &gt; row_sum(field, best_row, cols)) {
+            best_row = r;
+        }
+    }
+    printf("row %d harvest %d\n", best_row + 1, row_sum(field, best_row, cols));
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ช่องแรกว่างได้ แต่ช่องที่สองต้องเป็น 100 ให้ตรงกับ <code>field[100][100]</code> ข้างบน ส่วนจำนวนแถวและคอลัมน์ที่ใช้จริงส่งแยกเข้ามาเหมือนอาเรย์มิติเดียว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="field" data-title="ข้อมูลเข้า"><pre><code>3 4
+5 2 7 1
+3 9 4 6
+8 1 2 3
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="field" data-title="C:\code\field.exe"><pre><code>row 2 harvest 22
+</code></pre></div>
+      </div>
+
+      <p>ต้องบอกจำนวนคอลัมน์เพราะในหน้า 7.1 เราเห็นแล้วว่าตารางในหน่วยความจำคือแถวยาวแถวเดียว ช่อง <code>grid[row][c]</code> อยู่ห่างจากช่องแรก <code>row × 100 + c</code> ช่อง ถ้าไม่รู้ว่าแถวหนึ่งยาว 100 ช่อง ก็คำนวณตำแหน่งนี้ไม่ได้ ส่วนจำนวนแถวไม่ต้องรู้ เหมือนอาเรย์มิติเดียวที่ไม่ต้องรู้ความยาว</p>
+
+      <h2 id="strings">ส่งสตริงไม่ต้องส่งความยาว</h2>
+
+      <p>สตริงคืออาเรย์ของ <code>char</code> จึงส่งแบบเดียวกัน แต่มีข้อดีกว่าอาเรย์ตัวเลข คือมี <code>'\0'</code> บอกจุดจบอยู่แล้วตามหน้า 6.2 ฟังก์ชันจึงเดินไปจนเจอ <code>'\0'</code> ได้เอง ไม่ต้องส่งความยาว ตัวอย่างนี้ย้ายการตัด <code>'\n'</code> จากหน้า 6.3 มาเป็นฟังก์ชัน แล้วเพิ่มอีกสามตัว</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="text-tools"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;ctype.h&gt;
+
+char line[1005];
+char reversed[1005];
+
+void strip_newline(char text[])
+{
+    for (int i = 0; text[i] != '\0'; i++) {
+        if (text[i] == '\n' || text[i] == '\r') {
+            text[i] = '\0';
+        }
+    }
+}
+
+int count_vowels(char text[])
+{
+    int count = 0;
+    for (int i = 0; text[i] != '\0'; i++) {
+        char c = tolower(text[i]);
+        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
+            count++;
+        }
+    }
+    return count;
+}
+
+void make_upper(char text[])
+{
+    for (int i = 0; text[i] != '\0'; i++) {
+        text[i] = toupper(text[i]);
+    }
+}
+
+void reverse_into(char source[], char result[]) // (1)!
+{
+    int length = 0;
+    while (source[length] != '\0') {
+        length++;
+    }
+    for (int i = 0; i &lt; length; i++) {
+        result[i] = source[length - 1 - i];
+    }
+    result[length] = '\0'; // (2)!
+}
+
+int main()
+{
+    fgets(line, sizeof line, stdin);
+    strip_newline(line);
+    printf("vowels = %d\n", count_vowels(line));
+    reverse_into(line, reversed);
+    printf("reversed = %s\n", reversed);
+    make_upper(line);
+    printf("upper = %s\n", line);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ฟังก์ชัน <code>return</code> อาเรย์ไม่ได้ ถ้าอยากได้สตริงใหม่ ให้คนเรียกเตรียมอาเรย์ว่างมาให้ แล้วฟังก์ชันเขียนผลลงไป แบบเดียวกับที่ <code>strcpy</code> ในหน้า 6.4 รับปลายทางเป็นพารามิเตอร์ตัวแรก</li>
+        <li>สตริงที่สร้างเองต้องปิดด้วย <code>'\0'</code> เสมอ ไม่อย่างนั้น <code>printf</code> จะพิมพ์เลยไปจนกว่าจะบังเอิญเจอ <code>'\0'</code></li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="text-tools" data-title="ข้อมูลเข้า"><pre><code>Hello Songkhla
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="text-tools" data-title="C:\code\text.exe"><pre><code>vowels = 4
+reversed = alhkgnoS olleH
+upper = HELLO SONGKHLA
+</code></pre></div>
+      </div>
+
+      <p>ต้องเรียก <code>reverse_into</code> ก่อน <code>make_upper</code> เพราะ <code>make_upper</code> แก้ <code>line</code> ตัวจริง ถ้าสลับลำดับ สตริงที่กลับหลังจะเป็นตัวพิมพ์ใหญ่ไปด้วย ฟังก์ชันที่แก้อาเรย์ได้ทำให้ลำดับการเรียกมีผลเสมอ</p>
+
+      <p>อีกเรื่องที่เปลี่ยนไปคือ <code>sizeof line</code> ใน <code>fgets</code> ใช้ได้เพราะเขียนอยู่ใน <code>main</code> ซึ่งเห็นการประกาศ <code>line[1005]</code> ทั้งก้อน ถ้าย้ายบรรทัด <code>fgets</code> ไปไว้ในฟังก์ชันที่รับ <code>char text[]</code> จะใช้ <code>sizeof text</code> ไม่ได้ด้วยเหตุผลเดียวกับหัวข้อความยาว ต้องส่งขนาดเข้าไปเป็นพารามิเตอร์</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="sizeof-parameter">แบบที่ 1 ใช้ sizeof หาความยาวในฟังก์ชัน</h3>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="sizeof-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int sum_of_array(int scores[])
+{
+    int n = sizeof(scores) / sizeof(scores[0]);
+    int sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        sum += scores[i];
+    }
+    return sum;
+}
+
+int main()
+{
+    int scores[5] = {70, 85, 90, 60, 75};
+    printf("in main: %d\n", (int)(sizeof(scores) / sizeof(scores[0])));
+    printf("sum = %d\n", sum_of_array(scores));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>size.c:5:19: warning: 'sizeof' on array function parameter 'scores' will return size of 'int *' [-Wsizeof-array-argument]
+    5 |     int n = sizeof(scores) / sizeof(scores[0]);
+      |                   ^
+size.c:3:22: note: declared here
+    3 | int sum_of_array(int scores[])
+      |                  ~~~~^~~~~~~~
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sizeof-bug" data-title="C:\code\size.exe"><pre><code>in main: 5
+sum = 155
+</code></pre></div>
+
+      <p>ใน <code>main</code> สูตรนี้ใช้ได้ <code>sizeof(scores)</code> คือขนาดของทั้งอาเรย์เป็น byte คือ 5 ช่อง × 4 byte = 20 หารด้วยขนาดของช่องเดียว 4 byte ได้ 5 ช่องถูกต้อง แต่ในฟังก์ชัน <code>scores</code> เป็นแค่ตำแหน่ง ไม่ใช่ทั้งอาเรย์ <code>sizeof(scores)</code> จึงเป็นขนาดของตำแหน่ง ซึ่งบนเครื่อง 64 bit คือ 8 byte หารด้วยขนาดของ <code>int</code> 4 byte ได้ 2 ผลรวมจึงมีแค่ 70 + 85 = 155 compiler เตือนไว้ตรงตัวว่า <code>sizeof</code> ของพารามิเตอร์ที่เป็นอาเรย์จะได้ขนาดของ <code>int *</code> ซึ่งเป็นชนิดของตำแหน่งที่จะเรียนในบทที่ 10 แก้ด้วยการส่ง <code>n</code> เข้าไป</p>
+
+      <h3 id="element-not-array">แบบที่ 2 ส่งช่องเดียวแทนทั้งอาเรย์</h3>
+
+      <p>ในโปรแกรม sum-array แก้บรรทัดที่ 20 ให้ส่ง <code>scores[n]</code> เพราะคิดว่าต้องบอกขนาดในวงเล็บเหลี่ยม</p>
+
+      <div class="code" data-lang="gcc"><pre><code>sum.c:20:47: error: passing argument 1 of 'sum_of_array' makes pointer from integer without a cast [-Wint-conversion]
+   20 |     printf("total = %d\n", sum_of_array(scores[n], n));
+      |                                         ~~~~~~^~~
+      |                                               |
+      |                                               int
+sum.c:3:22: note: expected 'int *' but argument is of type 'int'
+    3 | int sum_of_array(int values[], int n)
+      |                  ~~~~^~~~~~~~
+</code></pre></div>
+
+      <p><code>scores[n]</code> คือค่าในช่องที่ n ช่องเดียว เป็น <code>int</code> ธรรมดา แต่ฟังก์ชันรอตำแหน่งของอาเรย์ (<code>int *</code>) ชนิดไม่ตรงกันจึงคอมไพล์ไม่ผ่าน ตอนเรียกให้ใส่ชื่ออาเรย์เปล่าๆ เท่านั้น</p>
+
+      <h3 id="missing-columns">แบบที่ 3 ไม่บอกจำนวนคอลัมน์</h3>
+
+      <p>ในโปรแกรม field เปลี่ยนหัวฟังก์ชันเป็น <code>int row_sum(int grid[][], int row, int cols)</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>field.c:5:17: error: array type has incomplete element type 'int[]'
+    5 | int row_sum(int grid[][], int row, int cols)
+      |                 ^~~~
+field.c:5:17: note: declaration of 'grid' as multidimensional array must have bounds for all dimensions except the first
+field.c:25:21: error: type of formal parameter 1 is incomplete
+   25 |         if (row_sum(field, r, cols) &gt; row_sum(field, best_row, cols)) {
+      |                     ^~~~~
+field.c:25:47: error: type of formal parameter 1 is incomplete
+   25 |         if (row_sum(field, r, cols) &gt; row_sum(field, best_row, cols)) {
+      |                                               ^~~~~
+field.c:29:57: error: type of formal parameter 1 is incomplete
+   29 |     printf("row %d harvest %d\n", best_row + 1, row_sum(field, best_row, cols));
+      |                                                         ^~~~~
+</code></pre></div>
+
+      <p>บรรทัด <code>note</code> บอกกฎไว้ครบ อาเรย์หลายมิติต้องบอกขนาดทุกมิติ ยกเว้นมิติแรก error ที่ตามมาอีกสามจุดเกิดจากหัวฟังก์ชันพังตัวเดียว แก้ตัวแรกแล้วหายหมด</p>
+
+      <h3 id="wrong-columns">แบบที่ 4 จำนวนคอลัมน์ไม่ตรงกับตอนประกาศ</h3>
+
+      <p>ในโปรแกรม field ประกาศตารางเป็น <code>int field[100][50];</code> แต่หัวฟังก์ชันยังเป็น <code>grid[][100]</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>field.c:25:21: error: passing argument 1 of 'row_sum' from incompatible pointer type [-Wincompatible-pointer-types]
+   25 |         if (row_sum(field, r, cols) &gt; row_sum(field, best_row, cols)) {
+      |                     ^~~~~
+      |                     |
+      |                     int (*)[50]
+field.c:5:17: note: expected 'int (*)[100]' but argument is of type 'int (*)[50]'
+    5 | int row_sum(int grid[][100], int row, int cols)
+      |             ~~~~^~~~~~~~~~~
+</code></pre></div>
+
+      <p>error กับ note คู่นี้ขึ้นซ้ำอีกสองครั้งที่บรรทัด 25 และ 29 ตามจำนวนจุดที่เรียก <code>row_sum</code> ในที่นี้ตัดมาให้ดูคู่แรกคู่เดียว ถ้าภาษา C ยอมให้ผ่าน ฟังก์ชันจะคิดว่าแถวหนึ่งยาว 100 ช่อง แต่ตารางจริงยาว 50 ช่อง แถวที่ 1 ของฟังก์ชันจะไปตกที่แถวที่ 2 ของตารางจริง compiler จึงไม่ยอมตั้งแต่ต้น ชนิด <code>int (*)[100]</code> อ่านว่าตำแหน่งของแถวที่ยาว 100 ช่อง ไม่ต้องจำรูปแบบนี้ แค่ดูเลขในวงเล็บเหลี่ยมให้ตรงกัน วิธีที่ง่ายที่สุดคือประกาศตารางกับหัวฟังก์ชันด้วยขนาดเดียวกันตามขอบเขตโจทย์</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>พารามิเตอร์อาเรย์เขียน <code>int values[]</code> ตอนเรียกใส่แค่ชื่ออาเรย์</li>
+        <li>ฟังก์ชันได้ตำแหน่งของช่องแรก ไม่รู้ความยาว ต้องส่ง <code>n</code> ไปด้วยทุกครั้ง และ <code>sizeof</code> ในฟังก์ชันใช้หาความยาวไม่ได้</li>
+        <li>อาเรย์ไม่ถูกคัดลอก ฟังก์ชันแก้ช่องไหน อาเรย์ของคนเรียกก็เปลี่ยนตรงนั้น</li>
+        <li>อาเรย์สองมิติต้องบอกจำนวนคอลัมน์ให้ตรงกับตอนประกาศ เช่น <code>int grid[][100]</code></li>
+        <li>สตริงไม่ต้องส่งความยาว เดินจนเจอ <code>'\0'</code> ได้เอง สตริงที่สร้างใหม่ต้องปิดด้วย <code>'\0'</code></li>
+        <li><code>return</code> อาเรย์ไม่ได้ ให้คนเรียกส่งอาเรย์ปลายทางเข้ามาให้ฟังก์ชันเขียนผล</li>
+      </ul>
+    </article>

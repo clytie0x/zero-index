@@ -1,0 +1,4 @@
+title = "ป้ายไฟตัวเลข"
+level = 3
+source = "แนวเดียวกับโจทย์ LC-Display (UVa 706)"
+hint = '''<p>รับ D เป็นสตริงด้วย <code>%s</code> เพราะอาจขึ้นต้นด้วย 0 และยาวเกิน <code>long long</code> เก็บตารางท่อนไว้เป็นอาเรย์ของสตริง เช่น <code>"abcdef"</code> สำหรับเลข 0 แล้วเขียน <code>int is_on(int digit, char segment)</code> ที่ไล่หาตัวอักษรในสตริงนั้น ป้ายมีแถวแค่สองแบบ แถวท่อนนอน (a g d) กับแถวท่อนตั้ง (f b หรือ e c) จึงเขียนสองฟังก์ชัน <code>print_horizontal(char segment)</code> และ <code>print_vertical(char left, char right)</code> ที่พิมพ์ทั้งแถวครบทุกหลัก แล้ว <code>main</code> เรียกตามลำดับแถว ระวังอย่าพิมพ์ <code>.</code> คั่นหลังหลักสุดท้าย</p>'''

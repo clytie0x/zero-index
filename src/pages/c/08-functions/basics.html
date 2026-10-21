@@ -1,0 +1,444 @@
+<article class="doc">
+      <h1>8.1 เขียนและเรียกฟังก์ชัน</h1>
+
+      <p>น้องใช้ฟังก์ชันมาตั้งแต่บทที่ 0 แล้ว <code>printf</code> <code>scanf</code> <code>strlen</code> <code>toupper</code> ล้วนเป็นฟังก์ชัน และ <code>main</code> ที่เขียนทุกโปรแกรมก็เป็นฟังก์ชันตัวหนึ่ง <strong>ฟังก์ชัน (function)</strong> คือชุดคำสั่งที่ตั้งชื่อไว้ แล้วเรียกใช้ด้วยชื่อนั้นกี่ครั้งก็ได้ หน้านี้จะเขียนฟังก์ชันของตัวเอง ทั้งแบบที่สั่งให้ทำงานเฉยๆ แบบที่รับค่าเข้าไป และแบบที่คำนวณแล้วส่งคำตอบกลับมา</p>
+
+      <h2 id="why">ทำไมต้องแบ่งโค้ดเป็นฟังก์ชัน</h2>
+
+      <p>โปรแกรมพิมพ์ป้ายหน้าห้องสอบ มีเส้นคั่น <code>=</code> 20 ตัวสามเส้น เขียนด้วยสิ่งที่เรียนมาถึงบทที่ 7 ได้แบบนี้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="sign-repeat"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    for (int i = 0; i &lt; 20; i++) {
+        printf("=");
+    }
+    printf("\n");
+    printf("POSN CAMP 2026\n");
+    for (int i = 0; i &lt; 20; i++) {
+        printf("=");
+    }
+    printf("\n");
+    printf("Room 4\n");
+    for (int i = 0; i &lt; 20; i++) {
+        printf("=");
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sign-repeat" data-title="C:\code\sign.exe"><pre><code>====================
+POSN CAMP 2026
+====================
+Room 4
+====================
+</code></pre></div>
+
+      <p>ลูปพิมพ์เส้นเหมือนกันทุกตัวอักษรสามชุด ถ้าวันหนึ่งอยากเปลี่ยนเส้นให้ยาว 30 ตัว ต้องตามแก้สามที่ ลืมไปที่เดียวป้ายก็เบี้ยว ทีนี้ลองย้ายลูปไปไว้ในฟังก์ชันชื่อ <code>print_line</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="sign"><pre><code>#include &lt;stdio.h&gt;
+
+void print_line() // (1)!
+{
+    for (int i = 0; i &lt; 20; i++) {
+        printf("=");
+    }
+    printf("\n");
+}
+
+int main()
+{
+    print_line(); // (2)!
+    printf("POSN CAMP 2026\n");
+    print_line();
+    printf("Room 4\n");
+    print_line();
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>หัวของฟังก์ชัน <code>void</code> แปลว่าฟังก์ชันนี้ทำงานอย่างเดียว ไม่ส่งค่าอะไรกลับ <code>print_line</code> คือชื่อ ตั้งตามกฎเดียวกับชื่อตัวแปร วงเล็บว่างแปลว่าไม่ต้องรับอะไรเข้าไป ส่วนในปีกกาข้างล่างคือคำสั่งที่จะทำทุกครั้งที่ถูกเรียก</li>
+        <li><strong>เรียก (call)</strong> ฟังก์ชันด้วยการเขียนชื่อตามด้วยวงเล็บ ต้องมีวงเล็บเสมอแม้ไม่มีอะไรข้างใน และปิดด้วย <code>;</code> เหมือนคำสั่งอื่น</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="sign" data-title="C:\code\sign.exe"><pre><code>====================
+POSN CAMP 2026
+====================
+Room 4
+====================
+</code></pre></div>
+
+      <p>ผลเหมือนเดิมทุกตัวอักษร แต่ได้สามอย่างเพิ่มมา</p>
+
+      <ul>
+        <li><strong>แก้ที่เดียว</strong> อยากได้เส้น 30 ตัว แก้เลข 20 ในฟังก์ชันจุดเดียว ทุกเส้นเปลี่ยนตาม</li>
+        <li><strong>อ่านง่ายขึ้น</strong> <code>main</code> เหลือแค่ลำดับงาน อ่านแล้วเห็นหน้าตาป้ายทันทีโดยไม่ต้องแกะลูป</li>
+        <li><strong>ทดสอบทีละส่วนได้</strong> ฟังก์ชันหนึ่งตัวทำงานเดียว ถ้าเส้นพิมพ์ผิด รู้เลยว่าต้องไปดูที่ไหน</li>
+      </ul>
+
+      <p>ข้อสุดท้ายสำคัญมากในการแข่งขัน โจทย์ระดับ A2 ขึ้นไปมักมีหลายขั้นตอน เช่น ตรวจว่าเป็นจำนวนเฉพาะ กลับหลักตัวเลข แล้วตรวจซ้ำอีกที ถ้าเขียนทุกอย่างกองใน <code>main</code> โค้ดจะยาวเป็นร้อยบรรทัดที่หาบั๊กยาก ถ้าแยกเป็นฟังก์ชันเล็กๆ ที่แต่ละตัวถูกต้องแน่นอน ค่อยเอามาประกอบกัน จะผิดน้อยลงมาก</p>
+
+      <h2 id="call-flow">เรียกแล้วโปรแกรมไปไหน</h2>
+
+      <p>โปรแกรมเริ่มทำงานที่ <code>main</code> เสมอ ไม่ว่าฟังก์ชันอื่นจะอยู่ตรงไหนของไฟล์ ลองพิมพ์ข้อความบอกตำแหน่งดูว่าคำสั่งไหนทำก่อนหลัง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="flow"><pre><code>#include &lt;stdio.h&gt;
+
+void greet()
+{
+    printf("2 inside greet\n");
+}
+
+int main()
+{
+    printf("1 start main\n");
+    greet();
+    printf("3 back in main\n");
+    greet();
+    printf("4 end main\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="flow" data-title="C:\code\flow.exe"><pre><code>1 start main
+2 inside greet
+3 back in main
+2 inside greet
+4 end main
+</code></pre></div>
+
+      <p>บรรทัดที่ 11 เรียก <code>greet</code> โปรแกรมกระโดดไปทำคำสั่งในฟังก์ชันจนถึงปีกกาปิด แล้ว <strong>กลับมาที่จุดที่เรียก</strong> ทำบรรทัดถัดไปต่อ เรียกครั้งที่สองที่บรรทัดที่ 13 ก็กระโดดไปทำใหม่ทั้งหมดอีกรอบ เหมือนเปิดหนังสือไปอ่านภาคผนวกแล้วกลับมาหน้าเดิม ฟังก์ชันที่ไม่มีใครเรียกจะไม่ทำงานเลย ถึงจะเขียนไว้ในไฟล์ก็ตาม</p>
+
+      <h2 id="parameters">ส่งค่าเข้าไปด้วยพารามิเตอร์</h2>
+
+      <p><code>print_line</code> พิมพ์ได้แต่ <code>=</code> 20 ตัว ถ้าอยากให้ฟังก์ชันเดียวพิมพ์ตัวอักษรอะไรก็ได้ กี่ตัวก็ได้ ให้ประกาศตัวแปรไว้ในวงเล็บของหัวฟังก์ชัน ตัวแปรพวกนี้เรียกว่า <strong>พารามิเตอร์ (parameter)</strong> ส่วนค่าที่ใส่ในวงเล็บตอนเรียก เรียกว่า <strong>อาร์กิวเมนต์ (argument)</strong></p>
+
+      <p>ตัวอย่างนี้วาดพีระมิดแบบหน้า 4.4 แต่ย้ายลูปข้างในทั้งสองตัวไปไว้ในฟังก์ชัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="pyramid"><pre><code>#include &lt;stdio.h&gt;
+
+void print_row(char symbol, int count) // (1)!
+{
+    for (int i = 0; i &lt; count; i++) {
+        printf("%c", symbol);
+    }
+}
+
+int main()
+{
+    int height;
+    scanf("%d", &amp;height);
+    for (int row = 1; row &lt;= height; row++) {
+        print_row(' ', height - row); // (2)!
+        print_row('*', 2 * row - 1);
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>พารามิเตอร์สองตัว คั่นด้วยจุลภาค แต่ละตัวต้องมีชนิดของตัวเอง เขียน <code>char symbol, count</code> ไม่ได้</li>
+        <li>อาร์กิวเมนต์ใส่ตามลำดับ ตัวแรกเข้า <code>symbol</code> ตัวที่สองเข้า <code>count</code> อาร์กิวเมนต์เป็นนิพจน์อย่าง <code>height - row</code> ก็ได้ คำนวณเสร็จก่อนแล้วค่อยส่งค่าเข้าไป</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="pyramid" data-title="ข้อมูลเข้า"><pre><code>4
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="pyramid" data-title="C:\code\pyramid.exe"><pre><code>   *
+  ***
+ *****
+*******
+</code></pre></div>
+      </div>
+
+      <p>ตอนเรียก <code>print_row(' ', 3)</code> โปรแกรมสร้างกล่อง <code>symbol</code> ใส่ <code>' '</code> และกล่อง <code>count</code> ใส่ 3 แล้วค่อยเริ่มทำคำสั่งในฟังก์ชัน พารามิเตอร์จึงใช้เหมือนตัวแปรธรรมดาที่มีค่าอยู่แล้ว เทียบกับลูปซ้อนในบทที่ 4 ตัว <code>main</code> ตอนนี้อ่านออกเสียงได้เลยว่า "แต่ละแถว พิมพ์ช่องว่าง พิมพ์ดาว ขึ้นบรรทัดใหม่" ไม่ต้องนั่งแกะว่าลูปข้างในตัวไหนทำอะไร</p>
+
+      <p>สังเกตว่าในฟังก์ชันไม่มี <code>printf("\n")</code> เพราะในแถวเดียวต้องเรียกสองครั้ง ถ้าขึ้นบรรทัดใหม่ในฟังก์ชัน ช่องว่างกับดาวจะไปอยู่คนละบรรทัด ก่อนเขียนฟังก์ชันให้คิดก่อนว่ามันรับผิดชอบงานแค่ไหน</p>
+
+      <h2 id="return">คืนค่าด้วย return</h2>
+
+      <p>ฟังก์ชันที่ผ่านมาทำงานแล้วจบ ไม่ได้ให้อะไรกลับมา แต่ฟังก์ชันที่ใช้บ่อยที่สุดคือแบบที่คำนวณแล้ว <strong>ส่งค่ากลับ (return)</strong> เหมือน <code>strlen</code> ที่ส่งความยาวกลับมาให้เก็บใส่ตัวแปร</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="rooms"><pre><code>#include &lt;stdio.h&gt;
+
+int rectangle_area(int width, int height) // (1)!
+{
+    return width * height; // (2)!
+}
+
+int main()
+{
+    int w1, h1, w2, h2;
+    scanf("%d %d %d %d", &amp;w1, &amp;h1, &amp;w2, &amp;h2);
+    int first = rectangle_area(w1, h1); // (3)!
+    printf("room 1 = %d\n", first);
+    printf("room 2 = %d\n", rectangle_area(w2, h2));
+    printf("total = %d\n", first + rectangle_area(w2, h2));
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ชนิดหน้าชื่อเปลี่ยนจาก <code>void</code> เป็น <code>int</code> แปลว่าฟังก์ชันนี้ส่งจำนวนเต็มกลับมาหนึ่งค่า</li>
+        <li><code>return</code> คำนวณค่าทางขวา ส่งกลับไปให้คนเรียก แล้วจบฟังก์ชันทันที</li>
+        <li>ค่าที่ส่งกลับมาแทนที่ตรงที่เรียก เหมือน <code>rectangle_area(w1, h1)</code> กลายเป็นตัวเลขตัวหนึ่ง จะเก็บใส่ตัวแปร ส่งให้ <code>printf</code> หรือเอาไปบวกต่อก็ได้</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="rooms" data-title="ข้อมูลเข้า"><pre><code>8 6 5 4
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="rooms" data-title="C:\code\rooms.exe"><pre><code>room 1 = 48
+room 2 = 20
+total = 68
+</code></pre></div>
+      </div>
+
+      <p>ฟังก์ชันเรียกฟังก์ชันอื่นได้ด้วย ตัวอย่างนี้เขียน <code>max_of_two</code> ก่อน แล้วสร้าง <code>max_of_three</code> จากมัน โดยหาตัวที่มากกว่าของสองตัวแรกก่อน แล้วเทียบกับตัวที่สาม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="max-three"><pre><code>#include &lt;stdio.h&gt;
+
+int max_of_two(int a, int b)
+{
+    if (a &gt; b) {
+        return a;
+    }
+    return b;
+}
+
+int max_of_three(int a, int b, int c)
+{
+    return max_of_two(max_of_two(a, b), c);
+}
+
+int main()
+{
+    int math, science, english;
+    scanf("%d %d %d", &amp;math, &amp;science, &amp;english);
+    printf("best = %d\n", max_of_three(math, science, english));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="max-three" data-title="ข้อมูลเข้า"><pre><code>72 91 85
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="max-three" data-title="C:\code\best.exe"><pre><code>best = 91
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 13 ทำจากข้างในออกมาข้างนอก <code>max_of_two(72, 91)</code> ได้ 91 ก่อน แล้วค่อย <code>max_of_two(91, 85)</code> ได้ 91 เทียบกับการหาค่ามากสุดของสามตัวในหน้า 3.2 ที่ต้องเขียน <code>if</code> ซ้อนกันหลายชั้น แบบนี้สั้นกว่าและผิดยากกว่า</p>
+
+      <p>ใน <code>max_of_two</code> ไม่ต้องมี <code>else</code> เพราะถ้า <code>a &gt; b</code> จริง <code>return a;</code> จะจบฟังก์ชันไปแล้ว บรรทัด <code>return b;</code> ทำเฉพาะตอนที่เงื่อนไขเป็นเท็จเท่านั้น</p>
+
+      <h2 id="early-return">return หลายจุด และ return ใน void</h2>
+
+      <p>เพราะ <code>return</code> จบฟังก์ชันทันที จึงใช้ตัดเกรดได้สวยมาก ไล่เช็กจากเกรดสูงลงมา เจอเงื่อนไขแรกที่จริงก็ส่งเกรดกลับเลย ส่วนฟังก์ชัน <code>void</code> ใช้ <code>return;</code> เปล่าๆ เพื่อออกก่อนถึงท้ายฟังก์ชันได้</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="report"><pre><code>#include &lt;stdio.h&gt;
+
+char grade_of(int score)
+{
+    if (score &gt;= 80) {
+        return 'A';
+    }
+    if (score &gt;= 70) {
+        return 'B';
+    }
+    if (score &gt;= 60) {
+        return 'C';
+    }
+    if (score &gt;= 50) {
+        return 'D';
+    }
+    return 'F'; // (1)!
+}
+
+void print_report(int score)
+{
+    if (score &lt; 0 || score &gt; 100) {
+        printf("%d invalid\n", score);
+        return; // (2)!
+    }
+    printf("%d %c\n", score, grade_of(score));
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        print_report(score);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>มาถึงบรรทัดนี้ได้แปลว่าทุกเงื่อนไขข้างบนเป็นเท็จหมด คะแนนต่ำกว่า 50 แน่นอน ถ้าลืมบรรทัดนี้ ดูแบบที่ 4 ในส่วนลองทำให้พัง</li>
+        <li>ออกจาก <code>print_report</code> ทันที บรรทัด <code>printf</code> ข้างล่างจึงไม่ทำ คะแนนที่ผิดจะไม่ถูกส่งไปตัดเกรด</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="report" data-title="ข้อมูลเข้า"><pre><code>5
+85 73 49 120 60
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="report" data-title="C:\code\report.exe"><pre><code>85 A
+73 B
+49 F
+120 invalid
+60 C
+</code></pre></div>
+      </div>
+
+      <p>ฟังก์ชัน <code>grade_of</code> ส่ง <code>char</code> กลับ ชนิดที่ส่งกลับได้ก็คือชนิดที่ประกาศตัวแปรได้ เช่น <code>int</code> <code>long long</code> <code>double</code> <code>char</code> ยกเว้นอาเรย์ ซึ่งจะเห็นวิธีอ้อมในหน้า 8.3</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หัวฟังก์ชัน</th><th>รับอะไร</th><th>ส่งอะไรกลับ</th><th>เรียกแบบไหน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>void print_line()</code></td><td>ไม่รับ</td><td>ไม่ส่ง</td><td><code>print_line();</code></td></tr>
+            <tr><td><code>void print_row(char symbol, int count)</code></td><td>ตัวอักษรกับจำนวน</td><td>ไม่ส่ง</td><td><code>print_row('*', 5);</code></td></tr>
+            <tr><td><code>int rectangle_area(int width, int height)</code></td><td>จำนวนเต็มสองตัว</td><td>จำนวนเต็ม</td><td><code>int a = rectangle_area(8, 6);</code></td></tr>
+            <tr><td><code>char grade_of(int score)</code></td><td>จำนวนเต็ม</td><td>ตัวอักษร</td><td><code>printf("%c", grade_of(73));</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แล้ว <code>int main()</code> ล่ะ ก็คือฟังก์ชันที่ส่ง <code>int</code> กลับเหมือนกัน คนที่เรียกมันคือระบบปฏิบัติการ <code>return 0;</code> คือบอกว่าทำงานจบเรียบร้อย ส่วนเลขแปลกๆ อย่าง <code>-1073741676</code> ที่เห็นตอนหารด้วยศูนย์ในหน้า 1.2 คือค่าที่ระบบใส่ให้เองตอนโปรแกรมพังกลางทาง</p>
+
+      <h2 id="prototype">ลำดับในไฟล์ และ prototype</h2>
+
+      <p>compiler อ่านไฟล์จากบนลงล่างรอบเดียว ตอนเจอบรรทัดที่เรียกฟังก์ชัน มันต้องรู้จักฟังก์ชันนั้นแล้ว ว่ารับอะไรกี่ตัว ส่งอะไรกลับ ไม่อย่างนั้นจะตรวจไม่ได้ว่าเรียกถูกไหม ทุกตัวอย่างที่ผ่านมาจึงเขียนฟังก์ชันไว้ <strong>ก่อน</strong> <code>main</code></p>
+
+      <p>อีกวิธีคือเขียนแค่หัวฟังก์ชันปิดด้วย <code>;</code> ไว้ข้างบน เรียกว่า <strong>prototype</strong> (ต้นแบบ) เป็นการบอก compiler ล่วงหน้าว่ามีฟังก์ชันนี้ แล้วค่อยเขียนตัวเต็มไว้หลัง <code>main</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="proto"><pre><code>#include &lt;stdio.h&gt;
+
+int rectangle_area(int width, int height); // (1)!
+void print_line(int length);
+
+int main()
+{
+    print_line(12);
+    printf("area = %d\n", rectangle_area(8, 6));
+    print_line(12);
+    return 0;
+}
+
+int rectangle_area(int width, int height) // (2)!
+{
+    return width * height;
+}
+
+void print_line(int length)
+{
+    for (int i = 0; i &lt; length; i++) {
+        printf("-");
+    }
+    printf("\n");
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>prototype คือหัวฟังก์ชันตัวเดียวกับข้างล่างทุกตัวอักษร แค่ปิดด้วย <code>;</code> แทนปีกกา</li>
+        <li>ตัวเต็มต้องมีชนิดที่ส่งกลับ ชื่อ และชนิดของพารามิเตอร์ตรงกับ prototype ไม่อย่างนั้นได้ error</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="proto" data-title="C:\code\proto.exe"><pre><code>------------
+area = 48
+------------
+</code></pre></div>
+
+      <p>ข้อดีของ prototype คือ <code>main</code> ขึ้นมาอยู่บนสุด อ่านไฟล์แล้วเห็นภาพรวมก่อน และฟังก์ชันสองตัวที่เรียกกันไปมาจะเรียงลำดับแบบไหนก็ได้ ส่วนวิธีเขียนฟังก์ชันไว้ก่อน <code>main</code> สั้นกว่าเพราะไม่ต้องเขียนหัวซ้ำสองที่ เอกสารนี้ใช้แบบหลังเป็นหลัก ทั้งสองแบบทำงานเหมือนกัน เลือกแบบไหนก็ได้ ขอแค่ใช้แบบเดียวกันทั้งไฟล์</p>
+
+      <p>ที่จริงน้องใช้ prototype มาตั้งแต่บทที่ 0 แล้ว <code>#include &lt;stdio.h&gt;</code> คือการเอาไฟล์ที่มี prototype ของ <code>printf</code> <code>scanf</code> และเพื่อนๆ มาแปะไว้บนสุดของโปรแกรม compiler จึงรู้จักฟังก์ชันพวกนี้ก่อนเจอใน <code>main</code></p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="call-before-declare">แบบที่ 1 เรียกก่อนที่ compiler จะรู้จัก</h3>
+
+      <p>ในโปรแกรม sign ย้ายฟังก์ชัน <code>print_line</code> ทั้งก้อนไปไว้หลัง <code>main</code> โดยไม่เขียน prototype</p>
+
+      <div class="code" data-lang="gcc"><pre><code>sign.c:5:5: error: implicit declaration of function 'print_line'; did you mean '_inline'? [-Wimplicit-function-declaration]
+    5 |     print_line();
+      |     ^~~~~~~~~~
+      |     _inline
+sign.c:13:6: warning: conflicting types for 'print_line'; have 'void()'
+   13 | void print_line()
+      |      ^~~~~~~~~~
+sign.c:5:5: note: previous implicit declaration of 'print_line' with type 'void()'
+    5 |     print_line();
+      |     ^~~~~~~~~~
+</code></pre></div>
+
+      <p><code>implicit declaration</code> แปลว่า compiler เจอชื่อ <code>print_line</code> ทั้งที่ยังไม่เคยมีใครประกาศ error เกิดที่บรรทัดแรกที่เรียก คำแนะนำ <code>did you mean '_inline'</code> เป็นการเดาชื่อที่สะกดคล้ายกันจากคำในระบบ ซึ่งคราวนี้เดาผิด ไม่ต้องทำตาม ส่วน warning ข้างล่างเกิดตอนมันเจอตัวจริงทีหลัง แล้วพบว่าเป็นชื่อที่เคยเดาไว้ก่อนหน้า แก้ได้สองทาง ย้ายฟังก์ชันกลับขึ้นไปไว้ก่อน <code>main</code> หรือเติม prototype ไว้ข้างบน</p>
+
+      <h3 id="wrong-count">แบบที่ 2 ส่งอาร์กิวเมนต์ไม่ครบ</h3>
+
+      <p>ในโปรแกรม rooms แก้บรรทัดที่ 12 เป็น <code>int first = rectangle_area(w1);</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>rooms.c:12:17: error: too few arguments to function 'rectangle_area'
+   12 |     int first = rectangle_area(w1);
+      |                 ^~~~~~~~~~~~~~
+rooms.c:3:5: note: declared here
+    3 | int rectangle_area(int width, int height)
+      |     ^~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p>ฟังก์ชันรับสองค่า แต่ส่งไปค่าเดียว compiler บอกว่า <code>too few arguments</code> และบรรทัด <code>note</code> ชี้กลับไปที่หัวฟังก์ชันให้ดูว่าต้องส่งอะไรบ้าง ส่งเกินก็ได้ error คล้ายกันคือ <code>too many arguments</code></p>
+
+      <h3 id="void-value">แบบที่ 3 เอาค่าจากฟังก์ชัน void</h3>
+
+      <p>ฟังก์ชัน <code>print_line(int length)</code> ในโปรแกรม proto ไม่ส่งอะไรกลับ แต่เผลอเขียนเหมือนมันส่งค่ากลับมา</p>
+
+      <div class="code" data-lang="c"><pre><code>int width = print_line(10);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>line.c:13:17: error: void value not ignored as it ought to be
+   13 |     int width = print_line(10);
+      |                 ^~~~~~~~~~
+</code></pre></div>
+
+      <p>อ่านตรงตัวว่า "ค่าของ void ไม่ได้ถูกทิ้งไปอย่างที่ควรเป็น" คือฟังก์ชัน <code>void</code> ไม่มีค่าให้เก็บ ถ้าอยากได้ค่ากลับมา ต้องเปลี่ยนชนิดหน้าชื่อฟังก์ชันและเขียน <code>return</code> ส่งค่ากลับ</p>
+
+      <h3 id="missing-return">แบบที่ 4 ลืม return บางทาง</h3>
+
+      <p>ในโปรแกรม report ลบบรรทัด <code>return 'F';</code> ออก เหลือแค่สี่ <code>if</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>report.c:17:1: warning: control reaches end of non-void function [-Wreturn-type]
+   17 | }
+      | ^
+</code></pre></div>
+
+      <p><code>control reaches end of non-void function</code> แปลว่ามีทางที่โปรแกรมเดินมาถึงปีกกาปิดของฟังก์ชันที่ต้องส่งค่ากลับ โดยไม่เจอ <code>return</code> เลย ในที่นี้คือตอนคะแนนต่ำกว่า 50 ซึ่งไม่ตรงกับ <code>if</code> ไหน เป็นแค่ warning จึงรันได้ แต่ค่าที่ได้กลับมาเป็นค่าขยะ บนเครื่องที่เขียนเอกสารนี้ ป้อน <code>1</code> กับ <code>30</code> แล้วได้ <code>30</code> ตามด้วยอักขระรหัส 30 ซึ่งเป็นอักขระควบคุมที่มองไม่เห็น แทนที่จะเป็น <code>F</code> ค่าขยะที่ได้บังเอิญเท่ากับคะแนนที่ส่งเข้าไป เครื่องอื่นหรือ compiler อื่นอาจได้ค่าอื่น</p>
+
+      <p>เวลาเขียนฟังก์ชันที่มีหลาย <code>return</code> ให้ไล่ดูทุกทางว่าจบด้วย <code>return</code> ครบไหม วิธีที่ปลอดภัยคือให้บรรทัดสุดท้ายก่อนปีกกาปิดเป็น <code>return</code> เสมอ</p>
+
+      <h3 id="no-body">แบบที่ 5 มี prototype แต่ไม่มีตัวจริง</h3>
+
+      <p>ในโปรแกรม proto ลบตัวเต็มของ <code>rectangle_area</code> ข้างล่างออก เหลือแค่ prototype ข้างบน</p>
+
+      <div class="code" data-lang="gcc"><pre><code>ld.exe: proto.o:proto.c:(.text+0x22): undefined reference to `rectangle_area'
+collect2.exe: error: ld returned 1 exit status
+</code></pre></div>
+
+      <p>หน้าตาไม่เหมือน error ที่ผ่านมา เพราะไม่ได้มาจาก compiler แต่มาจาก <strong>linker</strong> (<code>ld</code>) โปรแกรมที่ประกอบชิ้นส่วนเป็นไฟล์ <code>.exe</code> เป็นขั้นสุดท้าย compiler ผ่านแล้วเพราะ prototype สัญญาไว้ว่ามีฟังก์ชันนี้ แต่ตอนประกอบหาตัวจริงไม่เจอ จึงขึ้น <code>undefined reference</code> ถ้าเจอข้อความนี้ ให้เช็กว่าเขียนตัวเต็มแล้วหรือยัง และสะกดชื่อตรงกับ prototype ไหม</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ฟังก์ชันคือชุดคำสั่งที่ตั้งชื่อไว้ เรียกด้วย <code>ชื่อ(อาร์กิวเมนต์)</code> ทำเสร็จแล้วกลับมาทำต่อที่จุดที่เรียก</li>
+        <li>หัวฟังก์ชันบอกชนิดที่ส่งกลับ ชื่อ และพารามิเตอร์ <code>void</code> แปลว่าไม่ส่งอะไรกลับ</li>
+        <li>อาร์กิวเมนต์เข้าพารามิเตอร์ตามลำดับ จำนวนต้องตรงกัน</li>
+        <li><code>return ค่า;</code> ส่งค่ากลับและจบฟังก์ชันทันที ฟังก์ชันที่ไม่ใช่ <code>void</code> ต้องจบด้วย <code>return</code> ทุกทาง</li>
+        <li>ต้องประกาศก่อนเรียก เขียนฟังก์ชันไว้ก่อน <code>main</code> หรือใส่ prototype ไว้ข้างบน</li>
+        <li>ฟังก์ชันที่ดีทำงานเดียว ตั้งชื่อบอกว่าทำอะไร และทำให้ <code>main</code> อ่านเป็นลำดับขั้นตอน</li>
+      </ul>
+    </article>

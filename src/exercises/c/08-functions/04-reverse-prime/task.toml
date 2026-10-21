@@ -1,0 +1,3 @@
+title = "จำนวนเฉพาะกลับหลัง"
+level = 1
+hint = '''<p>แยกเป็นสองฟังก์ชัน <code>is_prime(n)</code> แบบหน้า 8.5 และ <code>reverse_number(n)</code> ที่หยิบหลักขวาสุดด้วย <code>% 10</code> มาต่อท้ายผลด้วย <code>result * 10 + digit</code> ทีละหลัก เลข 0 นำหน้าจะหายไปเอง แล้ว <code>main</code> เหลือเงื่อนไขเดียว <code>is_prime(n) &amp;&amp; is_prime(reverse_number(n))</code> ระวัง 1 ซึ่งไม่ใช่จำนวนเฉพาะ</p>'''

@@ -1,0 +1,3 @@
+title = "ป้ายชื่อมีกรอบ"
+level = 1
+hint = '''<p>ป้ายมีบรรทัดแค่สามแบบ คือบรรทัดขอบ บรรทัดว่าง และบรรทัดชื่อ เขียน <code>print_repeat(char symbol, int count)</code> แบบ <code>print_row</code> ในหน้า 8.1 ก่อน แล้วสร้าง <code>print_border(int width)</code> กับ <code>print_blank(int width)</code> จากมัน <code>main</code> จะเหลือแค่เรียกฟังก์ชันตามลำดับบรรทัด ลองกับ P = 0 ด้วย ป้ายต้องเหลือแค่สามบรรทัด</p>'''

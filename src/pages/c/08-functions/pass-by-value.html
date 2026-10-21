@@ -1,0 +1,321 @@
+<article class="doc">
+      <h1>8.2 ส่งค่าแบบสำเนา</h1>
+
+      <p>หน้าที่แล้วส่งค่าเข้าฟังก์ชันแล้วใช้อ่านอย่างเดียว คำถามต่อมาที่น้องเกือบทุกคนลองคือ ถ้าฟังก์ชันแก้ค่าพารามิเตอร์ ตัวแปรที่ส่งมาจาก <code>main</code> จะเปลี่ยนตามไหม คำตอบคือไม่เปลี่ยน หน้านี้จะทำให้เห็นกับตาว่าทำไม แล้วดูวิธีที่ถูกต้องในการเอาผลออกมาจากฟังก์ชัน และเรื่องชนิดของค่าที่ถูกแปลงเงียบๆ ตอนส่งเข้าและส่งออก</p>
+
+      <h2 id="copy">พารามิเตอร์คือสำเนา</h2>
+
+      <p>ครูให้คะแนนพิเศษคนละ 5 คะแนน ลองเขียนฟังก์ชันบวกคะแนนให้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="bonus-copy"><pre><code>#include &lt;stdio.h&gt;
+
+void add_bonus(int score)
+{
+    score = score + 5;
+    printf("inside add_bonus: %d\n", score);
+}
+
+int main()
+{
+    int score = 70;
+    add_bonus(score);
+    printf("in main: %d\n", score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bonus-copy" data-title="C:\code\bonus.exe"><pre><code>inside add_bonus: 75
+in main: 70
+</code></pre></div>
+
+      <p>ในฟังก์ชันได้ 75 จริง แต่กลับมาที่ <code>main</code> ยังเป็น 70 เหมือนเดิม ทั้งที่ชื่อ <code>score</code> เหมือนกันทุกตัวอักษร</p>
+
+      <p>เหตุผลคือตอนเรียก <code>add_bonus(score)</code> ภาษา C ไม่ได้ส่งกล่อง <code>score</code> ของ <code>main</code> ไปให้ แต่ <strong>คัดลอกค่า</strong> 70 ไปใส่กล่องใหม่ที่เป็นของ <code>add_bonus</code> เอง กล่องใหม่นี้บังเอิญชื่อ <code>score</code> เหมือนกัน แต่เป็นคนละกล่อง แก้กล่องไหนก็ไม่กระทบอีกกล่อง พอฟังก์ชันจบ กล่องของ <code>add_bonus</code> ก็หายไปพร้อมค่า 75 วิธีส่งแบบนี้เรียกว่า <strong>pass by value</strong> (ส่งค่าแบบสำเนา)</p>
+
+      <figure>
+        <svg viewBox="0 0 460 150" width="460" style="max-width:100%;height:auto" role="img" aria-label="กล่อง score ของ main มีค่า 70 ถูกคัดลอกค่าไปใส่กล่อง score ของ add_bonus ซึ่งถูกแก้เป็น 75 กล่องของ main ยังเป็น 70">
+          <g style="font-family:var(--font-code)">
+            <text x="100" y="20" text-anchor="middle" style="fill:var(--muted);font-size:14px">main</text>
+            <text x="100" y="44" text-anchor="middle" style="fill:var(--ink);font-size:16px">score</text>
+            <rect x="40" y="56" width="120" height="58" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="100" y="93" text-anchor="middle" style="fill:var(--ink);font-size:24px">70</text>
+            <text x="360" y="20" text-anchor="middle" style="fill:var(--muted);font-size:14px">add_bonus</text>
+            <text x="360" y="44" text-anchor="middle" style="fill:var(--ink);font-size:16px">score</text>
+            <rect x="300" y="56" width="120" height="58" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="360" y="93" text-anchor="middle" style="fill:var(--ink);font-size:24px">70 → 75</text>
+            <line x1="168" y1="85" x2="284" y2="85" style="stroke:var(--muted);stroke-width:2"/>
+            <polygon points="292,85 282,79 282,91" style="fill:var(--muted)"/>
+            <text x="230" y="76" text-anchor="middle" style="fill:var(--muted);font-size:13px">copy 70</text>
+            <text x="230" y="140" text-anchor="middle" style="fill:var(--muted);font-size:13px">two boxes, same name</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ถ้ายังไม่เชื่อว่าต้องเป็นสำเนา ลองนึกถึง <code>add_bonus(70)</code> หรือ <code>add_bonus(score + 10)</code> ซึ่งเรียกได้ทั้งคู่ เลข 70 ไม่ใช่กล่อง จะไปแก้ค่าของมันไม่ได้อยู่แล้ว สิ่งที่ฟังก์ชันได้รับจึงเป็นแค่ <strong>ค่า</strong> ไม่ใช่ตัวแปร</p>
+
+      <h2 id="swap">สลับค่าในฟังก์ชันไม่ได้</h2>
+
+      <p>ตัวอย่างที่ทำให้หลายคนงงคือฟังก์ชันสลับค่าสองตัว โค้ดสลับในฟังก์ชันถูกทุกบรรทัด แต่ผลออกมาไม่สลับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="swap"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int a, int b)
+{
+    int temp = a;
+    a = b;
+    b = temp;
+    printf("inside swap: a = %d, b = %d\n", a, b);
+}
+
+int main()
+{
+    int first = 3, second = 8;
+    swap(first, second);
+    printf("in main: first = %d, second = %d\n", first, second);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="swap" data-title="C:\code\swap.exe"><pre><code>inside swap: a = 8, b = 3
+in main: first = 3, second = 8
+</code></pre></div>
+
+      <p><code>a</code> กับ <code>b</code> เป็นสำเนาของ 3 และ 8 สลับกันเรียบร้อยในฟังก์ชัน แล้วก็หายไปตอนฟังก์ชันจบ <code>first</code> กับ <code>second</code> ไม่เคยถูกแตะเลย ฟังก์ชันที่แก้ตัวแปรของคนเรียกได้จริงต้องส่ง <strong>ที่อยู่</strong> ของกล่องเข้าไปแทนค่า ซึ่งต้องใช้ pointer ในบทที่ 10</p>
+
+      <p>นี่คือเหตุผลเดียวกับที่ <code>scanf</code> ต้องมี <code>&amp;</code> นำหน้าตัวแปรตั้งแต่บทที่ 1 <code>scanf</code> เป็นฟังก์ชัน ถ้าส่ง <code>age</code> ไปเฉยๆ มันจะได้แค่สำเนาของค่าขยะในกล่อง ใส่ค่าที่อ่านมาลงไปก็ไม่ถึงตัวแปรของเรา <code>&amp;age</code> คือการส่งที่อยู่ของกล่องไปแทน <code>scanf</code> จึงเขียนลงกล่องจริงได้</p>
+
+      <h2 id="return-new-value">อยากได้ผล ให้ส่งกลับมา</h2>
+
+      <p>ตอนนี้ยังไม่มี pointer วิธีที่ถูกคือให้ฟังก์ชัน <strong>คืนค่าใหม่</strong> แล้วคนเรียกเป็นคนตัดสินใจเองว่าจะเก็บไว้ที่ไหน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="bonus-return"><pre><code>#include &lt;stdio.h&gt;
+
+int add_bonus(int score)
+{
+    return score + 5;
+}
+
+int main()
+{
+    int score = 70;
+    score = add_bonus(score); // (1)!
+    printf("in main: %d\n", score);
+    int other = add_bonus(88); // (2)!
+    printf("other: %d\n", other);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ส่งค่า 70 เข้าไป ได้ 75 กลับมา แล้วเก็บทับ <code>score</code> เอง เหมือน <code>score = score + 5;</code> ในบทที่ 1</li>
+        <li>เพราะฟังก์ชันไม่แก้ตัวแปรของใคร จึงใช้กับค่าใดก็ได้ ไม่จำเป็นต้องเป็นตัวแปร</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="bonus-return" data-title="C:\code\bonus.exe"><pre><code>in main: 75
+other: 93
+</code></pre></div>
+
+      <p>ฟังก์ชันที่รับค่า คำนวณ แล้วส่งค่ากลับ โดยไม่ไปยุ่งกับอะไรข้างนอก เข้าใจง่ายที่สุดและทดสอบง่ายที่สุด เพราะส่งค่าเดิมเข้าไปกี่ครั้งก็ได้คำตอบเดิม ฟังก์ชันส่วนใหญ่ในโจทย์แข่งขันควรเป็นแบบนี้</p>
+
+      <h2 id="one-value">return ได้ค่าเดียว</h2>
+
+      <p><code>return</code> ส่งกลับได้ครั้งละค่าเดียว ถ้าต้องการสองผล เช่น แปลงนาทีเป็นชั่วโมงกับนาที วิธีที่ทำได้ตอนนี้คือแยกเป็นสองฟังก์ชัน แต่ละตัวตอบหนึ่งคำถาม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="hours"><pre><code>#include &lt;stdio.h&gt;
+
+int hours_of(int total_minutes)
+{
+    return total_minutes / 60;
+}
+
+int minutes_of(int total_minutes)
+{
+    return total_minutes % 60;
+}
+
+int main()
+{
+    int movie, trip;
+    scanf("%d %d", &amp;movie, &amp;trip);
+    printf("movie %d:%02d\n", hours_of(movie), minutes_of(movie));
+    printf("trip %d:%02d\n", hours_of(trip), minutes_of(trip));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="hours" data-title="ข้อมูลเข้า"><pre><code>135 425
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="hours" data-title="C:\code\hours.exe"><pre><code>movie 2:15
+trip 7:05
+</code></pre></div>
+      </div>
+
+      <p>ถ้าแค่ต้องพิมพ์ ก็เขียนเป็นฟังก์ชัน <code>void</code> ที่พิมพ์ทั้งสองค่าเองได้อีกทาง ส่วนวิธีที่ให้ฟังก์ชันเดียวส่งผลกลับมาหลายค่าจริงๆ มีสองวิธี คือส่งที่อยู่ของตัวแปรเข้าไปด้วย pointer ในบทที่ 10 และรวมหลายค่าเป็นก้อนเดียวด้วย struct ในบทที่ 11</p>
+
+      <h2 id="conversion">ชนิดของค่าถูกแปลงตอนส่ง</h2>
+
+      <p>ค่าที่ส่งเข้าไปจะถูกแปลงเป็นชนิดของพารามิเตอร์ และค่าที่ <code>return</code> จะถูกแปลงเป็นชนิดที่เขียนไว้หน้าชื่อฟังก์ชัน เหมือนการเอาค่าใส่ตัวแปรในหน้า 1.4 ทุกอย่าง ถ้าแปลงจาก <code>double</code> เป็น <code>int</code> ทศนิยมจะถูกตัดทิ้งเงียบๆ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="conversion"><pre><code>#include &lt;stdio.h&gt;
+
+int square_int(int side)
+{
+    return side * side;
+}
+
+double square(double side)
+{
+    return side * side;
+}
+
+int main()
+{
+    double side;
+    scanf("%lf", &amp;side);
+    printf("%d\n", square_int(side));
+    printf("%f\n", square(side));
+    printf("%f\n", square(3));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="conversion" data-title="ข้อมูลเข้า"><pre><code>2.5
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="conversion" data-title="C:\code\square.exe"><pre><code>4
+6.250000
+9.000000
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>บรรทัดที่ 17 ส่ง 2.5 เข้าพารามิเตอร์ <code>int</code> ถูกตัดเหลือ 2 ตั้งแต่ตอนเข้า จึงได้ 4 แทนที่จะเป็น 6.25 และ <code>-Wall</code> ไม่เตือน</li>
+        <li>บรรทัดที่ 19 ส่ง <code>3</code> ที่เป็น <code>int</code> เข้าพารามิเตอร์ <code>double</code> ได้ 3.0 ไม่มีอะไรหาย การแปลงทางนี้ปลอดภัย</li>
+      </ul>
+
+      <p>กฎจึงเหมือนตอนประกาศตัวแปร ค่าไหนมีทศนิยมได้ พารามิเตอร์และชนิดที่ส่งกลับต้องเป็น <code>double</code> ค่าไหนเกิน 2 × 10<sup>9</sup> ได้ ต้องเป็น <code>long long</code> ทั้งพารามิเตอร์ ชนิดที่ส่งกลับ และตัวแปรที่รับผล ถ้าลืมจุดใดจุดหนึ่งก็ล้นหรือหายตรงจุดนั้น</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="read-in-function">แบบที่ 1 อ่านค่าเข้าพารามิเตอร์</h3>
+
+      <p>อยากแยกส่วนรับข้อมูลออกเป็นฟังก์ชัน เลยเขียนแบบนี้</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+void read_score(int score)
+{
+    scanf("%d", &amp;score);
+}
+
+int main()
+{
+    int score;
+    read_score(score);
+    printf("score = %d\n", score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>reader.c:11:5: warning: 'score' is used uninitialized [-Wuninitialized]
+   11 |     read_score(score);
+      |     ^~~~~~~~~~~~~~~~~
+reader.c:10:9: note: 'score' was declared here
+   10 |     int score;
+      |         ^~~~~
+</code></pre></div>
+
+      <p><code>scanf</code> เขียนค่าลงกล่อง <code>score</code> ของ <code>read_score</code> ซึ่งเป็นสำเนา ส่วนกล่องของ <code>main</code> ไม่เคยได้ค่าเลย compiler จึงเตือนว่าใช้ตัวแปรที่ยังไม่ได้ใส่ค่า บนเครื่องที่เขียนเอกสารนี้ ป้อน <code>85</code> แล้วได้ <code>score = 0</code> แก้ให้ฟังก์ชันอ่านค่าใส่ตัวแปรของตัวเอง แล้ว <code>return</code> ค่านั้นกลับมา</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="read-fixed"><pre><code>#include &lt;stdio.h&gt;
+
+int read_score()
+{
+    int score;
+    scanf("%d", &amp;score);
+    return score;
+}
+
+int main()
+{
+    int score = read_score();
+    printf("score = %d\n", score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="read-fixed" data-title="ข้อมูลเข้า"><pre><code>85
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="read-fixed" data-title="C:\code\reader.exe"><pre><code>score = 85
+</code></pre></div>
+      </div>
+
+      <h3 id="ignore-return">แบบที่ 2 เรียกแล้วไม่เก็บค่าที่คืน</h3>
+
+      <p>ในโปรแกรม bonus-return แก้บรรทัดที่ 11 เหลือแค่ <code>add_bonus(score);</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="ignore-return"><pre><code>#include &lt;stdio.h&gt;
+
+int add_bonus(int score)
+{
+    return score + 5;
+}
+
+int main()
+{
+    int score = 70;
+    add_bonus(score);
+    printf("in main: %d\n", score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="ignore-return" data-title="C:\code\bonus.exe"><pre><code>in main: 70
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือนใดๆ ฟังก์ชันคำนวณ 75 ให้แล้ว แต่ไม่มีใครรับไว้ ค่าเลยถูกทิ้งไป ภาษา C ยอมให้เรียกฟังก์ชันแล้วไม่สนค่าที่คืน เพราะบางฟังก์ชันอย่าง <code>printf</code> ก็คืนค่าที่คนส่วนใหญ่ไม่ใช้ ถ้าเจอฟังก์ชันที่คืนค่าแต่ถูกเรียกเป็นคำสั่งเดี่ยวๆ ให้สงสัยไว้ก่อนว่าลืมเก็บผล</p>
+
+      <h3 id="wrong-return-type">แบบที่ 3 ชนิดที่ส่งกลับไม่พอ</h3>
+
+      <p>ฟังก์ชันหาค่าเฉลี่ยที่แปลงเป็น <code>double</code> ก่อนหารอย่างถูกต้องตามหน้า 1.4 แต่ประกาศให้ส่ง <code>int</code> กลับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="average-int"><pre><code>#include &lt;stdio.h&gt;
+
+int average(int total, int count)
+{
+    return (double)total / count;
+}
+
+int main()
+{
+    int total, count;
+    scanf("%d %d", &amp;total, &amp;count);
+    printf("%f\n", (double)average(total, count));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="average-int" data-title="ข้อมูลเข้า"><pre><code>245 3
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="average-int" data-title="C:\code\average.exe"><pre><code>81.000000
+</code></pre></div>
+      </div>
+
+      <p>การหารในฟังก์ชันได้ 81.666667 ถูกแล้ว แต่ตอน <code>return</code> ค่าถูกแปลงเป็น <code>int</code> ตามหัวฟังก์ชัน เหลือ 81 พอถึง <code>main</code> จะแปลงกลับเป็น <code>double</code> ก็สายไปแล้ว เหมือนกับดักในหน้า 1.4 ที่หารเสร็จแล้วค่อยเก็บใน <code>double</code> แก้ที่หัวฟังก์ชันเป็น <code>double average(int total, int count)</code> และพิมพ์ด้วย <code>%f</code> ตรงๆ ได้เลย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>อาร์กิวเมนต์ถูกคัดลอกค่าไปใส่พารามิเตอร์ ฟังก์ชันแก้พารามิเตอร์แล้วตัวแปรของคนเรียกไม่เปลี่ยน แม้ชื่อจะเหมือนกัน</li>
+        <li>อยากได้ผลจากฟังก์ชัน ให้ <code>return</code> ค่าใหม่ แล้วคนเรียกเก็บเอง เช่น <code>score = add_bonus(score);</code></li>
+        <li><code>return</code> ส่งได้ค่าเดียว ส่งหลายค่าต้องรอ pointer ในบทที่ 10 หรือ struct ในบทที่ 11</li>
+        <li>ค่าที่ส่งเข้าและส่งออกถูกแปลงชนิดเงียบๆ เลือกชนิดของพารามิเตอร์และชนิดที่ส่งกลับให้ใหญ่พอเสมอ</li>
+        <li>เรียกฟังก์ชันที่คืนค่าแล้วไม่เก็บผล compiler ไม่เตือน ผลหายไปเฉยๆ</li>
+      </ul>
+    </article>

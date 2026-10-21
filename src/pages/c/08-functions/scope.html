@@ -1,0 +1,373 @@
+<article class="doc">
+      <h1>8.4 ขอบเขตของตัวแปร</h1>
+
+      <p>พอโปรแกรมมีหลายฟังก์ชัน คำถามที่ต้องตอบให้ได้คือ ตัวแปรตัวหนึ่ง <strong>ใช้ได้ตรงไหนบ้าง</strong> และ <strong>อยู่นานแค่ไหน</strong> ช่วงของโค้ดที่ชื่อตัวแปรใช้ได้เรียกว่า <strong>ขอบเขต (scope)</strong> หน้านี้จะดูตัวแปรสามแบบ local global และ static กับกรณีที่ชื่อซ้ำกัน ซึ่งเป็นต้นเหตุของบั๊กที่หายากที่สุดแบบหนึ่งในโค้ดแข่งขัน เพราะคอมไพล์ผ่าน ไม่มีคำเตือน และได้คำตอบผิดแบบดูเหมือนถูก</p>
+
+      <h2 id="local">ตัวแปร local อยู่ในฟังก์ชันของมัน</h2>
+
+      <p>ตัวแปรที่ประกาศในฟังก์ชัน รวมถึงพารามิเตอร์ เรียกว่า <strong>ตัวแปร local</strong> (ตัวแปรเฉพาะที่) ใช้ได้แค่ในฟังก์ชันนั้น ฟังก์ชันอื่นมองไม่เห็น ฟังก์ชันต่างกันจึงตั้งชื่อตัวแปรซ้ำกันได้โดยไม่ชนกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="local"><pre><code>#include &lt;stdio.h&gt;
+
+int count_passed(int scores[], int n)
+{
+    int count = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if (scores[i] &gt;= 50) {
+            count++;
+        }
+    }
+    return count;
+}
+
+int count_perfect(int scores[], int n)
+{
+    int count = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if (scores[i] == 100) {
+            count++;
+        }
+    }
+    return count;
+}
+
+int main()
+{
+    int scores[6] = {45, 100, 72, 50, 100, 38};
+    int count = 6;
+    printf("students = %d\n", count);
+    printf("passed = %d\n", count_passed(scores, count));
+    printf("perfect = %d\n", count_perfect(scores, count));
+    printf("students = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="local" data-title="C:\code\count.exe"><pre><code>students = 6
+passed = 4
+perfect = 2
+students = 6
+</code></pre></div>
+
+      <p>โปรแกรมนี้มี <code>count</code> สามตัว <code>i</code> สองตัว และ <code>n</code> สองตัว ทุกตัวเป็นคนละกล่องกัน <code>count_passed</code> นับไปถึง 4 ก็ไม่ไปแตะ <code>count</code> ของ <code>main</code> ที่เป็น 6 บรรทัดสุดท้ายจึงยังพิมพ์ 6 ได้</p>
+
+      <p>เรื่องนี้ทำให้เขียนฟังก์ชันได้สบายใจ ตอนเขียน <code>count_perfect</code> ไม่ต้องไปเช็กเลยว่าที่อื่นใช้ชื่อ <code>count</code> หรือ <code>i</code> ไปแล้วหรือยัง ฟังก์ชันหนึ่งตัวเหมือนห้องหนึ่งห้อง ของที่วางในห้องไม่ปนกับห้องอื่น</p>
+
+      <p>ขอบเขตแคบกว่าฟังก์ชันก็มี ตัวแปรที่ประกาศในปีกกาของ <code>if</code> หรือลูป ใช้ได้แค่ในปีกกานั้น อย่าง <code>i</code> ที่ประกาศในวงเล็บของ <code>for</code> หายไปตอนลูปจบ ซึ่งเห็นแล้วในแบบที่ 3 ของหน้า 4.1 กฎทั่วไปคือ <strong>ตัวแปรใช้ได้ตั้งแต่บรรทัดที่ประกาศ จนถึงปีกกาปิดของปีกกาคู่ที่ครอบมันอยู่</strong></p>
+
+      <h2 id="lifetime">local เกิดใหม่ทุกครั้งที่เรียก</h2>
+
+      <p>ตัวแปร local ไม่ได้มีอยู่ตลอดเวลา มันถูกสร้างตอนฟังก์ชันถูกเรียก และหายไปตอนฟังก์ชันจบ เรียกครั้งต่อไปก็ได้กล่องใหม่ ค่าจากครั้งก่อนไม่เหลือ ถ้าอยากให้ตัวแปรในฟังก์ชันจำค่าข้ามการเรียกได้ ให้ใส่คำว่า <code>static</code> หน้าการประกาศ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="ticket"><pre><code>#include &lt;stdio.h&gt;
+
+int next_ticket_local()
+{
+    int number = 0; // (1)!
+    number++;
+    return number;
+}
+
+int next_ticket()
+{
+    static int number = 0; // (2)!
+    number++;
+    return number;
+}
+
+int main()
+{
+    for (int i = 0; i &lt; 3; i++) {
+        int a = next_ticket_local();
+        int b = next_ticket();
+        printf("local %d, static %d\n", a, b);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>กล่องใหม่ทุกครั้งที่เรียก เริ่มที่ 0 แล้วบวกเป็น 1 ทุกครั้ง</li>
+        <li>ตัวแปร <code>static</code> ถูกสร้างครั้งเดียวตอนโปรแกรมเริ่ม และไม่หายไปตอนฟังก์ชันจบ บรรทัดนี้จึงใส่ค่า 0 แค่ครั้งแรกครั้งเดียว ครั้งต่อไปข้ามไปเลย</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="ticket" data-title="C:\code\ticket.exe"><pre><code>local 1, static 1
+local 1, static 2
+local 1, static 3
+</code></pre></div>
+
+      <p><code>static</code> เหมือนเครื่องกดบัตรคิวที่จำเลขล่าสุดไว้ แต่ยังเป็นของฟังก์ชันนั้นคนเดียว ฟังก์ชันอื่นมองไม่เห็น <code>number</code> ตัวนี้ ในโจทย์แข่งขันไม่ค่อยได้ใช้ แต่ควรรู้ไว้เพราะจะเจอในโค้ดของคนอื่น และใช้นับว่าฟังก์ชันถูกเรียกไปกี่ครั้งตอนหาบั๊ก</p>
+
+      <h2 id="global">ตัวแปร global ทุกฟังก์ชันเห็น</h2>
+
+      <p>ตัวแปรที่ประกาศนอกทุกฟังก์ชันเรียกว่า <strong>ตัวแปร global</strong> ซึ่งน้องใช้มาตั้งแต่หน้า 5.5 กับอาเรย์ใหญ่ ทุกฟังก์ชันที่อยู่ใต้บรรทัดประกาศใช้มันได้ อยู่ตลอดตั้งแต่โปรแกรมเริ่มจนจบ และเริ่มต้นเป็น 0 เสมอ</p>
+
+      <p>โค้ดแข่งขันจำนวนมากเก็บข้อมูลเข้าไว้ใน global แล้วให้ทุกฟังก์ชันใช้ตรงๆ ไม่ต้องส่งเป็นพารามิเตอร์</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="global-data"><pre><code>#include &lt;stdio.h&gt;
+
+int n;
+int heights[100000];
+
+void read_input()
+{
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;heights[i]);
+    }
+}
+
+int tallest()
+{
+    int best = heights[0];
+    for (int i = 1; i &lt; n; i++) {
+        if (heights[i] &gt; best) {
+            best = heights[i];
+        }
+    }
+    return best;
+}
+
+int count_taller_than(int limit)
+{
+    int count = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if (heights[i] &gt; limit) {
+            count++;
+        }
+    }
+    return count;
+}
+
+int main()
+{
+    read_input();
+    printf("tallest = %d\n", tallest());
+    printf("over 160 = %d\n", count_taller_than(160));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="global-data" data-title="ข้อมูลเข้า"><pre><code>6
+158 171 149 165 160 177
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="global-data" data-title="C:\code\heights.exe"><pre><code>tallest = 177
+over 160 = 3
+</code></pre></div>
+      </div>
+
+      <p>ข้อดีคือสั้น <code>read_input</code> เขียนลง <code>n</code> ได้เลยโดยไม่ต้องใช้ pointer และไม่ต้องส่ง <code>heights</code> กับ <code>n</code> ทุกครั้งที่เรียก ข้อเสียคือฟังก์ชันพวกนี้ผูกติดกับอาเรย์ <code>heights</code> ตัวเดียว ถ้าโจทย์มีสองห้องแบบหน้า 8.3 ก็ต้องเขียน <code>tallest</code> สองชุด และพออ่านโค้ด เห็นแค่ <code>tallest()</code> ไม่รู้ว่ามันใช้ข้อมูลอะไรบ้าง ต้องเปิดไปดูข้างใน</p>
+
+      <h2 id="shadowing">ชื่อซ้ำกัน ตัวที่ใกล้กว่าชนะ</h2>
+
+      <p>ถ้าในฟังก์ชันประกาศตัวแปร local ชื่อเดียวกับตัวแปร global ภาษา C ไม่ห้าม แต่ในฟังก์ชันนั้น ชื่อนั้นจะหมายถึงตัว local เสมอ ตัว global ถูกบังจนมองไม่เห็น อาการนี้เรียกว่า <strong>shadowing</strong> (บังเงา)</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="shadow"><pre><code>#include &lt;stdio.h&gt;
+
+int score = 100;
+
+void show_local()
+{
+    int score = 5;
+    printf("in show_local: %d\n", score);
+}
+
+void show_global()
+{
+    printf("in show_global: %d\n", score);
+}
+
+int main()
+{
+    show_local();
+    show_global();
+    printf("in main: %d\n", score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="shadow" data-title="C:\code\shadow.exe"><pre><code>in show_local: 5
+in show_global: 100
+in main: 100
+</code></pre></div>
+
+      <p><code>show_local</code> มี <code>score</code> ของตัวเองจึงเห็น 5 ส่วน <code>show_global</code> กับ <code>main</code> ไม่มี local ชื่อนี้ จึงเห็นตัว global ที่เป็น 100 กฎคือ compiler หาชื่อจากปีกกาที่ใกล้ที่สุดก่อน แล้วค่อยขยายออกไปข้างนอกทีละชั้น เจอตัวไหนก่อนใช้ตัวนั้น</p>
+
+      <p><code>-Wall</code> ไม่เตือนเรื่องนี้ ถ้าอยากให้เตือน ต้องเพิ่มตัวเลือก <code>-Wshadow</code> เอง ในหน้า Compiler settings ของ Code::Blocks แท็บ <strong>Other compiler options</strong> พิมพ์ <code>-Wshadow</code> ลงไปได้ ใช้ตอนหาบั๊กแล้วจะช่วยได้มาก ตัวอย่างที่อันตรายจริงอยู่ในแบบที่ 3 ข้างล่าง</p>
+
+      <h2 id="when-global">เมื่อไรควรใช้ global</h2>
+
+      <p>ทั้งสองแบบใช้ได้ คนเขียนโปรแกรมแข่งขันส่วนใหญ่ใช้ผสมกันตามหลักนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>ควรเป็น</th><th>เหตุผล</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>อาเรย์ขนาดใหญ่ตามขอบเขตโจทย์</td><td>global</td><td>ตัวแปรใน <code>main</code> ใช้ได้รวมราว 2 MB ตามหน้า 5.5 และ global เริ่มเป็น 0 ให้เอง</td></tr>
+            <tr><td>ข้อมูลเข้าที่ทุกฟังก์ชันต้องใช้ เช่น แผนที่ของโจทย์กริด</td><td>global ได้</td><td>ไม่ต้องส่งต่อกันทุกชั้น</td></tr>
+            <tr><td>ตัวนับลูป ผลรวมชั่วคราว ตัวแปรพักค่า</td><td>local เสมอ</td><td>ถ้าเป็น global ฟังก์ชันจะแย่งกันใช้ ดูแบบที่ 2</td></tr>
+            <tr><td>ข้อมูลที่ฟังก์ชันเดียวต้องทำงานกับหลายชุด</td><td>พารามิเตอร์</td><td>เรียกซ้ำกับข้อมูลคนละชุดได้ แบบสองห้องในหน้า 8.3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าตัดสินใจใช้ global แล้ว ให้ตั้งชื่อที่ไม่ซ้ำกับตัวแปร local ใดๆ และ <strong>ห้ามประกาศชื่อเดิมซ้ำใน <code>main</code></strong> นี่คือกฎข้อที่ทำให้คนเสียคะแนนมากที่สุดของหน้านี้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="other-local">แบบที่ 1 ใช้ตัวแปร local ของฟังก์ชันอื่น</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+void read_scores(int n)
+{
+    int total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        total += score;
+    }
+}
+
+int main()
+{
+    read_scores(3);
+    printf("total = %d\n", total);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>total.c:16:28: error: 'total' undeclared (first use in this function)
+   16 |     printf("total = %d\n", total);
+      |                            ^~~~~
+total.c:16:28: note: each undeclared identifier is reported only once for each function it appears in
+</code></pre></div>
+
+      <p><code>total</code> เป็น local ของ <code>read_scores</code> และหายไปตั้งแต่ฟังก์ชันจบ <code>main</code> จึงไม่รู้จักชื่อนี้เลย บรรทัด <code>note</code> บอกว่า error แบบนี้จะขึ้นครั้งเดียวต่อชื่อต่อฟังก์ชัน ถึงจะใช้ <code>total</code> หลายจุดก็ตาม วิธีแก้ที่ถูกคือให้ <code>read_scores</code> ส่ง <code>total</code> กลับมาด้วย <code>return</code></p>
+
+      <h3 id="global-counter">แบบที่ 2 ตัวนับลูปเป็น global</h3>
+
+      <p>เอาโปรแกรมพีระมิดจากหน้า 8.1 มาประกาศ <code>i</code> ไว้ข้างนอกตัวเดียว ให้ทั้ง <code>main</code> และ <code>print_row</code> ใช้ร่วมกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="global-i"><pre><code>#include &lt;stdio.h&gt;
+
+int i;
+
+void print_row(char symbol, int count)
+{
+    for (i = 0; i &lt; count; i++) {
+        printf("%c", symbol);
+    }
+}
+
+int main()
+{
+    int height;
+    scanf("%d", &amp;height);
+    for (i = 1; i &lt;= height; i++) {
+        print_row(' ', height - i);
+        print_row('*', 2 * i - 1);
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="global-i" data-title="ข้อมูลเข้า"><pre><code>4
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="global-i" data-title="C:\code\pyramid.exe"><pre><code>   *****
+</code></pre></div>
+      </div>
+
+      <p>ควรได้พีระมิดสี่แถว แต่ได้แถวเดียวที่ผิดรูป ไล่ดูทีละจังหวะ</p>
+
+      <ol>
+        <li>รอบแรก <code>main</code> ตั้ง <code>i</code> เป็น 1 แล้วเรียก <code>print_row(' ', 3)</code> ฟังก์ชันพิมพ์ช่องว่าง 3 ช่อง ลูปข้างในจบตอน <code>i</code> เป็น 3</li>
+        <li>บรรทัดที่ 18 คำนวณ <code>2 * i - 1</code> ตอนนี้ <code>i</code> เป็น 3 แล้ว จึงได้ 5 แทนที่จะเป็น 1 พิมพ์ดาว 5 ดวง ลูปข้างในจบตอน <code>i</code> เป็น 5</li>
+        <li>กลับมาที่ลูปของ <code>main</code> บวก <code>i</code> เป็น 6 ซึ่งเกิน 4 ลูปจบทันที</li>
+      </ol>
+
+      <p>สองลูปใช้ตัวนับกล่องเดียวกัน ลูปข้างในจึงเขียนทับตัวนับของลูปข้างนอก คอมไพล์ผ่านไม่มีคำเตือน และถ้าทดสอบด้วยค่าที่บังเอิญได้ผลถูกก็จะไม่รู้ตัวเลย ตัวนับลูปต้องเป็น local เสมอ ประกาศในวงเล็บของ <code>for</code> แบบ <code>for (int i = 0; ...)</code> ติดเป็นนิสัยไว้</p>
+
+      <h3 id="shadowed-n">แบบที่ 3 ประกาศ n ซ้ำใน main</h3>
+
+      <p>ในโปรแกรม global-data ย้ายการอ่านข้อมูลมาไว้ใน <code>main</code> แทน <code>read_input</code> แล้วเผลอประกาศ <code>int n;</code> ไว้ใน <code>main</code> ด้วย ซึ่งเป็นนิสัยที่ติดมาจากบทก่อนๆ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="shadow-n"><pre><code>#include &lt;stdio.h&gt;
+
+int n;
+int heights[100000];
+
+int tallest()
+{
+    int best = heights[0];
+    for (int i = 1; i &lt; n; i++) {
+        if (heights[i] &gt; best) {
+            best = heights[i];
+        }
+    }
+    return best;
+}
+
+int count_taller_than(int limit)
+{
+    int count = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if (heights[i] &gt; limit) {
+            count++;
+        }
+    }
+    return count;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;heights[i]);
+    }
+    printf("tallest = %d\n", tallest());
+    printf("over 160 = %d\n", count_taller_than(160));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="shadow-n" data-title="ข้อมูลเข้า"><pre><code>6
+158 171 149 165 160 177
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="shadow-n" data-title="C:\code\heights.exe"><pre><code>tallest = 158
+over 160 = 0
+</code></pre></div>
+      </div>
+
+      <p><code>scanf</code> ใน <code>main</code> อ่าน 6 ใส่ <code>n</code> ตัว local ส่วน <code>n</code> ตัว global ยังเป็น 0 เหมือนตอนโปรแกรมเริ่ม <code>tallest</code> กับ <code>count_taller_than</code> มองเห็นแค่ตัว global จึงคิดว่ามีข้อมูล 0 ตัว ลูปของ <code>count_taller_than</code> ไม่ทำงานเลยได้ 0 ส่วน <code>tallest</code> ได้ 158 ซึ่งคือ <code>heights[0]</code> ที่ใช้เป็นค่าเริ่มต้น ผิดแต่ดูเหมือนตัวเลขปกติ</p>
+
+      <p>บั๊กแบบนี้หาด้วยตายากมาก เพราะทุกบรรทัดดูถูกต้อง และอาเรย์ <code>heights</code> ก็มีข้อมูลครบ ถ้าคอมไพล์ด้วย <code>-Wall -Wshadow</code> compiler จะชี้ให้เห็นทันที</p>
+
+      <div class="code" data-lang="gcc"><pre><code>heights.c:30:9: warning: declaration of 'n' shadows a global declaration [-Wshadow]
+   30 |     int n;
+      |         ^
+heights.c:3:5: note: shadowed declaration is here
+    3 | int n;
+      |     ^
+</code></pre></div>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ตัวแปร local ประกาศในฟังก์ชันหรือในปีกกา ใช้ได้แค่ในนั้น ฟังก์ชันต่างกันใช้ชื่อซ้ำกันได้โดยไม่ชนกัน</li>
+        <li>local เกิดใหม่ทุกครั้งที่เรียกฟังก์ชัน ใส่ <code>static</code> ถ้าต้องการให้จำค่าข้ามการเรียก</li>
+        <li>ตัวแปร global ประกาศนอกฟังก์ชัน ทุกฟังก์ชันข้างล่างเห็น อยู่ตลอดโปรแกรม และเริ่มเป็น 0</li>
+        <li>ชื่อซ้ำกัน ตัวที่ประกาศใกล้ที่สุดชนะ <code>-Wall</code> ไม่เตือน ต้องเปิด <code>-Wshadow</code> เอง</li>
+        <li>อาเรย์ใหญ่และข้อมูลที่ใช้ร่วมกันเป็น global ได้ ตัวนับลูปและค่าชั่วคราวต้องเป็น local เสมอ</li>
+        <li>มี global ชื่อไหนแล้ว ห้ามประกาศชื่อนั้นซ้ำใน <code>main</code></li>
+      </ul>
+    </article>
