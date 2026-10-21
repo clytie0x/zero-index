@@ -34,9 +34,10 @@ EXERCISES = ROOT / "src" / "exercises"
 
 GCC = os.environ.get("ZI_GCC", "gcc")
 GXX = os.environ.get("ZI_GXX", "g++")
-C_FLAGS = ["-std=c17", "-O2", "-Wall", "-Wextra"]
-CPP_FLAGS = ["-std=gnu++17", "-O2", "-Wall", "-Wextra"]
-CB_FLAGS = ["-Wall"]  # ค่าที่น้องตั้งใน Code::Blocks ตามบทที่ 0
+# Ubuntu เปิด _FORTIFY_SOURCE ทำให้เตือนเรื่องไม่ใช้ค่าที่ scanf คืนมา คำเตือนนี้ไม่ขึ้นใน Code::Blocks จึงปิดไว้
+C_FLAGS = ["-std=c17", "-O2", "-Wall", "-Wextra", "-Wno-unused-result"]
+CPP_FLAGS = ["-std=gnu++17", "-O2", "-Wall", "-Wextra", "-Wno-unused-result"]
+CB_FLAGS = ["-Wall", "-Wno-unused-result"]  # ค่าที่น้องตั้งใน Code::Blocks ตามบทที่ 0
 RUN_TIMEOUT = 10
 
 BLOCK = re.compile(r'<div class="code"([^>]*)><pre><code>(.*?)</code></pre></div>', re.S)
