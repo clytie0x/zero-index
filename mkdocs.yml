@@ -32,6 +32,11 @@ theme:
     - content.code.copy
     - content.code.annotate
 
+copyright: zero-index โดย clytie0x
+
+extra:
+  generator: false
+
 extra_css:
   - assets/extra.css
 
