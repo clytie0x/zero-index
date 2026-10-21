@@ -1,0 +1,22 @@
+# สารบัญของทั้งเว็บ แก้ที่ไฟล์นี้ที่เดียว
+# เมนูซ้าย ปุ่มก่อนหน้าและถัดไป ชื่อแท็บ และ breadcrumb สร้างจากลำดับในไฟล์นี้
+# เนื้อหาของแต่ละหน้าอยู่ที่ src/pages/<path>
+
+name = "zero-index"
+description = "เอกสารเตรียมตัวเขียนโปรแกรม C และ C++ ตั้งแต่ศูนย์ สำหรับสายแข่งขัน"
+repo = "clytie0x/zero-index"
+author = "clytie0x"
+
+[home]
+path = "index.html"
+title = "หน้าแรก"
+
+[[chapters]]
+num = "0"
+title = "บทที่ 0 เริ่มต้น"
+path = "c/00-start/index.html"
+pages = [
+  { num = "0.1", title = "คอมพิวเตอร์อ่านโค้ดเรายังไง", path = "c/00-start/why.html" },
+  { num = "0.2", title = "ติดตั้ง Code::Blocks", path = "c/00-start/install.html" },
+  { num = "0.3", title = "โปรแกรมแรก Hello World", path = "c/00-start/hello.html" },
+]
