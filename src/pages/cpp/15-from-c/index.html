@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 15 จาก C สู่ C++</h1>
+
+      <p>จบบทนี้ น้องจะย้ายโปรแกรมภาษา C ที่เขียนมาทั้งหมดไปเป็น C++ ได้ อ่านและพิมพ์ข้อมูลเป็นล้านตัวด้วย <code>cin</code> <code>cout</code> ได้ทันเวลา 1 วินาที จัดทศนิยมได้ตามที่โจทย์สั่ง และจัดการข้อความด้วย <code>string</code> ที่ต่อ เทียบ ตัด และค้นหาได้ในคำสั่งเดียว โจทย์ข้อความที่ใช้อาเรย์ของ <code>char</code> แล้วยาวและพลาดง่ายจะสั้นลงมาก บทนี้เป็นฐานของทุกบทที่เหลือ ตั้งแต่บทที่ 16 ไปทุกโปรแกรมเป็น C++ และใช้ STL</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="why-cpp.html">15.1 เปลี่ยนจาก .c เป็น .cpp</a></td><td>ทำไมการแข่งขันใช้ C++ สร้างไฟล์ <code>.cpp</code> namespace <code>std</code> <code>bits/stdc++.h</code> ข้อดีข้อเสีย และโค้ด C ที่ C++ ไม่ยอมรับ</td></tr>
+            <tr><td><a href="cin-cout.html">15.2 cin และ cout</a></td><td>รับและพิมพ์โดยไม่ต้องใช้ <code>%d</code> <code>endl</code> กับ <code>'\n'</code> อ่านจนหมดข้อมูล และทศนิยมด้วย <code>fixed</code> <code>setprecision</code></td></tr>
+            <tr><td><a href="fast-io.html">15.3 อ่านเขียนให้ทันเวลา</a></td><td>วัดเวลาจริงกับข้อมูลล้านตัว สองบรรทัดที่ทำให้เร็วกว่า <code>scanf</code> และทำไมห้ามใช้ปนกัน</td></tr>
+            <tr><td><a href="string.html">15.4 string ของ C++</a></td><td>ต่อ เทียบ <code>size</code> <code>substr</code> <code>find</code> <code>getline</code> และกับดัก <code>cin &gt;&gt;</code> ตามด้วย <code>getline</code></td></tr>
+            <tr><td><a href="reference.html">15.5 bool reference และ auto</a></td><td><code>bool</code> ส่งตัวแปรให้ฟังก์ชันแก้ด้วย reference ลูปเดินทีละตัว <code>auto</code> และ <code>new</code> <code>delete</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>เอาโปรแกรม push-front จากหน้า 14.1 มาบันทึกเป็น <code>.cpp</code> เจอ error เรื่อง <code>void*</code> แล้วแก้ด้วย <code>new</code> กับ <code>delete</code> จนได้ <code>7 2 9 3</code> เหมือนเดิม</span></label></li>
+        <li><label><input type="checkbox"><span>เขียนโครงโปรแกรมที่มี <code>bits/stdc++.h</code> <code>using namespace std;</code> และสองบรรทัดของหน้า 15.3 ได้เองโดยไม่เปิดดู แล้วคอมไพล์ผ่าน</span></label></li>
+        <li><label><input type="checkbox"><span>หาค่าเฉลี่ยของ 70 85 90 แล้วพิมพ์ด้วย <code>cout</code> ได้ <code>81.67</code> ไม่ใช่ <code>81.6667</code> หรือ <code>82</code></span></label></li>
+        <li><label><input type="checkbox"><span>รับเลขห้องด้วย <code>cin &gt;&gt;</code> แล้วรับชื่อเต็มด้วย <code>getline</code> ได้ <code>name [Somchai Jaidee]</code> ไม่ใช่ <code>name []</code></span></label></li>
+        <li><label><input type="checkbox"><span>เปลี่ยนคำเป็นตัวพิมพ์ใหญ่ทั้งคำด้วย <code>for (char &amp;c : word)</code> แล้วลองลบ <code>&amp;</code> ออกจนเห็นว่าคำไม่เปลี่ยน</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 6 ข้อจาก 8 ข้อ รวมข้อ 6 ที่มีข้อมูลเป็นล้านตัว</span></label></li>
+      </ul>
+    </article>

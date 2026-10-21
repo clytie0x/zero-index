@@ -1,0 +1,457 @@
+<article class="doc">
+      <h1>15.5 bool reference และ auto</h1>
+
+      <p>หน้าสุดท้ายของบทนี้รวมของเล็กๆ ที่ C++ เพิ่มให้ภาษา C แต่ใช้บ่อยมากในโค้ดแข่งขัน คือชนิด <code>bool</code> สำหรับจริงเท็จ reference ที่ให้ฟังก์ชันแก้ตัวแปรของคนเรียกได้โดยไม่ต้องใช้ <code>*</code> กับ <code>&amp;</code> แบบ pointer ในบทที่ 10 ลูป <code>for</code> แบบใหม่ที่เดินทีละตัวในข้อความหรืออาเรย์ คำว่า <code>auto</code> และปิดท้ายด้วย <code>new</code> กับ <code>delete</code> ที่ใช้แทน <code>malloc</code> กับ <code>free</code></p>
+
+      <h2 id="bool">bool เก็บจริงหรือเท็จ</h2>
+
+      <p>ในบทที่ 3 เราใช้ <code>int</code> เก็บผลของเงื่อนไข จริงคือ 1 เท็จคือ 0 C++ มีชนิด <code>bool</code> สำหรับงานนี้โดยเฉพาะ มีค่าได้แค่สองค่าคือ <code>true</code> กับ <code>false</code> เห็นชื่อชนิดก็รู้ทันทีว่าตัวแปรนี้เป็นคำตอบแบบใช่หรือไม่ใช่</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="bool"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+bool is_vowel(char c) // (1)!
+{
+    return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int score;
+    string word;
+    cin &gt;&gt; score &gt;&gt; word;
+    bool passed = score &gt;= 50; // (2)!
+    cout &lt;&lt; passed &lt;&lt; '\n'; // (3)!
+    if (passed) {
+        cout &lt;&lt; "pass\n";
+    }
+    bool has_vowel = false;
+    int n = word.size();
+    for (int i = 0; i &lt; n; i++) {
+        if (is_vowel(word[i])) {
+            has_vowel = true;
+        }
+    }
+    if (!has_vowel) {
+        cout &lt;&lt; "no vowels in " &lt;&lt; word &lt;&lt; '\n';
+    }
+    cout &lt;&lt; (int)sizeof(passed) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ฟังก์ชันที่ตอบใช่หรือไม่ใช่ คืน <code>bool</code> อ่านง่ายกว่าคืน <code>int</code> มาก เวลาเรียกก็เขียนในเงื่อนไขได้ตรงๆ</li>
+        <li>ผลของการเปรียบเทียบเก็บลง <code>bool</code> ได้เลย</li>
+        <li><code>cout</code> พิมพ์ <code>true</code> เป็น <code>1</code> และ <code>false</code> เป็น <code>0</code> ถ้าโจทย์ให้ตอบเป็นคำ ต้องใช้ <code>if</code> เลือกพิมพ์เอง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="bool" data-title="ข้อมูลเข้า"><pre><code>72 rhythm
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bool" data-title="C:\code\bool.exe"><pre><code>1
+pass
+no vowels in rhythm
+1
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดสุดท้ายบอกว่า <code>bool</code> ใช้แค่ 1 byte เทียบกับ <code>int</code> ที่ใช้ 4 byte อาเรย์ที่จดว่าอะไรเคยเจอแล้ว อย่าง <code>bool seen[1000001];</code> จึงใช้หน่วยความจำแค่หนึ่งในสี่ของอาเรย์ <code>int</code> ขนาดเท่ากัน ส่วน <code>!</code> <code>&amp;&amp;</code> <code>||</code> ใช้กับ <code>bool</code> ได้เหมือนที่ใช้กับเงื่อนไขในบทที่ 3 ทุกอย่าง</p>
+
+      <h2 id="reference">reference ชื่อที่สองของตัวแปร</h2>
+
+      <p><strong>reference</strong> คือการตั้งชื่อเพิ่มให้กล่องที่มีอยู่แล้ว ประกาศด้วย <code>&amp;</code> หลังชื่อชนิด ไม่ได้สร้างกล่องใหม่ ทั้งสองชื่อชี้กล่องเดียวกัน แก้ผ่านชื่อไหนก็เปลี่ยนที่กล่องเดียวกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="ref-basic"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int score = 70;
+    int &amp;bonus_target = score;
+    bonus_target += 5;
+    cout &lt;&lt; score &lt;&lt; '\n';
+    score = 90;
+    cout &lt;&lt; bonus_target &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="ref-basic" data-title="C:\code\ref.exe"><pre><code>75
+90
+</code></pre></div>
+
+      <p><code>int &amp;bonus_target = score;</code> แปลว่า <code>bonus_target</code> คือชื่อเล่นของ <code>score</code> บวกผ่านชื่อเล่น <code>score</code> ก็เปลี่ยน เปลี่ยน <code>score</code> ชื่อเล่นก็เห็น reference ต้องผูกกับตัวแปรตั้งแต่ตอนประกาศ และผูกแล้วเปลี่ยนไปผูกตัวอื่นไม่ได้</p>
+
+      <p>ใช้ในฟังก์ชันเดียวๆ แบบนี้ไม่ค่อยมีประโยชน์ ประโยชน์จริงอยู่ที่<strong>พารามิเตอร์ของฟังก์ชัน</strong></p>
+
+      <h3 id="swap">ส่งตัวแปรให้ฟังก์ชันแก้</h3>
+
+      <p>หน้า 8.2 เห็นแล้วว่าฟังก์ชันได้แค่สำเนา สลับค่าในฟังก์ชันแล้วตัวแปรของคนเรียกไม่เปลี่ยน บทที่ 10 แก้ด้วยการส่งที่อยู่ไปเป็น pointer ใน C++ ทำได้ง่ายกว่านั้น ให้พารามิเตอร์เป็น reference</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="swap"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+void swap_values(int &amp;a, int &amp;b) // (1)!
+{
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int first, second;
+    cin &gt;&gt; first &gt;&gt; second;
+    swap_values(first, second); // (2)!
+    cout &lt;&lt; first &lt;&lt; ' ' &lt;&lt; second &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>a</code> กับ <code>b</code> เป็น reference จึงไม่ใช่สำเนา แต่เป็นชื่อเล่นของตัวแปรที่คนเรียกส่งมา ในฟังก์ชันใช้ <code>a</code> <code>b</code> เหมือนตัวแปรธรรมดา ไม่ต้องมี <code>*</code></li>
+        <li>เรียกด้วยชื่อตัวแปรตรงๆ ไม่ต้องใส่ <code>&amp;</code> หน้า <code>first</code> กับ <code>second</code></li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="swap" data-title="ข้อมูลเข้า"><pre><code>3 8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="swap" data-title="C:\code\swap.exe"><pre><code>8 3
+</code></pre></div>
+      </div>
+
+      <p>เทียบกับฟังก์ชัน <code>swap</code> แบบ pointer ในหน้า 10.2</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th></th><th>pointer (บทที่ 10)</th><th>reference (C++)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ประกาศพารามิเตอร์</td><td><code>void swap(int *x, int *y)</code></td><td><code>void swap_values(int &amp;a, int &amp;b)</code></td></tr>
+            <tr><td>ใช้ในฟังก์ชัน</td><td><code>*x = *y;</code></td><td><code>a = b;</code></td></tr>
+            <tr><td>เรียก</td><td><code>swap(&amp;first, &amp;second);</code></td><td><code>swap_values(first, second);</code></td></tr>
+            <tr><td>ส่งของที่ไม่มีอยู่ได้ไหม</td><td>ได้ ส่ง <code>NULL</code> แล้วพังตอนรัน</td><td>ไม่ได้ ต้องผูกกับตัวแปรจริงเสมอ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้างในทำงานแบบเดียวกัน คือส่งที่อยู่ของกล่องไป แต่ compiler จัดการ <code>&amp;</code> กับ <code>*</code> ให้ทั้งหมด โอกาสลืมดอกจันหรือลืมเครื่องหมายแอนด์จึงหายไป ฟังก์ชันที่ต้องส่งผลกลับหลายค่า ซึ่งหน้า 8.2 บอกว่าต้องรอ pointer ก็ใช้ reference ได้ เช่น <code>void min_max(int score[], int n, int &amp;lowest, int &amp;highest)</code></p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">C++ มี swap ให้แล้ว</p>
+        <p>ตัวอย่างนี้ตั้งชื่อว่า <code>swap_values</code> เพราะใน <code>std</code> มีฟังก์ชัน <code>swap</code> ที่ทำงานแบบเดียวกันอยู่แล้ว เขียน <code>swap(first, second);</code> ได้เลยโดยไม่ต้องเขียนฟังก์ชันเอง และใช้กับ <code>string</code> หรือชนิดอื่นได้ด้วย</p>
+      </div>
+
+      <h3 id="const-ref">ส่ง string แบบไม่ต้องคัดลอก</h3>
+
+      <p>ส่ง <code>string</code> ให้ฟังก์ชันแบบธรรมดา ฟังก์ชันจะได้<strong>สำเนาทั้งข้อความ</strong> ต่างจากอาเรย์ <code>char</code> ในบทที่ 8 ที่ส่งไปแค่ที่อยู่ ข้อความยาวแสนตัว เรียกฟังก์ชันหนึ่งครั้งก็คัดลอกแสนตัว ถ้าเรียกเป็นแสนครั้งจะช้าลงชัดเจน วิธีแก้คือส่งเป็น reference และใส่ <code>const</code> (ค่าคงที่) ไว้ข้างหน้า เพื่อสัญญาว่าฟังก์ชันจะอ่านอย่างเดียว ไม่แก้ข้อความของคนเรียก</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="const-ref"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+bool is_vowel_at(const string &amp;text, int i)
+{
+    char c = text[i];
+    return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string text;
+    int q;
+    cin &gt;&gt; text &gt;&gt; q;
+    int count = 0;
+    for (int k = 0; k &lt; q; k++) {
+        int i;
+        cin &gt;&gt; i;
+        if (is_vowel_at(text, i)) {
+            count++;
+        }
+    }
+    cout &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="const-ref" data-title="ข้อมูลเข้า"><pre><code>programming 4
+0 2 5 8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="const-ref" data-title="C:\code\vowel_at.exe"><pre><code>3
+</code></pre></div>
+      </div>
+
+      <p>ทดลองกับข้อความยาว 10<sup>5</sup> ตัวและคำถาม 10<sup>5</sup> ข้อ บนเครื่องเดียวกับหน้า 15.3 ด้วยวิธีวัดแบบเดียวกัน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>พารามิเตอร์</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>string text</code> (คัดลอกทุกครั้ง)</td><td>0.26 วินาที</td><td>0.45 วินาที</td></tr>
+            <tr><td><code>const string &amp;text</code></td><td>0.04 วินาที</td><td>0.03 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คำตอบเท่ากัน แต่แบบคัดลอกช้ากว่าราวสิบเท่า และจะยิ่งแย่ลงถ้าข้อความยาวขึ้น ถ้าใส่ <code>const</code> แล้วเผลอแก้ <code>text</code> ในฟังก์ชัน compiler จะไม่ยอมคอมไพล์ ช่วยกันพลาดได้อีกชั้น หลักง่ายๆ คือ <code>string</code> ที่ส่งให้ฟังก์ชันอ่าน ให้ส่งเป็น <code>const string &amp;</code> ส่วน <code>int</code> <code>double</code> <code>char</code> ส่งแบบธรรมดาได้ เพราะคัดลอกตัวเลขตัวเดียวเร็วมาก</p>
+
+      <h2 id="range-for">for แบบเดินทีละตัว</h2>
+
+      <p>ลูปที่เดินดูทุกตัวในข้อความตั้งแต่ตัวแรกถึงตัวสุดท้ายเขียนบ่อยจน C++ มีรูปแบบสั้นให้ เรียกว่า <strong>range-based for</strong></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="range-for"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string word;
+    cin &gt;&gt; word;
+    int vowels = 0;
+    for (char c : word) { // (1)!
+        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
+            vowels++;
+        }
+    }
+    cout &lt;&lt; vowels &lt;&lt; '\n';
+    for (char &amp;c : word) { // (2)!
+        c = toupper(c);
+    }
+    cout &lt;&lt; word &lt;&lt; '\n';
+    int score[4] = {72, 85, 64, 90};
+    int total = 0;
+    for (int x : score) { // (3)!
+        total += x;
+    }
+    cout &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อ่านว่า "สำหรับ <code>c</code> แต่ละตัวใน <code>word</code>" รอบแรก <code>c</code> คือตัวที่ 0 รอบถัดไปคือตัวที่ 1 ไปจนครบ ไม่ต้องมี <code>i</code> ไม่ต้องดูความยาว จึงไม่มีทางเกินขอบ แต่ <code>c</code> เป็น<strong>สำเนา</strong>ของแต่ละตัว</li>
+        <li>ใส่ <code>&amp;</code> แล้ว <code>c</code> เป็น reference ของตัวอักษรในข้อความจริงๆ แก้ <code>c</code> ก็คือแก้ <code>word</code></li>
+        <li>ใช้กับอาเรย์ที่ประกาศขนาดไว้ได้ด้วย ลูปจะเดินครบทั้ง 4 ช่อง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="range-for" data-title="ข้อมูลเข้า"><pre><code>education
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="range-for" data-title="C:\code\range.exe"><pre><code>5
+EDUCATION
+311
+</code></pre></div>
+      </div>
+
+      <p>ลูปแบบนี้ใช้ได้เมื่อต้องการดูทุกตัวตามลำดับเท่านั้น ถ้าต้องรู้ว่าตอนนี้อยู่ช่องไหน ต้องดูตัวข้างเคียง หรือเดินถอยหลัง ยังต้องใช้ <code>for</code> แบบมี <code>i</code> เหมือนเดิม และใช้กับอาเรย์ที่ส่งเข้ามาเป็นพารามิเตอร์ของฟังก์ชันไม่ได้ เพราะในฟังก์ชันไม่รู้ขนาดของอาเรย์ ส่วนบทที่ 16 จะใช้ลูปแบบนี้กับ <code>vector</code> ตลอด</p>
+
+      <h2 id="auto">auto ให้ compiler เลือกชนิดให้</h2>
+
+      <p>ถ้าประกาศตัวแปรพร้อมค่าเริ่มต้น เขียน <code>auto</code> แทนชื่อชนิดได้ compiler จะดูจากค่าเริ่มต้นว่าควรเป็นชนิดอะไร</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="auto"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    auto count = 3;
+    auto height = 1.75;
+    auto grade = 'A';
+    string name = "Malee";
+    auto copy = name;
+    copy += "!";
+    cout &lt;&lt; count &lt;&lt; ' ' &lt;&lt; height &lt;&lt; ' ' &lt;&lt; grade &lt;&lt; ' ' &lt;&lt; copy &lt;&lt; '\n';
+    for (auto c : name) {
+        cout &lt;&lt; c &lt;&lt; '.';
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="auto" data-title="C:\code\auto.exe"><pre><code>3 1.75 A Malee!
+M.a.l.e.e.
+</code></pre></div>
+
+      <p><code>3</code> เป็น <code>int</code> <code>1.75</code> เป็น <code>double</code> <code>'A'</code> เป็น <code>char</code> และ <code>copy</code> เป็น <code>string</code> ตาม <code>name</code> ตอนนี้ <code>auto</code> ช่วยได้ไม่มาก เพราะชื่อชนิดที่เรารู้จักสั้นอยู่แล้ว มันจะมีประโยชน์จริงในบทที่ 16 ถึง 20 ที่ชื่อชนิดของ STL ยาวเป็นบรรทัด ระหว่างนี้ใช้ใน <code>for (auto c : s)</code> และ <code>for (auto &amp;c : s)</code> ก็พอ ส่วนตัวแปรที่เก็บตัวเลข ให้เขียนชนิดเองเสมอ เหตุผลอยู่ในแบบที่ 3 ของส่วนลองทำให้พัง</p>
+
+      <h2 id="new-delete">new และ delete</h2>
+
+      <p>C++ มีคำสั่งขอและคืนหน่วยความจำของตัวเอง ใช้แทน <code>malloc</code> กับ <code>free</code> ไม่ต้องคำนวณขนาดด้วย <code>sizeof</code> และไม่ต้อง cast แบบที่เจอในแบบที่ 3 ของหน้า 15.1</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="new-delete"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Node { // (1)!
+    int value;
+    Node *next;
+};
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    int *score = new int[n]; // (2)!
+    Node *head = nullptr;
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; score[i];
+        Node *node = new Node; // (3)!
+        node-&gt;value = score[i];
+        node-&gt;next = head;
+        head = node;
+    }
+    for (Node *p = head; p != nullptr; p = p-&gt;next) {
+        cout &lt;&lt; p-&gt;value &lt;&lt; ' ';
+    }
+    cout &lt;&lt; '\n';
+    cout &lt;&lt; score[0] + score[n - 1] &lt;&lt; '\n';
+    while (head != nullptr) {
+        Node *next_node = head-&gt;next;
+        delete head; // (4)!
+        head = next_node;
+    }
+    delete[] score; // (5)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใน C++ ชื่อ struct ใช้เป็นชื่อชนิดได้เลย ไม่ต้องมี <code>typedef</code> และไม่ต้องเขียน <code>struct Node</code> เต็มๆ ข้างในก็ได้</li>
+        <li>ขออาเรย์ <code>int</code> ขนาด <code>n</code> ช่อง แทน <code>(int *)malloc(n * sizeof(int))</code></li>
+        <li>ขอ node หนึ่งตัว แทน <code>(Node *)malloc(sizeof(Node))</code> ในหน้า 14.1</li>
+        <li>คืน node ที่ได้จาก <code>new</code> ทีละตัว แทน <code>free</code></li>
+        <li>ของที่ขอเป็นอาเรย์ด้วย <code>new ... [n]</code> ต้องคืนด้วย <code>delete[]</code> มีวงเล็บเหลี่ยม</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="new-delete" data-title="ข้อมูลเข้า"><pre><code>4
+3 9 2 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="new-delete" data-title="C:\code\push_front.exe"><pre><code>7 2 9 3
+10
+</code></pre></div>
+      </div>
+
+      <p>ในการแข่งขันใช้ <code>new</code> ไม่บ่อย อาเรย์ที่ไม่รู้ขนาดมักประกาศไว้นอก <code>main</code> ตามขนาดมากสุดในโจทย์ หรือใช้ <code>vector</code> ในบทที่ 16 ซึ่งยืดได้เองและคืนหน่วยความจำให้เอง ที่ยังเจออยู่คือการสร้าง node ของ linked list หรือต้นไม้ ให้รู้จักไว้พออ่านโค้ดคนอื่นออก</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="bind-literal">แบบที่ 1 ส่งตัวเลขให้พารามิเตอร์ที่เป็น reference</h3>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+void add_bonus(int &amp;score, int bonus)
+{
+    score += bonus;
+}
+
+int main()
+{
+    int math = 70;
+    add_bonus(math, 5);
+    add_bonus(75, 5);
+    cout &lt;&lt; math &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>bonus.cpp:13:15: error: cannot bind non-const lvalue reference of type 'int&amp;' to an rvalue of type 'int'
+   13 |     add_bonus(75, 5);
+      |               ^~
+bonus.cpp:4:21: note:   initializing argument 1 of 'void add_bonus(int&amp;, int)'
+    4 | void add_bonus(int &amp;score, int bonus)
+      |                ~~~~~^~~~~
+</code></pre></div>
+
+      <p>บรรทัดที่ 12 ผ่าน แต่บรรทัดที่ 13 ไม่ผ่าน reference ต้องเป็นชื่อเล่นของกล่องที่มีอยู่จริง <code>75</code> ไม่ใช่กล่อง จะบวกโบนัสเข้าไปเก็บที่ไหนก็ไม่ได้ <code>rvalue</code> ในข้อความหมายถึงค่าที่ไม่มีกล่องของตัวเองแบบนี้ ผลคำนวณอย่าง <code>math + 1</code> ก็ส่งไม่ได้ด้วยเหตุผลเดียวกัน ส่วน note บรรทัดถัดมาชี้ไปที่พารามิเตอร์ตัวที่ทำให้เกิดปัญหา</p>
+
+      <h3 id="forgot-ampersand">แบบที่ 2 ลืม &amp; ใน for แบบเดินทีละตัว</h3>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="upper-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string name;
+    cin &gt;&gt; name;
+    for (char c : name) {
+        c = toupper(c);
+    }
+    cout &lt;&lt; name &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="upper-bug" data-title="ข้อมูลเข้า"><pre><code>somchai
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="upper-bug" data-title="C:\code\upper.exe"><pre><code>somchai
+</code></pre></div>
+      </div>
+
+      <p>ไม่มีอะไรเปลี่ยนเลย และไม่มีคำเตือนแม้เปิด <code>-Wextra</code> เพราะ <code>c</code> เป็นสำเนาของแต่ละตัว แก้สำเนาแล้วสำเนาก็หายไปตอนจบรอบ แบบเดียวกับฟังก์ชันที่ได้สำเนาในหน้า 8.2 ต้องการแก้ข้อความจริงต้องเป็น <code>for (char &amp;c : name)</code></p>
+
+      <h3 id="auto-overflow">แบบที่ 3 ใช้ auto กับผลรวม</h3>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="auto-sum"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    auto total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        long long price;
+        cin &gt;&gt; price;
+        total += price;
+    }
+    cout &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="auto-sum" data-title="ข้อมูลเข้า"><pre><code>3
+1000000000 1000000000 1000000000
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="auto-sum" data-title="C:\code\total.exe"><pre><code>-1294967296
+</code></pre></div>
+      </div>
+
+      <p>ราคาอ่านเป็น <code>long long</code> ถูกแล้ว แต่ <code>auto total = 0;</code> ได้ชนิดจากเลข <code>0</code> ซึ่งเป็น <code>int</code> ผลรวมสามพันล้านจึงล้นแบบเดียวกับหน้า 1.3 ไม่มีคำเตือนสักบรรทัด <code>auto</code> ไม่ได้ดูว่าเราจะเอาตัวแปรไปเก็บอะไรในอนาคต ดูแค่ค่าเริ่มต้นเท่านั้น ตัวแปรที่เก็บตัวเลขให้เขียน <code>long long total = 0;</code> เองเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>bool</code> เก็บ <code>true</code> หรือ <code>false</code> ใช้ 1 byte <code>cout</code> พิมพ์เป็น <code>1</code> กับ <code>0</code></li>
+        <li><code>int &amp;r = x;</code> คือชื่อที่สองของ <code>x</code> พารามิเตอร์แบบ <code>int &amp;a</code> ให้ฟังก์ชันแก้ตัวแปรของคนเรียกได้ เรียกด้วยชื่อตัวแปรตรงๆ</li>
+        <li><code>string</code> ที่ส่งให้ฟังก์ชันอ่าน ส่งเป็น <code>const string &amp;</code> จะได้ไม่คัดลอกทั้งข้อความทุกครั้ง</li>
+        <li><code>for (char c : s)</code> ได้สำเนาทีละตัว <code>for (char &amp;c : s)</code> แก้ตัวจริงได้</li>
+        <li><code>auto</code> เลือกชนิดจากค่าเริ่มต้น ใช้ในลูปแบบเดินทีละตัวได้ แต่ตัวแปรเก็บตัวเลขให้เขียนชนิดเอง</li>
+        <li><code>new</code> กับ <code>delete</code> ใช้แทน <code>malloc</code> กับ <code>free</code> อาเรย์ต้องคืนด้วย <code>delete[]</code></li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

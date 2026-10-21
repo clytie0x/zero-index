@@ -1,0 +1,270 @@
+<article class="doc">
+      <h1>15.1 เปลี่ยนจาก .c เป็น .cpp</h1>
+
+      <p>ภาษา C++ คือภาษา C ที่ถูกเติมของใช้เข้าไปอีกมาก โค้ดภาษา C เกือบทั้งหมดที่น้องเขียนมาตลอด 14 บทจึงเอาไปใช้ใน C++ ได้ทันที หน้านี้จะย้ายโปรแกรมเดิมไปเป็นไฟล์ <code>.cpp</code> เขียนโปรแกรม C++ ตัวแรก รู้จักสองบรรทัดที่ขึ้นต้นโปรแกรมแข่งขันแทบทุกโปรแกรม และดูว่าโค้ด C แบบไหนที่ C++ ไม่ยอมรับ</p>
+
+      <h2 id="why-cpp">ทำไมการแข่งขันใช้ C++</h2>
+
+      <p>ภาษา C ทำได้ทุกอย่างที่โจทย์ต้องการ แต่หลายงานต้องเขียนเองยาวๆ ทุกครั้ง C++ มีชุดเครื่องมือสำเร็จรูปชื่อ <strong>STL</strong> (Standard Template Library แปลว่าคลังโค้ดมาตรฐาน) ที่ทำงานพวกนั้นให้ในบรรทัดเดียว และทดสอบมาแล้วอย่างดี</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>งาน</th><th>ภาษา C ที่เรียนมา</th><th>C++</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เก็บและต่อข้อความ</td><td>อาเรย์ <code>char</code> กับ <code>strcpy</code> <code>strcat</code> <code>strcmp</code> ในบทที่ 6 ต้องจองขนาดเอง</td><td><code>string</code> ยืดได้เอง ใช้ <code>+</code> กับ <code>==</code> ได้ หน้า 15.4</td></tr>
+            <tr><td>เรียงข้อมูล</td><td><code>qsort</code> กับฟังก์ชันเปรียบเทียบในบทที่ 13</td><td><code>sort</code> บรรทัดเดียว บทที่ 16</td></tr>
+            <tr><td>อาเรย์ที่ไม่รู้ขนาดล่วงหน้า</td><td><code>malloc</code> กับ <code>free</code> ที่ใช้ในบทที่ 14</td><td><code>vector</code> บทที่ 16</td></tr>
+            <tr><td>stack queue deque</td><td>เขียนเองด้วยอาเรย์ในบทที่ 14</td><td>มีให้ใช้เลย บทที่ 17</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>โค้ดสาธิตของค่าย สอวน. และเฉลยโจทย์แข่งขันที่น้องจะไปอ่านต่อ ส่วนใหญ่เขียนด้วย C++ ทั้งนั้น ส่วนตัวภาษาเองไม่ได้ต่างจาก C มาก <code>if</code> <code>for</code> <code>while</code> อาเรย์ ฟังก์ชัน struct และ pointer ทำงานเหมือนเดิมทุกอย่าง สิ่งที่ต้องเรียนเพิ่มจริงๆ มีไม่มาก และอยู่ในบทนี้เกือบหมด</p>
+
+      <h2 id="new-file">สร้างไฟล์ .cpp</h2>
+
+      <p>ทำแบบเดียวกับหน้า 0.3 ต่างกันแค่นามสกุล</p>
+
+      <ol>
+        <li>เมนู <strong>File &gt; New &gt; Empty file</strong></li>
+        <li>กด <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>S</kbd></span> ทันที เลือกโฟลเดอร์ <code>C:\code</code> ตั้งชื่อให้ลงท้ายด้วย <code>.cpp</code> เช่น <code>average.cpp</code></li>
+        <li>พิมพ์โค้ดแล้วกด <span class="keys"><kbd>F9</kbd></span> เหมือนเดิม</li>
+      </ol>
+
+      <p>ไม่ต้องตั้งค่าอะไรเพิ่ม Code::Blocks ดูนามสกุลแล้วเลือกตัวแปลให้เองตามตารางใน<a href="../../c/00-start/why.html#gcc">หน้า 0.1</a> ไฟล์ <code>.c</code> ใช้ <code>gcc</code> ไฟล์ <code>.cpp</code> ใช้ <code>g++</code> และ <code>-Wall</code> ที่ติ๊กไว้ตอนติดตั้งก็ใช้กับ <code>g++</code> ด้วย</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">เปลี่ยนไฟล์เก่าเป็น .cpp ให้ใช้ Save file as</p>
+        <p>ถ้าอยากเอาไฟล์ <code>.c</code> เดิมมาทำต่อเป็น C++ ใช้เมนู <strong>File &gt; Save file as</strong> แล้วตั้งชื่อใหม่ลงท้าย <code>.cpp</code> ไฟล์ <code>.c</code> ตัวเดิมยังอยู่ในโฟลเดอร์ ระวังเปิดผิดไฟล์แล้วงงว่าทำไมแก้แล้วไม่เปลี่ยน ดูชื่อไฟล์บนแท็บของ Code::Blocks ก่อนกด <span class="keys"><kbd>F9</kbd></span> ทุกครั้ง</p>
+      </div>
+
+      <h2 id="c-still-works">โปรแกรม C เดิมใช้ต่อได้</h2>
+
+      <p>เอาโปรแกรมหาค่าเฉลี่ยคะแนนสามวิชาจากบทที่ 1 มาบันทึกเป็น <code>average.cpp</code> โดยไม่แก้แม้แต่ตัวเดียว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="average-c"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int math, science, english;
+    scanf("%d %d %d", &amp;math, &amp;science, &amp;english);
+    double average = (math + science + english) / 3.0;
+    printf("%f\n", average);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="average-c" data-title="ข้อมูลเข้า"><pre><code>70 85 90
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="average-c" data-title="C:\code\average.exe"><pre><code>81.666667
+</code></pre></div>
+      </div>
+
+      <p>คอมไพล์ผ่านด้วย <code>g++</code> และได้ผลเหมือนตอนเป็นภาษา C ทุกอย่าง <code>scanf</code> <code>printf</code> <code>stdio.h</code> <code>string.h</code> <code>math.h</code> ใช้ใน C++ ได้หมด ถ้าไปเจอโค้ดที่เขียน <code>#include &lt;cstdio&gt;</code> หรือ <code>#include &lt;cmath&gt;</code> นั่นคือชื่อแบบ C++ ของไฟล์เดียวกัน ตัด <code>.h</code> ออกแล้วเติม <code>c</code> ข้างหน้า ใช้แบบไหนก็ได้</p>
+
+      <p>มีโค้ด C ส่วนน้อยที่ C++ ไม่ยอมรับ จะเจอในส่วนลองทำให้พังท้ายหน้า</p>
+
+      <h2 id="first-cpp">โปรแกรม C++ ตัวแรก</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="hello-std"><pre><code>#include &lt;iostream&gt; // (1)!
+
+int main()
+{
+    std::cout &lt;&lt; "Hello, C++!\n"; // (2)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>iostream</code> ย่อมาจาก input output stream เป็นไฟล์ที่มี <code>cin</code> กับ <code>cout</code> ซึ่ง C++ ใช้รับและแสดงผลแทน <code>scanf</code> กับ <code>printf</code></li>
+        <li><code>cout</code> อ่านว่า ซีเอาต์ (character output) คือหน้าจอ เครื่องหมาย <code>&lt;&lt;</code> คือส่งข้อความทางขวาไปที่ <code>cout</code> รายละเอียดอยู่ในหน้า 15.2</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="hello-std" data-title="C:\code\hello.exe"><pre><code>Hello, C++!
+</code></pre></div>
+
+      <h2 id="namespace">std:: และ using namespace std</h2>
+
+      <p>ทุกอย่างที่ C++ เตรียมไว้ให้ ทั้ง <code>cout</code> <code>cin</code> <code>string</code> <code>sort</code> และอีกหลายร้อยชื่อ ถูกเก็บรวมไว้ในกลุ่มชื่อ <code>std</code> (standard) กลุ่มชื่อแบบนี้เรียกว่า <strong>namespace</strong> เหมือนนามสกุลของคน มีคนชื่อสมชายหลายคน แต่สมชาย ใจดี มีคนเดียว ชื่อเต็มของ <code>cout</code> จึงเป็น <code>std::cout</code> และ <code>::</code> ก็คือการบอกว่าเป็นของกลุ่มไหน</p>
+
+      <p>เขียน <code>std::</code> ทุกครั้งเหนื่อย บรรทัด <code>using namespace std;</code> บอก compiler ว่า "ชื่อไหนหาไม่เจอ ให้ไปดูใน <code>std</code> ด้วย" แล้วเขียนแค่ <code>cout</code> ได้เลย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="hello-using"><pre><code>#include &lt;iostream&gt;
+using namespace std;
+
+int main()
+{
+    cout &lt;&lt; "Hello, C++!\n";
+    cout &lt;&lt; "Hello again!\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="hello-using" data-title="C:\code\hello.exe"><pre><code>Hello, C++!
+Hello again!
+</code></pre></div>
+
+      <h2 id="bits">bits/stdc++.h ดึงมาทั้งหมดในบรรทัดเดียว</h2>
+
+      <p>ของแต่ละอย่างใน C++ อยู่คนละไฟล์ <code>cout</code> อยู่ใน <code>iostream</code> <code>string</code> อยู่ใน <code>string</code> ตัวจัดทศนิยมอยู่ใน <code>iomanip</code> <code>sort</code> อยู่ใน <code>algorithm</code> ลืม include ตัวไหนก็คอมไพล์ไม่ผ่าน คนแข่งจึงนิยมใช้</p>
+
+      <div class="code" data-lang="text"><pre><code>#include &lt;bits/stdc++.h&gt;
+</code></pre></div>
+
+      <p>ไฟล์นี้ไม่ได้มีของใหม่อะไร มันแค่ include ไฟล์มาตรฐานของ C++ ทุกไฟล์ให้ในครั้งเดียว รวมทั้ง <code>cstdio</code> <code>cstring</code> และ <code>cmath</code> ซึ่งก็คือ <code>stdio.h</code> <code>string.h</code> และ <code>math.h</code> ฉบับ C++ ตั้งแต่ตรงนี้ไป โปรแกรมในเอกสารนี้จะขึ้นต้นแบบนี้ทุกโปรแกรม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="template"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int width, height;
+    scanf("%d %d", &amp;width, &amp;height);
+    cout &lt;&lt; "area = " &lt;&lt; width * height &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="template" data-title="ข้อมูลเข้า"><pre><code>12 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="template" data-title="C:\code\area.exe"><pre><code>area = 84
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรมนี้ใช้ <code>scanf</code> จาก <code>stdio.h</code> และ <code>cout</code> จาก <code>iostream</code> โดยไม่ได้ include สองไฟล์นั้นเอง เพราะ <code>bits/stdc++.h</code> ดึงมาให้แล้ว แต่อย่าเพิ่งเอา <code>scanf</code> กับ <code>cout</code> มาปนกันจริงจัง หน้า 15.3 จะบอกว่าทำไม</p>
+
+      <h3 id="pros-cons">ข้อดีและข้อเสีย</h3>
+
+      <p>สองบรรทัดนี้สะดวกมาก แต่มีราคาที่ต้องรู้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th></th><th>ข้อดี</th><th>ข้อเสีย</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>#include &lt;bits/stdc++.h&gt;</code></td><td>บรรทัดเดียวครบ ไม่ต้องจำว่าอะไรอยู่ไฟล์ไหน ไม่มีวันลืม include</td><td>คอมไพล์ช้าลง และมีเฉพาะใน GCC compiler อื่นอย่าง Visual Studio ไม่มีไฟล์นี้</td></tr>
+            <tr><td><code>using namespace std;</code></td><td>ไม่ต้องเขียน <code>std::</code> นำหน้าทุกชื่อ</td><td>ชื่อใน <code>std</code> หลายร้อยชื่อเข้ามาปนกับชื่อตัวแปรของเรา ถ้าตั้งชื่อซ้ำจะคอมไพล์ไม่ผ่าน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คอมไพล์ช้าลงแค่ไหน ลองกด <span class="keys"><kbd>F9</kbd></span> กับโปรแกรมที่พิมพ์ข้อความเดียว จับเวลาตั้งแต่เริ่มคอมไพล์จนได้ไฟล์ <code>.exe</code> ด้วย GCC 14.2 ของ Code::Blocks ตัวเลือก <code>-Wall</code> บนโน้ตบุ๊ก AMD Ryzen AI 9 HX 370 ระบบ Windows 11 เสียบสายชาร์จ โหมดพลังงาน Balanced คอมไพล์แบบละ 6 ครั้ง ทิ้งครั้งแรก แล้วเอาค่ากลางของ 5 ครั้งที่เหลือ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ไฟล์ที่ include</th><th>เวลาคอมไพล์</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ภาษา C กับ <code>stdio.h</code></td><td>ประมาณ 0.26 วินาที</td></tr>
+            <tr><td>C++ กับ <code>iostream</code></td><td>ประมาณ 0.53 วินาที</td></tr>
+            <tr><td>C++ กับ <code>bits/stdc++.h</code></td><td>ประมาณ 1.37 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ช้าลงราวหนึ่งวินาทีต่อการกด <span class="keys"><kbd>F9</kbd></span> หนึ่งครั้ง แต่<strong>ไม่มีผลกับเวลารัน</strong> grader จับเวลาเฉพาะตอนโปรแกรมทำงาน ไม่นับตอนคอมไพล์ ส่วนเรื่องมีเฉพาะใน GCC ก็ไม่เป็นปัญหา เพราะ Code::Blocks และ grader ของการแข่งขันส่วนใหญ่ใช้ GCC</p>
+
+      <p>สรุปคือในการแข่งขันใช้ทั้งสองบรรทัดได้เลย ส่วนงานเขียนโปรแกรมจริงในบริษัทจะไม่ใช้ เพราะโค้ดต้องคอมไพล์ได้หลาย compiler และโปรแกรมใหญ่หลายพันไฟล์ ข้อเสียที่ต้องระวังในการแข่งขันจริงๆ มีข้อเดียวคือชื่อชนกัน ดูแบบที่ 2 ข้างล่าง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-namespace">แบบที่ 1 ลืม using namespace std</h3>
+
+      <p>ในโปรแกรม hello ที่ include <code>iostream</code> ลบบรรทัด <code>using namespace std;</code> ทิ้ง</p>
+
+      <div class="code" data-lang="gcc"><pre><code>hello.cpp:5:5: error: 'cout' was not declared in this scope; did you mean 'std::cout'?
+    5 |     cout &lt;&lt; "Hello, C++!\n";
+      |     ^~~~
+      |     std::cout
+</code></pre></div>
+
+      <p>compiler หา <code>cout</code> ไม่เจอ เพราะชื่อเต็มคือ <code>std::cout</code> และมันเดาให้ด้วย ต่อจากนี้ยังมี note อีกหนึ่งชุดที่ชี้ไปยังบรรทัดที่ประกาศ <code>std::cout</code> ในไฟล์ <code>iostream</code> ของ compiler ไม่ต้องอ่าน แก้ด้วยการใส่ <code>using namespace std;</code> กลับ หรือเขียน <code>std::cout</code> เต็มๆ</p>
+
+      <h3 id="name-clash">แบบที่ 2 ตั้งชื่อตัวแปรชนกับชื่อใน std</h3>
+
+      <p>อาเรย์นับความถี่ที่ใช้มาตั้งแต่บทที่ 5 มักชื่อ <code>count</code> และประกาศไว้นอก <code>main</code> เพราะใหญ่ ลองย้ายโปรแกรมแบบนั้นมาเป็น C++</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int count[101];
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    for (int i = 0; i &lt; n; i++) {
+        int score;
+        cin &gt;&gt; score;
+        count[score]++;
+    }
+    cout &lt;&lt; count[100] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>count.cpp:13:9: error: reference to 'count' is ambiguous
+   13 |         count[score]++;
+      |         ^~~~~
+</code></pre></div>
+
+      <p><code>ambiguous</code> แปลว่ากำกวม ใน <code>std</code> มีฟังก์ชันชื่อ <code>count</code> อยู่แล้ว (ใช้นับของใน <code>vector</code> ซึ่งจะได้เรียนทีหลัง) พอเราประกาศ <code>count</code> ของเราเองนอก <code>main</code> ด้วย ก็มีสองตัวที่ชื่อเหมือนกัน compiler ไม่รู้ว่าหมายถึงตัวไหน ข้อความนี้ขึ้นซ้ำอีกครั้งที่บรรทัด 15 และแต่ละครั้งตามด้วย note ยาวหลายบรรทัดที่ไล่ชื่อ <code>count</code> ทุกตัวที่เป็นไปได้ ตัวสุดท้ายในรายการคือ <code>'int count [101]'</code> ของเรา</p>
+
+      <p>ชื่อที่ชนบ่อยในโค้ดของน้อง ทดลองแล้วว่าประกาศเป็นอาเรย์นอก <code>main</code> คู่กับ <code>using namespace std;</code> แล้วคอมไพล์ไม่ผ่าน ได้แก่ <code>count</code> <code>next</code> <code>prev</code> <code>max</code> <code>size</code> <code>left</code> <code>data</code> และ <code>y1</code> สองตัวที่น่าตกใจคือ <code>next</code> กับ <code>prev</code> ที่บทที่ 14 ใช้ทำลิสต์ด้วยอาเรย์ ทางแก้มีสองทาง</p>
+
+      <ul>
+        <li>เปลี่ยนชื่อ เช่น <code>cnt</code> <code>freq</code> <code>nxt</code> <code>prv</code> วิธีนี้ง่ายและแน่นอนที่สุด</li>
+        <li>ถ้าอาเรย์ไม่ใหญ่ ประกาศไว้ใน <code>main</code> แทน ชื่อในฟังก์ชันจะบังชื่อใน <code>std</code> ให้เอง ไม่กำกวม</li>
+      </ul>
+
+      <h3 id="malloc">แบบที่ 3 malloc โดยไม่ cast</h3>
+
+      <p>เอาฟังก์ชัน <code>push_front</code> จากหน้า 14.1 มาไว้ในไฟล์ <code>.cpp</code></p>
+
+      <div class="code" data-lang="cpp"><pre><code>Node *node = malloc(sizeof(Node));
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>list.cpp:11:24: error: invalid conversion from 'void*' to 'Node*' [-fpermissive]
+   11 |     Node *node = malloc(sizeof(Node));
+      |                  ~~~~~~^~~~~~~~~~~~~~
+      |                        |
+      |                        void*
+</code></pre></div>
+
+      <p><code>malloc</code> คืนที่อยู่ชนิด <code>void *</code> ซึ่งแปลว่าที่อยู่ของอะไรก็ได้ ภาษา C ยอมแปลงเป็น <code>Node *</code> ให้เงียบๆ แต่ C++ เข้มงวดกว่า ไม่แปลงให้เอง ต้อง cast เอง <code>Node *node = (Node *)malloc(sizeof(Node));</code> หรือเปลี่ยนไปใช้ <code>new</code> ของ C++ ซึ่งอยู่ในหน้า 15.5 นี่คือจุดที่โค้ด C จากบทที่ 14 ต้องแก้บ่อยที่สุดตอนย้ายมา C++</p>
+
+      <h3 id="keyword">แบบที่ 4 ใช้คำสงวนของ C++ เป็นชื่อตัวแปร</h3>
+
+      <p>C++ มีคำสงวนเพิ่มจากภาษา C หลายคำ เช่น <code>class</code> <code>new</code> <code>delete</code> <code>this</code> <code>bool</code> <code>true</code> <code>false</code> ชื่อเหล่านี้เคยใช้เป็นชื่อตัวแปรในภาษา C ได้ แต่ใน C++ ไม่ได้แล้ว เช่นเก็บเลขห้องเรียนไว้ในตัวแปรชื่อ <code>class</code></p>
+
+      <div class="code" data-lang="cpp"><pre><code>int class = 3;
+printf("%d\n", class);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>room.cpp:5:5: error: expected primary-expression before 'int'
+    5 |     int class = 3;
+      |     ^~~
+room.cpp:6:20: error: expected primary-expression before 'class'
+    6 |     printf("%d\n", class);
+      |                    ^~~~~
+</code></pre></div>
+
+      <p>ข้อความไม่ได้บอกตรงๆ ว่าชื่อนี้ห้ามใช้ แต่ทั้งสองจุดที่ <code>^</code> ชี้ อยู่ที่บรรทัดที่มีคำว่า <code>class</code> ถ้าโค้ด C ที่เคยคอมไพล์ผ่านมาพังแบบงงๆ ที่บรรทัดธรรมดา ให้ดูว่ามีชื่อตัวแปรเป็นคำภาษาอังกฤษที่ C++ ใช้อยู่หรือเปล่า เปลี่ยนเป็น <code>room</code> หรือ <code>class_no</code> ก็หาย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>บันทึกไฟล์เป็น <code>.cpp</code> แล้ว Code::Blocks ใช้ <code>g++</code> ให้เอง โค้ด C ส่วนใหญ่ใช้ต่อได้ทันที</li>
+        <li>ของมาตรฐานของ C++ อยู่ใน namespace <code>std</code> ชื่อเต็มคือ <code>std::cout</code> <code>using namespace std;</code> ทำให้เขียนสั้นลงได้</li>
+        <li><code>#include &lt;bits/stdc++.h&gt;</code> ดึงทุกไฟล์มาตรฐานมาในบรรทัดเดียว คอมไพล์ช้าลงราวหนึ่งวินาที แต่เวลารันไม่เปลี่ยน</li>
+        <li>อย่าตั้งชื่อตัวแปรนอก <code>main</code> ว่า <code>count</code> <code>next</code> <code>prev</code> <code>max</code> เพราะชนกับชื่อใน <code>std</code></li>
+        <li><code>malloc</code> ใน C++ ต้อง cast และคำอย่าง <code>class</code> <code>new</code> ใช้เป็นชื่อตัวแปรไม่ได้</li>
+      </ul>
+    </article>

@@ -1,0 +1,3 @@
+title = "ตรวจรหัสผ่าน"
+level = 1
+hint = '''<p>ใช้ตัวแปร <code>bool</code> สามตัว เช่น <code>has_upper</code> <code>has_lower</code> <code>has_digit</code> ตั้งเป็น <code>false</code> ก่อน แล้วเดินทีละตัวด้วย <code>for (char c : password)</code> เจอตัวแบบไหนก็ตั้งตัวแปรนั้นเป็น <code>true</code> จากนั้นใช้ <code>if</code> <code>else if</code> ไล่ตามลำดับกฎ ความยาวต้องตรวจก่อนข้ออื่นเสมอ แม้รหัสสั้นจะไม่มีตัวพิมพ์ใหญ่ด้วยก็ตอบแค่ <code>TOO SHORT</code></p>'''

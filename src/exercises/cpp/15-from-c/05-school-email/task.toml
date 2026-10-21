@@ -1,0 +1,3 @@
+title = "อีเมลโรงเรียน"
+level = 2
+hint = '''<p>หาตำแหน่งของ <code>@</code> ด้วย <code>find</code> เก็บใน <code>size_t</code> แล้วเทียบกับ <code>string::npos</code> ตามหน้า 15.4 ถ้าเจอ ให้หาต่อด้วย <code>find('@', at + 1)</code> ว่ามีตัวที่สองไหม จากนั้นตัดสองส่วนด้วย <code>substr</code> แล้วเทียบส่วนหลังกับ D ด้วย <code>==</code> ทั้งคำ อย่าใช้ <code>find(D)</code> หาว่า D อยู่ในข้อความไหม เพราะ <code>@myschool.ac.th</code> ก็มี <code>school.ac.th</code> อยู่ข้างใน</p>'''

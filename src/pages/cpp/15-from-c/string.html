@@ -1,0 +1,481 @@
+<article class="doc">
+      <h1>15.4 string ของ C++</h1>
+
+      <p>ในบทที่ 6 ข้อความคืออาเรย์ของ <code>char</code> ต้องจองขนาดเผื่อไว้ก่อน ต้องเหลือช่องให้ <code>'\0'</code> คัดลอกด้วย <code>strcpy</code> ต่อด้วย <code>strcat</code> เทียบด้วย <code>strcmp</code> และระวังเขียนเกินอาเรย์ตลอดเวลา C++ มีชนิด <code>string</code> ที่จัดการเรื่องพวกนี้ให้ทั้งหมด ยืดหดได้เอง ใช้ <code>+</code> ต่อ ใช้ <code>==</code> เทียบได้ตรงๆ และมีคำสั่งตัดและค้นหาข้อความในตัว โจทย์ข้อความที่เคยยาวครึ่งหน้าจะเหลือไม่กี่บรรทัด</p>
+
+      <h2 id="declare">ประกาศ รับ และต่อข้อความ</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="full-name"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string first, last; // (1)!
+    cin &gt;&gt; first &gt;&gt; last; // (2)!
+    string full = first + " " + last; // (3)!
+    cout &lt;&lt; full &lt;&lt; '\n';
+    cout &lt;&lt; full.size() &lt;&lt; '\n'; // (4)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ไม่ต้องบอกขนาด <code>string</code> ยืดให้พอดีกับข้อความเอง ตอนประกาศเป็นข้อความว่าง ยาว 0 ตัว</li>
+        <li>อ่านทีละคำเหมือน <code>%s</code> คือข้ามช่องว่างข้างหน้า แล้วอ่านจนเจอช่องว่างหรือขึ้นบรรทัดใหม่ คำจะยาวแค่ไหนก็ไม่เขียนเกิน</li>
+        <li><code>+</code> คือเอาข้อความมาต่อกัน ได้ข้อความใหม่ ต่อกับข้อความในเครื่องหมายคำพูดหรือกับ <code>char</code> ก็ได้</li>
+        <li><code>size()</code> คือจำนวนตัวอักษร เหมือน <code>strlen</code> ไม่นับ <code>'\0'</code> และไม่ต้องเดินนับใหม่ทุกครั้งแบบ <code>strlen</code> เพราะ <code>string</code> จำความยาวของตัวเองไว้แล้ว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="full-name" data-title="ข้อมูลเข้า"><pre><code>Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="full-name" data-title="C:\code\name.exe"><pre><code>Somchai Jaidee
+14
+</code></pre></div>
+      </div>
+
+      <p>เทียบกับสิ่งที่ต้องเขียนในบทที่ 6</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>งาน</th><th>อาเรย์ของ <code>char</code></th><th><code>string</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ประกาศ</td><td><code>char name[105];</code></td><td><code>string name;</code></td></tr>
+            <tr><td>รับหนึ่งคำ</td><td><code>scanf("%s", name);</code></td><td><code>cin &gt;&gt; name;</code></td></tr>
+            <tr><td>ความยาว</td><td><code>strlen(name)</code></td><td><code>name.size()</code></td></tr>
+            <tr><td>คัดลอก</td><td><code>strcpy(copy, name);</code></td><td><code>copy = name;</code></td></tr>
+            <tr><td>ต่อท้าย</td><td><code>strcat(name, "!");</code></td><td><code>name += "!";</code></td></tr>
+            <tr><td>เท่ากันไหม</td><td><code>strcmp(a, b) == 0</code></td><td><code>a == b</code></td></tr>
+            <tr><td>มาก่อนในพจนานุกรมไหม</td><td><code>strcmp(a, b) &lt; 0</code></td><td><code>a &lt; b</code></td></tr>
+            <tr><td>ตัวที่ i</td><td><code>name[i]</code></td><td><code>name[i]</code></td></tr>
+            <tr><td>รับทั้งบรรทัด</td><td><code>fgets</code> แล้วตัด <code>'\n'</code> เอง</td><td><code>getline(cin, name);</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คำสั่งที่มีจุดคั่นอย่าง <code>name.size()</code> อ่านว่า "ความยาวของ <code>name</code>" เป็นคำสั่งที่ติดมากับตัวแปร <code>string</code> แต่ละตัว คล้ายการเข้าถึงช่องของ struct ในบทที่ 11 ต่างกันตรงที่มีวงเล็บเพราะเป็นการสั่งให้ทำงาน ไม่ใช่ช่องเก็บค่า</p>
+
+      <h2 id="compare">เทียบข้อความด้วย == และ &lt;</h2>
+
+      <p>โปรแกรมเดียวกับตัวอย่าง <code>strcmp</code> ในหน้า 6.4 เขียนด้วย <code>string</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="compare"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string first, second;
+    while (cin &gt;&gt; first &gt;&gt; second) {
+        if (first == second) {
+            cout &lt;&lt; first &lt;&lt; " is the same\n";
+        } else if (first &lt; second) {
+            cout &lt;&lt; first &lt;&lt; " comes before " &lt;&lt; second &lt;&lt; '\n';
+        } else {
+            cout &lt;&lt; first &lt;&lt; " comes after " &lt;&lt; second &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="compare" data-title="ข้อมูลเข้า"><pre><code>apple apricot
+apple app
+Zebra apple
+mango mango
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="compare" data-title="C:\code\compare.exe"><pre><code>apple comes before apricot
+apple comes after app
+Zebra comes before apple
+mango is the same
+</code></pre></div>
+      </div>
+
+      <p>ได้ผลเหมือน <code>strcmp</code> ทุกบรรทัด เพราะใช้กฎเดียวกัน เทียบจากซ้ายทีละตัว ตัวแรกที่ต่างเป็นตัวตัดสิน คำที่เป็นส่วนต้นของอีกคำมาก่อน และตัวพิมพ์ใหญ่ทุกตัวมาก่อนตัวพิมพ์เล็กทุกตัว ต่างกันแค่เขียนเป็นเครื่องหมายที่อ่านรู้เรื่องทันที <code>==</code> <code>!=</code> <code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code> ใช้ได้ครบ</p>
+
+      <h2 id="index">ความยาวและตัวอักษรทีละตัว</h2>
+
+      <p>เข้าถึงตัวที่ i ด้วย <code>name[i]</code> เหมือนอาเรย์ เริ่มที่ช่อง 0 ตัวสุดท้ายอยู่ที่ช่อง <code>size() - 1</code> และแก้ทีละตัวได้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="capitalize"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string name;
+    cin &gt;&gt; name;
+    int n = name.size(); // (1)!
+    name[0] = toupper(name[0]);
+    int vowels = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if (name[i] == 'a' || name[i] == 'e' || name[i] == 'i' || name[i] == 'o' || name[i] == 'u') {
+            vowels++;
+        }
+    }
+    cout &lt;&lt; name &lt;&lt; '\n';
+    cout &lt;&lt; "first " &lt;&lt; name[0] &lt;&lt; " last " &lt;&lt; name[n - 1] &lt;&lt; '\n';
+    cout &lt;&lt; vowels &lt;&lt; " vowels\n";
+    string line(n, '-'); // (2)!
+    cout &lt;&lt; line &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บความยาวลง <code>int</code> ไว้ก่อน แล้วใช้ <code>n</code> ทั้งในลูปและตอนหาตัวสุดท้าย เหตุผลอยู่ในส่วนลองทำให้พังแบบที่ 1 และ 4</li>
+        <li>สร้าง <code>string</code> ที่มีตัวอักษร <code>'-'</code> ซ้ำกัน <code>n</code> ตัว ใช้ทำเส้นคั่นหรือแถวของดาวได้</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="capitalize" data-title="ข้อมูลเข้า"><pre><code>malee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="capitalize" data-title="C:\code\vowels.exe"><pre><code>Malee
+first M last e
+3 vowels
+-----
+</code></pre></div>
+      </div>
+
+      <p><code>toupper</code> จาก <code>ctype.h</code> ในหน้า 6.1 ใช้กับ <code>name[0]</code> ได้ตรงๆ เพราะ <code>name[0]</code> ก็คือ <code>char</code> ตัวหนึ่ง <code>string</code> ไม่ได้เก็บ <code>'\0'</code> ให้เราเห็น จึงไม่ต้องวนจนเจอ <code>'\0'</code> แบบบทที่ 6 แต่ใช้ความยาวเป็นตัวหยุดลูปแทน</p>
+
+      <h2 id="substr">substr ตัดข้อความบางส่วน</h2>
+
+      <p><code>s.substr(start, count)</code> คืนข้อความใหม่ที่เริ่มจากช่อง <code>start</code> ยาว <code>count</code> ตัว ถ้าไม่ใส่ <code>count</code> จะเอาไปจนสุดข้อความ ตัวอย่างคือวันที่ในรูปแบบ ปี-เดือน-วัน ซึ่งทุกส่วนอยู่ตำแหน่งตายตัว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="date"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string date;
+    cin &gt;&gt; date;
+    string year = date.substr(0, 4);
+    string month = date.substr(5, 2);
+    string day = date.substr(8, 2);
+    cout &lt;&lt; day &lt;&lt; '/' &lt;&lt; month &lt;&lt; '/' &lt;&lt; year &lt;&lt; '\n';
+    cout &lt;&lt; date.substr(5) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="date" data-title="ข้อมูลเข้า"><pre><code>2026-03-07
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="date" data-title="C:\code\date.exe"><pre><code>07/03/2026
+03-07
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ช่อง</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ตัวอักษร</td><td>2</td><td>0</td><td>2</td><td>6</td><td>-</td><td>0</td><td>3</td><td>-</td><td>0</td><td>7</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เลข 0 ข้างหน้า <code>03</code> กับ <code>07</code> อยู่ครบ เพราะเราเก็บเป็นข้อความ ไม่ได้แปลงเป็นตัวเลข ถ้าอ่านด้วย <code>%d</code> จะได้ 3 กับ 7 แล้วต้องเติม 0 กลับเองแบบ<a href="../../c/02-input-output/width.html#leading-zeros">หน้า 2.2</a> โจทย์ที่ข้อมูลเป็นรหัส เบอร์โทร หรือเลขทะเบียน ที่ไม่ได้เอาไปคำนวณ เก็บเป็น <code>string</code> ง่ายกว่า</p>
+
+      <h2 id="find">find ค้นหาข้อความ</h2>
+
+      <p><code>s.find(x)</code> หาว่า <code>x</code> ซึ่งจะเป็น <code>char</code> หรือข้อความก็ได้ ปรากฏครั้งแรกที่ช่องไหนของ <code>s</code> ถ้าไม่เจอ จะคืนค่าพิเศษชื่อ <code>string::npos</code> (no position) ต้องเช็กค่านี้ก่อนเอาตำแหน่งไปใช้ทุกครั้ง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="email"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string email;
+    while (cin &gt;&gt; email) {
+        size_t at = email.find('@'); // (1)!
+        if (at == string::npos) {
+            cout &lt;&lt; email &lt;&lt; " is not an email\n";
+        } else {
+            cout &lt;&lt; "user " &lt;&lt; email.substr(0, at) &lt;&lt; ", domain " &lt;&lt; email.substr(at + 1) &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตำแหน่งที่ <code>find</code> คืนมามีชนิด <code>size_t</code> ซึ่งเป็นจำนวนเต็มไม่ติดลบแบบเดียวกับที่ <code>strlen</code> คืนในหน้า 6.4 เก็บด้วยชนิดนี้แล้วเทียบกับ <code>string::npos</code> ตรงๆ ปลอดภัยที่สุด</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="email" data-title="ข้อมูลเข้า"><pre><code>malee@school.ac.th
+somchai
+p.ploy@mail.com
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="email" data-title="C:\code\email.exe"><pre><code>user malee, domain school.ac.th
+somchai is not an email
+user p.ploy, domain mail.com
+</code></pre></div>
+      </div>
+
+      <p>ใส่ตำแหน่งเริ่มค้นเป็นตัวที่สองได้ <code>s.find(x, start)</code> จะเริ่มหาตั้งแต่ช่อง <code>start</code> เป็นต้นไป ใช้หาทุกตำแหน่งที่คำหนึ่งปรากฏ โดยเริ่มรอบถัดไปหลังตำแหน่งที่เพิ่งเจอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="find-all"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string text, word;
+    cin &gt;&gt; text &gt;&gt; word;
+    int found = 0;
+    size_t pos = text.find(word);
+    while (pos != string::npos) {
+        cout &lt;&lt; "found at " &lt;&lt; pos &lt;&lt; '\n';
+        found++;
+        pos = text.find(word, pos + 1);
+    }
+    cout &lt;&lt; found &lt;&lt; " times\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="find-all" data-title="ข้อมูลเข้า"><pre><code>banana ana
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="find-all" data-title="C:\code\find.exe"><pre><code>found at 1
+found at 3
+2 times
+</code></pre></div>
+      </div>
+
+      <p><code>ana</code> ใน <code>banana</code> เจอที่ช่อง 1 และช่อง 3 สองครั้งนี้ซ้อนกันอยู่ตรงตัว <code>a</code> ที่ช่อง 3 การเริ่มรอบถัดไปที่ <code>pos + 1</code> จึงนับแบบซ้อนกันได้ ถ้าโจทย์ห้ามนับซ้อน ให้เริ่มรอบถัดไปที่ <code>pos + word.size()</code> แทน จะได้แค่ครั้งเดียว อ่านโจทย์ให้ดีว่าต้องการแบบไหน</p>
+
+      <h2 id="getline">getline รับทั้งบรรทัด</h2>
+
+      <p><code>cin &gt;&gt;</code> หยุดที่ช่องว่างเหมือน <code>%s</code> ถ้าต้องการทั้งบรรทัดรวมช่องว่าง ใช้ <code>getline(cin, line)</code> ซึ่งต่างจาก <code>fgets</code> ในหน้า 6.3 ตรงที่<strong>ไม่เก็บ <code>'\n'</code> ไว้ในข้อความ</strong> จึงไม่ต้องตัดเอง และไม่ต้องกำหนดขนาด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="getline-lines"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string line;
+    int count = 0;
+    while (getline(cin, line)) {
+        count++;
+        cout &lt;&lt; count &lt;&lt; " [" &lt;&lt; line &lt;&lt; "] " &lt;&lt; line.size() &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="getline-lines" data-title="ข้อมูลเข้า"><pre><code>rice 2 kg
+eggs 10
+fish sauce
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="getline-lines" data-title="C:\code\lines.exe"><pre><code>1 [rice 2 kg] 9
+2 [eggs 10] 7
+3 [fish sauce] 10
+</code></pre></div>
+      </div>
+
+      <p>วงเล็บเหลี่ยมใส่ไว้ให้เห็นขอบของข้อความ ไม่มี <code>'\n'</code> ติดมา และความยาวนับเฉพาะตัวอักษรในบรรทัด <code>while (getline(cin, line))</code> อ่านจนหมดข้อมูลแบบเดียวกับ <code>while (cin &gt;&gt; x)</code></p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">ไฟล์จาก Windows บน grader ที่เป็น Linux</p>
+        <p>หน้า 6.3 เล่าไว้ว่าไฟล์ที่สร้างบน Windows จบบรรทัดด้วย <code>'\r'</code> กับ <code>'\n'</code> และ grader บน Linux ไม่แปลงให้ <code>getline</code> ตัด <code>'\n'</code> ทิ้งแต่ไม่ตัด <code>'\r'</code> ถ้าโจทย์ไหนสงสัยว่าจะเจอ ให้ตัดเองด้วย <code>if (line.size() &gt; 0 &amp;&amp; line[line.size() - 1] == '\r') line.pop_back();</code> โดย <code>pop_back()</code> คือลบตัวสุดท้ายทิ้งหนึ่งตัว</p>
+      </div>
+
+      <h2 id="cin-getline">กับดัก cin &gt;&gt; ตามด้วย getline</h2>
+
+      <p>กับดักเดียวกับ <code>scanf</code> ตามด้วย <code>fgets</code> ในหน้า 6.3 ย้ายมาอยู่ใน C++ ครบทุกอย่าง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="room-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int room;
+    string name;
+    cin &gt;&gt; room;
+    getline(cin, name);
+    cout &lt;&lt; "room " &lt;&lt; room &lt;&lt; '\n';
+    cout &lt;&lt; "name [" &lt;&lt; name &lt;&lt; "]\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="room-bug" data-title="ข้อมูลเข้า"><pre><code>5
+Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="room-bug" data-title="C:\code\room.exe"><pre><code>room 5
+name []
+</code></pre></div>
+      </div>
+
+      <p><code>cin &gt;&gt; room</code> อ่าน <code>5</code> แล้วหยุดก่อน <code>'\n'</code> ท้ายบรรทัดแรก <code>getline</code> เจอ <code>'\n'</code> นั้นทันที จึงได้บรรทัดว่างแล้วจบ ชื่อจริงไม่ถูกอ่านเลย ต่างจาก <code>fgets</code> แค่ตรงที่คราวนี้ได้ข้อความว่างเปล่า ไม่ใช่ <code>'\n'</code> หนึ่งตัว</p>
+
+      <p>วิธีแก้คืออ่านทิ้งให้ถึง <code>'\n'</code> ก่อนเรียก <code>getline</code> แบบเดียวกับลูป <code>getchar</code> ในหน้า 6.3 ใน C++ ใช้ <code>cin.ignore</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="room"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int room;
+    string name;
+    cin &gt;&gt; room;
+    cin.ignore(1000000, '\n'); // (1)!
+    getline(cin, name);
+    cout &lt;&lt; "room " &lt;&lt; room &lt;&lt; '\n';
+    cout &lt;&lt; "name [" &lt;&lt; name &lt;&lt; "]\n";
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อ่านทิ้งไปเรื่อยๆ จนกว่าจะทิ้ง <code>'\n'</code> ไปแล้วหนึ่งตัว หรือจนทิ้งครบหนึ่งล้านตัว เลขหนึ่งล้านแค่เป็นเพดานที่ใหญ่พอ บรรทัดแรกของโจทย์ไม่มีทางยาวขนาดนั้น</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="room" data-title="ข้อมูลเข้า"><pre><code>5
+Somchai Jaidee
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="room" data-title="C:\code\room.exe"><pre><code>room 5
+name [Somchai Jaidee]
+</code></pre></div>
+      </div>
+
+      <p>น้องอาจเห็นโค้ดในเว็บอื่นเขียน <code>cin.ignore();</code> เฉยๆ ซึ่งทิ้งแค่หนึ่งตัว ใช้ได้เฉพาะเมื่อหลังเลข 5 มี <code>'\n'</code> ตามมาทันที ถ้ามีช่องว่างเกินท้ายบรรทัด หรือมี <code>'\r'</code> จากไฟล์ Windows ตัวที่ถูกทิ้งจะเป็นตัวนั้นแทน แล้ว <code>getline</code> ก็ได้บรรทัดว่างเหมือนเดิม แบบที่ใส่ <code>'\n'</code> ปลอดภัยกว่า</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">จำง่ายๆ</p>
+        <p>หลัง <code>cin &gt;&gt;</code> ถ้าคำสั่งอ่านถัดไปคือ <code>getline</code> ต้องมี <code>cin.ignore(1000000, '\n');</code> คั่นเสมอ ส่วน <code>cin &gt;&gt;</code> ตามด้วย <code>cin &gt;&gt;</code> ไม่มีปัญหา เพราะ <code>&gt;&gt;</code> ข้ามช่องว่างและ <code>'\n'</code> ข้างหน้าให้เอง</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="sign-compare">แบบที่ 1 เทียบ int กับ size() ตรงๆ</h3>
+
+      <p>เขียนลูปนับสระโดยใช้ <code>name.size()</code> ในเงื่อนไขตรงๆ แบบที่ใช้กับ <code>n</code> ในโปรแกรม vowels</p>
+
+      <div class="code" data-lang="cpp"><pre><code>for (int i = 0; i &lt; name.size(); i++) {
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>vowels.cpp:13:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::__cxx11::basic_string&lt;char&gt;::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+   13 |     for (int i = 0; i &lt; name.size(); i++) {
+      |                     ~~^~~~~~~~~~~~~
+</code></pre></div>
+
+      <p>หน้า 6.4 เคยเจอคำเตือนเรื่อง signedness กับ <code>strlen</code> แต่ตอนนั้นต้องเปิด <code>-Wextra</code> ถึงจะเห็น ใน C++ คำเตือนนี้อยู่ใน <code>-Wall</code> น้องจึงเห็นใน Code::Blocks ทุกครั้ง <code>size()</code> คืนจำนวนเต็มไม่ติดลบ (<code>unsigned</code>) แต่ <code>i</code> เป็น <code>int</code> ที่ติดลบได้ ลูปนี้ทำงานถูก แต่คำเตือนที่ขึ้นทุกครั้งจะกลบคำเตือนที่สำคัญจริง แก้ด้วยการเก็บความยาวลง <code>int</code> ก่อนแบบโปรแกรม vowels หรือเขียน <code>i &lt; (int)name.size()</code></p>
+
+      <h3 id="char-vs-string">แบบที่ 2 เทียบตัวอักษรกับข้อความ</h3>
+
+      <p>อยากรู้ว่าชื่อขึ้นต้นด้วย S ไหม</p>
+
+      <div class="code" data-lang="cpp"><pre><code>if (name[0] == "S") {
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>initial.cpp:10:17: warning: comparison with string literal results in unspecified behavior [-Waddress]
+   10 |     if (name[0] == "S") {
+initial.cpp:10:17: error: ISO C++ forbids comparison between pointer and integer [-fpermissive]
+</code></pre></div>
+
+      <p><code>name[0]</code> เป็น <code>char</code> ตัวเดียว แต่ <code>"S"</code> ในเครื่องหมายคำพูดคู่เป็นข้อความ เทียบกันไม่ได้ ภาษา C แค่เตือนแล้วได้ผลมั่ว แต่ C++ ไม่ยอมคอมไพล์เลย แก้เป็น <code>name[0] == 'S'</code> ตัวอักษรตัวเดียวใช้เครื่องหมายคำพูดเดี่ยวเสมอ ส่วนการเทียบทั้งคำ <code>name == "Somchai"</code> ใช้คู่ได้ เพราะทั้งสองข้างเป็นข้อความ</p>
+
+      <h3 id="npos">แบบที่ 3 เช็ก find ด้วย &gt;= 0</h3>
+
+      <div class="code" data-lang="cpp" data-linenums data-allow-warnings data-test="find-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string email;
+    cin &gt;&gt; email;
+    if (email.find('@') &gt;= 0) {
+        cout &lt;&lt; "valid\n";
+    } else {
+        cout &lt;&lt; "invalid\n";
+    }
+    cout &lt;&lt; email.find('@') &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="find-bug" data-title="ข้อมูลเข้า"><pre><code>somchai
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="find-bug" data-title="C:\code\email.exe"><pre><code>valid
+18446744073709551615
+</code></pre></div>
+      </div>
+
+      <p>ไม่มี <code>@</code> เลยแต่ได้ <code>valid</code> เพราะ <code>find</code> คืนจำนวนที่ไม่ติดลบ ซึ่ง <code>&gt;= 0</code> จริงเสมอ บรรทัดสุดท้ายเผยว่า <code>string::npos</code> จริงๆ คือเลขที่ใหญ่ที่สุดที่ชนิดนี้เก็บได้ คือ 2<sup>64</sup> - 1 ไม่ใช่ -1 ใน Code::Blocks ที่ใช้ <code>-Wall</code> อย่างเดียว คอมไพล์ผ่านเงียบๆ ถ้าเพิ่ม <code>-Wextra</code> จะได้คำเตือน <code>comparison of unsigned expression in '&gt;= 0' is always true</code> เทียบกับ <code>string::npos</code> ตรงๆ แบบในหัวข้อ find เสมอ</p>
+
+      <h3 id="substr-crash">แบบที่ 4 ตัดเกินความยาว</h3>
+
+      <p>โปรแกรมพิมพ์สามตัวท้ายของคำ ลองกับคำที่สั้นกว่าสามตัว</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string word;
+    cin &gt;&gt; word;
+    cout &lt;&lt; word.substr(word.size() - 3) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <p>ป้อน <code>hi</code> แล้วโปรแกรมพังทันที Code::Blocks แสดง</p>
+
+      <div class="code" data-lang="text"><pre><code>terminate called after throwing an instance of 'std::out_of_range'
+  what():  basic_string::substr: __pos (which is 18446744073709551615) &gt; this-&gt;size() (which is 2)
+
+Process returned -1073740791 (0xC0000409)
+</code></pre></div>
+
+      <p>มีสองเรื่องในข้อความนี้ อย่างแรก <code>word.size()</code> เป็นจำนวนไม่ติดลบ 2 ลบ 3 จึงไม่ได้ -1 แต่วนไปเป็นเลขที่ใหญ่ที่สุดแบบเดียวกับ <code>npos</code> อย่างที่สอง <code>substr</code> ตรวจว่าตำแหน่งเริ่มต้นเกินความยาวไหม ถ้าเกินจะหยุดโปรแกรมด้วยข้อความ <code>out_of_range</code> ซึ่ง grader จะนับเป็น runtime error แก้ด้วยการเก็บความยาวลง <code>int</code> ก่อนคำนวณ แล้วเช็กว่ายาวพอไหมก่อนตัด ส่วน <code>word[i]</code> ไม่ตรวจอะไรให้เลยเหมือนอาเรย์ เกินขอบแล้วได้ค่ามั่วเงียบๆ แบบหน้า 5.5</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>string</code> ไม่ต้องจองขนาด ต่อด้วย <code>+</code> <code>+=</code> เทียบด้วย <code>==</code> <code>&lt;</code> ได้ตรงๆ</li>
+        <li><code>s.size()</code> คือความยาว เก็บลง <code>int</code> ก่อนใช้ในลูปหรือก่อนลบ</li>
+        <li><code>s.substr(start, count)</code> ตัดข้อความ ตำแหน่งเริ่มเกินความยาวแล้วโปรแกรมพัง</li>
+        <li><code>s.find(x)</code> คืนตำแหน่งแรกที่เจอ หรือ <code>string::npos</code> ถ้าไม่เจอ เทียบกับ <code>npos</code> เสมอ ห้ามเทียบกับ 0 หรือ -1</li>
+        <li><code>getline(cin, line)</code> รับทั้งบรรทัด ไม่เก็บ <code>'\n'</code></li>
+        <li>หลัง <code>cin &gt;&gt;</code> จะใช้ <code>getline</code> ต้องมี <code>cin.ignore(1000000, '\n');</code> ก่อน</li>
+      </ul>
+    </article>

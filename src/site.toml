@@ -231,7 +231,15 @@ track = "ภาษา C++ และ STL  ปลายค่าย 1"
 num = "15"
 title = "บทที่ 15 จาก C สู่ C++"
 summary = "cin cout string bool reference และอ่านเขียนให้เร็ว"
-# dir = "cpp/15-from-c"
+path = "cpp/15-from-c/index.html"
+pages = [
+  { num = "15.1", title = "เปลี่ยนจาก .c เป็น .cpp", path = "cpp/15-from-c/why-cpp.html" },
+  { num = "15.2", title = "cin และ cout", path = "cpp/15-from-c/cin-cout.html" },
+  { num = "15.3", title = "อ่านเขียนให้ทันเวลา", path = "cpp/15-from-c/fast-io.html" },
+  { num = "15.4", title = "string ของ C++", path = "cpp/15-from-c/string.html" },
+  { num = "15.5", title = "bool reference และ auto", path = "cpp/15-from-c/reference.html" },
+  { num = "15.6", title = "แบบฝึกหัด", path = "cpp/15-from-c/exercises.html", exercises = "cpp/15-from-c" },
+]
 
 [[chapters]]
 track = "ภาษา C++ และ STL  ปลายค่าย 1"

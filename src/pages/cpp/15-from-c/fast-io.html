@@ -1,0 +1,266 @@
+<article class="doc">
+      <h1>15.3 อ่านเขียนให้ทันเวลา</h1>
+
+      <p>โจทย์แข่งขันชอบให้ข้อมูลเข้ามาเป็นแสนหรือเป็นล้านตัว และจำกัดเวลา 1 วินาที ข้อแบบนี้เวลาเกือบทั้งหมดหมดไปกับการอ่านและพิมพ์ ไม่ใช่การคำนวณ <code>cin</code> กับ <code>cout</code> ที่เรียนในหน้าที่แล้ว ถ้าใช้แบบที่ยังไม่ได้ตั้งค่า จะช้ากว่า <code>scanf</code> กับ <code>printf</code> หลายเท่า จนวิธีที่ถูกต้องก็ไม่ทันเวลาได้ หน้านี้วัดให้เห็นกับตา แล้วแก้ด้วยสองบรรทัดที่น้องจะใส่ไว้ต้นทุกโปรแกรมต่อจากนี้</p>
+
+      <h2 id="slow">cin แบบปกติช้าแค่ไหน</h2>
+
+      <p>โปรแกรมนี้อ่านจำนวนเต็ม N ตัวแล้วหาผลรวม เป็นงานที่ง่ายที่สุดเท่าที่จะนึกได้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sum-cin"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    long long sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        cin &gt;&gt; x;
+        sum += x;
+    }
+    cout &lt;&lt; sum &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="sum-cin" data-title="ข้อมูลเข้า"><pre><code>5
+10 20 30 40 50
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sum-cin" data-title="C:\code\sum.exe"><pre><code>150
+</code></pre></div>
+      </div>
+
+      <p>ลองเพิ่มสองบรรทัดนี้ไว้ต้น <code>main</code> แล้วไม่แก้อย่างอื่นเลย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="sum-fast"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false); // (1)!
+    cin.tie(nullptr); // (2)!
+    int n;
+    cin &gt;&gt; n;
+    long long sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        cin &gt;&gt; x;
+        sum += x;
+    }
+    cout &lt;&lt; sum &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เลิกประสานงานกับ <code>scanf</code> <code>printf</code> อธิบายในหัวข้อ<a href="#why">ทำไมสองบรรทัดนี้ถึงเร็ว</a></li>
+        <li>เลิกสั่งให้ <code>cout</code> ส่งของใน buffer ออกไปทุกครั้งก่อน <code>cin</code> อ่าน อธิบายในหัวข้อเดียวกัน</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="sum-fast" data-title="ข้อมูลเข้า"><pre><code>5
+10 20 30 40 50
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sum-fast" data-title="C:\code\sum.exe"><pre><code>150
+</code></pre></div>
+      </div>
+
+      <p>ผลเหมือนกัน ความต่างอยู่ที่เวลา ทดลองกับไฟล์ข้อมูลเข้าที่มี N = 10<sup>6</sup> และตัวเลขสุ่ม 1 ถึง 10<sup>9</sup> (ไฟล์ขนาด 9.9 MB) เทียบกับโปรแกรมเดียวกันที่อ่านด้วย <code>scanf</code> และพิมพ์ด้วย <code>printf</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>อ่าน 10<sup>6</sup> ตัวแล้วหาผลรวม</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>scanf</code></td><td>0.34 วินาที</td><td>0.34 วินาที</td></tr>
+            <tr><td><code>cin</code> แบบปกติ</td><td>0.96 วินาที</td><td>0.97 วินาที</td></tr>
+            <tr><td><code>cin</code> เพิ่มสองบรรทัด</td><td>0.08 วินาที</td><td>0.08 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แค่อ่านอย่างเดียว <code>cin</code> แบบปกติก็ใช้เกือบ 1 วินาทีแล้ว ช้ากว่า <code>scanf</code> เกือบสามเท่า พอเพิ่มสองบรรทัด กลับเร็วกว่า <code>scanf</code> อีกสี่เท่า</p>
+
+      <h2 id="read-write">อ่านด้วย พิมพ์ด้วย</h2>
+
+      <p>งานที่หนักกว่าคือพิมพ์ออกมาทีละบรรทัดด้วย เช่นยอดเงินสะสมหลังแต่ละวัน ข้อมูลเข้าแบบเดียวกัน แต่คราวนี้พิมพ์ผลรวมสะสมทุกครั้งที่อ่าน รวม 10<sup>6</sup> บรรทัด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="running-fast"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    long long sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        cin &gt;&gt; x;
+        sum += x;
+        cout &lt;&lt; sum &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="running-fast" data-title="ข้อมูลเข้า"><pre><code>5
+10 20 30 40 50
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="running-fast" data-title="C:\code\running.exe"><pre><code>10
+30
+60
+100
+150
+</code></pre></div>
+      </div>
+
+      <p>เทียบหกแบบ ทุกแบบต่างจากโปรแกรมข้างบนแค่ตรงที่บอกไว้ในตาราง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>อ่าน 10<sup>6</sup> ตัว พิมพ์ 10<sup>6</sup> บรรทัด</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>scanf</code> กับ <code>printf</code></td><td>0.61 วินาที</td><td>0.62 วินาที</td></tr>
+            <tr><td><code>cin</code> <code>cout</code> แบบปกติ</td><td>3.1 วินาที</td><td>3.5 วินาที</td></tr>
+            <tr><td><code>cin</code> <code>cout</code> แบบปกติ ใช้ <code>endl</code></td><td>3.8 วินาที</td><td>3.9 วินาที</td></tr>
+            <tr><td>มีสองบรรทัด ใช้ <code>'\n'</code></td><td>0.18 วินาที</td><td>0.18 วินาที</td></tr>
+            <tr><td>มีสองบรรทัด แต่ใช้ <code>endl</code></td><td>2.4 วินาที</td><td>2.6 วินาที</td></tr>
+            <tr><td>มีแค่ <code>sync_with_stdio(false)</code> ไม่มี <code>cin.tie(nullptr)</code></td><td>2.3 วินาที</td><td>2.2 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วัดบนเครื่องที่เขียนเอกสารนี้ โน้ตบุ๊ก AMD Ryzen AI 9 HX 370 แรม 32 GB ระบบ Windows 11 เสียบสายชาร์จ โหมดพลังงาน Balanced คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks ทั้งแบบ <code>-Wall</code> อย่างเดียวที่ Code::Blocks ใช้ และแบบเพิ่ม <code>-O2</code> ที่ grader มักใช้ ป้อนข้อมูลจากไฟล์และให้ผลลัพธ์ลงไฟล์แบบเดียวกับ grader รันแบบละ 6 ครั้ง ทิ้งครั้งแรก แล้วใช้ค่ากลางของ 5 ครั้งที่เหลือ แต่ละครั้งได้ไม่เท่ากัน บางแบบต่างกันเกือบหนึ่งในสาม ตัวเลขจึงใช้ดูว่าเร็วช้ากี่เท่า ไม่ต้องจำทศนิยม</p>
+
+      <p>อ่านตารางได้สามเรื่อง</p>
+
+      <ol>
+        <li><strong><code>cin</code> <code>cout</code> แบบปกติไม่ทัน 1 วินาที</strong> ช้ากว่า <code>scanf</code> <code>printf</code> ราวห้าเท่า</li>
+        <li><strong>ต้องมีครบทั้งสองบรรทัด</strong> ขาด <code>cin.tie(nullptr)</code> บรรทัดเดียวก็ช้ากว่าแบบครบสิบกว่าเท่า</li>
+        <li><strong><code>endl</code> ทำลายทุกอย่าง</strong> แม้มีสองบรรทัดครบ ถ้าขึ้นบรรทัดด้วย <code>endl</code> ก็ช้าลงสิบกว่าเท่า</li>
+      </ol>
+
+      <p>ส่วน <code>-O2</code> แทบไม่ช่วยเลย เพราะเวลาไม่ได้หมดไปกับโค้ดของเรา แต่หมดไปกับการรับส่งข้อมูล ซึ่ง compiler ปรับให้ไม่ได้</p>
+
+      <h2 id="why">ทำไมสองบรรทัดนี้ถึงเร็ว</h2>
+
+      <h3 id="sync">ios::sync_with_stdio(false)</h3>
+
+      <p>C++ ยอมให้ใช้ <code>scanf</code> <code>printf</code> ปนกับ <code>cin</code> <code>cout</code> ในโปรแกรมเดียวได้โดยลำดับไม่เพี้ยน เพราะตั้งต้นไว้ให้สองฝั่ง<strong>ประสานงานกัน (synchronize)</strong> ทุกครั้งที่อ่านหรือพิมพ์ ฝั่ง <code>cin</code> <code>cout</code> จึงไม่มี buffer เป็นของตัวเอง ต้องส่งต่อไปให้ฝั่งภาษา C ทีละน้อย ซึ่งเสียเวลามาก</p>
+
+      <p><code>ios::sync_with_stdio(false)</code> คือบอกว่า "ไม่ต้องประสานงานแล้ว" <code>cin</code> กับ <code>cout</code> ได้ buffer ของตัวเอง อ่านเขียนทีละก้อนใหญ่ได้เต็มที่ ราคาที่ต้องจ่ายคือ<strong>ห้ามใช้ <code>scanf</code> <code>printf</code> ในโปรแกรมนั้นอีก</strong> ดูในส่วนลองทำให้พังว่าถ้าฝืนจะเป็นอย่างไร</p>
+
+      <h3 id="tie">cin.tie(nullptr)</h3>
+
+      <p>ถ้าโปรแกรมพิมพ์คำถามว่า <code>Enter your age:</code> ด้วย <code>cout</code> แล้วรอรับด้วย <code>cin</code> คำถามต้องขึ้นจอก่อน ไม่อย่างนั้นคนใช้จะเห็นจอว่างๆ โดยไม่รู้ว่าต้องพิมพ์อะไร C++ จึงตั้งต้นให้ <code>cin</code> <strong>ผูก (tie)</strong> อยู่กับ <code>cout</code> ก่อน <code>cin</code> อ่านทุกครั้ง จะสั่ง flush ให้ <code>cout</code> ส่งของใน buffer ออกไปก่อน</p>
+
+      <p>โปรแกรมที่อ่านหนึ่งตัวแล้วพิมพ์หนึ่งบรรทัดสลับกันเป็นล้านครั้ง จึงโดน flush เป็นล้านครั้ง ผลเท่ากับใช้ <code>endl</code> ทุกบรรทัด ซึ่งตรงกับตัวเลขในตาราง <code>cin.tie(nullptr)</code> คือแก้ให้ <code>cin</code> ไม่ผูกกับอะไรเลย (<code>nullptr</code> คือ "ไม่มีอะไร" แบบเดียวกับ <code>NULL</code> ในบทที่ 10) โปรแกรมแข่งขันไม่ได้พิมพ์คำถามรอใครอยู่แล้ว จึงไม่เสียอะไร บางคนเขียน <code>cin.tie(0)</code> หรือ <code>cin.tie(NULL)</code> ซึ่งได้ผลเหมือนกัน</p>
+
+      <h2 id="template">โครงที่ใช้ทุกโปรแกรม</h2>
+
+      <p>รวมทุกอย่างในหน้า 15.1 ถึง 15.3 โปรแกรมแข่งขันจะเริ่มแบบนี้ ตั้งแต่ตรงนี้ไป ทุกโปรแกรมในเอกสารนี้ที่อ่านข้อมูลจะมีสองบรรทัดนี้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="template"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    return 0;
+}
+</code></pre></div>
+
+      <p>โครงนี้คอมไพล์และรันได้เลย แค่ยังไม่ได้ทำอะไร เขียนโค้ดของข้อนั้นลงในบรรทัดว่างตรงกลาง</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">กฎสามข้อของการอ่านเขียนให้เร็ว</p>
+        <p>หนึ่ง ใส่สองบรรทัดไว้บนสุดของ <code>main</code> ก่อนอ่านหรือพิมพ์อะไรทั้งนั้น สอง ขึ้นบรรทัดใหม่ด้วย <code>'\n'</code> ไม่ใช้ <code>endl</code> สาม ใช้ <code>cin</code> <code>cout</code> อย่างเดียว ห้ามมี <code>scanf</code> <code>printf</code> <code>getchar</code> <code>puts</code> ปน</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="mix-input">แบบที่ 1 ปิด sync แล้วอ่านปนกัน</h3>
+
+      <p>น้องย้ายโปรแกรมหาผลรวมจากภาษา C มาเป็น C++ ใส่สองบรรทัดตามกฎแล้ว แต่ลืมแก้ <code>scanf</code> ในลูปไปหนึ่งที่</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    long long sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int x = 0;
+        scanf("%d", &amp;x);
+        sum += x;
+    }
+    cout &lt;&lt; sum &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านไม่มีคำเตือน บนเครื่องที่เขียนเอกสารนี้ ทดลองป้อนข้อมูลชุดเดิม <code>5</code> แล้ว <code>10 20 30 40 50</code> ทีละบรรทัดแบบคนพิมพ์ ได้ <code>150</code> ถูกต้อง แต่พอป้อนข้อมูลชุดเดียวกันจากไฟล์แบบที่ grader ทำ ได้ <code>0</code></p>
+
+      <p>สาเหตุคือ <code>cin</code> ที่มี buffer ของตัวเองแล้วจะอ่านข้อมูลเข้ามาทีละก้อนใหญ่ ตอนอ่าน <code>n</code> จากไฟล์ มันดึงข้อมูลก้อนใหญ่ไปเก็บใน buffer ของ <code>cin</code> ในครั้งเดียว ไฟล์เล็กแบบนี้ก็คือทั้งไฟล์ <code>scanf</code> มาถึงทีหลังเลยไม่เหลืออะไรให้อ่าน <code>x</code> จึงเป็น 0 ทุกรอบ ส่วนตอนพิมพ์เอง ข้อมูลมาทีละบรรทัด <code>cin</code> ได้แค่บรรทัดแรกไป บรรทัดที่สองยังรอ <code>scanf</code> อยู่ จึงบังเอิญถูก บั๊กแบบนี้ทดสอบในเครื่องตัวเองผ่าน แต่ไปตกใน grader</p>
+
+      <h3 id="mix-output">แบบที่ 2 ปิด sync แล้วพิมพ์ปนกัน</h3>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    for (int day = 1; day &lt;= 3; day++) {
+        cout &lt;&lt; "day " &lt;&lt; day &lt;&lt; '\n';
+        printf("score %d\n", day * 10);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <p>ตั้งใจให้ <code>day</code> กับ <code>score</code> สลับกันทีละบรรทัด บนเครื่องที่เขียนเอกสารนี้ ให้ผลลัพธ์ลงไฟล์แบบที่ grader ทำ แล้วเปิดไฟล์ดู ได้แบบนี้</p>
+
+      <div class="code" data-lang="text"><pre><code>day 1
+day 2
+day 3
+score 10
+score 20
+score 30
+</code></pre></div>
+
+      <p><code>cout</code> กับ <code>printf</code> ต่างคนต่างเก็บของไว้ใน buffer ของตัวเอง แล้วส่งออกตอนไหนก็ได้ที่แต่ละฝั่งสะดวก ลำดับจึงเพี้ยน grader ตรวจว่าผิดทั้งที่ตัวเลขถูกทุกตัว</p>
+
+      <h3 id="forgot-tie">แบบที่ 3 ใส่บรรทัดเดียว หรือใช้ endl</h3>
+
+      <p>สองแบบนี้คำตอบถูกทุกตัว แต่ช้า จากตารางข้างบน ไม่มี <code>cin.tie(nullptr)</code> ใช้ 2.3 วินาที และมีสองบรรทัดแต่ใช้ <code>endl</code> ใช้ 2.4 วินาที ทั้งที่แบบถูกใช้แค่ 0.18 วินาที ถ้าโจทย์จำกัด 1 วินาที grader จะให้ผลว่า Time Limit Exceeded ทั้งสองแบบ คนที่ไม่รู้เรื่องนี้จะนั่งหาบั๊กในวิธีคิดทั้งที่วิธีคิดไม่ผิด</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>cin</code> <code>cout</code> แบบปกติช้ากว่า <code>scanf</code> <code>printf</code> ราวสามถึงห้าเท่า ข้อมูลล้านตัวไม่ทัน 1 วินาที</li>
+        <li>ใส่ <code>ios::sync_with_stdio(false);</code> กับ <code>cin.tie(nullptr);</code> ไว้บนสุดของ <code>main</code> แล้วจะเร็วกว่า <code>scanf</code> <code>printf</code> ด้วยซ้ำ</li>
+        <li><code>sync_with_stdio(false)</code> เลิกประสานกับฝั่งภาษา C จึงห้ามใช้ <code>scanf</code> <code>printf</code> ปน</li>
+        <li><code>cin.tie(nullptr)</code> เลิก flush <code>cout</code> ก่อนทุกครั้งที่ <code>cin</code> อ่าน</li>
+        <li><code>endl</code> ในลูปใหญ่ทำให้ช้าลงสิบกว่าเท่า ใช้ <code>'\n'</code></li>
+        <li>บั๊กจากการอ่านปนกันอาจไม่โผล่ตอนพิมพ์เอง แต่โผล่ใน grader ที่อ่านจากไฟล์</li>
+      </ul>
+    </article>

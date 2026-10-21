@@ -1,0 +1,301 @@
+<article class="doc">
+      <h1>15.2 cin และ cout</h1>
+
+      <p>C++ รับข้อมูลด้วย <code>cin</code> และแสดงผลด้วย <code>cout</code> ข้อดีที่สุดคือไม่ต้องจำตัวกำหนดรูปแบบอีกแล้ว ไม่มี <code>%d</code> <code>%lld</code> <code>%lf</code> ไม่ต้องใส่ <code>&amp;</code> หน้าตัวแปร ชนิดของตัวแปรเป็นตัวบอกเองว่าจะอ่านหรือพิมพ์แบบไหน ความผิดพลาดแบบลืมเปลี่ยน <code>%d</code> เป็น <code>%lld</code> ในบทที่ 1 จึงหายไปทั้งหมด หน้านี้สอนวิธีใช้ ส่วนเรื่องความเร็วอยู่ในหน้าถัดไป</p>
+
+      <h2 id="cout">cout พิมพ์ทุกชนิดด้วย &lt;&lt;</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="cout-types"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int score = 85;
+    long long population = 3000000000;
+    double height = 1.75;
+    char grade = 'A';
+    cout &lt;&lt; "score = " &lt;&lt; score &lt;&lt; '\n';
+    cout &lt;&lt; "population = " &lt;&lt; population &lt;&lt; '\n';
+    cout &lt;&lt; "height = " &lt;&lt; height &lt;&lt; '\n';
+    cout &lt;&lt; "grade = " &lt;&lt; grade &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="cout-types" data-title="C:\code\types.exe"><pre><code>score = 85
+population = 3000000000
+height = 1.75
+grade = A
+</code></pre></div>
+
+      <p><code>&lt;&lt;</code> ส่งค่าทางขวาไปที่ <code>cout</code> ทีละชิ้น เรียงจากซ้ายไปขวา หนึ่งบรรทัดจึงส่งได้หลายชิ้นต่อกัน เรียกว่าการต่อเป็นสาย (chain) แต่ละชิ้นจะเป็นข้อความ ตัวแปร หรือผลคำนวณก็ได้ เทียบกับ <code>printf</code> ที่เรียนมา</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ชนิด</th><th><code>printf</code></th><th><code>cout</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>int</code></td><td><code>printf("%d\n", score);</code></td><td><code>cout &lt;&lt; score &lt;&lt; '\n';</code></td></tr>
+            <tr><td><code>long long</code></td><td><code>printf("%lld\n", population);</code></td><td><code>cout &lt;&lt; population &lt;&lt; '\n';</code></td></tr>
+            <tr><td><code>char</code></td><td><code>printf("%c\n", grade);</code></td><td><code>cout &lt;&lt; grade &lt;&lt; '\n';</code></td></tr>
+            <tr><td>หลายค่า</td><td><code>printf("%d %d\n", a, b);</code></td><td><code>cout &lt;&lt; a &lt;&lt; ' ' &lt;&lt; b &lt;&lt; '\n';</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แถวสุดท้ายสำคัญ <code>cout</code> ไม่เติมช่องว่างระหว่างชิ้นให้ ถ้าอยากได้ช่องว่างต้องส่ง <code>' '</code> เองทุกครั้ง ลืมแล้วตัวเลขจะติดกัน ดูได้ในส่วนลองทำให้พัง ส่วน <code>double</code> ไม่อยู่ในตาราง เพราะมีเรื่องต้องรู้มากกว่านั้น อยู่ในหัวข้อ<a href="#decimals">จัดทศนิยมด้วย fixed และ setprecision</a></p>
+
+      <h2 id="cin">cin รับข้อมูลด้วย &gt;&gt;</h2>
+
+      <p>กลับไปที่ที่ดินกว้าง 50000 เมตร ยาว 50000 เมตรในหน้า 1.3 คราวนี้รับด้วย <code>cin</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="land"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    long long width, length;
+    cin &gt;&gt; width &gt;&gt; length;
+    cout &lt;&lt; "area = " &lt;&lt; width * length &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="land" data-title="ข้อมูลเข้า"><pre><code>50000 50000
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="land" data-title="C:\code\land.exe"><pre><code>area = 2500000000
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>ไม่มี <code>&amp;</code> และไม่มี <code>%lld</code> แค่ประกาศเป็น <code>long long</code> แล้ว <code>cin</code> ก็อ่านเป็น <code>long long</code> ให้เอง</li>
+        <li><code>cin &gt;&gt; width &gt;&gt; length;</code> อ่านสองตัวเรียงกัน เหมือน <code>scanf("%lld %lld", ...)</code></li>
+        <li>เหมือน <code>scanf</code> ตรงที่ข้ามช่องว่างและการขึ้นบรรทัดใหม่ระหว่างตัวเลขให้เอง ข้อมูลจะอยู่บรรทัดเดียวกันหรือคนละบรรทัดก็อ่านได้</li>
+      </ul>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">cin ไม่ได้ช่วยเรื่อง overflow</p>
+        <p><code>cin</code> แค่อ่านให้ตรงชนิด การเลือกชนิดยังเป็นหน้าที่ของน้อง ถ้าประกาศ <code>width</code> กับ <code>length</code> เป็น <code>int</code> ผลคูณก็ยังล้นแบบเดียวกับหน้า 1.3 ทุกอย่าง ต้องคิดขนาดจากขอบเขตในโจทย์เหมือนเดิม</p>
+      </div>
+
+      <p>จำทิศของลูกศรด้วยการนึกว่าข้อมูลไหลไปทางไหน <code>cin &gt;&gt; x</code> ข้อมูลไหลจากแป้นพิมพ์เข้าไปใน <code>x</code> ส่วน <code>cout &lt;&lt; x</code> ค่าของ <code>x</code> ไหลออกไปที่หน้าจอ ถ้าเขียนลูกศรกลับด้าน คอมไพล์ไม่ผ่าน</p>
+
+      <p><code>cin</code> อ่าน <code>char</code> ได้ด้วย และข้ามช่องว่างกับการขึ้นบรรทัดใหม่ข้างหน้าให้เอง เหมือน <code>" %c"</code> ในบทที่ 2 จึงไม่ต้องกลัวกับดักตัวอักษรค้างแบบ <code>scanf("%c")</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="grade-char"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int room;
+    char grade;
+    cin &gt;&gt; room &gt;&gt; grade;
+    cout &lt;&lt; "room " &lt;&lt; room &lt;&lt; " grade " &lt;&lt; grade &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="grade-char" data-title="ข้อมูลเข้า"><pre><code>4
+B
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="grade-char" data-title="C:\code\grade.exe"><pre><code>room 4 grade B
+</code></pre></div>
+      </div>
+
+      <h2 id="endl">endl กับ '\n'</h2>
+
+      <p>ขึ้นบรรทัดใหม่ใน <code>cout</code> ทำได้สองแบบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="endl"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    cout &lt;&lt; "line 1" &lt;&lt; endl;
+    cout &lt;&lt; "line 2" &lt;&lt; '\n';
+    cout &lt;&lt; "line 3\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="endl" data-title="C:\code\lines.exe"><pre><code>line 1
+line 2
+line 3
+</code></pre></div>
+
+      <p>ผลเหมือนกันทั้งสามแบบ <code>'\n'</code> ในเครื่องหมายคำพูดเดี่ยวคือ <code>char</code> หนึ่งตัว ส่วนบรรทัดที่ 8 เอา <code>\n</code> ไปไว้ท้ายข้อความเลย ทั้งสองแบบเป็นตัวขึ้นบรรทัดใหม่ตัวเดียวกับที่ใช้ใน <code>printf</code> แต่ <code>endl</code> ทำมากกว่านั้นหนึ่งอย่าง</p>
+
+      <p><code>cout</code> ไม่ได้ส่งตัวอักษรออกไปทีละตัว มันเก็บไว้ในที่พักข้อมูลชั่วคราวที่เรียกว่า <strong>buffer</strong> ก่อน พอสะสมได้เยอะแล้วค่อยส่งออกไปทีเดียวทั้งก้อน เหมือนรถขนของที่รอให้ของเต็มคันก่อนค่อยออกรถ ไม่ใช่วิ่งไปส่งทีละชิ้น <code>endl</code> คือ <code>'\n'</code> บวกคำสั่ง <strong>flush</strong> ที่บังคับให้ส่งของใน buffer ออกไป<strong>ทันที</strong>แม้จะยังไม่เต็ม</p>
+
+      <p>พิมพ์ไม่กี่บรรทัดไม่เห็นความต่าง แต่ถ้าอยู่ในลูปที่พิมพ์เป็นล้านบรรทัด <code>endl</code> ทำให้ออกรถเป็นล้านเที่ยว หน้า 15.3 จะวัดให้ดูว่าช้าลงหลายเท่า จึงมีกฎง่ายๆ ว่า <strong>ขึ้นบรรทัดใหม่ด้วย <code>'\n'</code> เสมอ</strong> ไม่ต้องห่วงว่าข้อมูลจะไม่ออก ตอนโปรแกรมจบ ของที่ค้างใน buffer จะถูกส่งออกให้ครบเอง</p>
+
+      <h2 id="until-eof">อ่านจนหมดข้อมูล</h2>
+
+      <p>ในบทที่ 4 อ่านจนหมดด้วย <code>while (scanf("%d", &amp;x) == 1)</code> แบบ <code>cin</code> เขียนสั้นกว่า</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="until-eof"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int score;
+    int count = 0;
+    long long total = 0;
+    while (cin &gt;&gt; score) {
+        count++;
+        total += score;
+    }
+    cout &lt;&lt; count &lt;&lt; " scores, total " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="until-eof" data-title="ข้อมูลเข้า"><pre><code>72 85 64
+90 58
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="until-eof" data-title="C:\code\scores.exe"><pre><code>5 scores, total 369
+</code></pre></div>
+      </div>
+
+      <p><code>cin &gt;&gt; score</code> ใช้เป็นเงื่อนไขได้ อ่านสำเร็จเป็นจริง อ่านไม่ได้เพราะข้อมูลหมดหรือเจอตัวที่ไม่ใช่ตัวเลขเป็นเท็จ ทดลองในหน้าต่างดำก็จบข้อมูลด้วย <span class="keys"><kbd>Enter</kbd></span> <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Z</kbd></span> <span class="keys"><kbd>Enter</kbd></span> เหมือนเดิม</p>
+
+      <p>สังเกตว่าตัวแปรชื่อ <code>count</code> อยู่ใน <code>main</code> จึงไม่ชนกับ <code>count</code> ใน <code>std</code> แบบที่ 2 ในหน้า 15.1 ชนเพราะประกาศไว้นอก <code>main</code></p>
+
+      <h2 id="decimals">จัดทศนิยมด้วย fixed และ setprecision</h2>
+
+      <p><code>cout</code> พิมพ์ <code>double</code> ไม่เหมือน <code>printf("%f")</code> ลองดูก่อน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="double-default"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    double average = 245 / 3.0;
+    cout &lt;&lt; average &lt;&lt; '\n';
+    cout &lt;&lt; 1234567 / 3.0 &lt;&lt; '\n';
+    cout &lt;&lt; 98765432.0 &lt;&lt; '\n';
+    cout &lt;&lt; 2.0 &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="double-default" data-title="C:\code\decimals.exe"><pre><code>81.6667
+411522
+9.87654e+07
+2
+</code></pre></div>
+
+      <p>ถ้าไม่บอกอะไร <code>cout</code> จะพิมพ์ให้สั้นที่สุดโดยใช้ตัวเลขรวมไม่เกิน 6 หลัก (นับทุกหลักที่มีความหมาย ไม่ใช่นับแค่หลังจุด) 81.666666... จึงเหลือ 81.6667 ตัวเลขที่ใหญ่หน่อยอย่าง 411522.333... หลักหลังจุดหายหมด ตัวที่ใหญ่กว่านั้นอีกจะกลายเป็นรูปแบบวิทยาศาสตร์ <code>9.87654e+07</code> ซึ่งแปลว่า 9.87654 × 10<sup>7</sup> และ 2.0 ก็พิมพ์แค่ <code>2</code> ไม่มีจุดเลย ไม่มีแบบไหนตรงกับที่โจทย์สั่งว่า "ทศนิยม 2 ตำแหน่ง"</p>
+
+      <p>วิธีบอกให้พิมพ์แบบที่ต้องการคือส่งตัวจัดรูปแบบสองตัวเข้าไปใน <code>cout</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="fixed"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    double average = 245 / 3.0;
+    cout &lt;&lt; fixed &lt;&lt; setprecision(2); // (1)!
+    cout &lt;&lt; average &lt;&lt; '\n';
+    cout &lt;&lt; 1234567 / 3.0 &lt;&lt; '\n';
+    cout &lt;&lt; 98765432.0 &lt;&lt; '\n';
+    cout &lt;&lt; 2.0 &lt;&lt; '\n';
+    cout &lt;&lt; 17 &lt;&lt; '\n'; // (2)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>fixed</code> แปลว่าใช้จำนวนตำแหน่งทศนิยมตายตัว และ <code>setprecision(2)</code> บอกว่าตายตัวที่ 2 ตำแหน่ง สองตัวนี้รวมกันได้ผลแบบเดียวกับ <code>%.2f</code> ส่งเข้าไปครั้งเดียวแล้วมีผลกับ <code>double</code> ทุกตัวที่พิมพ์หลังจากนั้น ไม่ต้องใส่ซ้ำทุกบรรทัด <code>setprecision</code> อยู่ในไฟล์ <code>iomanip</code> ซึ่ง <code>bits/stdc++.h</code> ดึงมาให้แล้ว</li>
+        <li>จำนวนเต็มไม่โดนผลกระทบ <code>17</code> ยังพิมพ์เป็น <code>17</code> ไม่ใช่ <code>17.00</code></li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="fixed" data-title="C:\code\decimals.exe"><pre><code>81.67
+411522.33
+98765432.00
+2.00
+17
+</code></pre></div>
+
+      <p>โปรแกรมที่ต้องตอบเป็นทศนิยมให้ใส่ <code>cout &lt;&lt; fixed &lt;&lt; setprecision(N);</code> ไว้ต้น <code>main</code> ครั้งเดียว แล้วพิมพ์ตามปกติ</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">เลขที่ตกตรงครึ่งพอดี</p>
+        <p>เรื่องปัดเศษตรงครึ่งใน<a href="../../c/02-input-output/printf.html#rounding">หน้า 2.1</a> ยังต้องระวังเหมือนเดิม บนเครื่องที่เขียนเอกสารนี้ <code>cout</code> พิมพ์ 0.125 แบบสองตำแหน่งได้ <code>0.12</code> และ 0.25 แบบหนึ่งตำแหน่งได้ <code>0.2</code> ซึ่งต่างจาก <code>printf</code> ในโปรแกรมภาษา C บนเครื่องเดียวกันที่ได้ <code>0.13</code> กับ <code>0.3</code> ไม่ต้องจำว่าแบบไหนได้อะไร จำแค่ว่าเลขตรงครึ่งพอดีเชื่อไม่ได้ คนตั้งโจทย์จึงหลีกเลี่ยงอยู่แล้ว</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="wrong-arrow">แบบที่ 1 ลูกศรกลับด้าน</h3>
+
+      <p>ในโปรแกรมที่รับคะแนนหนึ่งตัวแล้วพิมพ์ออกมา เขียน <code>cin &lt;&lt; score;</code> แทน <code>cin &gt;&gt; score;</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>shift.cpp:7:9: error: no match for 'operator&lt;&lt;' (operand types are 'std::istream' {aka 'std::basic_istream&lt;char&gt;'} and 'int')
+    7 |     cin &lt;&lt; score;
+      |     ~~~ ^~ ~~~~~
+      |     |      |
+      |     |      int
+      |     std::istream {aka std::basic_istream&lt;char&gt;}
+</code></pre></div>
+
+      <p>ต่อจากนี้ยังมี note อีกกว่า 450 บรรทัด ไล่ทุก <code>&lt;&lt;</code> ที่ compiler รู้จัก ไม่ต้องอ่าน ข้อความ error ของ C++ ยาวแบบนี้บ่อย ให้อ่านแค่บรรทัดแรกที่มีคำว่า <code>error</code> ซึ่งบอกว่าไม่มี <code>&lt;&lt;</code> ที่ใช้กับ <code>std::istream</code> (ชนิดของ <code>cin</code>) และ <code>int</code> ได้ แปลง่ายๆ ว่า <code>cin</code> ใช้ <code>&lt;&lt;</code> ไม่ได้ เปลี่ยนเป็น <code>&gt;&gt;</code> ก็หาย ถ้าใช้ <code>cout &gt;&gt;</code> ก็ได้ error ยาวแบบเดียวกัน</p>
+
+      <h3 id="no-space">แบบที่ 2 ลืมช่องว่างระหว่างตัวเลข</h3>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="no-space"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int hours = 2, minutes = 15;
+    cout &lt;&lt; hours &lt;&lt; minutes &lt;&lt; '\n';
+    cout &lt;&lt; hours &lt;&lt; " " &lt;&lt; minutes &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="no-space" data-title="C:\code\time.exe"><pre><code>215
+2 15
+</code></pre></div>
+
+      <p>บรรทัดแรกได้ <code>215</code> ซึ่งดูเหมือนตัวเลขตัวเดียว คอมไพล์ผ่านไม่มีคำเตือนเพราะ compiler ไม่รู้ว่าเราตั้งใจให้มีช่องว่าง ส่งแบบนี้ไป grader ตรวจว่าผิดทันที คั่นด้วย <code>" "</code> หรือ <code>' '</code> ได้ผลเหมือนกัน</p>
+
+      <h3 id="precision-only">แบบที่ 3 ใช้ setprecision โดยไม่มี fixed</h3>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="precision-only"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    double average = 245 / 3.0;
+    double distance = 1234.5;
+    cout &lt;&lt; setprecision(2);
+    cout &lt;&lt; average &lt;&lt; '\n';
+    cout &lt;&lt; distance &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="precision-only" data-title="C:\code\decimals.exe"><pre><code>82
+1.2e+03
+</code></pre></div>
+
+      <p>ตั้งใจจะได้ <code>81.67</code> กับ <code>1234.50</code> แต่ได้ <code>82</code> กับ <code>1.2e+03</code> เพราะถ้าไม่มี <code>fixed</code> ตัวเลขใน <code>setprecision</code> หมายถึงจำนวนหลักทั้งหมด ไม่ใช่จำนวนตำแหน่งหลังจุด 81.67 เหลือสองหลักจึงปัดเป็น 82 ส่วน 1234.5 เหลือสองหลักได้ 1200 ซึ่งพิมพ์เป็น <code>1.2e+03</code> ใช้ <code>fixed</code> คู่กับ <code>setprecision</code> เสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>cout &lt;&lt; a &lt;&lt; ' ' &lt;&lt; b &lt;&lt; '\n';</code> พิมพ์ได้ทุกชนิด ไม่ต้องใช้ <code>%d</code> แต่ต้องใส่ช่องว่างเอง</li>
+        <li><code>cin &gt;&gt; a &gt;&gt; b;</code> อ่านตามชนิดของตัวแปร ไม่ต้องมี <code>&amp;</code> ชนิดยังต้องเลือกให้ใหญ่พอเอง</li>
+        <li>ลูกศรชี้ทางที่ข้อมูลไหล <code>cin &gt;&gt;</code> เข้าตัวแปร <code>cout &lt;&lt;</code> ออกจอ</li>
+        <li><code>endl</code> คือ <code>'\n'</code> บวก flush ใช้ <code>'\n'</code> เสมอ</li>
+        <li><code>while (cin &gt;&gt; x)</code> อ่านจนหมดข้อมูล</li>
+        <li>ทศนิยม N ตำแหน่ง ใส่ <code>cout &lt;&lt; fixed &lt;&lt; setprecision(N);</code> ครั้งเดียวต้น <code>main</code> ห้ามลืม <code>fixed</code></li>
+      </ul>
+    </article>
