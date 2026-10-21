@@ -20,7 +20,7 @@
 
       <p>พิมพ์เองทีละตัว อย่าก๊อปวาง</p>
 
-      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+      <div class="code" data-lang="c" data-linenums data-test="hello"><pre><code>#include &lt;stdio.h&gt;
 
 int main()
 {
@@ -35,7 +35,7 @@ int main()
 
       <p>Code::Blocks จะแปลโค้ดด้วย gcc ได้ไฟล์ <code>hello.exe</code> แล้วเปิดหน้าต่างสีดำขึ้นมารันให้</p>
 
-      <div class="code" data-lang="output" data-title="C:\code\hello.exe"><pre><code>Hello, World!
+      <div class="code" data-lang="output" data-for="hello" data-title="C:\code\hello.exe"><pre><code>Hello, World!
 
 Process returned 0 (0x0)   execution time : 0.012 s
 Press any key to continue.
@@ -55,7 +55,7 @@ Press any key to continue.
 
       <h2 id="line-by-line">โค้ดแต่ละบรรทัดทำอะไร</h2>
 
-      <div class="code" data-lang="c" data-linenums data-annotate><pre><code>#include &lt;stdio.h&gt; // (1)!
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="hello-annotated"><pre><code>#include &lt;stdio.h&gt; // (1)!
 
 int main() // (2)!
 { // (3)!

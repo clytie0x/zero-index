@@ -843,6 +843,53 @@ kbd {
 .tk-gutter { color: var(--code-gutter); }
 .tk-fix { color: var(--success); font-weight: 700; }
 
+/* แบบฝึกหัด กล่องข้อมูลเข้ากับผลลัพธ์ที่ต้องได้วางคู่กัน */
+.ex-title { scroll-margin-top: calc(var(--header-h) + 16px); }
+.doc .ex-meta {
+  margin: -.4em 0 .9em;
+  color: var(--muted);
+  font-size: 14px;
+  white-space: pre;
+}
+.io {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 1.2em 0 1.4em;
+}
+.io > .code { margin: 0; min-width: 0; }
+.code[data-lang="input"], .code[data-lang="expected"] { background: var(--surface); }
+.code[data-lang="input"]::before, .code[data-lang="expected"]::before {
+  content: attr(data-title);
+  display: block;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--code-line);
+  border-radius: 12px 12px 0 0;
+  background: var(--code-bg);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.code[data-lang="input"] .copy-btn, .code[data-lang="expected"] .copy-btn { top: 42px; }
+
+details.reveal {
+  margin: .8em 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+details.reveal > summary {
+  padding: 10px 16px;
+  color: var(--brand-text);
+  font-weight: 600;
+  cursor: pointer;
+  list-style-position: inside;
+}
+details.reveal[open] > summary { border-bottom: 1px solid var(--line); }
+details.reveal > :not(summary) { margin: 14px 16px; }
+details.reveal > .code { margin: 14px 16px; }
+
 /* แผนภาพ compiler */
 .flow {
   display: flex;

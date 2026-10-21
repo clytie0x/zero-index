@@ -24,6 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 PAGES = SRC / "pages"
+EXERCISES = SRC / "exercises"
 DIST = ROOT / "dist"
 
 ICON_PREV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>'
@@ -38,6 +39,7 @@ class Page:
     title: str           # ชื่อที่ใช้ในเมนู
     num: str = ""
     chapter: "Page | None" = None
+    exercises: str = ""  # ถ้ามี หน้านี้สร้างจากโฟลเดอร์ src/exercises/<exercises> แทน src/pages
 
     @property
     def label(self) -> str:
@@ -58,7 +60,8 @@ def load_site() -> tuple[dict, list[Page], list[tuple[Page, list[Page]]]]:
         if "path" not in ch:
             continue  # บทที่วางแผนไว้ ยังไม่มีหน้า
         chapter = Page(ch["path"], "chapter", ch["title"], ch["num"])
-        children = [Page(p["path"], "page", p["title"], p["num"], chapter) for p in ch.get("pages", [])]
+        children = [Page(p["path"], "page", p["title"], p["num"], chapter, p.get("exercises", ""))
+                    for p in ch.get("pages", [])]
         order += [chapter, *children]
         tree.append((chapter, children))
     return site, order, tree
@@ -106,6 +109,54 @@ def render_pager(current: Page, prev: Page | None, nxt: Page | None) -> str:
                   "      </a>"]
     lines.append("    </nav>")
     return "\n".join(lines)
+
+
+LEVELS = {1: "ง่าย", 2: "กลาง", 3: "ยาก"}
+
+
+def code_block(lang: str, text: str, title: str = "", extra: str = "") -> str:
+    t = f' data-title="{html.escape(title)}"' if title else ""
+    return f'<div class="code" data-lang="{lang}"{t}{extra}><pre><code>{html.escape(text, quote=False)}</code></pre></div>'
+
+
+def indent(block: str, n: int) -> str:
+    """เยื้องแค่บรรทัดแรก บรรทัดที่เหลืออาจอยู่ใน <pre> ซึ่งช่องว่างมีความหมาย"""
+    return " " * n + block.strip("\n")
+
+
+def render_exercises(page: Page) -> str:
+    """หน้าแบบฝึกหัดของบท สร้างจาก src/exercises/<บท>/<ข้อ>/"""
+    base = EXERCISES / page.exercises
+    out = [f'<article class="doc">', f"      <h1>{esc(page.label)}</h1>", "",
+           "      <p>เขียนแต่ละข้อเป็นไฟล์ใหม่ใน Code::Blocks รันแล้วเทียบกับผลลัพธ์ที่ต้องได้ให้ตรงทุกตัวอักษร "
+           "รวมถึงช่องว่างและการขึ้นบรรทัด ติดจริงๆ ค่อยเปิดคำใบ้ และเปิดเฉลยหลังทำเสร็จแล้วเท่านั้น</p>"]
+    for i, d in enumerate(sorted(p for p in base.iterdir() if (p / "task.toml").exists()), 1):
+        task = tomllib.loads((d / "task.toml").read_text(encoding="utf-8"))
+        slug = re.sub(r"^\d+-", "", d.name)
+        out += ["", f'      <h2 id="ex-{slug}" class="ex-title">ข้อ {i} {esc(task["title"])}</h2>',
+                f'      <p class="ex-meta">ระดับ{LEVELS[task.get("level", 1)]}  เวลาไม่เกิน {task.get("time_limit", 1)} วินาที</p>',
+                "", indent((d / "statement.html").read_text(encoding="utf-8"), 6)]
+        samples = sorted((d / "tests").glob("sample*.in"))
+        for j, s in enumerate(samples, 1):
+            inp = s.read_text(encoding="utf-8")
+            ans = s.with_suffix(".out").read_text(encoding="utf-8")
+            label = f" ตัวอย่างที่ {j}" if len(samples) > 1 else ""
+            parts = ['<div class="io">']
+            if inp.strip():
+                parts.append(code_block("input", inp.rstrip("\n"), f"ข้อมูลเข้า{label}"))
+            parts.append(code_block("expected", ans.rstrip("\n"), f"ผลลัพธ์ที่ต้องได้{label}"))
+            parts.append("</div>")
+            out += ["", indent("\n".join(parts), 6)]
+        if task.get("hint"):
+            out += ["", f'      <details class="reveal"><summary>ดูคำใบ้</summary>{task["hint"].strip()}</details>']
+        sol = next((p for p in sorted(d.iterdir()) if p.stem == "solution" and p.suffix in (".c", ".cpp")), None)
+        if sol:
+            lang = "cpp" if sol.suffix == ".cpp" else "c"
+            out += ["", '      <details class="reveal"><summary>ดูเฉลย</summary>',
+                    "        " + code_block(lang, sol.read_text(encoding="utf-8").rstrip("\n"), extra=" data-linenums"),
+                    "      </details>"]
+    out.append("    </article>")
+    return "\n".join(out) + "\n"
 
 
 def asset_version(name: str) -> str:
@@ -226,10 +277,15 @@ def build() -> int:
     site, order, tree = load_site()
     home = order[0]
 
-    listed = {p.path for p in order}
+    listed = {p.path for p in order if not p.exercises}
     on_disk = {f.relative_to(PAGES).as_posix() for f in PAGES.rglob("*.html")}
     errors = [f"site.toml มี {p} แต่ไม่มีไฟล์ src/pages/{p}" for p in sorted(listed - on_disk)]
     errors += [f"src/pages/{p} ไม่ได้อยู่ใน site.toml" for p in sorted(on_disk - listed)]
+    ex_listed = {p.exercises for p in order if p.exercises}
+    errors += [f"site.toml อ้าง src/exercises/{e} ที่ไม่มี" for e in sorted(ex_listed) if not (EXERCISES / e).is_dir()]
+    if EXERCISES.exists():
+        ex_dirs = {t.parent.parent.relative_to(EXERCISES).as_posix() for t in EXERCISES.rglob("task.toml")}
+        errors += [f"src/exercises/{e} ไม่ได้อยู่ใน site.toml" for e in sorted(ex_dirs - ex_listed)]
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
@@ -240,7 +296,7 @@ def build() -> int:
 
     layout = (SRC / "layout.html").read_text(encoding="utf-8")
     for i, page in enumerate(order):
-        article = (PAGES / page.path).read_text(encoding="utf-8")
+        article = render_exercises(page) if page.exercises else (PAGES / page.path).read_text(encoding="utf-8")
         prev = order[i - 1] if i > 0 else None
         nxt = order[i + 1] if i + 1 < len(order) else None
         out = DIST / page.path

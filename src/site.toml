@@ -24,6 +24,7 @@ pages = [
   { num = "0.1", title = "คอมพิวเตอร์อ่านโค้ดเรายังไง", path = "c/00-start/why.html" },
   { num = "0.2", title = "ติดตั้ง Code::Blocks", path = "c/00-start/install.html" },
   { num = "0.3", title = "โปรแกรมแรก Hello World", path = "c/00-start/hello.html" },
+  { num = "0.4", title = "แบบฝึกหัด", path = "c/00-start/exercises.html", exercises = "c/00-start" },
 ]
 
 [[chapters]]
