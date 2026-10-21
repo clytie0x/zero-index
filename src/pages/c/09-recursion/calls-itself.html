@@ -1,0 +1,353 @@
+<article class="doc">
+      <h1>9.1 ฟังก์ชันที่เรียกตัวเอง</h1>
+
+      <p>น้องต่อแถวซื้อข้าวที่ยาวมาก มองไม่เห็นหัวแถว อยากรู้ว่าตัวเองอยู่ลำดับที่เท่าไร วิธีหนึ่งคือสะกิดถามคนข้างหน้าว่า "เธออยู่ลำดับที่เท่าไร" แล้วเอาคำตอบมาบวกหนึ่ง คนข้างหน้าก็ไม่รู้เหมือนกัน เลยถามคนข้างหน้าเขาต่อ ถามต่อกันไปเรื่อยๆ จนถึงคนแรกสุด ซึ่งไม่มีใครอยู่ข้างหน้าแล้ว ตอบได้ทันทีว่า 1 จากนั้นคำตอบก็ส่งกลับมาทีละคน 2 3 4 จนถึงน้อง</p>
+
+      <p>ทุกคนในแถวทำสิ่งเดียวกัน คือถามคำถามเดิมกับแถวที่สั้นลงหนึ่งคน แล้วรอคำตอบ ในการเขียนโปรแกรม ฟังก์ชันที่เรียกตัวเองเพื่อแก้ปัญหาเดิมที่เล็กลงแบบนี้เรียกว่า <strong>recursion</strong> (การเวียนเกิด) ในบทที่ 8 ฟังก์ชันเรียกฟังก์ชันอื่นได้ หน้านี้จะให้มันเรียกตัวเอง</p>
+
+      <h2 id="countdown">ฟังก์ชันนับถอยหลัง</h2>
+
+      <p>นับถอยหลังปล่อยจรวดจาก n ถึง 1 แล้วพิมพ์ <code>liftoff</code> ถ้าคิดแบบแถวซื้อข้าว การนับถอยหลังจาก 3 คือพิมพ์ 3 แล้ว <strong>นับถอยหลังจาก 2</strong> ซึ่งเป็นงานเดิมที่เล็กลง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="countdown"><pre><code>#include &lt;stdio.h&gt;
+
+void countdown(int n)
+{
+    if (n == 0) { // (1)!
+        printf("liftoff\n");
+        return;
+    }
+    printf("%d\n", n);
+    countdown(n - 1); // (2)!
+}
+
+int main()
+{
+    countdown(3);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><strong>กรณีฐาน (base case)</strong> กรณีที่เล็กพอจะตอบได้ทันทีโดยไม่ต้องเรียกตัวเอง เหมือนคนแรกในแถว พอถึง 0 ก็พิมพ์ <code>liftoff</code> แล้วจบ</li>
+        <li><strong>กรณีเรียกซ้ำ (recursive case)</strong> เรียกตัวเองด้วยปัญหาที่เล็กลง จาก n เหลือ n - 1</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="countdown" data-title="C:\code\countdown.exe"><pre><code>3
+2
+1
+liftoff
+</code></pre></div>
+
+      <p>ไล่ดูทีละจังหวะ</p>
+
+      <ol>
+        <li><code>main</code> เรียก <code>countdown(3)</code> n ไม่ใช่ 0 จึงพิมพ์ 3 แล้วเรียก <code>countdown(2)</code></li>
+        <li><code>countdown(2)</code> พิมพ์ 2 แล้วเรียก <code>countdown(1)</code></li>
+        <li><code>countdown(1)</code> พิมพ์ 1 แล้วเรียก <code>countdown(0)</code></li>
+        <li><code>countdown(0)</code> เข้ากรณีฐาน พิมพ์ <code>liftoff</code> แล้ว <code>return</code> ไม่เรียกตัวเองอีก</li>
+      </ol>
+
+      <p>recursion ที่ถูกต้องทุกตัวต้องมีครบสองข้อนี้</p>
+
+      <ul>
+        <li><strong>มีกรณีฐาน</strong> ที่ตอบได้เลยโดยไม่เรียกตัวเอง</li>
+        <li><strong>ทุกครั้งที่เรียกตัวเอง ปัญหาต้องเล็กลงจนถึงกรณีฐานได้จริง</strong> ในตัวอย่างนี้ n ลดทีละ 1 จาก 3 จึงต้องถึง 0 แน่นอน</li>
+      </ul>
+
+      <p>ขาดข้อไหนไป ฟังก์ชันจะเรียกตัวเองไม่รู้จบ ซึ่งดูได้ในส่วนลองทำให้พังท้ายหน้า</p>
+
+      <h2 id="before-after">พิมพ์ก่อนหรือหลังเรียกตัวเอง</h2>
+
+      <p>ลองย้าย <code>printf</code> ไปไว้ทั้งก่อนและหลังบรรทัดที่เรียกตัวเอง ฟังก์ชัน <code>dive</code> นี้ดำลงไปทีละชั้นแล้วลอยกลับขึ้นมา</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="dive"><pre><code>#include &lt;stdio.h&gt;
+
+void dive(int n)
+{
+    if (n == 0) {
+        printf("bottom\n");
+        return;
+    }
+    printf("down %d\n", n);
+    dive(n - 1);
+    printf("up %d\n", n);
+}
+
+int main()
+{
+    dive(3);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="dive" data-title="C:\code\dive.exe"><pre><code>down 3
+down 2
+down 1
+bottom
+up 1
+up 2
+up 3
+</code></pre></div>
+
+      <p>บรรทัด <code>up</code> ออกมากลับลำดับกับ <code>down</code> เพราะบรรทัดที่ 11 ของ <code>dive(3)</code> จะทำได้ก็ต่อเมื่อ <code>dive(2)</code> ในบรรทัดที่ 10 ทำงาน <strong>จบทั้งหมด</strong> แล้ว และ <code>dive(2)</code> จะจบได้ก็ต่อเมื่อ <code>dive(1)</code> จบก่อน ชั้นที่ลงไปทีหลังจึงจบก่อน</p>
+
+      <ul>
+        <li>งานที่อยู่ <strong>ก่อน</strong> การเรียกตัวเอง ทำตอนขาลง ลำดับจากใหญ่ไปเล็ก</li>
+        <li>งานที่อยู่ <strong>หลัง</strong> การเรียกตัวเอง ทำตอนขากลับ ลำดับจากเล็กไปใหญ่</li>
+      </ul>
+
+      <p>ถ้าลบบรรทัดที่ 9 ทิ้ง เหลือแต่ <code>up</code> จะได้ฟังก์ชันนับขึ้นจาก 1 ถึง n ที่ไม่ต้องมีตัวแปรนับเลย เรื่องขาลงขากลับนี้จะใช้อีกหลายครั้ง เช่น พิมพ์เลขฐานสองในแบบฝึกหัด</p>
+
+      <h2 id="call-stack">call stack เก็บทุกชั้นที่ยังไม่จบ</h2>
+
+      <p>ตอน <code>dive(1)</code> ทำงาน <code>dive(3)</code> กับ <code>dive(2)</code> ยังไม่จบ แต่ละตัวหยุดรออยู่ที่บรรทัดที่ 10 และแต่ละตัวมี n ของตัวเอง 3 กับ 2 ไม่ได้ใช้ n ร่วมกัน เพราะพารามิเตอร์คือตัวแปร local ของการเรียกแต่ละครั้งตามที่เรียนในบทที่ 8</p>
+
+      <p>คอมพิวเตอร์จำของพวกนี้ไว้ในหน่วยความจำส่วนที่ชื่อ <strong>stack</strong> ส่วนเดียวกับที่เก็บอาเรย์ใน <code>main</code> ในบทที่ 5 การเรียกฟังก์ชันหนึ่งครั้งได้ที่หนึ่งชั้น เก็บพารามิเตอร์ ตัวแปร local และจุดที่ต้องกลับไปทำต่อ เรียกฟังก์ชันใหม่ก็วางชั้นใหม่ซ้อนไว้ด้านบน ฟังก์ชันจบก็ยกชั้นบนสุดออก เหมือนจานที่ซ้อนกัน วางเพิ่มด้านบนและหยิบออกจากด้านบนเท่านั้น ชั้นทั้งหมดนี้เรียกรวมว่า <strong>call stack</strong></p>
+
+      <p>ดูให้ชัดกับฟังก์ชันที่คืนค่า <strong>แฟกทอเรียล</strong> ของ n เขียนว่า n! คือผลคูณ 1 × 2 × ... × n เช่น 4! = 24 ใช้นับจำนวนวิธีเรียงของ n ชิ้น เช่น เรียงหนังสือ 4 เล่มบนชั้นได้ 24 แบบ สังเกตว่า 4! = 4 × 3! และ 3! = 3 × 2! ไปเรื่อยๆ จนถึง 0! ซึ่งนิยามให้เป็น 1</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="factorial"><pre><code>#include &lt;stdio.h&gt;
+
+long long factorial(int n)
+{
+    if (n == 0) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    printf("%lld\n", factorial(n));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="factorial" data-title="ข้อมูลเข้า"><pre><code>4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="factorial" data-title="C:\code\factorial.exe"><pre><code>24
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 8 คูณ n กับคำตอบของปัญหาที่เล็กลงหนึ่งขั้น แต่การคูณยังทำไม่ได้จนกว่า <code>factorial(n - 1)</code> จะคืนค่ากลับมา ภาพนี้คือ call stack ตอนที่ลงไปลึกที่สุด ชั้นบนสุดคือการเรียกที่กำลังทำงานอยู่ ลูกศรด้านขวาคือค่าที่แต่ละชั้นคืนให้ชั้นข้างล่าง</p>
+
+      <figure>
+        <svg viewBox="0 0 560 270" width="560" style="max-width:100%;height:auto" role="img" aria-label="call stack ของ factorial(4) ล่างสุดคือ main ซ้อนขึ้นไปเป็น factorial(4) factorial(3) factorial(2) factorial(1) และ factorial(0) อยู่บนสุด factorial(0) คืน 1 ให้ factorial(1) ซึ่งคืน 1 ให้ factorial(2) ซึ่งคืน 2 ให้ factorial(3) ซึ่งคืน 6 ให้ factorial(4) ซึ่งคืน 24 ให้ main">
+          <defs>
+            <marker id="stack-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+            <rect x="10" y="52" width="390" height="34" rx="8"/>
+            <rect x="10" y="94" width="390" height="34" rx="8"/>
+            <rect x="10" y="136" width="390" height="34" rx="8"/>
+            <rect x="10" y="178" width="390" height="34" rx="8"/>
+          </g>
+          <rect x="10" y="10" width="390" height="34" rx="8" style="fill:var(--surface);stroke:var(--success);stroke-width:2"/>
+          <rect x="10" y="220" width="390" height="34" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <g style="font-family:var(--font-code);font-size:15px;fill:var(--ink)">
+            <text x="24" y="32">factorial(0)</text>
+            <text x="24" y="74">factorial(1)</text>
+            <text x="24" y="116">factorial(2)</text>
+            <text x="24" y="158">factorial(3)</text>
+            <text x="24" y="200">factorial(4)</text>
+            <text x="24" y="242">main</text>
+            <text x="150" y="32">n = 0</text>
+            <text x="150" y="74">n = 1</text>
+            <text x="150" y="116">n = 2</text>
+            <text x="150" y="158">n = 3</text>
+            <text x="150" y="200">n = 4</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--muted)">
+            <text x="230" y="32" style="fill:var(--success)">กรณีฐาน คืน 1 ทันที</text>
+            <text x="230" y="74">รอ 1 * factorial(0)</text>
+            <text x="230" y="116">รอ 2 * factorial(1)</text>
+            <text x="230" y="158">รอ 3 * factorial(2)</text>
+            <text x="230" y="200">รอ 4 * factorial(3)</text>
+            <text x="230" y="242">รอ factorial(4)</text>
+          </g>
+          <g style="stroke:var(--brand);stroke-width:2;fill:none">
+            <path d="M404 27C440 27 440 69 408 69" marker-end="url(#stack-arrow)"/>
+            <path d="M404 69C440 69 440 111 408 111" marker-end="url(#stack-arrow)"/>
+            <path d="M404 111C440 111 440 153 408 153" marker-end="url(#stack-arrow)"/>
+            <path d="M404 153C440 153 440 195 408 195" marker-end="url(#stack-arrow)"/>
+            <path d="M404 195C440 195 440 237 408 237" marker-end="url(#stack-arrow)"/>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--ink)">
+            <text x="448" y="53">คืน 1</text>
+            <text x="448" y="95">คืน 1</text>
+            <text x="448" y="137">คืน 2</text>
+            <text x="448" y="179">คืน 6</text>
+            <text x="448" y="221">คืน 24</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ขาลง stack สูงขึ้นทีละชั้นจาก <code>factorial(4)</code> ถึง <code>factorial(0)</code> รวมห้าชั้นบนหัวของ <code>main</code> ขากลับ <code>factorial(0)</code> คืน 1 แล้วชั้นนั้นถูกยกออก <code>factorial(1)</code> ได้ 1 มาก็คูณกับ n ของตัวเองแล้วคืนต่อ ไล่ลงมาจนถึง <code>factorial(4)</code> ที่ได้ 6 มาคูณ 4 เป็น 24</p>
+
+      <h3 id="trace">พิมพ์ให้เห็นทุกชั้น</h3>
+
+      <p>เวลา recursion ให้คำตอบผิด วิธีที่ได้ผลที่สุดคือให้มันพิมพ์ทุกครั้งที่เข้าและออก โดยเยื้องตามความลึก จะเห็นภาพเดียวกับข้างบนในหน้าต่างดำ เพิ่มพารามิเตอร์ <code>depth</code> ไว้นับว่าลึกเท่าไร แล้วพิมพ์ช่องว่าง 4 ช่องต่อหนึ่งชั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="trace"><pre><code>#include &lt;stdio.h&gt;
+
+void indent(int depth)
+{
+    for (int i = 0; i &lt; depth; i++) {
+        printf("    ");
+    }
+}
+
+long long factorial(int n, int depth)
+{
+    indent(depth);
+    printf("factorial(%d) starts\n", n);
+    long long result;
+    if (n == 0) {
+        result = 1;
+    } else {
+        result = n * factorial(n - 1, depth + 1);
+    }
+    indent(depth);
+    printf("factorial(%d) returns %lld\n", n, result);
+    return result;
+}
+
+int main()
+{
+    factorial(3, 0);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="trace" data-title="C:\code\trace.exe"><pre><code>factorial(3) starts
+    factorial(2) starts
+        factorial(1) starts
+            factorial(0) starts
+            factorial(0) returns 1
+        factorial(1) returns 1
+    factorial(2) returns 2
+factorial(3) returns 6
+</code></pre></div>
+
+      <p>บรรทัด starts กับ returns ของการเรียกเดียวกันเยื้องเท่ากัน อ่านคู่กันได้ทันที ฟังก์ชันนี้เขียน <code>if else</code> แยกแล้วเก็บผลไว้ใน <code>result</code> ก่อน เพื่อให้พิมพ์ตอนขาออกได้ทั้งสองกรณี หาบั๊กเสร็จแล้วก็ลบบรรทัดที่พิมพ์ออก</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-base-case">แบบที่ 1 ไม่มีกรณีฐาน</h3>
+
+      <p>ลบ <code>if</code> ที่เป็นกรณีฐานออกจากโปรแกรมนับถอยหลัง</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+void countdown(int n)
+{
+    printf("%d\n", n);
+    countdown(n - 1);
+}
+
+int main()
+{
+    countdown(3);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>countdown.c:3:6: warning: infinite recursion detected [-Winfinite-recursion]
+    3 | void countdown(int n)
+      |      ^~~~~~~~~
+countdown.c:6:5: note: recursive call
+    6 |     countdown(n - 1);
+      |     ^~~~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p><code>infinite recursion</code> แปลว่าเรียกตัวเองไม่รู้จบ GCC 14 ที่มากับ Code::Blocks ตรวจเจอกรณีง่ายๆ แบบนี้ให้ แต่เป็นแค่ warning ถ้ารันต่อ โปรแกรมจะพิมพ์ 3 2 1 0 -1 -2 ลงไปเรื่อยๆ บนเครื่องที่ทดลอง ให้ผลลัพธ์ลงไฟล์แล้วนับดู พิมพ์ลงไปถึงราว -43000 แล้วปิดตัวเอง Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p><code>0xC00000FD</code> คือ <strong>stack overflow</strong> รหัสเดียวกับตอนประกาศอาเรย์ใหญ่ใน <code>main</code> ในบทที่ 5 ทุกครั้งที่เรียกตัวเองได้ชั้นใหม่บน stack และชั้นเก่ายังไม่มีใครจบ stack จึงสูงขึ้นเรื่อยๆ จนเต็มที่ราว 2 MB โปรแกรมก็พัง ถ้าส่งให้ grader จะได้ผล runtime error</p>
+
+      <h3 id="unreachable-base">แบบที่ 2 กรณีฐานที่ไปไม่ถึง</h3>
+
+      <p>ใช้โปรแกรม factorial เดิมทุกตัวอักษร แต่ป้อน <code>-1</code> คอมไพล์ผ่านโดยไม่มีคำเตือน เพราะ compiler ไม่รู้ว่าจะมีคนป้อนเลขติดลบ แต่พอรัน โปรแกรมพังด้วย <code>0xC00000FD</code> เหมือนแบบที่ 1</p>
+
+      <p>กรณีฐานมีอยู่ก็จริง แต่ n เริ่มที่ -1 แล้วลดลงเรื่อยๆ เป็น -2 -3 ไม่มีวันเท่ากับ 0 นี่คือการผิดกฎข้อที่สอง คือปัญหาต้องเล็กลง <strong>จนถึงกรณีฐานได้จริง</strong> ถ้าโจทย์รับประกันว่า n ไม่ติดลบก็ไม่เป็นไร แต่ถ้าไม่แน่ใจ เขียนกรณีฐานเป็น <code>if (n &lt;= 0)</code> จะไม่พังไม่ว่าป้อนอะไร</p>
+
+      <h3 id="missing-return">แบบที่ 3 ลืม return หน้าการเรียกตัวเอง</h3>
+
+      <p>เขียนบรรทัดที่ 8 ของโปรแกรม factorial เป็น <code>n * factorial(n - 1);</code> โดยไม่มี <code>return</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>factorial.c:8:7: warning: value computed is not used [-Wunused-value]
+    8 |     n * factorial(n - 1);
+      |     ~~^~~~~~~~~~~~~~~~~~
+factorial.c:9:1: warning: control reaches end of non-void function [-Wreturn-type]
+    9 | }
+      | ^
+</code></pre></div>
+
+      <p>คำเตือนแรกบอกว่าคำนวณแล้วไม่ได้เอาค่าไปใช้ คำเตือนที่สองบอกว่าฟังก์ชันที่ต้องคืนค่า เดินมาถึงปีกกาปิดโดยไม่เจอ <code>return</code> ค่าที่คืนจึงเป็นอะไรก็ได้ บนเครื่องที่เขียนเอกสารนี้ ป้อน 4 5 หรือ 10 ก็ได้ <code>1</code> ทุกครั้ง ทุกเส้นทางของฟังก์ชันที่ไม่ใช่ <code>void</code> ต้องจบด้วย <code>return</code> เสมอ รวมถึงกรณีเรียกซ้ำด้วย</p>
+
+      <h2 id="how-deep">ลึกได้กี่ชั้น</h2>
+
+      <p>stack มีที่จำกัด recursion จึงลึกได้จำกัด แม้จะมีกรณีฐานถูกต้อง ลองกับฟังก์ชันหาผลรวม 1 + 2 + ... + n ที่เรียกตัวเองลึก n ชั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="sum-to"><pre><code>#include &lt;stdio.h&gt;
+
+int sum_to(int n)
+{
+    if (n == 0) {
+        return 0;
+    }
+    return n + sum_to(n - 1);
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    printf("%d\n", sum_to(n));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sum-to" data-title="ข้อมูลเข้า"><pre><code>10000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sum-to" data-title="C:\code\sum_to.exe"><pre><code>50005000
+</code></pre></div>
+      </div>
+
+      <p>บนเครื่องที่ทดลอง คอมไพล์แบบ Code::Blocks (<code>-Wall</code> ไม่มี <code>-O2</code>) แล้วป้อนค่าต่างๆ ค่าละ 10 ครั้ง ได้ผลดังนี้</p>
+
+      <ul>
+        <li>ป้อน 43000 ได้ <code>924521500</code> ครบทั้ง 10 ครั้ง</li>
+        <li>ป้อน 44000 พังด้วย <code>0xC00000FD</code> ทั้ง 10 ครั้ง</li>
+        <li>ค่าที่อยู่ระหว่างนั้น เช่น 43300 บางครั้งผ่านบางครั้งพัง ขอบไม่ตายตัว เพราะ stack ไม่ได้เริ่มที่ตำแหน่งเดิมเป๊ะทุกครั้ง</li>
+      </ul>
+
+      <p>stack ราว 2 MB หารด้วยราวสี่หมื่นสามพันชั้น ได้ชั้นละประมาณ 48 byte ฟังก์ชันที่มีพารามิเตอร์หรือตัวแปร local มากกว่านี้ จะลึกได้น้อยกว่านี้</p>
+
+      <p>เรื่องแปลกคือ พอคอมไพล์โปรแกรมเดียวกันด้วย <code>-O2</code> ป้อนถึงหนึ่งร้อยล้านก็ยังไม่พัง (คำตอบผิดเพราะผลรวมเกิน <code>int</code> แต่ไม่พัง) เพราะ compiler เห็นว่าฟังก์ชันนี้เขียนเป็นลูปได้ จึงแปลงเป็นลูปให้เอง ห้ามพึ่งเรื่องนี้ compiler ไม่ได้แปลงให้ทุกฟังก์ชัน และ grader แต่ละที่ตั้งขนาด stack ไม่เท่ากัน หลักที่ปลอดภัยคือ</p>
+
+      <ul>
+        <li>ลึกไม่เกินหลักพันชั้น ใช้ recursion ได้สบาย</li>
+        <li>ลึกหลักหมื่นชั้น เริ่มเสี่ยง</li>
+        <li>ลึกหลักแสนชั้นขึ้นไป เช่น เรียกตัวเองหนึ่งครั้งต่อสมาชิกหนึ่งตัวของอาเรย์ขนาดแสน ให้เขียนเป็นลูป หน้า 9.4 จะดูว่าเมื่อไรควรเลือกแบบไหน</li>
+      </ul>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>recursion คือฟังก์ชันที่เรียกตัวเองเพื่อแก้ปัญหาเดิมที่เล็กลง</li>
+        <li>ต้องมีกรณีฐานที่ตอบได้ทันที และทุกการเรียกซ้ำต้องเข้าใกล้กรณีฐานจนถึงได้จริง</li>
+        <li>งานก่อนการเรียกตัวเองทำตอนขาลง งานหลังการเรียกทำตอนขากลับในลำดับย้อนกลับ</li>
+        <li>การเรียกแต่ละครั้งมีตัวแปร local ของตัวเอง เก็บเป็นหนึ่งชั้นบน call stack</li>
+        <li>เรียกตัวเองไม่รู้จบ หรือลึกเกินไป ได้ stack overflow <code>0xC00000FD</code> บนเครื่องที่ทดลองลึกได้ราวสี่หมื่นชั้น</li>
+        <li>หาบั๊กด้วยการพิมพ์ตอนเข้าและออก เยื้องตามความลึก</li>
+      </ul>
+    </article>

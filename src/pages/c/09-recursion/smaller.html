@@ -1,0 +1,251 @@
+<article class="doc">
+      <h1>9.2 แบ่งเป็นปัญหาที่เล็กลง</h1>
+
+      <p>หน้าที่แล้วดูว่า recursion ทำงานยังไง หน้านี้ฝึกเขียนเอง ความยากของ recursion ไม่ได้อยู่ที่ไวยากรณ์ เพราะมันก็คือฟังก์ชันธรรมดาจากบทที่ 8 แต่อยู่ที่การมองปัญหาให้เห็นว่ามี <strong>ปัญหาเดิมที่เล็กกว่า</strong> ซ่อนอยู่ข้างใน หน้านี้ใช้โจทย์คณิตศาสตร์สามเรื่องที่เจอบ่อยในการแข่งขัน คือผลรวมหลัก ยกกำลัง และ ห.ร.ม. แบบยุคลิด ซึ่งวิธีแบ่งครึ่งในเรื่องยกกำลังจะได้ใช้อีกในบทที่ 12 และบทที่ 22</p>
+
+      <h2 id="three-questions">สามคำถามก่อนเขียน</h2>
+
+      <p>ก่อนเขียน recursion ทุกครั้ง ให้ตอบสามคำถามนี้ให้ได้ก่อน</p>
+
+      <ol>
+        <li><strong>ปัญหาที่เล็กลงหน้าตาเป็นยังไง</strong> ต้องเป็นปัญหาแบบเดียวกัน แค่ข้อมูลเล็กลง</li>
+        <li><strong>ถ้ามีคนบอกคำตอบของปัญหาที่เล็กลงให้ จะเอาไปทำเป็นคำตอบของปัญหานี้ยังไง</strong></li>
+        <li><strong>ปัญหาที่เล็กที่สุดคืออะไร</strong> และคำตอบของมันคืออะไร ข้อนี้คือกรณีฐาน</li>
+      </ol>
+
+      <p>ลองกับแฟกทอเรียลในหน้าที่แล้ว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำถาม</th><th>แฟกทอเรียลของ n</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ปัญหาที่เล็กลง</td><td>แฟกทอเรียลของ n - 1</td></tr>
+            <tr><td>เอาคำตอบเล็กมาทำเป็นคำตอบใหญ่</td><td>คูณด้วย n</td></tr>
+            <tr><td>เล็กที่สุด</td><td>n = 0 คำตอบคือ 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คำถามข้อสองคือหัวใจ ตอนเขียนบรรทัด <code>return n * factorial(n - 1);</code> ให้ <strong>เชื่อไปก่อน</strong> ว่า <code>factorial(n - 1)</code> คืนคำตอบที่ถูกมาให้ ไม่ต้องไล่ในหัวลงไปทุกชั้น ถ้ากรณีฐานถูก และคำตอบใหญ่ประกอบจากคำตอบเล็กได้ถูก ทุกชั้นก็ถูกตามกันไปเอง เหมือนโดมิโนที่ตัวแรกล้ม และแต่ละตัวล้มทับตัวถัดไปได้ ทั้งแถวก็ล้มหมด</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">แฟกทอเรียลโตเร็วมาก</p>
+        <p>20! = 2432902008176640000 ยังเก็บใน <code>long long</code> ได้ แต่ 21! เกินแล้ว บนเครื่องที่ทดลองป้อน 21 ให้โปรแกรม factorial ในหน้า 9.1 ได้ <code>-4249290049419214848</code> ถ้าเป็น <code>int</code> จะเกินตั้งแต่ 13! โจทย์ที่ต้องใช้แฟกทอเรียลของเลขใหญ่กว่านี้มักให้ตอบเป็นเศษจากการหาร ซึ่งอยู่ในบทที่ 12</p>
+      </div>
+
+      <h2 id="digit-sum">ผลรวมของหลัก</h2>
+
+      <p>หาผลรวมของเลขโดดทุกหลัก เช่น 2569 ได้ 2 + 5 + 6 + 9 = 22 ในบทที่ 4 ทำด้วยลูปไปแล้ว คราวนี้ตอบสามคำถาม</p>
+
+      <ul>
+        <li><strong>ปัญหาที่เล็กลง</strong> ตัดหลักหน่วยทิ้งด้วย <code>n / 10</code> 2569 เหลือ 256 ยังเป็นการหาผลรวมหลักเหมือนเดิม</li>
+        <li><strong>ประกอบคำตอบ</strong> ผลรวมหลักของ 2569 คือหลักหน่วย 9 บวกผลรวมหลักของ 256 เขียนเป็น <code>n % 10 + digit_sum(n / 10)</code></li>
+        <li><strong>เล็กที่สุด</strong> n = 0 ไม่มีหลักเหลือแล้ว ผลรวมคือ 0</li>
+      </ul>
+
+      <div class="code" data-lang="c" data-linenums data-test="digit-sum"><pre><code>#include &lt;stdio.h&gt;
+
+int digit_sum(int n)
+{
+    if (n == 0) {
+        return 0;
+    }
+    return n % 10 + digit_sum(n / 10);
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    printf("%d\n", digit_sum(n));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="digit-sum" data-title="ข้อมูลเข้า"><pre><code>2569
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="digit-sum" data-title="C:\code\digit_sum.exe"><pre><code>22
+</code></pre></div>
+      </div>
+
+      <div class="code" data-lang="text"><pre><code>digit_sum(2569) = 9 + digit_sum(256)   = 9 + 13 = 22
+digit_sum(256)  = 6 + digit_sum(25)    = 6 + 7  = 13
+digit_sum(25)   = 5 + digit_sum(2)     = 5 + 2  = 7
+digit_sum(2)    = 2 + digit_sum(0)     = 2 + 0  = 2
+digit_sum(0)    = 0
+</code></pre></div>
+
+      <p>อ่านตารางจากบนลงล่างคือขาลง อ่านคอลัมน์ขวาจากล่างขึ้นบนคือขากลับ ฟังก์ชันนี้ลึกแค่จำนวนหลักบวกหนึ่ง เลข <code>int</code> มีไม่เกิน 10 หลัก จึงไม่มีทางลึกจน stack เต็ม</p>
+
+      <h2 id="power">ยกกำลัง</h2>
+
+      <p>หา base<sup>exponent</sup> เช่น 3<sup>4</sup> = 81 วิธีแรกคิดเหมือนแฟกทอเรียล 3<sup>4</sup> = 3 × 3<sup>3</sup> ปัญหาเล็กลงคือเลขชี้กำลังลดลงหนึ่ง ประกอบคำตอบด้วยการคูณ base อีกตัว และเลขชี้กำลัง 0 ได้ 1</p>
+
+      <p>วิธีที่สองมองต่างไป 3<sup>8</sup> คือ 3<sup>4</sup> × 3<sup>4</sup> ถ้ารู้ 3<sup>4</sup> แล้ว ยกกำลังสองทีเดียวก็ได้ 3<sup>8</sup> ปัญหาที่เล็กลงคือเลขชี้กำลัง <strong>ครึ่งหนึ่ง</strong> ไม่ใช่ลดลงหนึ่ง ถ้าเลขชี้กำลังเป็นคี่ เช่น 3<sup>9</sup> หารสองได้ 4 เศษ 1 จึงเป็น 3<sup>4</sup> × 3<sup>4</sup> × 3 ต้องคูณ base เพิ่มอีกหนึ่งตัว</p>
+
+      <p>โปรแกรมนี้เขียนทั้งสองแบบ และใช้ตัวแปร global นับว่าแต่ละแบบเรียกตัวเองกี่ครั้ง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="power"><pre><code>#include &lt;stdio.h&gt;
+
+int slow_calls = 0;
+int fast_calls = 0;
+
+long long slow_power(long long base, int exponent)
+{
+    slow_calls++;
+    if (exponent == 0) {
+        return 1;
+    }
+    return base * slow_power(base, exponent - 1);
+}
+
+long long fast_power(long long base, int exponent)
+{
+    fast_calls++;
+    if (exponent == 0) {
+        return 1;
+    }
+    long long half = fast_power(base, exponent / 2); // (1)!
+    if (exponent % 2 == 0) {
+        return half * half;
+    }
+    return half * half * base;
+}
+
+int main()
+{
+    long long base;
+    int exponent;
+    scanf("%lld %d", &amp;base, &amp;exponent);
+    long long slow = slow_power(base, exponent); // (2)!
+    long long fast = fast_power(base, exponent);
+    printf("slow: %lld (%d calls)\n", slow, slow_calls);
+    printf("fast: %lld (%d calls)\n", fast, fast_calls);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เรียกตัวเองครั้งเดียว เก็บผลไว้ใน <code>half</code> แล้วใช้ซ้ำสองครั้ง ห้ามเรียกสองครั้ง ดูเหตุผลในส่วนลองทำให้พัง</li>
+        <li>เก็บผลใส่ตัวแปรก่อนพิมพ์ เพราะภาษา C ไม่ได้กำหนดว่า <code>printf</code> จะคำนวณค่าที่ส่งเข้าไปตัวไหนก่อน ถ้าเขียน <code>slow_power(...)</code> กับ <code>slow_calls</code> ไว้ใน <code>printf</code> เดียวกัน อาจได้จำนวนครั้งก่อนที่ฟังก์ชันจะทำงานเสียอีก</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="power" data-title="ข้อมูลเข้า"><pre><code>3 39
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="power" data-title="C:\code\power.exe"><pre><code>slow: 4052555153018976267 (40 calls)
+fast: 4052555153018976267 (7 calls)
+</code></pre></div>
+      </div>
+
+      <p>ได้คำตอบเดียวกัน แต่แบบแรกเรียก 40 ครั้ง คือหนึ่งครั้งต่อการลดเลขชี้กำลังลงหนึ่ง ส่วนแบบแบ่งครึ่งเรียกแค่ 7 ครั้ง เลขชี้กำลังเดินเป็น 39 19 9 4 2 1 0 ถ้าเลขชี้กำลังเป็นล้าน แบบแรกต้องเรียกล้านครั้งและลึกล้านชั้น เกินที่ stack รับได้ในหน้า 9.1 ไปมาก ส่วนแบบแบ่งครึ่งนับได้แค่ 21 ครั้ง เพราะหารสองราวยี่สิบครั้งก็ลดหนึ่งล้านจนเหลือ 0 แล้ว</p>
+
+      <p>การแบ่งปัญหาเป็นครึ่งแล้วประกอบคำตอบกลับแบบนี้คือ <strong>divide and conquer</strong> ซึ่งมีบทของมันเองคือบทที่ 22 ส่วนยกกำลังของเลขใหญ่จริงๆ ที่ต้องตอบเป็นเศษจากการหาร อยู่ในบทที่ 12</p>
+
+      <h2 id="gcd">ห.ร.ม. แบบยุคลิด</h2>
+
+      <p>มีกระดาษขนาด 84 × 60 เซนติเมตร อยากตัดเป็นสี่เหลี่ยมจัตุรัสขนาดเท่ากันทั้งหมดโดยไม่เหลือเศษ และให้ชิ้นใหญ่ที่สุด ด้านของสี่เหลี่ยมต้องหารทั้ง 84 และ 60 ลงตัว และต้องมากที่สุด นั่นคือ <strong>ห.ร.ม.</strong> (ตัวหารร่วมมาก, greatest common divisor หรือ gcd) ของ 84 กับ 60</p>
+
+      <p>วิธีไล่ลองตัวหารทุกตัวจากมากไปน้อยใช้ได้ แต่ถ้าตัวเลขถึงพันล้านก็ต้องลองเป็นพันล้านครั้ง ยุคลิดนักคณิตศาสตร์กรีกเจอวิธีที่เร็วกว่านั้นมาก จากข้อเท็จจริงข้อเดียว</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">ห.ร.ม. ของ a กับ b เท่ากับ ห.ร.ม. ของ b กับ a % b</p>
+        <p>a % b คือ a ลบด้วย b หลายๆ เท่า เลขที่หารทั้ง a และ b ลงตัว จึงหาร a % b ลงตัวด้วย และในทางกลับกัน เลขที่หารทั้ง b และ a % b ลงตัว ก็หาร a ลงตัวด้วย ตัวหารร่วมของสองคู่นี้จึงเป็นชุดเดียวกัน ห.ร.ม. ก็ต้องเท่ากัน</p>
+      </div>
+
+      <p>ตอบสามคำถาม ปัญหาที่เล็กลงคือ ห.ร.ม. ของ b กับ a % b ซึ่ง a % b น้อยกว่า b เสมอ คำตอบของปัญหาเล็กคือคำตอบของปัญหานี้เลยไม่ต้องทำอะไรเพิ่ม และเล็กที่สุดคือเมื่อ b เป็น 0 ห.ร.ม. ของ a กับ 0 คือ a เพราะ 0 หารด้วยอะไรก็ลงตัว โปรแกรมนี้พิมพ์ทุกครั้งที่เรียก ให้เห็นว่าตัวเลขเล็กลงเร็วแค่ไหน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="gcd"><pre><code>#include &lt;stdio.h&gt;
+
+int gcd(int a, int b)
+{
+    printf("gcd(%d, %d)\n", a, b);
+    if (b == 0) {
+        return a;
+    }
+    return gcd(b, a % b);
+}
+
+int main()
+{
+    int a, b;
+    scanf("%d %d", &amp;a, &amp;b);
+    int answer = gcd(a, b);
+    printf("answer = %d\n", answer);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="gcd" data-title="ข้อมูลเข้า"><pre><code>84 60
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="gcd" data-title="C:\code\gcd.exe"><pre><code>gcd(84, 60)
+gcd(60, 24)
+gcd(24, 12)
+gcd(12, 0)
+answer = 12
+</code></pre></div>
+      </div>
+
+      <p>ตัดได้สี่เหลี่ยมด้าน 12 เซนติเมตร 7 × 5 = 35 ชิ้น สังเกตสองเรื่อง</p>
+
+      <ul>
+        <li><strong>ไม่ต้องสนว่าตัวไหนมากกว่า</strong> ป้อน <code>60 84</code> บรรทัดแรกเป็น <code>gcd(60, 84)</code> แล้วบรรทัดที่สองเป็น <code>gcd(84, 60)</code> เพราะ 60 % 84 = 60 สองตัวสลับที่กันเอง แล้วเดินต่อเหมือนเดิม</li>
+        <li><strong>เร็วมาก</strong> ตัวเลขเล็กลงอย่างน้อยครึ่งหนึ่งทุกสองครั้ง บนเครื่องที่ทดลองนับจำนวนครั้งที่เรียกด้วยตัวแปร global แบบโปรแกรมยกกำลัง <code>gcd(1836311903, 1134903170)</code> ซึ่งเป็นคู่ที่ทำให้ยุคลิดช้าที่สุดคู่หนึ่งในช่วงของ <code>int</code> เรียกแค่ 45 ครั้ง</li>
+      </ul>
+
+      <p>ห.ร.ม. ใช้หา ค.ร.น. ได้ด้วย คือ <code>a / gcd(a, b) * b</code> หารก่อนคูณเพื่อไม่ให้ค่ากลางทางใหญ่เกินจำเป็น เรื่องจำนวนเต็มแบบนี้มีต่อในบทที่ 12</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="call-twice">แบบที่ 1 เรียกครึ่งซ้ำสองครั้ง</h3>
+
+      <p>ใน <code>fast_power</code> ไม่ใช้ตัวแปร <code>half</code> แต่เรียกตัวเองตรงๆ สองครั้ง ดูเหมือนเป็นสูตรเดียวกัน</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>long long fast_power(long long base, int exponent)
+{
+    calls++;
+    if (exponent == 0) {
+        return 1;
+    }
+    if (exponent % 2 == 0) {
+        return fast_power(base, exponent / 2) * fast_power(base, exponent / 2);
+    }
+    return fast_power(base, exponent / 2) * fast_power(base, exponent / 2) * base;
+}
+</code></pre></div>
+
+      <p>คำตอบยังถูก แต่ป้อน <code>3 39</code> แล้วนับได้ <code>calls = 127</code> มากกว่าแบบช้าที่เรียก 40 ครั้งเสียอีก ป้อนเลขชี้กำลังหนึ่งล้านได้ <code>calls = 2097151</code> เพราะทุกชั้นแตกเป็นสองทาง และแต่ละทางคำนวณสิ่งเดียวกันซ้ำ ความเร็วที่ได้จากการแบ่งครึ่งหายหมด คำนวณซ้ำแบบนี้คือต้นเหตุที่ฟีโบนัชชีในหน้าถัดไปช้ามาก</p>
+
+      <h3 id="gcd-zero">แบบที่ 2 กรณีฐานที่หารด้วยศูนย์</h3>
+
+      <p>บางคนเขียนกรณีฐานของ ห.ร.ม. ว่า "ถ้า b หาร a ลงตัว คำตอบคือ b"</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>int gcd(int a, int b)
+{
+    if (a % b == 0) {
+        return b;
+    }
+    return gcd(b, a % b);
+}
+</code></pre></div>
+
+      <p>ป้อน <code>84 60</code> ได้ 12 ถูกต้อง แต่ป้อน <code>7 0</code> ซึ่งคำตอบควรเป็น 7 โปรแกรมพังทันที</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741676 (0xC0000094)
+</code></pre></div>
+
+      <p>รหัสเดียวกับหารด้วยศูนย์ในหน้า 1.2 เพราะบรรทัดที่ 3 คำนวณ <code>7 % 0</code> ก่อนจะได้เช็กอะไรเลย กรณีฐานต้องเช็กสิ่งที่ปลอดภัยก่อนจะคำนวณ แบบ <code>if (b == 0)</code> ในตัวอย่างข้างบนจึงดีกว่า ทั้งสั้นกว่าและไม่มีวันหารด้วยศูนย์</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ก่อนเขียน ตอบให้ได้ว่าปัญหาที่เล็กลงคืออะไร ประกอบคำตอบยังไง และกรณีเล็กสุดคืออะไร</li>
+        <li>ตอนเขียน เชื่อว่าการเรียกตัวเองกับปัญหาที่เล็กลงคืนคำตอบที่ถูกมา ไม่ต้องไล่ในหัวทุกชั้น</li>
+        <li>ผลรวมหลัก <code>n % 10 + digit_sum(n / 10)</code> กรณีฐาน n = 0</li>
+        <li>ยกกำลังแบบแบ่งครึ่งเรียกตัวเองราว log<sub>2</sub> ของเลขชี้กำลังครั้ง แต่ต้องเก็บผลครึ่งไว้ในตัวแปร ห้ามเรียกซ้ำสองครั้ง</li>
+        <li>ห.ร.ม. แบบยุคลิด <code>gcd(b, a % b)</code> กรณีฐาน b = 0 เร็วมากแม้ตัวเลขถึงพันล้าน</li>
+      </ul>
+    </article>

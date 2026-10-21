@@ -1,0 +1,316 @@
+<article class="doc">
+      <h1>9.5 พิมพ์ทุกรูปแบบ</h1>
+
+      <p>โจทย์จำนวนมากในค่ายถามว่า "มีแบบไหนบ้าง" หรือ "แบบไหนดีที่สุด" แล้วขนาดข้อมูลเล็กพอจะลองทุกแบบได้ เช่น ข้อสอบถูกผิด 10 ข้อตอบได้กี่แบบ เพื่อน 5 คนขึ้นพูดหน้าห้องได้กี่ลำดับ ถ้าจำนวนช่องตายตัว ลูปซ้อนกันก็พอ แต่ถ้าจำนวนช่องเป็น n ที่รับเข้ามา จะเขียนลูปซ้อน n ชั้นไม่ได้ recursion ทำเรื่องนี้ได้พอดี หน้านี้เริ่มจากหอคอยฮานอยที่ recursion แก้ได้สวยที่สุด แล้วพิมพ์สตริงฐานสองทุกแบบ และการเรียงสับเปลี่ยนทุกแบบ ซึ่งเป็นโครงของ backtracking ในบทที่ 21</p>
+
+      <h2 id="hanoi">หอคอยฮานอย</h2>
+
+      <p>มีหลักสามหลัก A B C หลัก A มีแผ่นกลม n แผ่น ใหญ่อยู่ล่าง เล็กอยู่บน ต้องย้ายทั้งหมดไปหลัก C โดย</p>
+
+      <ul>
+        <li>ย้ายได้ครั้งละหนึ่งแผ่น หยิบได้เฉพาะแผ่นบนสุดของหลัก</li>
+        <li>ห้ามวางแผ่นใหญ่ทับแผ่นเล็ก</li>
+      </ul>
+
+      <p>ลองคิดด้วยลูปจะงงทันที ว่าแผ่นไหนควรไปหลักไหนตอนไหน แต่ถ้าตอบสามคำถาม จะเห็นคำตอบเลย แผ่นใหญ่สุดคือแผ่นที่ n จะย้ายไป C ได้ก็ต่อเมื่อไม่มีอะไรทับอยู่ และ C ต้องว่าง แปลว่าอีก n - 1 แผ่นต้องไปกองอยู่ที่ B ก่อน</p>
+
+      <ol>
+        <li>ย้าย n - 1 แผ่นบนจาก A ไป B โดยใช้ C เป็นที่พัก ซึ่งเป็นปัญหาเดิมที่เล็กลง</li>
+        <li>ย้ายแผ่นที่ n จาก A ไป C</li>
+        <li>ย้าย n - 1 แผ่นจาก B ไป C โดยใช้ A เป็นที่พัก ปัญหาเดิมที่เล็กลงอีกครั้ง</li>
+      </ol>
+
+      <p>กรณีฐานคือ n = 0 ไม่มีอะไรต้องย้าย ภาพนี้คือสามขั้นนั้นเมื่อ n = 3</p>
+
+      <figure>
+        <svg viewBox="0 0 640 140" width="640" style="max-width:100%;height:auto" role="img" aria-label="หอคอยฮานอยสามแผ่น ภาพแรกทั้งสามแผ่นอยู่ที่ A ภาพที่สองแผ่น 1 กับ 2 ย้ายไป B แผ่น 3 ยังอยู่ที่ A ภาพที่สามแผ่น 3 ย้ายไป C ภาพที่สี่แผ่น 1 กับ 2 ย้ายจาก B มาทับแผ่น 3 ที่ C">
+          <g style="stroke:var(--line-strong);stroke-width:3">
+            <line x1="5" y1="110" x2="150" y2="110"/>
+            <line x1="30" y1="50" x2="30" y2="110"/>
+            <line x1="78" y1="50" x2="78" y2="110"/>
+            <line x1="126" y1="50" x2="126" y2="110"/>
+            <line x1="165" y1="110" x2="310" y2="110"/>
+            <line x1="190" y1="50" x2="190" y2="110"/>
+            <line x1="238" y1="50" x2="238" y2="110"/>
+            <line x1="286" y1="50" x2="286" y2="110"/>
+            <line x1="325" y1="110" x2="470" y2="110"/>
+            <line x1="350" y1="50" x2="350" y2="110"/>
+            <line x1="398" y1="50" x2="398" y2="110"/>
+            <line x1="446" y1="50" x2="446" y2="110"/>
+            <line x1="485" y1="110" x2="630" y2="110"/>
+            <line x1="510" y1="50" x2="510" y2="110"/>
+            <line x1="558" y1="50" x2="558" y2="110"/>
+            <line x1="606" y1="50" x2="606" y2="110"/>
+          </g>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+            <rect x="6" y="97" width="48" height="11" rx="3"/>
+            <rect x="12" y="85" width="36" height="11" rx="3"/>
+            <rect x="18" y="73" width="24" height="11" rx="3"/>
+            <rect x="166" y="97" width="48" height="11" rx="3"/>
+            <rect x="220" y="97" width="36" height="11" rx="3"/>
+            <rect x="226" y="85" width="24" height="11" rx="3"/>
+            <rect x="380" y="97" width="36" height="11" rx="3"/>
+            <rect x="386" y="85" width="24" height="11" rx="3"/>
+            <rect x="422" y="97" width="48" height="11" rx="3"/>
+            <rect x="582" y="97" width="48" height="11" rx="3"/>
+            <rect x="588" y="85" width="36" height="11" rx="3"/>
+            <rect x="594" y="73" width="24" height="11" rx="3"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:13px;fill:var(--muted)" text-anchor="middle">
+            <text x="30" y="128">A</text><text x="78" y="128">B</text><text x="126" y="128">C</text>
+            <text x="190" y="128">A</text><text x="238" y="128">B</text><text x="286" y="128">C</text>
+            <text x="350" y="128">A</text><text x="398" y="128">B</text><text x="446" y="128">C</text>
+            <text x="510" y="128">A</text><text x="558" y="128">B</text><text x="606" y="128">C</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:13px;fill:var(--ink)" text-anchor="middle">
+            <text x="78" y="24">เริ่ม</text>
+            <text x="238" y="24">1. สองแผ่นบนไป B</text>
+            <text x="398" y="24">2. แผ่น 3 ไป C</text>
+            <text x="558" y="24">3. สองแผ่นจาก B ไป C</text>
+          </g>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="c" data-linenums data-test="hanoi"><pre><code>#include &lt;stdio.h&gt;
+
+int moves = 0;
+
+void hanoi(int n, char from, char to, char via)
+{
+    if (n == 0) {
+        return;
+    }
+    hanoi(n - 1, from, via, to);
+    moves++;
+    printf("move disk %d from %c to %c\n", n, from, to);
+    hanoi(n - 1, via, to, from);
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    hanoi(n, 'A', 'C', 'B');
+    printf("total %d moves\n", moves);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="hanoi" data-title="ข้อมูลเข้า"><pre><code>3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="hanoi" data-title="C:\code\hanoi.exe"><pre><code>move disk 1 from A to C
+move disk 2 from A to B
+move disk 1 from C to B
+move disk 3 from A to C
+move disk 1 from B to A
+move disk 2 from B to C
+move disk 1 from A to C
+total 7 moves
+</code></pre></div>
+      </div>
+
+      <p>พารามิเตอร์สามตัว <code>from</code> <code>to</code> <code>via</code> คือหลักต้นทาง ปลายทาง และที่พัก แต่ละชั้นสลับบทบาทของหลักตามขั้นที่ 1 กับ 3 สามบรรทัดแรกของผลลัพธ์คือขั้นที่ 1 (ย้ายสองแผ่นบนไป B) บรรทัดที่สี่คือขั้นที่ 2 และสามบรรทัดถัดไปคือขั้นที่ 3 ลองทำตามด้วยเหรียญสามขนาดบนโต๊ะดู จะเห็นว่าไม่มีครั้งไหนผิดกฎ</p>
+
+      <p>จำนวนครั้งที่ย้ายของ n แผ่น คือสองเท่าของ n - 1 แผ่นบวกหนึ่ง ได้ 1 3 7 15 ... หรือ 2<sup>n</sup> - 1 บนเครื่องที่ทดลอง ป้อน 10 ได้ <code>total 1023 moves</code> ป้อน 20 ได้ <code>total 1048575 moves</code> ทุกแผ่นที่เพิ่มทำให้งานเพิ่มเท่าตัว แบบเดียวกับต้นไม้ของฟีโบนัชชี แต่คราวนี้ทุกครั้งที่ย้ายต่างกันหมด ไม่มีงานซ้ำให้จด จึงเร็วกว่านี้ไม่ได้ ตำนานที่ว่าพระย้ายแผ่นทอง 64 แผ่น ต้องย้าย 2<sup>64</sup> - 1 ครั้ง ซึ่งมากกว่าที่ <code>long long</code> เก็บได้เสียอีก</p>
+
+      <h2 id="binary-strings">สตริงฐานสองยาว n ทุกแบบ</h2>
+
+      <p>ข้อสอบถูกผิด 3 ข้อ ตอบได้กี่แบบ และมีแบบไหนบ้าง ให้ 0 แทนผิด 1 แทนถูก คำตอบหนึ่งแบบคือสตริงยาว 3 ที่มีแต่ 0 กับ 1 ช่องแรกเลือกได้ 2 แบบ แต่ละแบบเลือกช่องที่สองได้อีก 2 แบบ รวม 2 × 2 × 2 = 8 แบบ</p>
+
+      <p>คิดแบบ recursion โดยเติมทีละช่อง ฟังก์ชัน <code>generate(pos)</code> หมายความว่า "ช่อง 0 ถึง pos - 1 เติมเสร็จแล้ว ให้เติมช่องที่เหลือทุกแบบ"</p>
+
+      <ul>
+        <li><strong>กรณีฐาน</strong> pos เท่ากับ n แปลว่าเติมครบทุกช่องแล้ว ได้หนึ่งแบบ พิมพ์ออกมา</li>
+        <li><strong>กรณีเรียกซ้ำ</strong> ใส่ <code>'0'</code> ที่ช่อง pos แล้วเติมช่องที่เหลือทุกแบบ จากนั้นเปลี่ยนเป็น <code>'1'</code> แล้วเติมช่องที่เหลือทุกแบบอีกรอบ</li>
+      </ul>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="binary-strings"><pre><code>#include &lt;stdio.h&gt;
+
+int n;
+char bits[21]; // (1)!
+
+void generate(int pos)
+{
+    if (pos == n) {
+        bits[n] = '\0';
+        printf("%s\n", bits);
+        return;
+    }
+    bits[pos] = '0';
+    generate(pos + 1);
+    bits[pos] = '1'; // (2)!
+    generate(pos + 1);
+}
+
+int main()
+{
+    scanf("%d", &amp;n);
+    generate(0);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สตริงที่กำลังเติมเป็น global ทุกชั้นเขียนลงอาเรย์ตัวเดียวกัน แต่ละชั้นดูแลแค่ช่อง <code>pos</code> ของตัวเอง ยาวได้ถึง 20 ตัวกับ <code>'\0'</code> อีกหนึ่งช่องตามบทที่ 6</li>
+        <li>เขียนทับ <code>'0'</code> ที่ใส่ไว้ได้เลย เพราะตอนมาถึงบรรทัดนี้ ทุกแบบที่ขึ้นต้นด้วย <code>'0'</code> ที่ช่องนี้ถูกพิมพ์ไปครบแล้ว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="binary-strings" data-title="ข้อมูลเข้า"><pre><code>3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="binary-strings" data-title="C:\code\binary_strings.exe"><pre><code>000
+001
+010
+011
+100
+101
+110
+111
+</code></pre></div>
+      </div>
+
+      <p>ภาพนี้คือการเรียกทั้งหมดเมื่อ n = 3 แต่ละชั้นแตกเป็นสองทาง ทางซ้ายใส่ 0 ทางขวาใส่ 1 กล่องแถวล่างสุดคือกรณีฐานที่พิมพ์ออกมา ไล่จากซ้ายไปขวาจึงได้ลำดับเดียวกับผลลัพธ์</p>
+
+      <figure>
+        <svg viewBox="0 0 640 215" width="640" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้การเรียกของ generate เมื่อ n เท่ากับ 3 เริ่มจากสตริงว่าง แตกเป็น 0 และ 1 แล้วแตกเป็น 00 01 10 11 แล้วแตกเป็น 000 ถึง 111 รวม 8 แบบที่ถูกพิมพ์">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="320" y1="38" x2="160" y2="67"/>
+            <line x1="320" y1="38" x2="480" y2="67"/>
+            <line x1="160" y1="93" x2="80" y2="122"/>
+            <line x1="160" y1="93" x2="240" y2="122"/>
+            <line x1="480" y1="93" x2="400" y2="122"/>
+            <line x1="480" y1="93" x2="560" y2="122"/>
+            <line x1="80" y1="148" x2="40" y2="177"/>
+            <line x1="80" y1="148" x2="120" y2="177"/>
+            <line x1="240" y1="148" x2="200" y2="177"/>
+            <line x1="240" y1="148" x2="280" y2="177"/>
+            <line x1="400" y1="148" x2="360" y2="177"/>
+            <line x1="400" y1="148" x2="440" y2="177"/>
+            <line x1="560" y1="148" x2="520" y2="177"/>
+            <line x1="560" y1="148" x2="600" y2="177"/>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2">
+            <rect x="290" y="12" width="60" height="26" rx="6"/>
+            <rect x="138" y="67" width="44" height="26" rx="6"/>
+            <rect x="458" y="67" width="44" height="26" rx="6"/>
+            <rect x="58" y="122" width="44" height="26" rx="6"/>
+            <rect x="218" y="122" width="44" height="26" rx="6"/>
+            <rect x="378" y="122" width="44" height="26" rx="6"/>
+            <rect x="538" y="122" width="44" height="26" rx="6"/>
+          </g>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+            <rect x="18" y="177" width="44" height="26" rx="6"/>
+            <rect x="98" y="177" width="44" height="26" rx="6"/>
+            <rect x="178" y="177" width="44" height="26" rx="6"/>
+            <rect x="258" y="177" width="44" height="26" rx="6"/>
+            <rect x="338" y="177" width="44" height="26" rx="6"/>
+            <rect x="418" y="177" width="44" height="26" rx="6"/>
+            <rect x="498" y="177" width="44" height="26" rx="6"/>
+            <rect x="578" y="177" width="44" height="26" rx="6"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:13px;fill:var(--ink)" text-anchor="middle">
+            <text x="160" y="85">0</text>
+            <text x="480" y="85">1</text>
+            <text x="80" y="140">00</text>
+            <text x="240" y="140">01</text>
+            <text x="400" y="140">10</text>
+            <text x="560" y="140">11</text>
+            <text x="40" y="195">000</text>
+            <text x="120" y="195">001</text>
+            <text x="200" y="195">010</text>
+            <text x="280" y="195">011</text>
+            <text x="360" y="195">100</text>
+            <text x="440" y="195">101</text>
+            <text x="520" y="195">110</text>
+            <text x="600" y="195">111</text>
+          </g>
+          <text x="320" y="30" text-anchor="middle" style="font-family:var(--font-text);font-size:13px;fill:var(--muted)">ว่าง</text>
+        </svg>
+      </figure>
+
+      <p>n ช่องได้ 2<sup>n</sup> แบบ n = 20 คือ 1048576 บรรทัด บนเครื่องที่ทดลองให้โปรแกรมเขียนผลลงไฟล์แบบที่ grader ทำ ใช้ราว 0.15 วินาที ยังไหว แต่ n = 30 คือพันล้านกว่าแบบ มากกว่าพันเท่า ไม่ทันแน่ ก่อนเลือกวิธีลองทุกแบบ ต้องนับก่อนเสมอว่ามีกี่แบบ</p>
+
+      <h2 id="permutations">การเรียงสับเปลี่ยนทุกแบบ</h2>
+
+      <p>เพื่อน 3 คนหมายเลข 1 2 3 ต้องขึ้นนำเสนองานหน้าห้องทีละคน มีลำดับได้กี่แบบ แต่ละลำดับคือ <strong>การเรียงสับเปลี่ยน (permutation)</strong> ของ 1 ถึง n ต่างจากสตริงฐานสองตรงที่ <strong>เลขที่ใช้ไปแล้วห้ามใช้ซ้ำ</strong> จึงต้องมีอาเรย์ <code>used</code> จำไว้ว่าใครขึ้นไปแล้ว</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="permutations"><pre><code>#include &lt;stdio.h&gt;
+
+int n;
+int order[12];
+int used[12];
+
+void permute(int pos)
+{
+    if (pos == n) {
+        for (int i = 0; i &lt; n; i++) {
+            if (i &gt; 0) {
+                printf(" ");
+            }
+            printf("%d", order[i]);
+        }
+        printf("\n");
+        return;
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        if (used[v] == 0) {
+            used[v] = 1; // (1)!
+            order[pos] = v;
+            permute(pos + 1); // (2)!
+            used[v] = 0; // (3)!
+        }
+    }
+}
+
+int main()
+{
+    scanf("%d", &amp;n);
+    permute(0);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><strong>เลือก</strong> ให้คนที่ v ขึ้นเป็นลำดับที่ pos และจดว่าใช้ไปแล้ว</li>
+        <li><strong>ลอง</strong> เติมลำดับที่เหลือทุกแบบ โดยไม่มีใครเลือก v ได้อีก</li>
+        <li><strong>คืนสภาพ</strong> ปลดคนที่ v ออก เพื่อให้รอบถัดไปของลูปลองคนอื่นในลำดับที่ pos และให้ชั้นข้างบนใช้ v ในลำดับอื่นได้</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="permutations" data-title="ข้อมูลเข้า"><pre><code>3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="permutations" data-title="C:\code\permutations.exe"><pre><code>1 2 3
+1 3 2
+2 1 3
+2 3 1
+3 1 2
+3 2 1
+</code></pre></div>
+      </div>
+
+      <p>ลูปลอง v จากน้อยไปมาก ผลลัพธ์จึงออกมาเรียงตามพจนานุกรมเอง ลำดับแรกเลือกได้ n คน ลำดับถัดไปเหลือ n - 1 คน รวมเป็น n! แบบ ตามที่เห็นในหน้า 9.2 ว่าแฟกทอเรียลโตเร็วแค่ไหน 8! = 40320 แบบยังสบาย 10! = 3628800 แบบยังพอไหว แต่ 12! เกือบห้าร้อยล้านแบบ พิมพ์ไม่ทันแล้ว โจทย์ที่ให้ลองทุกลำดับจึงมักให้ n ไม่เกินราว 10</p>
+
+      <p>โครง <strong>เลือก ลอง คืนสภาพ</strong> นี้คือหัวใจของ <strong>backtracking</strong> ในบทที่ 21 ที่นั่นจะเพิ่มอีกหนึ่งอย่าง คือถ้าเลือกไปครึ่งทางแล้วรู้ว่าไม่มีทางได้คำตอบ ก็ไม่ต้องลองต่อ ตัดกิ่งนั้นทิ้งเลย ทำให้ลองทุกแบบได้กับข้อมูลที่ใหญ่กว่านี้มาก ส่วนหอคอยฮานอยที่แบ่งเป็นปัญหาย่อยแล้วประกอบกลับ คือ divide and conquer ในบทที่ 22</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forgot-unuse">แบบที่ 1 ลืมคืนสภาพ</h3>
+
+      <p>ลบบรรทัด <code>used[v] = 0;</code> ออกจากโปรแกรมเรียงสับเปลี่ยน คอมไพล์ผ่านโดยไม่มีคำเตือน ป้อน 3 ได้</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\permutations.exe"><pre><code>1 2 3
+</code></pre></div>
+
+      <p>ออกมาแบบเดียวแล้วจบ ป้อน 4 ก็ได้แค่ <code>1 2 3 4</code> หลังพิมพ์แบบแรก ทุกคนถูกจดว่าใช้แล้วค้างไว้ พอย้อนกลับไปลองคนอื่นในลำดับที่ 2 ก็ไม่เหลือใครให้เลือก ทุกชั้นวนลูปผ่านไปเฉยๆ ถ้าโปรแกรมลองทุกแบบแล้วได้คำตอบน้อยกว่าที่นับไว้ ให้สงสัยการคืนสภาพก่อนอย่างอื่น</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>หอคอยฮานอย ย้าย n - 1 แผ่นไปที่พัก ย้ายแผ่นใหญ่สุด แล้วย้าย n - 1 แผ่นกลับมาทับ รวม 2<sup>n</sup> - 1 ครั้ง</li>
+        <li>พิมพ์ทุกรูปแบบด้วยการเติมทีละช่อง <code>generate(pos)</code> กรณีฐานคือเติมครบ n ช่องแล้วพิมพ์</li>
+        <li>สตริงฐานสองยาว n มี 2<sup>n</sup> แบบ การเรียงสับเปลี่ยนของ n ตัวมี n! แบบ นับก่อนเสมอว่าทันไหม</li>
+        <li>ห้ามใช้ซ้ำ ใช้อาเรย์ <code>used</code> ตามโครงเลือก ลอง คืนสภาพ ลืมคืนสภาพจะได้คำตอบไม่ครบ</li>
+        <li>โครงนี้คือพื้นฐานของ backtracking ในบทที่ 21 และ divide and conquer ในบทที่ 22</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

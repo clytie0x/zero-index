@@ -142,7 +142,15 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "9"
 title = "บทที่ 9 recursion"
 summary = "ฟังก์ชันที่เรียกตัวเอง และคิดปัญหาแบบแบ่งเป็นปัญหาเล็ก"
-# dir = "c/09-recursion"
+path = "c/09-recursion/index.html"
+pages = [
+  { num = "9.1", title = "ฟังก์ชันที่เรียกตัวเอง", path = "c/09-recursion/calls-itself.html" },
+  { num = "9.2", title = "แบ่งเป็นปัญหาที่เล็กลง", path = "c/09-recursion/smaller.html" },
+  { num = "9.3", title = "ฟีโบนัชชีและการจำคำตอบ", path = "c/09-recursion/memo.html" },
+  { num = "9.4", title = "recursion กับอาเรย์", path = "c/09-recursion/arrays.html" },
+  { num = "9.5", title = "พิมพ์ทุกรูปแบบ", path = "c/09-recursion/generate.html" },
+  { num = "9.6", title = "แบบฝึกหัด", path = "c/09-recursion/exercises.html", exercises = "c/09-recursion" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"

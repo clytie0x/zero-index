@@ -1,0 +1,275 @@
+<article class="doc">
+      <h1>9.3 ฟีโบนัชชีและการจำคำตอบ</h1>
+
+      <p>recursion ที่เขียนถูกทุกบรรทัดก็ยังช้าจนใช้ไม่ได้ได้ ถ้ามันแก้ปัญหาย่อยเดิมซ้ำเป็นล้านๆ รอบ หน้านี้จะวัดให้เห็นจริงว่าช้าแค่ไหนด้วยลำดับฟีโบนัชชี แล้วแก้ด้วยวิธีที่ง่ายมาก คือจดคำตอบที่เคยคำนวณแล้วไว้ในอาเรย์ วิธีนี้คือจุดเริ่มต้นของ dynamic programming ซึ่งเป็นหัวข้อใหญ่ที่สุดหัวข้อหนึ่งของค่าย 2</p>
+
+      <h2 id="fibonacci">ลำดับฟีโบนัชชี</h2>
+
+      <p>ลำดับฟีโบนัชชีเริ่มด้วย 0 กับ 1 แล้วตัวถัดไปคือผลบวกของสองตัวก่อนหน้า</p>
+
+      <div class="code" data-lang="text"><pre><code>fib(0) = 0
+fib(1) = 1
+fib(n) = fib(n - 1) + fib(n - 2)    เมื่อ n ≥ 2
+
+0 1 1 2 3 5 8 13 21 34 55 ...
+</code></pre></div>
+
+      <p>ลำดับนี้โผล่ในโจทย์นับวิธีบ่อยมาก เช่น ขึ้นบันได n ขั้น ก้าวทีละ 1 หรือ 2 ขั้น มีกี่วิธี ก้าวสุดท้ายต้องมาจากขั้น n - 1 หรือขั้น n - 2 จำนวนวิธีจึงเป็นผลบวกของจำนวนวิธีไปถึงสองขั้นนั้น โครงเดียวกับฟีโบนัชชีพอดี</p>
+
+      <p>นิยามเป็น recursion อยู่แล้ว แปลงเป็นโค้ดได้ตรงตัว มีกรณีฐานสองกรณีคือ 0 กับ 1 รวมเป็น <code>n &lt;= 1</code> แล้วคืน n</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="fib"><pre><code>#include &lt;stdio.h&gt;
+
+long long fib(int n)
+{
+    if (n &lt;= 1) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    printf("%lld\n", fib(n));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="fib" data-title="ข้อมูลเข้า"><pre><code>10
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="fib" data-title="C:\code\fib.exe"><pre><code>55
+</code></pre></div>
+      </div>
+
+      <h2 id="call-tree">หนึ่งครั้งแตกเป็นสองครั้ง</h2>
+
+      <p>ต่างจากแฟกทอเรียลที่เรียกตัวเองครั้งเดียว <code>fib</code> เรียกตัวเองสองครั้ง แต่ละครั้งก็แตกเป็นสองครั้งอีก ภาพนี้คือทุกการเรียกที่เกิดขึ้นตอนคำนวณ <code>fib(5)</code> เส้นเชื่อมบอกว่าใครเรียกใคร</p>
+
+      <figure>
+        <svg viewBox="0 0 640 270" width="640" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้การเรียกของ fib(5) ซึ่งมีทั้งหมด 15 ครั้ง fib(3) ถูกคำนวณ 2 ครั้ง และ fib(2) ถูกคำนวณ 3 ครั้ง">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="340" y1="39" x2="185" y2="66"/>
+            <line x1="340" y1="39" x2="495" y2="66"/>
+            <line x1="185" y1="94" x2="110" y2="121"/>
+            <line x1="185" y1="94" x2="260" y2="121"/>
+            <line x1="495" y1="94" x2="430" y2="121"/>
+            <line x1="495" y1="94" x2="560" y2="121"/>
+            <line x1="110" y1="149" x2="70" y2="176"/>
+            <line x1="110" y1="149" x2="150" y2="176"/>
+            <line x1="260" y1="149" x2="230" y2="176"/>
+            <line x1="260" y1="149" x2="290" y2="176"/>
+            <line x1="430" y1="149" x2="400" y2="176"/>
+            <line x1="430" y1="149" x2="460" y2="176"/>
+            <line x1="70" y1="204" x2="40" y2="231"/>
+            <line x1="70" y1="204" x2="100" y2="231"/>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2">
+            <rect x="314" y="11" width="52" height="28" rx="6"/>
+            <rect x="159" y="66" width="52" height="28" rx="6"/>
+            <rect x="534" y="121" width="52" height="28" rx="6"/>
+            <rect x="124" y="176" width="52" height="28" rx="6"/>
+            <rect x="204" y="176" width="52" height="28" rx="6"/>
+            <rect x="264" y="176" width="52" height="28" rx="6"/>
+            <rect x="374" y="176" width="52" height="28" rx="6"/>
+            <rect x="434" y="176" width="52" height="28" rx="6"/>
+            <rect x="14" y="231" width="52" height="28" rx="6"/>
+            <rect x="74" y="231" width="52" height="28" rx="6"/>
+          </g>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+            <rect x="469" y="66" width="52" height="28" rx="6"/>
+            <rect x="84" y="121" width="52" height="28" rx="6"/>
+            <rect x="452" y="12" width="14" height="14" rx="3"/>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--warning);stroke-width:2">
+            <rect x="234" y="121" width="52" height="28" rx="6"/>
+            <rect x="404" y="121" width="52" height="28" rx="6"/>
+            <rect x="44" y="176" width="52" height="28" rx="6"/>
+            <rect x="452" y="36" width="14" height="14" rx="3"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:13px;fill:var(--ink)" text-anchor="middle">
+            <text x="340" y="30">fib(5)</text>
+            <text x="185" y="85">fib(4)</text>
+            <text x="495" y="85">fib(3)</text>
+            <text x="110" y="140">fib(3)</text>
+            <text x="260" y="140">fib(2)</text>
+            <text x="430" y="140">fib(2)</text>
+            <text x="560" y="140">fib(1)</text>
+            <text x="70" y="195">fib(2)</text>
+            <text x="150" y="195">fib(1)</text>
+            <text x="230" y="195">fib(1)</text>
+            <text x="290" y="195">fib(0)</text>
+            <text x="400" y="195">fib(1)</text>
+            <text x="460" y="195">fib(0)</text>
+            <text x="40" y="250">fib(1)</text>
+            <text x="100" y="250">fib(0)</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--muted)">
+            <text x="474" y="24">fib(3) คำนวณ 2 ครั้ง</text>
+            <text x="474" y="48">fib(2) คำนวณ 3 ครั้ง</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>นับกล่องได้ 15 กล่อง คือเรียก 15 ครั้งเพื่อคำนวณ <code>fib(5)</code> ทั้งที่คำตอบมีแค่ 6 ค่าที่ต่างกันคือ fib(0) ถึง fib(5) ที่เหลือคือ <strong>คำนวณเรื่องเดิมซ้ำ</strong> <code>fib(3)</code> ทำสองรอบเต็มๆ <code>fib(2)</code> ทำสามรอบ ยิ่ง n ใหญ่ ต้นไม้ยิ่งแตกกิ่ง และงานซ้ำยิ่งพอกพูน</p>
+
+      <h2 id="count-calls">นับจำนวนครั้งที่เรียก</h2>
+
+      <p>เพิ่มตัวแปร global <code>calls</code> แล้วบวกหนึ่งทุกครั้งที่เข้าฟังก์ชัน ใช้ <code>long long</code> เพราะจะเห็นว่ามันเกิน <code>int</code> ได้ง่ายมาก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="count-calls"><pre><code>#include &lt;stdio.h&gt;
+
+long long calls = 0;
+
+long long fib(int n)
+{
+    calls++;
+    if (n &lt;= 1) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    long long answer = fib(n);
+    printf("fib(%d) = %lld\n", n, answer);
+    printf("calls = %lld\n", calls);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-calls" data-title="ข้อมูลเข้า"><pre><code>30
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-calls" data-title="C:\code\count_calls.exe"><pre><code>fib(30) = 832040
+calls = 2692537
+</code></pre></div>
+      </div>
+
+      <p>เกือบสามล้านครั้งเพื่อตัวเลขตัวเดียว ทีนี้จับเวลาด้วย <code>clock()</code> แบบในหน้า 4.5 โดยเพิ่ม <code>#include &lt;time.h&gt;</code> ไว้บนสุด แล้วครอบการเรียก <code>fib(n)</code> ใน <code>main</code> แบบนี้</p>
+
+      <div class="code" data-lang="c"><pre><code>clock_t start = clock();
+long long answer = fib(n);
+clock_t end = clock();
+</code></pre></div>
+
+      <p>แล้วพิมพ์ <code>(double)(end - start) / CLOCKS_PER_SEC</code> เพิ่มอีกบรรทัด วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 กับ GCC 14.2 ของ Code::Blocks ทั้งแบบ Code::Blocks (<code>-Wall</code> อย่างเดียว) และแบบ <code>-O2</code> ช่อง n = 30 ถึง 45 คือค่ากลางของการรัน 5 ครั้ง ช่อง n = 50 รันแบบละครั้งเดียวเพราะรอนานเกินไป</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>n</th><th>fib(n)</th><th>จำนวนครั้งที่เรียก</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>30</td><td>832040</td><td>2692537</td><td>0.002 วินาที</td><td>0.001 วินาที</td></tr>
+            <tr><td>35</td><td>9227465</td><td>29860703</td><td>0.032 วินาที</td><td>0.010 วินาที</td></tr>
+            <tr><td>40</td><td>102334155</td><td>331160281</td><td>0.408 วินาที</td><td>0.115 วินาที</td></tr>
+            <tr><td>45</td><td>1134903170</td><td>3672623805</td><td>5.019 วินาที</td><td>1.503 วินาที</td></tr>
+            <tr><td>50</td><td>12586269025</td><td>40730022147</td><td>69.514 วินาที</td><td>23.863 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><code>fib(40)</code> เรียกตัวเองสามร้อยกว่าล้านครั้ง ใช้เวลาเกือบครึ่งวินาทีแบบ Code::Blocks n เพิ่มทีละ 5 จำนวนครั้งเพิ่มราว 11 เท่าทุกแถว พอถึง <code>fib(50)</code> ต้องรอเป็นนาที ทั้งที่ถ้าเขียนลูปบวกต่อกันทีละตัวจาก fib(0) ขึ้นไป ใช้แค่ราว 50 รอบ โจทย์ที่ให้ n ถึง 50 จึงไม่มีทางผ่านด้วยวิธีนี้ แม้คำตอบจะถูกทุกตัว</p>
+
+      <h2 id="memo">จดคำตอบไว้ในอาเรย์</h2>
+
+      <p>ปัญหาไม่ได้อยู่ที่ recursion แต่อยู่ที่การคำนวณ <code>fib(3)</code> เรื่องเดิมใหม่ทุกครั้งที่มีคนถาม แก้ด้วยการจด พอคำนวณ <code>fib(k)</code> ได้ครั้งแรกก็จดไว้ในช่อง <code>memo[k]</code> ของอาเรย์ ครั้งต่อไปที่มีคนถาม <code>fib(k)</code> ก็เปิดสมุดตอบเลย ไม่ต้องคำนวณใหม่ วิธีนี้เรียกว่า <strong>memoization</strong> (การจำคำตอบ) มาจากคำว่า memo ที่แปลว่าบันทึกช่วยจำ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="memo"><pre><code>#include &lt;stdio.h&gt;
+
+long long memo[91]; // (1)!
+long long calls = 0;
+
+long long fib(int n)
+{
+    calls++;
+    if (n &lt;= 1) {
+        return n;
+    }
+    if (memo[n] != -1) { // (2)!
+        return memo[n];
+    }
+    memo[n] = fib(n - 1) + fib(n - 2); // (3)!
+    return memo[n];
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt;= 90; i++) {
+        memo[i] = -1; // (4)!
+    }
+    long long answer = fib(n);
+    printf("fib(%d) = %lld\n", n, answer);
+    printf("calls = %lld\n", calls);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อาเรย์ global หนึ่งช่องต่อหนึ่งค่า n ตั้งแต่ 0 ถึง 90 ต้องเป็น global เพราะทุกชั้นของ recursion ต้องเห็นสมุดเล่มเดียวกัน</li>
+        <li>เคยคำนวณแล้ว ตอบจากสมุดทันที ไม่เรียกตัวเองต่อ</li>
+        <li>ยังไม่เคย ก็คำนวณตามสูตรเดิม แต่จดลงสมุดก่อนคืนค่า</li>
+        <li>เติม -1 ทุกช่อง แปลว่า "ยังไม่ได้คำนวณ" ใช้ -1 เพราะฟีโบนัชชีไม่มีค่าติดลบ จึงไม่มีวันสับสนกับคำตอบจริง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="memo" data-title="ข้อมูลเข้า"><pre><code>90
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="memo" data-title="C:\code\memo.exe"><pre><code>fib(90) = 2880067194370816120
+calls = 179
+</code></pre></div>
+      </div>
+
+      <p>179 ครั้งสำหรับ <code>fib(90)</code> ป้อน 40 ได้ <code>calls = 79</code> จากเดิมสามร้อยกว่าล้านครั้ง จับเวลาแบบเดียวกับข้างบนได้ <code>0.000</code> วินาทีทั้ง n = 40 และ n = 90 คือเร็วเกินกว่าที่ <code>clock()</code> วัดได้</p>
+
+      <p>ทำไมเหลือน้อยขนาดนี้ แต่ละ k ตั้งแต่ 2 ถึง n คำนวณจริงแค่ครั้งแรกครั้งเดียว ครั้งนั้นเรียกตัวเองสองครั้ง ที่เหลือทุกครั้งตอบจากสมุดทันที ไม่แตกกิ่งต่อ จำนวนครั้งที่เรียกทั้งหมดจึงโตตาม n ตรงๆ ราว 2n ไม่ได้คูณ 11 เท่าทุกห้าขั้นอีกแล้ว ในภาพต้นไม้ข้างบน กล่อง <code>fib(3)</code> ทางขวาจะไม่แตกกิ่งลงไปเลย เพราะทางซ้ายจดคำตอบไว้ให้แล้ว</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">จุดเริ่มของ dynamic programming</p>
+        <p>สังเกตเงื่อนไขสองข้อที่ทำให้การจดได้ผล ข้อแรก ปัญหาใหญ่แบ่งเป็นปัญหาย่อยแบบเดียวกันได้ ข้อสอง ปัญหาย่อยเดิมถูกถามซ้ำหลายครั้ง โจทย์ที่มีครบสองข้อนี้แก้ด้วย <strong>dynamic programming</strong> ได้ ซึ่งจะเรียนเต็มๆ ในบทที่ 24 ที่นั่นจะเห็นอีกแบบด้วย คือเขียนเป็นลูปเติมอาเรย์จากช่องเล็กไปช่องใหญ่ โดยไม่ต้องเรียกตัวเองเลย</p>
+      </div>
+
+      <p>ขนาดของอาเรย์จดต้องพอสำหรับทุกค่าที่ถูกถาม ถ้าโจทย์บอกว่า n ไม่เกิน 90 ก็ประกาศ 91 ช่องสำหรับ 0 ถึง 90 และค่าที่จดต้องเก็บใน <code>long long</code> เพราะ <code>fib(47)</code> ก็เกิน <code>int</code> แล้ว</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forgot-store">แบบที่ 1 เช็กสมุดแต่ลืมจด</h3>
+
+      <p>เขียนบรรทัดที่ 15 กับ 16 รวมกันเป็น <code>return fib(n - 1) + fib(n - 2);</code> ดูสั้นกว่า และยังมีบรรทัดเช็ก <code>memo[n]</code> อยู่ครบ</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>40
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\memo.exe"><pre><code>fib(40) = 102334155
+calls = 331160281
+</code></pre></div>
+      </div>
+
+      <p>คำตอบถูก แต่จำนวนครั้งเท่ากับแบบไม่มีสมุดทุกครั้ง เพราะไม่มีใครเขียนลงสมุดเลย ทุกช่องจึงเป็น -1 ตลอด เช็กทุกครั้งก็ไม่เคยเจอ compiler ไม่เตือนอะไร เพราะโค้ดถูกไวยากรณ์ทุกอย่าง วิธีจับคือนับจำนวนครั้งแบบในหน้านี้ หรือลองป้อน n ใหญ่ๆ ดูว่าเร็วจริงไหม</p>
+
+      <h3 id="overflow">แบบที่ 2 ใหญ่เกิน long long</h3>
+
+      <p>ขยายอาเรย์จดเป็น 100 ช่องแล้วถามไปเรื่อยๆ บนเครื่องที่ทดลอง <code>fib(92)</code> ได้ <code>7540113804746346429</code> ถูกต้อง แต่ <code>fib(93)</code> ได้</p>
+
+      <div class="code" data-lang="text"><pre><code>fib(93) = -6246583658587674878
+</code></pre></div>
+
+      <p>ฟีโบนัชชีติดลบไม่ได้ นี่คือ overflow แบบในหน้า 1.3 เพราะ fib(93) ใหญ่กว่า 9 × 10<sup>18</sup> ที่ <code>long long</code> เก็บได้ จดได้เร็วแค่ไหนก็ช่วยเรื่องนี้ไม่ได้ โจทย์นับวิธีที่ให้ n ใหญ่ขนาดนี้จึงมักให้ตอบเป็นเศษจากการหาร ซึ่งอยู่ในบทที่ 12</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>recursion ที่เรียกตัวเองสองครั้งต่อชั้น จำนวนครั้งโตแบบทวีคูณ <code>fib(40)</code> แบบตรงๆ เรียก 331160281 ครั้ง</li>
+        <li>สาเหตุคือคำนวณปัญหาย่อยเดิมซ้ำ ไม่ใช่ตัว recursion เอง</li>
+        <li>memoization คือจดคำตอบลงอาเรย์ global ก่อนคืนค่า แล้วเช็กสมุดก่อนคำนวณทุกครั้ง</li>
+        <li>เติมค่าเริ่มต้นที่ไม่มีทางเป็นคำตอบจริง เช่น -1 ไว้แทนคำว่ายังไม่ได้คำนวณ</li>
+        <li>จดแล้ว <code>fib(90)</code> เรียกแค่ 179 ครั้ง วิธีคิดนี้คือจุดเริ่มของ dynamic programming ในบทที่ 24</li>
+      </ul>
+    </article>
