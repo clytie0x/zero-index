@@ -1,0 +1,308 @@
+<article class="doc">
+      <h1>14.3 ลิสต์ด้วยอาเรย์</h1>
+
+      <p>สองหน้าที่ผ่านมาสร้าง linked list ด้วย <code>malloc</code> ตามตำราทั่วไป หน้านี้ตอบสองคำถามที่น้องต้องตัดสินใจเองตอนแข่ง คือเมื่อไรควรใช้ linked list แทนอาเรย์ และเมื่อใช้แล้วควรเขียนแบบไหน คำตอบของข้อหลังอาจแปลกใจ คนแข่งส่วนใหญ่<strong>ไม่ใช้ <code>malloc</code> ทำ linked list</strong> แต่ใช้อาเรย์ธรรมดาสองสามตัวแทน</p>
+
+      <h2 id="compare">อาเรย์กับ linked list ต่างกันตรงไหน</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>งาน</th><th>อาเรย์</th><th>linked list</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>อ่านตัวที่ i</td><td>ทันที <code>a[i]</code></td><td>เดินจากหัว i ก้าว</td></tr>
+            <tr><td>เพิ่มหรือลบที่ท้าย</td><td>ทันที ถ้ายังมีช่องเหลือ</td><td>เพิ่มได้ทันทีถ้าจำ <code>tail</code> ไว้ แต่ลบต้องเดินหาตัวก่อนท้าย</td></tr>
+            <tr><td>เพิ่มหรือลบที่หัว</td><td>เลื่อนทุกตัว</td><td>ทันที</td></tr>
+            <tr><td>แทรกหรือลบตรงกลาง เมื่อรู้ตำแหน่งอยู่แล้ว</td><td>เลื่อนทุกตัวที่อยู่ข้างหลัง</td><td>ทันที เปลี่ยน <code>next</code> สองสามตัว</td></tr>
+            <tr><td>ค้นหาค่า</td><td>ดูทีละตัว</td><td>ดูทีละตัว</td></tr>
+            <tr><td>เนื้อที่ต่อข้อมูลหนึ่งตัว <code>int</code></td><td>4 byte</td><td>16 byte ต่อ node บวกส่วนที่ <code>malloc</code> ใช้จดบันทึกเอง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>16 byte มาจาก <code>sizeof(Node)</code> ที่พิมพ์ได้จริงบน GCC ของ Code::Blocks คือ <code>int</code> 4 byte กับ pointer 8 byte และช่องว่างอีก 4 byte ที่ compiler เติมให้ pointer เริ่มที่ตำแหน่งหารด้วย 8 ลงตัว</p>
+
+      <p>ต่างกันมากแค่ไหนในทางปฏิบัติ ลองวัดงานที่อาเรย์ทำได้แย่ที่สุด คือเพิ่มที่หัวซ้ำๆ เทียบกับ linked list ที่เพิ่มที่หัวแล้วเดินอ่านทั้งลิสต์หนึ่งรอบ วัดด้วย <code>clock()</code> แบบหน้า 4.5 บนเครื่องที่เขียนเอกสารนี้ (ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11) คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks สองแบบ คือแบบที่ Code::Blocks ตั้งไว้ และแบบ <code>-O2</code> ที่ grader ส่วนใหญ่ใช้ แต่ละค่ารันสามครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>งาน</th><th>N</th><th>Code::Blocks</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>อาเรย์ เพิ่มที่หัว N ครั้ง</td><td>10<sup>5</sup></td><td>ประมาณ 2.5 วินาที</td><td>ประมาณ 0.21 วินาที</td></tr>
+            <tr><td>อาเรย์ เพิ่มที่หัว N ครั้ง</td><td>2 × 10<sup>5</sup></td><td>ประมาณ 10 วินาที</td><td>ประมาณ 0.85 วินาที</td></tr>
+            <tr><td>linked list ด้วย <code>malloc</code> เพิ่มที่หัว N ครั้งแล้วเดินหนึ่งรอบ</td><td>2 × 10<sup>5</sup></td><td>0.006 วินาที</td><td>0.006 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>N เพิ่มสองเท่า เวลาของอาเรย์เพิ่มราวสี่เท่า เพราะการเพิ่มแต่ละครั้งต้องเลื่อนยาวขึ้นเรื่อยๆ ส่วน linked list เพิ่มแค่สองเท่าตาม N และเร็วกว่าเป็นร้อยเท่า</p>
+
+      <p>สรุปเป็นหลักเลือกได้ดังนี้</p>
+
+      <ul>
+        <li><strong>โจทย์ส่วนใหญ่ใช้อาเรย์</strong> ถ้าข้อมูลแค่ต่อท้าย อ่านตามลำดับ หรือต้องกระโดดไปตัวที่ i บ่อย อาเรย์ทั้งง่ายกว่าและเร็วกว่า</li>
+        <li><strong>ใช้ linked list เมื่อต้องแทรกหรือลบตรงกลางบ่อย และรู้ตำแหน่งอยู่แล้ว</strong> เช่น เคอร์เซอร์ในโปรแกรมพิมพ์ข้อความที่พิมพ์ทีละตัว ลบทีละตัว หรือคนในแถวที่ถูกเรียกออกตามหมายเลข</li>
+        <li>ถ้าต้องเดินหาตำแหน่งก่อนทุกครั้ง linked list ไม่ได้ช่วยอะไร เพราะการเดินหาก็ช้าพอๆ กับการเลื่อนอาเรย์</li>
+      </ul>
+
+      <h2 id="array-list">linked list ที่ทำจากอาเรย์</h2>
+
+      <p>pointer ก็คือตัวเลขบอกตำแหน่งในหน่วยความจำ ถ้าเราเก็บ node ทุกตัวไว้ในอาเรย์ ตำแหน่งของ node ก็คือ index ธรรมดา แทนที่ <code>next</code> จะเก็บที่อยู่ ก็เก็บ index ของ node ถัดไปแทน แยกเป็นอาเรย์สองตัว <code>value[i]</code> คือค่าของ node ที่ i และ <code>next[i]</code> คือ index ของ node ถัดไป</p>
+
+      <p>เหลือแค่ต้องมีค่าหนึ่งแทน <code>NULL</code> วิธีที่สะดวกคือ<strong>ไม่ใช้ช่อง 0</strong> ให้ node แรกที่สร้างเป็น node 1 แล้วใช้ 0 แปลว่า "ไม่มี node" อาเรย์ global เริ่มเป็น 0 ทุกช่องอยู่แล้วตามหน้า 5.5 ทุก <code>next</code> ที่ยังไม่ได้ตั้งจึงเป็น "ไม่มี" ให้เอง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>แบบ pointer</th><th>แบบอาเรย์</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Node *p</code></td><td><code>int p</code></td></tr>
+            <tr><td><code>NULL</code></td><td><code>0</code></td></tr>
+            <tr><td><code>p-&gt;value</code></td><td><code>value[p]</code></td></tr>
+            <tr><td><code>p-&gt;next</code></td><td><code>next[p]</code></td></tr>
+            <tr><td><code>malloc(sizeof(Node))</code></td><td><code>node_count++</code> แล้วใช้ช่องนั้น</td></tr>
+            <tr><td><code>free(p)</code></td><td>ไม่ต้องทำอะไร</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>โปรแกรมนี้ทำแบบเดียวกับหน้า 14.1 คือเพิ่มตู้ทั้งขบวนที่ท้าย แล้วพ่วงตู้ 5 ไว้หน้าขบวน ท้ายโปรแกรมพิมพ์อาเรย์ทั้งสองออกมาให้ดูว่าข้างในเก็บอะไร</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="array-list"><pre><code>#include &lt;stdio.h&gt;
+
+int value[100001]; // (1)!
+int next[100001];
+int node_count = 0;
+
+int new_node(int v)
+{
+    node_count++; // (2)!
+    value[node_count] = v;
+    next[node_count] = 0;
+    return node_count;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int head = 0, tail = 0; // (3)!
+    for (int i = 0; i &lt; n; i++) {
+        int car;
+        scanf("%d", &amp;car);
+        int node = new_node(car);
+        if (head == 0) {
+            head = node;
+        } else {
+            next[tail] = node;
+        }
+        tail = node;
+    }
+    int front = new_node(5); // (4)!
+    next[front] = head;
+    head = front;
+    for (int p = head; p != 0; p = next[p]) { // (5)!
+        printf("%d ", value[p]);
+    }
+    printf("\n");
+    for (int i = 1; i &lt;= node_count; i++) {
+        printf("node %d: value %d, next %d\n", i, value[i], next[i]);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ต้องมีช่องพอสำหรับ node ทุกตัวที่<strong>เคยสร้าง</strong> บวกช่อง 0 ที่ไม่ใช้อีกหนึ่ง โจทย์ให้สร้างไม่เกินแสนตัว จึงประกาศ 100001 ช่องไว้นอก <code>main</code></li>
+        <li>เพิ่มก่อนแล้วค่อยใช้ node แรกจึงเป็น node 1 ไม่ใช่ 0</li>
+        <li><code>head</code> กับ <code>tail</code> เป็น <code>int</code> ธรรมดา 0 คือลิสต์ว่าง</li>
+        <li>เพิ่มที่หัวสองจังหวะเหมือนหน้า 14.1 ทุกอย่าง</li>
+        <li>ลูปเดินลิสต์หน้าตาเหมือนเดิม แค่ <code>p-&gt;next</code> กลายเป็น <code>next[p]</code></li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="array-list" data-title="ข้อมูลเข้า"><pre><code>4
+3 9 2 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="array-list" data-title="C:\code\array_list.exe"><pre><code>5 3 9 2 7
+node 1: value 3, next 2
+node 2: value 9, next 3
+node 3: value 2, next 4
+node 4: value 7, next 0
+node 5: value 5, next 1
+</code></pre></div>
+      </div>
+
+      <p>node 5 อยู่ช่องสุดท้ายของอาเรย์ แต่อยู่หน้าสุดของลิสต์ เพราะลำดับในลิสต์ดูจาก <code>next</code> ไม่ได้ดูจาก index ถ้าโปรแกรมมีบั๊ก ให้พิมพ์ตารางแบบนี้ออกมาดูแล้วไล่ลูกศรด้วยมือ ซึ่งทำได้ง่ายกว่าดูที่อยู่ในหน่วยความจำมาก</p>
+
+      <h2 id="why-arrays">ทำไมคนแข่งชอบแบบอาเรย์</h2>
+
+      <ul>
+        <li><strong>ไม่ต้อง <code>malloc</code> ไม่ต้อง <code>free</code></strong> ไม่มีทางลืม free ไม่มีทางใช้ node หลัง free และไม่มี memory leak</li>
+        <li><strong>เร็วกว่า</strong> บนเครื่องเดียวกับตารางข้างบน สร้างลิสต์ 10<sup>6</sup> ตัวด้วยการเพิ่มที่หัวแล้วเดินหนึ่งรอบ แบบ <code>malloc</code> ใช้ประมาณ 0.033 วินาที และ free อีก 0.018 วินาที แบบอาเรย์ใช้ประมาณ 0.004 วินาที ทั้งสองแบบเร็วพอสำหรับโจทย์ทั่วไป แต่แบบอาเรย์ไม่ต้องห่วงเลย</li>
+        <li><strong>พังน้อยกว่า</strong> ลืมเช็กแล้วไปอ่าน <code>value[0]</code> ได้ค่า 0 กลับมาเฉยๆ ไม่ปิดโปรแกรมด้วย <code>0xC0000005</code> แบบ <code>NULL-&gt;value</code> ข้อนี้มีสองด้าน คำตอบอาจผิดเงียบๆ แทน</li>
+        <li><strong>ดูข้างในง่าย</strong> พิมพ์อาเรย์ออกมาตรวจได้ทันทีแบบตัวอย่างข้างบน</li>
+        <li><strong>ใช้หมายเลขของข้อมูลเป็น index ได้เลย</strong> ถ้าข้อมูลแต่ละตัวมีหมายเลขไม่ซ้ำและไม่ใหญ่เกินอาเรย์ เช่น นักเรียนหมายเลข 1 ถึง N ไม่ต้องมี <code>value[]</code> และหา node ของนักเรียนคนที่ x ได้ทันทีโดยไม่ต้องเดินหา ซึ่งเป็นจุดอ่อนที่เราเจอในหน้า 14.2</li>
+      </ul>
+
+      <p>ข้อเสียคือต้องรู้ล่วงหน้าว่าจะสร้าง node รวมกันไม่เกินกี่ตัว ซึ่งโจทย์แข่งขันบอกขอบเขตไว้เสมอ</p>
+
+      <h2 id="doubly">ลิสต์สองทางกับ node 0 ที่ไม่มีวันหาย</h2>
+
+      <p>หน้า 14.2 ลบ node ทีต้องหา node ก่อนหน้าด้วยการเดิน ถ้าแต่ละ node จำทั้งตัวถัดไปและ<strong>ตัวก่อนหน้า</strong> ก็ลบได้ทันที ลิสต์แบบนี้เรียกว่า <strong>doubly linked list</strong> (ลิสต์สองทาง) แบบอาเรย์ก็แค่เพิ่มอาเรย์ <code>prev[]</code> อีกตัว</p>
+
+      <p>เทคนิคที่ทำให้โค้ดสั้นลงมาก คือให้ node 0 เป็น<strong>หัวขบวนปลอม</strong>ที่อยู่ในลิสต์ตลอดเวลา และต่อหัวกับท้ายเข้าหากันเป็นวง <code>next[0]</code> คือตัวแรกจริง <code>prev[0]</code> คือตัวสุดท้ายจริง ลิสต์ว่างคือ <code>next[0]</code> กับ <code>prev[0]</code> เป็น 0 ทั้งคู่ ทุก node จริงจึงมีตัวก่อนหน้าและตัวถัดไปเสมอ การลบหัว ลบท้าย หรือแทรกหน้าสุด ไม่ต้องเขียนกรณีพิเศษเลย</p>
+
+      <p>ตัวอย่าง นักเรียนหมายเลข 1 ถึง N เข้าแถวเรียงตามหมายเลข ครูสั่งงานสามแบบ <code>L x</code> นักเรียน x ออกจากแถว <code>F x</code> นักเรียน x ย้ายไปหัวแถว <code>B x</code> นักเรียน x ย้ายไปท้ายแถว ให้พิมพ์แถวสุดท้าย หมายเลขนักเรียนใช้เป็น index ของ node ได้เลย</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="line-up"><pre><code>#include &lt;stdio.h&gt;
+
+int prev[100001];
+int next[100001];
+
+void remove_node(int x) // (1)!
+{
+    next[prev[x]] = next[x];
+    prev[next[x]] = prev[x];
+}
+
+void insert_after(int p, int x) // (2)!
+{
+    prev[x] = p;
+    next[x] = next[p];
+    prev[next[p]] = x;
+    next[p] = x;
+}
+
+int main()
+{
+    int n, q;
+    scanf("%d %d", &amp;n, &amp;q);
+    for (int i = 1; i &lt;= n; i++) {
+        insert_after(prev[0], i); // (3)!
+    }
+    for (int i = 0; i &lt; q; i++) {
+        char command;
+        int x;
+        scanf(" %c %d", &amp;command, &amp;x);
+        remove_node(x);
+        if (command == 'F') {
+            insert_after(0, x); // (4)!
+        } else if (command == 'B') {
+            insert_after(prev[0], x);
+        }
+    }
+    for (int p = next[0]; p != 0; p = next[p]) {
+        printf("%d ", p);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ให้ตัวก่อนหน้าเกี่ยวข้าม x ไปหาตัวถัดไป และให้ตัวถัดไปชี้ย้อนข้าม x กลับมา ถ้า x เป็นตัวแรก <code>prev[x]</code> คือ 0 ก็แก้ <code>next[0]</code> ซึ่งก็คือหัวแถว ถูกต้องพอดี</li>
+        <li>สี่เส้นที่เปลี่ยน สองเส้นแรกของ x เอง สองเส้นหลังของเพื่อนบ้าน บรรทัดที่ 16 ต้องมาก่อนบรรทัดที่ 17 เพราะยังต้องใช้ <code>next[p]</code> ค่าเดิม</li>
+        <li>แทรกหลังตัวสุดท้าย คือเพิ่มที่ท้าย ตอนลิสต์ว่าง <code>prev[0]</code> เป็น 0 ก็แทรกหลัง node 0 ได้เหมือนกัน</li>
+        <li>แทรกหลัง node 0 คือขึ้นเป็นหัวแถว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="line-up" data-title="ข้อมูลเข้า"><pre><code>5 4
+L 3
+F 5
+B 1
+L 2
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="line-up" data-title="C:\code\line_up.exe"><pre><code>5 4 1
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่ง</th><th>แถว</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เริ่ม</td><td>1 2 3 4 5</td></tr>
+            <tr><td><code>L 3</code></td><td>1 2 4 5</td></tr>
+            <tr><td><code>F 5</code></td><td>5 1 2 4</td></tr>
+            <tr><td><code>B 1</code></td><td>5 2 4 1</td></tr>
+            <tr><td><code>L 2</code></td><td>5 4 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทุกคำสั่งทำงานไม่กี่บรรทัด ไม่มีการเดินหาเลย ถ้าครูสั่งแสนครั้งกับนักเรียนแสนคนก็เสร็จในพริบตา ถ้าทำด้วยอาเรย์แบบหน้า 5.5 แต่ละคำสั่งต้องค้นหาตำแหน่งของ x แล้วเลื่อนคนครึ่งแถว</p>
+
+      <h2 id="break-it">ลองทำให้พัง ใช้ช่อง 0 เป็น node จริง</h2>
+
+      <p>ในโปรแกรม array-list เขียน <code>new_node</code> ให้ใช้ช่องก่อนแล้วค่อยเพิ่มตัวนับ ซึ่งดูเป็นธรรมชาติกว่าถ้าเคยชินกับอาเรย์ที่เริ่มจาก 0</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="zero-node"><pre><code>#include &lt;stdio.h&gt;
+
+int value[100001];
+int next[100001];
+int node_count = 0;
+
+int new_node(int v)
+{
+    value[node_count] = v;
+    next[node_count] = 0;
+    node_count++;
+    return node_count - 1;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int head = 0, tail = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int car;
+        scanf("%d", &amp;car);
+        int node = new_node(car);
+        if (head == 0) {
+            head = node;
+        } else {
+            next[tail] = node;
+        }
+        tail = node;
+    }
+    int front = new_node(5);
+    next[front] = head;
+    head = front;
+    for (int p = head; p != 0; p = next[p]) {
+        printf("%d ", value[p]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="zero-node" data-title="ข้อมูลเข้า"><pre><code>4
+3 9 2 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="zero-node" data-title="C:\code\array_list.exe"><pre><code>5 9 2 7
+</code></pre></div>
+      </div>
+
+      <p>ตู้ 3 หายไปเงียบๆ ไม่มี error ไม่มีคำเตือน ตู้ 3 ได้ node 0 ไป <code>head</code> จึงเป็น 0 ซึ่งแปลว่าลิสต์ยังว่าง พอตู้ 9 มา โปรแกรมเห็นว่าลิสต์ว่างก็ตั้งตู้ 9 เป็นหัวใหม่ ตู้ 3 จึงหลุดจากขบวนตั้งแต่ตอนนั้น ค่าที่ใช้แทน <code>NULL</code> ต้องไม่ใช่ index ของ node จริงเด็ดขาด จะใช้ 0 แล้วเริ่ม node ที่ 1 หรือจะใช้ -1 แทน <code>NULL</code> ก็ได้ แต่ต้องเลือกแบบเดียวแล้วใช้ให้ตรงกันทั้งโปรแกรม</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>อาเรย์อ่านตัวที่ i ได้ทันที linked list แทรกและลบตรงที่รู้ตำแหน่งได้ทันที โจทย์ส่วนใหญ่ใช้อาเรย์</li>
+        <li>linked list ช่วยเฉพาะตอนที่ไม่ต้องเดินหาตำแหน่งก่อน</li>
+        <li>ในการแข่งขันนิยมทำ linked list ด้วยอาเรย์ <code>value[]</code> <code>next[]</code> ใช้ index แทน pointer และใช้ 0 แทน <code>NULL</code> โดยเริ่ม node ที่ 1</li>
+        <li>อาเรย์ต้องมีช่องพอสำหรับ node ทุกตัวที่เคยสร้าง ไม่ต้อง free</li>
+        <li>เพิ่ม <code>prev[]</code> ได้ลิสต์สองทางที่ลบได้ทันที และใช้ node 0 เป็นหัวขบวนปลอมต่อเป็นวง จะไม่มีกรณีพิเศษเลย</li>
+        <li>ถ้าหมายเลขข้อมูลไม่ซ้ำและไม่ใหญ่ ใช้หมายเลขนั้นเป็น index ของ node ได้ทันที</li>
+      </ul>
+    </article>

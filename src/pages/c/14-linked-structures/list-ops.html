@@ -1,0 +1,559 @@
+<article class="doc">
+      <h1>14.2 แทรก ลบ และกลับลำดับ</h1>
+
+      <p>หน้าที่แล้วสร้างขบวนรถไฟได้ เพิ่มตู้ได้ทั้งหัวและท้าย หน้านี้ทำงานของลานสับเปลี่ยนตู้ คือพ่วงตู้ใหม่ไว้หลังตู้ที่กำหนด ปลดตู้ออกจากกลางขบวน และกลับหัวขบวน ทั้งสามงานใช้หลักเดียวกัน คือ<strong>เปลี่ยนแค่ <code>next</code> ไม่กี่ตัว ไม่ย้ายข้อมูล</strong> ส่วนที่ยากคือลำดับการเปลี่ยน เปลี่ยนผิดลำดับนิดเดียว ตู้ครึ่งขบวนหายได้</p>
+
+      <p>ทุกโปรแกรมในหน้านี้ใช้ฟังก์ชันช่วยสามตัวเหมือนกัน <code>read_list</code> อ่าน N ตัวแล้วสร้างลิสต์ตามลำดับด้วยวิธีเพิ่มท้ายจากหน้า 14.1 <code>print_list</code> พิมพ์ทั้งลิสต์โดยไม่มีช่องว่างเกินท้ายบรรทัด และ <code>free_list</code> ตัวเดิม เวลาอ่านให้ข้ามสามตัวนี้ไปดูฟังก์ชันใหม่ของแต่ละหัวข้อได้เลย</p>
+
+      <h2 id="insert-after">แทรกหลังตู้ที่กำหนด</h2>
+
+      <p>มีตู้ที่ <code>p</code> ชี้อยู่ จะพ่วงตู้ใหม่ไว้ข้างหลังมัน ต้องเปลี่ยนสองเส้น และ<strong>ลำดับสำคัญ</strong></p>
+
+      <ol>
+        <li>ให้ตู้ใหม่เกี่ยวตู้ที่อยู่หลัง <code>p</code> ตอนนี้ คือ <code>node-&gt;next = p-&gt;next;</code></li>
+        <li>ให้ <code>p</code> เกี่ยวตู้ใหม่ คือ <code>p-&gt;next = node;</code></li>
+      </ol>
+
+      <figure>
+        <svg viewBox="0 0 560 190" width="560" style="max-width:100%;height:auto" role="img" aria-label="แทรก node 5 หลัง node 9 ที่ p ชี้ เส้นที่ 1 จาก node 5 ไป node 2 เส้นที่ 2 จาก node 9 ไป node 5 แทนเส้นเดิมที่ชี้ node 2">
+          <defs>
+            <marker id="ops-arrow-1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+            <marker id="ops-arrow-1-new" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--warning)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="210" y="22" text-anchor="middle" style="fill:var(--ink);font-size:15px">p</text>
+            <line x1="210" y1="28" x2="210" y2="46" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ops-arrow-1)"/>
+            <rect x="40" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="100" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="180" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="240" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="380" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="440" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <text x="70" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <text x="210" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">9</text>
+            <text x="410" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <circle cx="118" cy="72" r="4" style="fill:var(--brand)"/>
+            <circle cx="258" cy="72" r="4" style="fill:var(--warning)"/>
+            <circle cx="458" cy="72" r="4" style="fill:var(--brand)"/>
+            <line x1="118" y1="72" x2="177" y2="72" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ops-arrow-1)"/>
+            <line x1="258" y1="72" x2="377" y2="72" style="stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 4"/>
+            <line x1="458" y1="72" x2="500" y2="72" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ops-arrow-1)"/>
+            <text x="504" y="77" style="fill:var(--muted);font-size:15px">NULL</text>
+            <rect x="280" y="130" width="60" height="44" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <rect x="340" y="130" width="36" height="44" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <text x="310" y="158" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="250" y="182" text-anchor="end" style="fill:var(--muted);font-size:13px">node</text>
+            <circle cx="358" cy="152" r="4" style="fill:var(--warning)"/>
+            <line x1="358" y1="152" x2="402" y2="98" style="stroke:var(--warning);stroke-width:2" marker-end="url(#ops-arrow-1-new)"/>
+            <line x1="258" y1="72" x2="296" y2="126" style="stroke:var(--warning);stroke-width:2" marker-end="url(#ops-arrow-1-new)"/>
+            <text x="392" y="132" style="fill:var(--warning);font-size:14px">1</text>
+            <text x="262" y="112" style="fill:var(--warning);font-size:14px">2</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>เส้นประคือเส้นเดิมที่ถูกแทนที่ ถ้าทำเส้นที่ 2 ก่อน <code>p-&gt;next</code> จะเป็นตู้ใหม่ไปแล้ว และไม่มีใครจำที่อยู่ของตู้ 2 อีก ดูผลได้ในส่วนลองทำให้พัง</p>
+
+      <p>โปรแกรมนี้รับขบวน แล้วรับคู่ <code>x y</code> แปลว่าพ่วงตู้หมายเลข y ไว้หลังตู้หมายเลข x ใช้ <code>find</code> จากหน้า 14.1 หาตู้ x ก่อน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="insert-after"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+Node *read_list(int n)
+{
+    Node *head = NULL;
+    Node *tail = NULL;
+    for (int i = 0; i &lt; n; i++) {
+        Node *node = malloc(sizeof(Node));
+        scanf("%d", &amp;node-&gt;value);
+        node-&gt;next = NULL;
+        if (head == NULL) {
+            head = node;
+        } else {
+            tail-&gt;next = node;
+        }
+        tail = node;
+    }
+    return head;
+}
+
+void print_list(Node *head)
+{
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        printf("%d", p-&gt;value);
+        if (p-&gt;next != NULL) { // (1)!
+            printf(" ");
+        }
+    }
+    printf("\n");
+}
+
+void free_list(Node *head)
+{
+    while (head != NULL) {
+        Node *next = head-&gt;next;
+        free(head);
+        head = next;
+    }
+}
+
+Node *find(Node *head, int value)
+{
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        if (p-&gt;value == value) {
+            return p;
+        }
+    }
+    return NULL;
+}
+
+void insert_after(Node *p, int value) // (2)!
+{
+    Node *node = malloc(sizeof(Node));
+    node-&gt;value = value;
+    node-&gt;next = p-&gt;next;
+    p-&gt;next = node;
+}
+
+int main()
+{
+    int n, q;
+    scanf("%d %d", &amp;n, &amp;q);
+    Node *head = read_list(n);
+    for (int i = 0; i &lt; q; i++) {
+        int x, y;
+        scanf("%d %d", &amp;x, &amp;y);
+        Node *p = find(head, x);
+        if (p != NULL) {
+            insert_after(p, y);
+        }
+        print_list(head);
+    }
+    free_list(head);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เว้นวรรคเฉพาะเมื่อยังมีตู้ต่อ บรรทัดจึงไม่มีช่องว่างเกินท้าย grader บางระบบเทียบทุกตัวอักษร ช่องว่างเกินตัวเดียวก็ผิดได้</li>
+        <li>ฟังก์ชันนี้ไม่ต้องคืนหัวใหม่ เพราะแทรกหลัง <code>p</code> ไม่มีทางเปลี่ยนตู้หัว ถ้าอยากแทรกเป็นตู้แรกให้ใช้ <code>push_front</code></li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="insert-after" data-title="ข้อมูลเข้า"><pre><code>4 3
+3 9 2 7
+9 5
+7 8
+4 1
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="insert-after" data-title="C:\code\insert_after.exe"><pre><code>3 9 5 2 7
+3 9 5 2 7 8
+3 9 5 2 7 8
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่สองแทรกหลังตู้สุดท้าย <code>p-&gt;next</code> เป็น <code>NULL</code> ตู้ใหม่จึงได้ <code>NULL</code> ไปเป็นตู้สุดท้ายเองโดยไม่ต้องเขียนกรณีพิเศษ บรรทัดที่สามหาตู้ 4 ไม่เจอ จึงไม่ทำอะไร</p>
+
+      <p>การแทรกครั้งหนึ่งเปลี่ยนแค่สองเส้น ไม่ว่าขบวนยาวเท่าไร แต่โปรแกรมนี้ยังต้องเดินหาตู้ x ก่อนทุกครั้ง ซึ่งช้าพอๆ กับเลื่อนอาเรย์ linked list จึงเร็วจริงเมื่อเรามี pointer ของตำแหน่งที่จะแทรกอยู่ในมือแล้ว เช่น เคอร์เซอร์ของโปรแกรมพิมพ์ข้อความ หน้า 14.3 มีวิธีหาตู้ x ได้ทันทีโดยไม่ต้องเดิน</p>
+
+      <h2 id="delete">ปลดตู้ออก</h2>
+
+      <p>จะปลดตู้ที่มีหมายเลข x ออก ต้องให้ตู้<strong>ก่อนหน้า</strong>มันเกี่ยวข้ามไปหาตู้ที่อยู่หลังมันแทน ปัญหาคือ <code>next</code> ชี้ไปข้างหน้าทางเดียว ยืนอยู่ที่ตู้ x แล้วย้อนกลับไปหาตู้ก่อนหน้าไม่ได้ จึงต้องเดินด้วย <code>prev</code> ที่หยุดก่อนถึงตู้ x หนึ่งตู้ แล้วดู <code>prev-&gt;next</code> แทน</p>
+
+      <figure>
+        <svg viewBox="0 0 560 150" width="560" style="max-width:100%;height:auto" role="img" aria-label="ลบ node 2 prev ชี้ node 9 เส้นใหม่จาก node 9 โค้งข้าม node 2 ไปหา node 7 แล้ว free node 2">
+          <defs>
+            <marker id="ops-arrow-2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+            <marker id="ops-arrow-2-new" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--warning)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <rect x="40" y="70" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="100" y="70" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="180" y="70" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="240" y="70" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="320" y="70" width="60" height="44" style="fill:var(--surface);stroke:var(--danger);stroke-width:2;stroke-dasharray:5 4"/>
+            <rect x="380" y="70" width="36" height="44" style="fill:var(--surface);stroke:var(--danger);stroke-width:2;stroke-dasharray:5 4"/>
+            <rect x="460" y="70" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="520" y="70" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <text x="70" y="98" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <text x="210" y="98" text-anchor="middle" style="fill:var(--ink);font-size:18px">9</text>
+            <text x="350" y="98" text-anchor="middle" style="fill:var(--danger);font-size:18px">2</text>
+            <text x="490" y="98" text-anchor="middle" style="fill:var(--ink);font-size:18px">7</text>
+            <circle cx="118" cy="92" r="4" style="fill:var(--brand)"/>
+            <circle cx="258" cy="92" r="4" style="fill:var(--warning)"/>
+            <circle cx="398" cy="92" r="4" style="fill:var(--line-strong)"/>
+            <line x1="118" y1="92" x2="177" y2="92" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ops-arrow-2)"/>
+            <line x1="258" y1="92" x2="317" y2="92" style="stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 4"/>
+            <line x1="398" y1="92" x2="457" y2="92" style="stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 4"/>
+            <path d="M258 92 C 300 20, 440 20, 482 66" style="fill:none;stroke:var(--warning);stroke-width:2" marker-end="url(#ops-arrow-2-new)"/>
+            <text x="210" y="138" text-anchor="middle" style="fill:var(--ink);font-size:15px">prev</text>
+            <text x="350" y="138" text-anchor="middle" style="fill:var(--danger);font-size:15px">target</text>
+            <text x="370" y="30" text-anchor="middle" style="fill:var(--warning);font-size:13px">prev-&gt;next = target-&gt;next</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ตู้แรกเป็นกรณีพิเศษ เพราะไม่มีตู้ก่อนหน้า ถ้าตู้ที่จะปลดคือหัว ต้องย้าย <code>head</code> ไปตู้ที่สองแทน ฟังก์ชันจึงต้องคืนหัวใหม่แบบ <code>push_front</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="delete"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+Node *read_list(int n)
+{
+    Node *head = NULL;
+    Node *tail = NULL;
+    for (int i = 0; i &lt; n; i++) {
+        Node *node = malloc(sizeof(Node));
+        scanf("%d", &amp;node-&gt;value);
+        node-&gt;next = NULL;
+        if (head == NULL) {
+            head = node;
+        } else {
+            tail-&gt;next = node;
+        }
+        tail = node;
+    }
+    return head;
+}
+
+void print_list(Node *head)
+{
+    if (head == NULL) {
+        printf("empty\n");
+        return;
+    }
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        printf("%d", p-&gt;value);
+        if (p-&gt;next != NULL) {
+            printf(" ");
+        }
+    }
+    printf("\n");
+}
+
+void free_list(Node *head)
+{
+    while (head != NULL) {
+        Node *next = head-&gt;next;
+        free(head);
+        head = next;
+    }
+}
+
+Node *delete_value(Node *head, int value)
+{
+    if (head == NULL) { // (1)!
+        return NULL;
+    }
+    if (head-&gt;value == value) { // (2)!
+        Node *rest = head-&gt;next;
+        free(head);
+        return rest;
+    }
+    Node *prev = head;
+    while (prev-&gt;next != NULL &amp;&amp; prev-&gt;next-&gt;value != value) { // (3)!
+        prev = prev-&gt;next;
+    }
+    if (prev-&gt;next != NULL) { // (4)!
+        Node *target = prev-&gt;next;
+        prev-&gt;next = target-&gt;next;
+        free(target);
+    }
+    return head;
+}
+
+int main()
+{
+    int n, q;
+    scanf("%d %d", &amp;n, &amp;q);
+    Node *head = read_list(n);
+    for (int i = 0; i &lt; q; i++) {
+        int x;
+        scanf("%d", &amp;x);
+        head = delete_value(head, x); // (5)!
+        print_list(head);
+    }
+    free_list(head);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ลิสต์ว่างไม่มีอะไรให้ลบ และใช้ <code>head-&gt;value</code> ไม่ได้</li>
+        <li>ตู้หัวคือตู้ที่จะลบ จำตู้ที่สองไว้ก่อน free แล้วคืนตู้ที่สองเป็นหัวใหม่</li>
+        <li>เดินจนกว่าตู้ถัดจาก <code>prev</code> คือตู้ที่ต้องการ หรือหมดขบวน ลำดับของสองเงื่อนไขสำคัญ ถ้า <code>prev-&gt;next</code> เป็น <code>NULL</code> เงื่อนไขแรกเป็นเท็จ <code>&amp;&amp;</code> จะไม่ประเมินเงื่อนไขที่สองเลยตามหน้า 3.3 จึงไม่ไปแตะ <code>NULL-&gt;value</code></li>
+        <li>ถ้าออกจากลูปเพราะหมดขบวน แปลว่าไม่มีตู้ x ไม่ต้องทำอะไร</li>
+        <li>ห้ามลืม <code>head =</code> เพราะการลบตู้หัวทำให้หัวเปลี่ยน</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="delete" data-title="ข้อมูลเข้า"><pre><code>5 6
+3 9 2 7 4
+2
+3
+4
+8
+9
+7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="delete" data-title="C:\code\delete.exe"><pre><code>3 9 7 4
+9 7 4
+9 7
+9 7
+7
+empty
+</code></pre></div>
+      </div>
+
+      <p>ชุดข้อมูลนี้ตั้งใจให้ครบทุกกรณี ลบตู้กลาง ลบตู้หัว ลบตู้ท้าย ลบตู้ที่ไม่มี และลบจนขบวนว่าง เวลาเขียนฟังก์ชันลิสต์ของตัวเอง ให้ทดสอบครบชุดแบบนี้ทุกครั้ง</p>
+
+      <h2 id="reverse">กลับลำดับ</h2>
+
+      <p>อยากกลับขบวน 1 2 3 4 เป็น 4 3 2 1 วิธีที่ง่ายที่สุดคือสร้างลิสต์ใหม่ด้วย <code>push_front</code> ทีละตัวตามหน้า 14.1 แต่ต้องขอ node ใหม่ทั้งชุด วิธีที่นิยมกว่าคือกลับทิศลูกศรของลิสต์เดิมทุกเส้น ไม่ต้องสร้าง node ใหม่เลย</p>
+
+      <p>เดินจากหัวด้วยสามตัวแปร <code>prev</code> คือตู้ที่กลับทิศแล้ว <code>cur</code> คือตู้ที่กำลังจะกลับ และ <code>next</code> จำตู้ถัดไปไว้ก่อนเส้นจะถูกเปลี่ยน แต่ละรอบทำสี่บรรทัด</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate><pre><code>Node *next = cur-&gt;next; // (1)!
+cur-&gt;next = prev; // (2)!
+prev = cur; // (3)!
+cur = next;
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จำทางไปตู้ถัดไปไว้ก่อน บรรทัดต่อไปจะเขียนทับ <code>cur-&gt;next</code></li>
+        <li>กลับทิศ ให้ตู้นี้ชี้ย้อนไปหาตู้ก่อนหน้า</li>
+        <li>เลื่อนทั้งสองตัวไปข้างหน้าหนึ่งตู้</li>
+      </ol>
+
+      <figure>
+        <svg viewBox="0 0 600 150" width="600" style="max-width:100%;height:auto" role="img" aria-label="กลับลำดับลิสต์ 1 2 3 4 กลางทาง node 1 ชี้ NULL node 2 ชี้ node 1 prev อยู่ที่ node 2 cur อยู่ที่ node 3 ซึ่งยังชี้ node 4 ตามเดิม">
+          <defs>
+            <marker id="ops-arrow-3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+            <marker id="ops-arrow-3-new" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--warning)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="20" y="97" style="fill:var(--muted);font-size:15px">NULL</text>
+            <rect x="100" y="70" width="36" height="44" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <rect x="136" y="70" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--warning);stroke-width:2"/>
+            <rect x="240" y="70" width="36" height="44" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <rect x="276" y="70" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--warning);stroke-width:2"/>
+            <rect x="380" y="70" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="440" y="70" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="500" y="70" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="560" y="70" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <text x="166" y="98" text-anchor="middle" style="fill:var(--ink);font-size:18px">1</text>
+            <text x="306" y="98" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <text x="410" y="98" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <text x="530" y="98" text-anchor="middle" style="fill:var(--ink);font-size:18px">4</text>
+            <circle cx="118" cy="92" r="4" style="fill:var(--warning)"/>
+            <circle cx="258" cy="92" r="4" style="fill:var(--warning)"/>
+            <circle cx="458" cy="92" r="4" style="fill:var(--brand)"/>
+            <circle cx="578" cy="92" r="4" style="fill:var(--brand)"/>
+            <line x1="118" y1="92" x2="62" y2="92" style="stroke:var(--warning);stroke-width:2" marker-end="url(#ops-arrow-3-new)"/>
+            <line x1="258" y1="92" x2="199" y2="92" style="stroke:var(--warning);stroke-width:2" marker-end="url(#ops-arrow-3-new)"/>
+            <line x1="458" y1="92" x2="497" y2="92" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ops-arrow-3)"/>
+            <line x1="578" y1="92" x2="578" y2="130" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ops-arrow-3)"/>
+            <text x="578" y="146" text-anchor="middle" style="fill:var(--muted);font-size:13px">NULL</text>
+            <text x="306" y="30" text-anchor="middle" style="fill:var(--ink);font-size:15px">prev</text>
+            <line x1="306" y1="36" x2="306" y2="66" style="stroke:var(--warning);stroke-width:2" marker-end="url(#ops-arrow-3-new)"/>
+            <text x="410" y="30" text-anchor="middle" style="fill:var(--ink);font-size:15px">cur</text>
+            <line x1="410" y1="36" x2="410" y2="66" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ops-arrow-3)"/>
+            <text x="200" y="140" text-anchor="middle" style="fill:var(--warning);font-size:13px">reversed</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ภาพนี้คือหลังรอบที่สอง ตู้ 1 กับ 2 กลับทิศแล้ว (สีส้ม) <code>prev</code> อยู่ที่ตู้ 2 ซึ่งเป็นหัวของส่วนที่กลับแล้ว <code>cur</code> อยู่ที่ตู้ 3 ซึ่งยังชี้ไปข้างหน้าตามเดิม พอ <code>cur</code> เป็น <code>NULL</code> ทุกตู้กลับครบ และ <code>prev</code> คือหัวใหม่</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>จบรอบ</th><th><code>prev</code></th><th><code>cur</code></th><th>ส่วนที่กลับแล้ว เริ่มจาก <code>prev</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ก่อนเริ่ม</td><td><code>NULL</code></td><td>1</td><td>ไม่มี</td></tr>
+            <tr><td>1</td><td>1</td><td>2</td><td>1</td></tr>
+            <tr><td>2</td><td>2</td><td>3</td><td>2 1</td></tr>
+            <tr><td>3</td><td>3</td><td>4</td><td>3 2 1</td></tr>
+            <tr><td>4</td><td>4</td><td><code>NULL</code></td><td>4 3 2 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="reverse"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+Node *read_list(int n)
+{
+    Node *head = NULL;
+    Node *tail = NULL;
+    for (int i = 0; i &lt; n; i++) {
+        Node *node = malloc(sizeof(Node));
+        scanf("%d", &amp;node-&gt;value);
+        node-&gt;next = NULL;
+        if (head == NULL) {
+            head = node;
+        } else {
+            tail-&gt;next = node;
+        }
+        tail = node;
+    }
+    return head;
+}
+
+void print_list(Node *head)
+{
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        printf("%d", p-&gt;value);
+        if (p-&gt;next != NULL) {
+            printf(" ");
+        }
+    }
+    printf("\n");
+}
+
+void free_list(Node *head)
+{
+    while (head != NULL) {
+        Node *next = head-&gt;next;
+        free(head);
+        head = next;
+    }
+}
+
+Node *reverse(Node *head)
+{
+    Node *prev = NULL; // (1)!
+    Node *cur = head;
+    while (cur != NULL) {
+        Node *next = cur-&gt;next;
+        cur-&gt;next = prev;
+        prev = cur;
+        cur = next;
+    }
+    return prev;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    Node *head = read_list(n);
+    head = reverse(head);
+    print_list(head);
+    head = reverse(head); // (2)!
+    print_list(head);
+    free_list(head);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตู้หัวเดิมจะกลายเป็นตู้สุดท้าย จึงต้องชี้ <code>NULL</code> การเริ่ม <code>prev</code> ที่ <code>NULL</code> ทำให้รอบแรกได้แบบนั้นพอดี</li>
+        <li>กลับสองครั้งต้องได้ลำดับเดิม เป็นวิธีทดสอบง่ายๆ ว่าไม่มีตู้หาย</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="reverse" data-title="ข้อมูลเข้า"><pre><code>4
+1 2 3 4
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="reverse" data-title="C:\code\reverse.exe"><pre><code>4 3 2 1
+1 2 3 4
+</code></pre></div>
+      </div>
+
+      <p>ลองป้อน N เป็น 0 และ 1 ด้วย ลูปไม่ทำเลยสักรอบหรือทำรอบเดียว และยังได้คำตอบถูกโดยไม่ต้องเขียนกรณีพิเศษ</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="wrong-order">แบบที่ 1 สลับลำดับตอนแทรก</h3>
+
+      <p>ในโปรแกรม insert-after สลับสองบรรทัดใน <code>insert_after</code> ให้ <code>p</code> เกี่ยวตู้ใหม่ก่อน</p>
+
+      <div class="code" data-lang="c"><pre><code>p-&gt;next = node;
+node-&gt;next = p-&gt;next;
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือน ป้อนข้อมูลชุดเดิม แล้วโปรแกรมพิมพ์ไม่หยุด</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\insert_after.exe"><pre><code>3 9 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+</code></pre></div>
+
+      <p>บรรทัดแรกทำให้ <code>p-&gt;next</code> เป็นตู้ใหม่ บรรทัดที่สองจึงเท่ากับ <code>node-&gt;next = node;</code> ตู้ 5 เกี่ยวตัวเอง ลูปพิมพ์จึงวนอยู่ที่ตู้ 5 ตลอดไป ต้องกด <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>C</kbd></span> หรือปิดหน้าต่างเอง ส่วนตู้ 2 กับ 7 ไม่มีใครชี้ถึงอีกแล้ว ถ้าส่ง grader จะได้ผล Time Limit Exceeded เขียนลิสต์ทีไร ให้วาดกล่องกับลูกศรบนกระดาษก่อน แล้วเปลี่ยนลูกศรตามโค้ดทีละบรรทัด</p>
+
+      <h3 id="use-after-free">แบบที่ 2 อ่าน next หลัง free</h3>
+
+      <p>เขียน <code>free_list</code> แบบไม่จำตู้ถัดไปไว้ก่อน</p>
+
+      <div class="code" data-lang="c"><pre><code>void free_list(Node *head)
+{
+    while (head != NULL) {
+        free(head);
+        head = head-&gt;next;
+    }
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>free_bug.c:13:14: warning: pointer 'head' used after 'free' [-Wuse-after-free]
+   13 |         head = head-&gt;next;
+      |         ~~~~~^~~~~~~~~~~~
+free_bug.c:12:9: note: call to 'free' here
+   12 |         free(head);
+      |         ^~~~~~~~~~
+</code></pre></div>
+
+      <p>คราวนี้ <code>-Wall</code> จับได้ หลัง <code>free</code> พื้นที่นั้นคืนไปแล้ว อ่าน <code>head-&gt;next</code> จากมันอีกคือใช้ของที่ไม่ใช่ของเรา บนเครื่องที่เขียนเอกสารนี้ โปรแกรมยังทำงานจบได้ปกติ เพราะพื้นที่ที่เพิ่งคืนบังเอิญยังมีค่าเดิมอยู่ แต่ไม่มีอะไรรับประกัน ถ้าระหว่างนั้นมีการ <code>malloc</code> พื้นที่นั้นอาจถูกใช้ไปเก็บอย่างอื่นแล้ว วิธีที่ถูกคือจำ <code>next</code> ไว้ในตัวแปรก่อน free แบบในหน้า 14.1</p>
+
+      <h3 id="forget-head">แบบที่ 3 ลืมรับหัวใหม่</h3>
+
+      <p>ในโปรแกรม delete เขียน <code>delete_value(head, x);</code> เฉยๆ ไม่มี <code>head =</code> ข้างหน้า คอมไพล์ผ่านโดยไม่มีคำเตือน ป้อนข้อมูลชุดเดิม บนเครื่องที่เขียนเอกสารนี้ได้ผลแบบนี้</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\delete.exe"><pre><code>3 9 7 4
+3 9 7 4
+3 9 7
+3 9 7
+3 7
+3
+</code></pre></div>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073740940 (0xC0000374)
+</code></pre></div>
+
+      <p>บรรทัดแรกถูกเพราะลบตู้กลาง หัวไม่เปลี่ยน บรรทัดที่สองลบตู้ 3 ซึ่งเป็นหัว ฟังก์ชัน free ตู้ 3 แล้วคืนตู้ 9 มาเป็นหัวใหม่ แต่ไม่มีใครรับ <code>head</code> ของ <code>main</code> ยังชี้ตู้ 3 ที่คืนไปแล้ว พื้นที่นั้นบังเอิญยังมีค่าเดิมค้างอยู่ ตู้ 3 จึงยังโผล่ในทุกบรรทัดที่เหลือ จนบรรทัดสุดท้ายที่ควรขึ้นว่า empty ก็ยังเห็นตู้ 3 พอถึง <code>free_list</code> ตอนจบ ตู้ 3 ถูก free เป็นครั้งที่สอง Windows ตรวจเจอว่าระบบจัดการหน่วยความจำเสียหาย (heap corruption) จึงปิดโปรแกรมด้วยรหัส <code>0xC0000374</code> ฟังก์ชันไหนคืนหัวใหม่ ต้องเขียน <code>head = ...</code> ทุกครั้งที่เรียก</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>แทรกหลัง <code>p</code> ให้ตู้ใหม่เกี่ยว <code>p-&gt;next</code> ก่อน แล้วค่อยให้ <code>p</code> เกี่ยวตู้ใหม่</li>
+        <li>ลบตู้ต้องหยุดที่ตู้ก่อนหน้า แล้วทำ <code>prev-&gt;next = target-&gt;next</code> ตู้หัวเป็นกรณีพิเศษที่ต้องย้าย <code>head</code></li>
+        <li>กลับลำดับด้วย <code>prev</code> <code>cur</code> <code>next</code> จำตู้ถัดไปก่อนเปลี่ยนเส้น จบแล้ว <code>prev</code> คือหัวใหม่</li>
+        <li>ทดสอบทุกฟังก์ชันกับลิสต์ว่าง ตัวเดียว ตัวหัว ตัวท้าย และค่าที่ไม่มี</li>
+        <li>ห้ามแตะ node หลัง <code>free</code> และฟังก์ชันที่คืนหัวใหม่ต้องรับค่าด้วย <code>head =</code></li>
+      </ul>
+    </article>

@@ -1,0 +1,471 @@
+<article class="doc">
+      <h1>14.5 queue และ deque</h1>
+
+      <p>แถวซื้อชานมหน้าโรงเรียน คนมาใหม่ต่อท้ายแถว คนที่ได้ชานมคือคนหัวแถว ใครมาก่อนได้ก่อน โครงสร้างข้อมูลแบบนี้เรียกว่า <strong>queue</strong> (คิว) หลักของมันคือ FIFO ย่อมาจาก first in, first out เข้าก่อน ออกก่อน ตรงข้ามกับ stack ในหน้าที่แล้ว</p>
+
+      <p>โจทย์ที่ต้องจำลองการรอคิว เช่น ร้านค้า เครื่องพิมพ์ หรือเกมที่ผู้เล่นวนกันเล่นทีละคน ใช้ queue ตรงๆ และในบทที่ 27 queue จะเป็นหัวใจของ BFS ซึ่งใช้หาระยะทางที่สั้นที่สุดในตาราง ท้ายหน้ามี deque ซึ่งเป็นคิวที่เข้าออกได้ทั้งสองหัว</p>
+
+      <h2 id="operations">งานของ queue</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ชื่อ</th><th>ทำอะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>enqueue</td><td>ต่อท้ายคิว</td></tr>
+            <tr><td>dequeue</td><td>เอาคนหัวคิวออก</td></tr>
+            <tr><td>front</td><td>ดูว่าใครอยู่หัวคิว โดยไม่เอาออก</td></tr>
+            <tr><td>empty</td><td>ถามว่าคิวว่างไหม</td></tr>
+            <tr><td>size</td><td>ถามว่ามีกี่คน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ต่างจาก stack ตรงที่งานเกิดสองหัว เข้าทางท้าย ออกทางหัว จึงต้องมีตัวแปรสองตัว <code>head</code> คือช่องของคนหัวคิว และ <code>tail</code> คือช่องว่างช่องถัดจากคนท้ายคิว ซึ่งคนต่อไปจะมายืน</p>
+
+      <h2 id="array-queue">queue ด้วยอาเรย์</h2>
+
+      <p>วิธีที่ง่ายที่สุดคือให้ทั้ง <code>head</code> และ <code>tail</code> เดินไปทางขวาอย่างเดียว คนที่ออกไปแล้วไม่ต้องลบ แค่เลื่อน <code>head</code> ผ่านไป ไม่ต้องเลื่อนคนที่เหลือมาข้างหน้าแบบหน้า 5.5 เลย</p>
+
+      <figure>
+        <svg viewBox="0 0 560 130" width="560" style="max-width:100%;height:auto" role="img" aria-label="queue ในอาเรย์ ช่อง 0 และ 1 เคยมีคนแต่ออกไปแล้ว ช่อง 2 3 4 เก็บ 13 14 15 head ชี้ช่อง 2 tail ชี้ช่อง 5 ที่ว่างอยู่ คนใหม่ต่อที่ tail คนออกจาก head">
+          <defs>
+            <marker id="queue-arrow-1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <rect x="40" y="40" width="60" height="44" style="fill:none;stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 4"/>
+            <rect x="100" y="40" width="60" height="44" style="fill:none;stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 4"/>
+            <rect x="160" y="40" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="220" y="40" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="280" y="40" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="340" y="40" width="60" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="400" y="40" width="60" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="70" y="68" text-anchor="middle" style="fill:var(--muted);font-size:18px">11</text>
+            <text x="130" y="68" text-anchor="middle" style="fill:var(--muted);font-size:18px">12</text>
+            <text x="190" y="68" text-anchor="middle" style="fill:var(--ink);font-size:18px">13</text>
+            <text x="250" y="68" text-anchor="middle" style="fill:var(--ink);font-size:18px">14</text>
+            <text x="310" y="68" text-anchor="middle" style="fill:var(--ink);font-size:18px">15</text>
+            <text x="70" y="30" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">0</text>
+            <text x="130" y="30" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">1</text>
+            <text x="190" y="30" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">2</text>
+            <text x="250" y="30" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">3</text>
+            <text x="310" y="30" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">4</text>
+            <text x="370" y="30" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">5</text>
+            <text x="430" y="30" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">6</text>
+            <line x1="190" y1="114" x2="190" y2="90" style="stroke:var(--brand);stroke-width:2" marker-end="url(#queue-arrow-1)"/>
+            <text x="190" y="128" text-anchor="middle" style="fill:var(--ink);font-size:14px">head = 2</text>
+            <line x1="370" y1="114" x2="370" y2="90" style="stroke:var(--brand);stroke-width:2" marker-end="url(#queue-arrow-1)"/>
+            <text x="370" y="128" text-anchor="middle" style="fill:var(--ink);font-size:14px">tail = 5</text>
+            <text x="100" y="128" text-anchor="middle" style="fill:var(--muted);font-size:13px">already served</text>
+            <text x="476" y="68" style="fill:var(--muted);font-size:13px">size = 3</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>จำนวนคนในคิวคือ <code>tail - head</code> คิวว่างเมื่อ <code>head == tail</code> โปรแกรมนี้ใช้ลำดับคำสั่งเดียวกับโปรแกรม plates ในหน้า 14.4 ลองเทียบผลลัพธ์ดู</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="queue-basics"><pre><code>#include &lt;stdio.h&gt;
+
+int queue[100000];
+int head = 0, tail = 0;
+
+void enqueue(int x)
+{
+    queue[tail] = x;
+    tail++;
+}
+
+int dequeue(void)
+{
+    int x = queue[head];
+    head++; // (1)!
+    return x;
+}
+
+int front(void)
+{
+    return queue[head];
+}
+
+int queue_size(void)
+{
+    return tail - head;
+}
+
+int is_empty(void)
+{
+    return head == tail;
+}
+
+int main()
+{
+    enqueue(11);
+    enqueue(12);
+    enqueue(13);
+    printf("front = %d\n", front());
+    printf("dequeue = %d\n", dequeue());
+    printf("dequeue = %d\n", dequeue());
+    enqueue(14);
+    printf("size = %d\n", queue_size());
+    while (!is_empty()) {
+        printf("dequeue = %d\n", dequeue());
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จำค่าหัวคิวไว้ก่อน แล้วเลื่อน <code>head</code> ไปคนถัดไป ช่องเดิมยังมีค่าค้างอยู่ แต่อยู่นอกคิวแล้ว</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="queue-basics" data-title="C:\code\queue_basics.exe"><pre><code>front = 11
+dequeue = 11
+dequeue = 12
+size = 2
+dequeue = 13
+dequeue = 14
+</code></pre></div>
+
+      <p>คำสั่งเหมือนกันทุกบรรทัด แต่ stack ได้ 13 12 14 11 ส่วน queue ได้ 11 12 13 14 ตามลำดับที่เข้ามาพอดี</p>
+
+      <p>ข้อแม้ของวิธีนี้คือ <code>tail</code> เดินไปข้างหน้าทุกครั้งที่มีคนเข้า ไม่เคยถอยกลับ อาเรย์จึงต้องมีช่องเท่ากับ<strong>จำนวนครั้งที่ enqueue ทั้งหมด</strong> ไม่ใช่จำนวนคนที่อยู่ในคิวพร้อมกัน ถ้าโจทย์บอกว่ามีคำสั่งไม่เกินแสนคำสั่ง อาเรย์แสนช่องก็พอเสมอ โจทย์แข่งขันส่วนใหญ่เป็นแบบนี้ จึงใช้วิธีนี้ได้เกือบทุกครั้ง</p>
+
+      <h2 id="circular">queue วงกลม</h2>
+
+      <p>แต่ถ้าที่มีจำกัดจริงๆ เช่น ร้านชานมมีเก้าอี้รอแค่ 3 ตัว ทั้งวันมีลูกค้าเป็นพันคน หรือโจทย์ที่คนออกจากหัวคิวแล้ววนกลับไปต่อท้ายซ้ำเป็นล้านรอบ <code>tail</code> จะเดินเลยท้ายอาเรย์ไปแม้คิวจะสั้นนิดเดียว วิธีแก้คือ<strong>พอเดินถึงช่องสุดท้ายแล้ว ให้วนกลับไปช่อง 0</strong> ซึ่งว่างแล้วเพราะคนตรงนั้นออกไปนานแล้ว อาเรย์จึงเหมือนต่อปลายเป็นวงกลม เรียกว่า <strong>circular queue</strong></p>
+
+      <p>การวนกลับใช้ <code>%</code> จากหน้า 1.2 ถ้าอาเรย์มี <code>capacity</code> ช่อง ช่องถัดจาก <code>i</code> คือ <code>(i + 1) % capacity</code> ซึ่งเป็น <code>i + 1</code> ตามปกติ ยกเว้นตอน <code>i</code> เป็นช่องสุดท้ายจะได้ 0</p>
+
+      <figure>
+        <svg viewBox="0 0 560 170" width="560" style="max-width:100%;height:auto" role="img" aria-label="circular queue ขนาด 5 ช่อง ช่อง 3 และ 4 เก็บ 104 และ 105 ช่อง 0 เก็บ 106 head อยู่ช่อง 3 tail อยู่ช่อง 1 ลูกศรจากท้ายอาเรย์วนกลับไปช่อง 0">
+          <defs>
+            <marker id="queue-arrow-2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+            <marker id="queue-arrow-2-wrap" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--warning)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <rect x="100" y="60" width="70" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="170" y="60" width="70" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="240" y="60" width="70" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="310" y="60" width="70" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="380" y="60" width="70" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="135" y="88" text-anchor="middle" style="fill:var(--ink);font-size:18px">106</text>
+            <text x="345" y="88" text-anchor="middle" style="fill:var(--ink);font-size:18px">104</text>
+            <text x="415" y="88" text-anchor="middle" style="fill:var(--ink);font-size:18px">105</text>
+            <text x="135" y="52" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">0</text>
+            <text x="205" y="52" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">1</text>
+            <text x="275" y="52" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">2</text>
+            <text x="345" y="52" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">3</text>
+            <text x="415" y="52" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">4</text>
+            <path d="M450 82 C 520 82, 520 20, 280 20 C 60 20, 60 82, 96 82" style="fill:none;stroke:var(--warning);stroke-width:2" marker-end="url(#queue-arrow-2-wrap)"/>
+            <text x="280" y="14" text-anchor="middle" style="fill:var(--warning);font-size:13px">(4 + 1) % 5 = 0</text>
+            <line x1="345" y1="140" x2="345" y2="110" style="stroke:var(--brand);stroke-width:2" marker-end="url(#queue-arrow-2)"/>
+            <text x="345" y="156" text-anchor="middle" style="fill:var(--ink);font-size:14px">head = 3</text>
+            <line x1="205" y1="140" x2="205" y2="110" style="stroke:var(--brand);stroke-width:2" marker-end="url(#queue-arrow-2)"/>
+            <text x="205" y="156" text-anchor="middle" style="fill:var(--ink);font-size:14px">tail = 1</text>
+            <text x="490" y="156" text-anchor="middle" style="fill:var(--muted);font-size:13px">order: 104 105 106</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ในภาพ คิวคือ 104 105 106 ตามลำดับ ถึง 106 จะอยู่ช่องที่ index น้อยกว่าก็ตาม เพราะเดินจาก <code>head</code> ไปทางขวาแล้ววนกลับ</p>
+
+      <p>มีจุดที่ต้องคิดเพิ่มหนึ่งจุด ตอนคิวว่าง <code>head == tail</code> แต่ตอนคิวเต็มทุกช่อง <code>tail</code> ก็วนมาทับ <code>head</code> พอดี ได้ <code>head == tail</code> เหมือนกัน แยกสองกรณีนี้ไม่ออก วิธีที่อ่านง่ายที่สุดคือเก็บตัวแปร <code>count</code> นับจำนวนคนในคิวไว้อีกตัว</p>
+
+      <p>โปรแกรมนี้จำลองร้านชานมที่มีเก้าอี้รอ 3 ตัว คำสั่ง <code>A x</code> คือลูกค้าหมายเลข x มาถึง ถ้าเก้าอี้เต็มเขาจะกลับไป คำสั่ง <code>S</code> คือทำชานมเสร็จหนึ่งแก้ว ให้ลูกค้าหัวคิว โปรแกรมพิมพ์ <code>head</code> กับ <code>tail</code> ออกมาด้วย จะได้เห็นการวนกลับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="tea-shop"><pre><code>#include &lt;stdio.h&gt;
+
+int seat[3];
+int capacity = 3;
+int head = 0, tail = 0, count = 0;
+
+int main()
+{
+    int q;
+    scanf("%d", &amp;q);
+    for (int i = 0; i &lt; q; i++) {
+        char command;
+        scanf(" %c", &amp;command);
+        if (command == 'A') {
+            int customer;
+            scanf("%d", &amp;customer);
+            if (count == capacity) { // (1)!
+                printf("%d leaves, no seat\n", customer);
+            } else {
+                seat[tail] = customer;
+                tail = (tail + 1) % capacity; // (2)!
+                count++;
+                printf("%d waits, head %d tail %d\n", customer, head, tail);
+            }
+        } else {
+            if (count == 0) { // (3)!
+                printf("nobody to serve\n");
+            } else {
+                int customer = seat[head];
+                head = (head + 1) % capacity;
+                count--;
+                printf("serve %d, head %d tail %d\n", customer, head, tail);
+            }
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เช็กเต็มก่อนใส่ทุกครั้ง ถ้าไม่เช็ก ลูกค้าใหม่จะไปนั่งทับคนหัวคิว</li>
+        <li>เลื่อน <code>tail</code> แบบวนกลับ <code>head</code> ก็เลื่อนด้วยสูตรเดียวกัน</li>
+        <li>เช็กว่างก่อนเอาออกทุกครั้ง เหมือน pop ของ stack</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="tea-shop" data-title="ข้อมูลเข้า"><pre><code>10
+A 101
+A 102
+A 103
+A 104
+S
+A 105
+S
+S
+S
+S
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="tea-shop" data-title="C:\code\tea_shop.exe"><pre><code>101 waits, head 0 tail 1
+102 waits, head 0 tail 2
+103 waits, head 0 tail 0
+104 leaves, no seat
+serve 101, head 1 tail 0
+105 waits, head 1 tail 1
+serve 102, head 2 tail 1
+serve 103, head 0 tail 1
+serve 105, head 1 tail 1
+nobody to serve
+</code></pre></div>
+      </div>
+
+      <p>ดูบรรทัดที่ 3 พอ 103 นั่ง <code>tail</code> วนกลับเป็น 0 ซึ่งเท่ากับ <code>head</code> ตอนนั้นคิวเต็ม ส่วนบรรทัดสุดท้ายก่อน nobody <code>head</code> กับ <code>tail</code> ก็เท่ากันที่ 1 แต่ตอนนั้นคิวว่าง ถ้าไม่มี <code>count</code> สองสถานการณ์นี้จะดูเหมือนกันทุกอย่าง ลูกค้า 105 นั่งช่อง 0 ที่ 101 เพิ่งลุกไป อาเรย์สามช่องจึงรับลูกค้าได้ไม่จำกัดตราบใดที่รอพร้อมกันไม่เกินสามคน</p>
+
+      <h2 id="deque">deque เข้าออกได้ทั้งสองหัว</h2>
+
+      <p><strong>deque</strong> อ่านว่า เด็ค ย่อมาจาก double-ended queue คือคิวที่เพิ่มและเอาออกได้ทั้งหัวและท้าย ใช้แทนได้ทั้ง stack และ queue ทำด้วย circular queue ได้เลย เพิ่มแค่สองงาน</p>
+
+      <ul>
+        <li>เพิ่มที่หัว ถอย <code>head</code> ไปหนึ่งช่องแบบวนกลับ แล้วใส่ค่า</li>
+        <li>เอาออกที่ท้าย ถอย <code>tail</code> ไปหนึ่งช่องแบบวนกลับ แล้วอ่านค่า</li>
+      </ul>
+
+      <p>การถอยแบบวนกลับต้องเขียน <code>(head - 1 + capacity) % capacity</code> ต้องบวก <code>capacity</code> ก่อน mod เพราะตอน <code>head</code> เป็น 0 ค่า <code>head - 1</code> ติดลบ และหน้า 1.2 บอกไว้แล้วว่า <code>%</code> ของเลขติดลบได้ผลติดลบ</p>
+
+      <p>ตัวอย่าง ห้องฉุกเฉินมีหมอหนึ่งคน คนไข้ทั่วไป (<code>N x</code>) ต่อท้ายคิว คนไข้อาการหนัก (<code>U x</code>) ได้ไปอยู่หัวคิว หมอเรียกคนหัวคิว (<code>D</code>) และบางครั้งคนท้ายคิวรอไม่ไหวกลับบ้านไปก่อน (<code>L</code>)</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="deque"><pre><code>#include &lt;stdio.h&gt;
+
+int deque[100000];
+int capacity = 100000;
+int head = 0, tail = 0, count = 0;
+
+void push_back(int x)
+{
+    deque[tail] = x;
+    tail = (tail + 1) % capacity;
+    count++;
+}
+
+void push_front(int x)
+{
+    head = (head - 1 + capacity) % capacity; // (1)!
+    deque[head] = x;
+    count++;
+}
+
+int pop_front(void)
+{
+    int x = deque[head];
+    head = (head + 1) % capacity;
+    count--;
+    return x;
+}
+
+int pop_back(void)
+{
+    tail = (tail - 1 + capacity) % capacity; // (2)!
+    count--;
+    return deque[tail];
+}
+
+int main()
+{
+    int q;
+    scanf("%d", &amp;q);
+    for (int i = 0; i &lt; q; i++) {
+        char command;
+        scanf(" %c", &amp;command);
+        if (command == 'N' || command == 'U') {
+            int patient;
+            scanf("%d", &amp;patient);
+            if (command == 'N') {
+                push_back(patient);
+            } else {
+                push_front(patient);
+            }
+        } else if (count == 0) {
+            printf("no patient\n");
+        } else if (command == 'D') {
+            printf("doctor sees %d\n", pop_front());
+        } else {
+            printf("%d goes home\n", pop_back());
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ถอยก่อนแล้วค่อยใส่ เพราะ <code>head</code> ชี้คนหัวคิวที่มีอยู่แล้ว ช่องว่างอยู่ก่อนหน้ามัน ครั้งแรกที่เรียก <code>head</code> เป็น 0 จะวนไปช่อง 99999</li>
+        <li>กลับด้านกับ <code>push_back</code> ทุกอย่าง <code>tail</code> ชี้ช่องว่าง คนท้ายคิวอยู่ช่องก่อนหน้ามัน</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="deque" data-title="ข้อมูลเข้า"><pre><code>9
+N 21
+N 22
+U 23
+N 24
+D
+L
+D
+D
+D
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="deque" data-title="C:\code\deque.exe"><pre><code>doctor sees 23
+24 goes home
+doctor sees 21
+doctor sees 22
+no patient
+</code></pre></div>
+      </div>
+
+      <p>หลังสี่คำสั่งแรก คิวคือ 23 21 22 24 คนไข้ 23 มาทีหลังแต่ได้ตรวจก่อน และ 24 ออกทางท้ายโดยไม่ต้องรอ ในบทที่ 17 จะมี <code>deque</code> สำเร็จรูปของ C++ ให้ใช้ แต่ข้างในทำงานแบบเดียวกับที่เขียนเองตรงนี้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forget-head">แบบที่ 1 ลืมเลื่อน head</h3>
+
+      <p>เขียน <code>dequeue</code> ให้คืนค่าหัวคิวแต่ลืมบรรทัด <code>head++;</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="forget-head"><pre><code>#include &lt;stdio.h&gt;
+
+int queue[100000];
+int head = 0, tail = 0;
+
+void enqueue(int x)
+{
+    queue[tail] = x;
+    tail++;
+}
+
+int dequeue(void)
+{
+    return queue[head];
+}
+
+int main()
+{
+    enqueue(11);
+    enqueue(12);
+    enqueue(13);
+    printf("dequeue = %d\n", dequeue());
+    printf("dequeue = %d\n", dequeue());
+    printf("dequeue = %d\n", dequeue());
+    printf("size = %d\n", tail - head);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="forget-head" data-title="C:\code\queue.exe"><pre><code>dequeue = 11
+dequeue = 11
+dequeue = 11
+size = 3
+</code></pre></div>
+
+      <p>คนหัวคิวได้ชานมซ้ำไม่จบ คิวไม่สั้นลงเลย ถ้าโปรแกรมมีลูป <code>while (!is_empty())</code> แบบโปรแกรม queue-basics ลูปจะไม่มีวันหยุด เพราะ <code>head</code> ไม่มีวันไล่ทัน <code>tail</code> ฟังก์ชันนี้กลายเป็น front ไปแล้ว ไม่ใช่ dequeue</p>
+
+      <h3 id="full-looks-empty">แบบที่ 2 คิววงกลมเต็มแล้วดูเหมือนว่าง</h3>
+
+      <p>ตัด <code>count</code> ทิ้งแล้วใช้ <code>head == tail</code> ตรวจว่าว่างแบบคิวธรรมดา</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="full-looks-empty"><pre><code>#include &lt;stdio.h&gt;
+
+int seat[3];
+int capacity = 3;
+int head = 0, tail = 0;
+
+void enqueue(int x)
+{
+    seat[tail] = x;
+    tail = (tail + 1) % capacity;
+}
+
+int is_empty(void)
+{
+    return head == tail;
+}
+
+int main()
+{
+    enqueue(101);
+    printf("after 101: empty = %d\n", is_empty());
+    enqueue(102);
+    printf("after 102: empty = %d\n", is_empty());
+    enqueue(103);
+    printf("after 103: empty = %d\n", is_empty());
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="full-looks-empty" data-title="C:\code\tea_shop.exe"><pre><code>after 101: empty = 0
+after 102: empty = 0
+after 103: empty = 1
+</code></pre></div>
+
+      <p>มีคนรอครบสามคน แต่โปรแกรมบอกว่าว่าง ร้านจะไม่ทำชานมให้ใครเลย และถ้ามีลูกค้าคนที่สี่ เขาจะได้นั่งทับลูกค้า 101 เพราะไม่มีอะไรบอกว่าเต็ม ใช้ <code>count</code> เสมอ</p>
+
+      <h3 id="negative-mod">แบบที่ 3 ถอยหลังโดยไม่บวก capacity</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="negative-mod"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int capacity = 8;
+    int head = 0;
+    printf("%d\n", (head - 1) % capacity);
+    printf("%d\n", (head - 1 + capacity) % capacity);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="negative-mod" data-title="C:\code\mod.exe"><pre><code>-1
+7
+</code></pre></div>
+
+      <p>ถ้าใช้สูตรแรกใน <code>push_front</code> ครั้งแรกจะเขียนลง <code>deque[-1]</code> ซึ่งอยู่นอกอาเรย์ ผลเป็นได้ทุกแบบในหน้า 5.5 ตั้งแต่ค่าดูปกติไปจนถึงโปรแกรมพัง และ compiler ไม่เตือนอะไรเลย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>queue เข้าก่อนออกก่อน เข้าทางท้าย ออกทางหัว</li>
+        <li>queue ด้วยอาเรย์ใช้ <code>head</code> กับ <code>tail</code> ที่เดินไปข้างหน้าอย่างเดียว อาเรย์ต้องมีช่องเท่าจำนวน enqueue ทั้งหมด</li>
+        <li>ที่จำกัดหรือวนซ้ำมาก ใช้ circular queue เลื่อนด้วย <code>(i + 1) % capacity</code> และนับ <code>count</code> แยกว่างกับเต็ม</li>
+        <li>deque เพิ่มลบได้ทั้งสองหัว ถอยด้วย <code>(i - 1 + capacity) % capacity</code></li>
+        <li>dequeue ต้องเลื่อน <code>head</code> เช็กว่างก่อนเอาออก และเช็กเต็มก่อนใส่</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

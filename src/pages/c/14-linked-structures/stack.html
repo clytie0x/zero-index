@@ -1,0 +1,516 @@
+<article class="doc">
+      <h1>14.4 stack</h1>
+
+      <p>จานในโรงอาหารวางซ้อนกันเป็นตั้ง จานที่ล้างเสร็จวางไว้บนสุด คนมาหยิบก็หยิบจากบนสุด จานที่วางทีหลังจึงถูกหยิบออกก่อน ของที่เก็บแบบนี้เรียกว่า <strong>stack</strong> (กองซ้อน) หลักของมันมีชื่อว่า LIFO ย่อมาจาก last in, first out คือเข้าทีหลัง ออกก่อน</p>
+
+      <p>stack ฟังดูง่ายจนไม่น่าต้องมีชื่อเรียก แต่โจทย์จำนวนมากที่ดูไม่เกี่ยวกัน กลับแก้ได้ด้วย stack ทั้งนั้น เช่น ปุ่ม undo ที่ย้อนสิ่งที่ทำล่าสุดก่อน ตรวจว่าวงเล็บในสูตรเปิดปิดถูกคู่ไหม และคำนวณนิพจน์ทางคณิตศาสตร์ ในหน้า 9.1 น้องเห็น stack มาแล้วหนึ่งตัว คือ call stack ที่เก็บฟังก์ชันที่เรียกซ้อนกัน</p>
+
+      <h2 id="operations">งานของ stack</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ชื่อ</th><th>ทำอะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>push</td><td>วางของใหม่ไว้บนสุด</td></tr>
+            <tr><td>pop</td><td>หยิบของบนสุดออก</td></tr>
+            <tr><td>top</td><td>ดูของบนสุดโดยไม่หยิบออก</td></tr>
+            <tr><td>empty</td><td>ถามว่า stack ว่างไหม</td></tr>
+            <tr><td>size</td><td>ถามว่ามีของกี่ชิ้น</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทุกงานทำที่ด้านบนด้านเดียว ไม่มีการแตะของที่อยู่ข้างล่าง จึงเก็บด้วยอาเรย์ได้ง่ายมาก ให้ช่อง 0 เป็นก้นตั้ง และใช้ตัวแปร <code>size</code> นับว่ามีของกี่ชิ้น ของบนสุดจึงอยู่ช่อง <code>size - 1</code> เสมอ และช่องว่างช่องถัดไปคือช่อง <code>size</code></p>
+
+      <figure>
+        <svg viewBox="0 0 560 230" width="560" style="max-width:100%;height:auto" role="img" aria-label="stack ในอาเรย์ ช่อง 0 1 2 เก็บ 11 12 13 size เป็น 3 ของบนสุดอยู่ช่อง 2 push 14 ลงช่อง 3 แล้ว size เป็น 4 pop หยิบช่อง 3 ออกแล้ว size กลับเป็น 3">
+          <defs>
+            <marker id="stack-push-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <rect x="80" y="160" width="100" height="36" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="80" y="124" width="100" height="36" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="80" y="88" width="100" height="36" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="80" y="52" width="100" height="36" style="fill:none;stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 4"/>
+            <rect x="80" y="16" width="100" height="36" style="fill:none;stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 4"/>
+            <text x="130" y="184" text-anchor="middle" style="fill:var(--ink);font-size:18px">11</text>
+            <text x="130" y="148" text-anchor="middle" style="fill:var(--ink);font-size:18px">12</text>
+            <text x="130" y="112" text-anchor="middle" style="fill:var(--ink);font-size:18px">13</text>
+            <text x="66" y="184" text-anchor="end" style="fill:var(--brand-text);font-size:13px">0</text>
+            <text x="66" y="148" text-anchor="end" style="fill:var(--brand-text);font-size:13px">1</text>
+            <text x="66" y="112" text-anchor="end" style="fill:var(--brand-text);font-size:13px">2</text>
+            <text x="66" y="76" text-anchor="end" style="fill:var(--brand-text);font-size:13px">3</text>
+            <text x="66" y="40" text-anchor="end" style="fill:var(--brand-text);font-size:13px">4</text>
+            <text x="194" y="112" style="fill:var(--ink);font-size:14px">top, size - 1 = 2</text>
+            <text x="194" y="76" style="fill:var(--muted);font-size:14px">next free cell, size = 3</text>
+            <text x="130" y="220" text-anchor="middle" style="fill:var(--muted);font-size:13px">bottom</text>
+            <line x1="450" y1="40" x2="450" y2="66" style="stroke:var(--brand);stroke-width:2" marker-end="url(#stack-push-arrow)"/>
+            <text x="450" y="30" text-anchor="middle" style="fill:var(--ink);font-size:14px">push</text>
+            <line x1="500" y1="70" x2="500" y2="44" style="stroke:var(--brand);stroke-width:2" marker-end="url(#stack-push-arrow)"/>
+            <text x="500" y="88" text-anchor="middle" style="fill:var(--ink);font-size:14px">pop</text>
+            <text x="475" y="130" text-anchor="middle" style="fill:var(--muted);font-size:13px">only at the top</text>
+          </g>
+        </svg>
+      </figure>
+
+      <h2 id="array-stack">stack ด้วยอาเรย์</h2>
+
+      <p>เก็บอาเรย์กับ <code>size</code> ไว้นอก <code>main</code> แล้วเขียนแต่ละงานเป็นฟังก์ชันสั้นๆ ฟังก์ชันใช้ตัวแปร global ได้โดยไม่ต้องส่งเข้าไป ตามที่เห็นในหน้า 8.4</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="plates"><pre><code>#include &lt;stdio.h&gt;
+
+int stack[100000];
+int size = 0;
+
+void push(int x)
+{
+    stack[size] = x; // (1)!
+    size++;
+}
+
+int pop(void)
+{
+    size--; // (2)!
+    return stack[size];
+}
+
+int top(void)
+{
+    return stack[size - 1];
+}
+
+int is_empty(void)
+{
+    return size == 0;
+}
+
+int main()
+{
+    push(11);
+    push(12);
+    push(13);
+    printf("top = %d\n", top());
+    printf("pop = %d\n", pop());
+    printf("pop = %d\n", pop());
+    push(14);
+    printf("size = %d\n", size);
+    while (!is_empty()) { // (3)!
+        printf("pop = %d\n", pop());
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใส่ลงช่องว่างช่องแรก คือช่อง <code>size</code> แล้วค่อยเพิ่ม <code>size</code> เขียนแยกสองบรรทัดตามที่หน้า 1.2 แนะนำ ไม่รวบเป็น <code>stack[size++]</code></li>
+        <li>ลด <code>size</code> ก่อน ช่อง <code>size</code> ใหม่จึงเป็นของบนสุดพอดี ค่าในช่องนั้นยังค้างอยู่ แต่ถือว่าไม่อยู่ใน stack แล้ว เหมือนตอนลบในหน้า 5.5</li>
+        <li>หยิบจนหมดตั้ง ได้ของออกมาในลำดับกลับกันกับที่วาง</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="plates" data-title="C:\code\plates.exe"><pre><code>top = 13
+pop = 13
+pop = 12
+size = 2
+pop = 14
+pop = 11
+</code></pre></div>
+
+      <p>ทุกงานทำงานไม่กี่คำสั่ง ไม่ว่า stack จะมีของกี่ชิ้น สิ่งที่ฟังก์ชันพวกนี้<strong>ไม่ได้ตรวจ</strong>คือ pop ตอนว่าง และ push ตอนอาเรย์เต็ม เราจะกลับมาดูสองเรื่องนี้ในส่วนลองทำให้พัง</p>
+
+      <p>stack ทำด้วย linked list ก็ได้ push คือ <code>push_front</code> ในหน้า 14.1 และ pop คือลบตัวหัวแบบในหน้า 14.2 ใช้เมื่อไม่รู้ล่วงหน้าว่าจะมีของมากสุดกี่ชิ้น แต่ในโจทย์แข่งขันขอบเขตบอกไว้เสมอ แบบอาเรย์จึงพอและเขียนสั้นกว่า</p>
+
+      <h2 id="reverse">กลับตัวอักษรในแต่ละคำ</h2>
+
+      <p>อ่านคำทีละคำ push ตัวอักษรทุกตัวลง stack แล้ว pop ออกมาพิมพ์ ตัวสุดท้ายที่ใส่จะออกมาก่อน คำจึงกลับหลังโดยอัตโนมัติ งานนี้เขียนด้วยลูปถอยหลังแบบหน้า 6.5 ก็ได้ แต่ความคิด "ใส่ตามลำดับ แล้วเอาออกกลับลำดับ" คือหัวใจของ stack ที่ใช้ต่อในหัวข้อถัดไป</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="reverse-words"><pre><code>#include &lt;stdio.h&gt;
+
+char stack[101];
+int size = 0;
+
+void push(char c)
+{
+    stack[size] = c;
+    size++;
+}
+
+char pop(void)
+{
+    size--;
+    return stack[size];
+}
+
+int main()
+{
+    char word[101];
+    int first = 1;
+    while (scanf("%100s", word) == 1) {
+        for (int i = 0; word[i] != '\0'; i++) {
+            push(word[i]);
+        }
+        if (!first) {
+            printf(" ");
+        }
+        first = 0;
+        while (size &gt; 0) {
+            printf("%c", pop());
+        }
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="reverse-words" data-title="ข้อมูลเข้า"><pre><code>stack is last in first out
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="reverse-words" data-title="C:\code\reverse_words.exe"><pre><code>kcats si tsal ni tsrif tuo
+</code></pre></div>
+      </div>
+
+      <h2 id="brackets">ตรวจวงเล็บ</h2>
+
+      <p>สูตร <code>{[()()]}</code> วงเล็บถูกคู่ แต่ <code>([)]</code> ผิด ถึงจะมีวงเล็บเปิดปิดอย่างละสองตัวเท่ากันก็ตาม การนับอย่างเดียวจึงไม่พอ กฎจริงคือ <strong>วงเล็บปิดทุกตัวต้องคู่กับวงเล็บเปิดตัวล่าสุดที่ยังไม่ถูกปิด</strong> คำว่า "ล่าสุด" บอกว่าต้องใช้ stack</p>
+
+      <ol>
+        <li>เจอวงเล็บเปิด push ลง stack</li>
+        <li>เจอวงเล็บปิด ถ้า stack ว่าง แปลว่าไม่มีวงเล็บเปิดให้คู่ ผิด ถ้าตัวบนสุดเป็นวงเล็บเปิดชนิดเดียวกัน pop ออก ถ้าเป็นคนละชนิด ผิด</li>
+        <li>อ่านครบแล้ว stack ต้องว่าง ถ้ายังเหลือ แปลว่ามีวงเล็บเปิดที่ไม่ได้ปิด ผิด</li>
+      </ol>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>อ่าน</th><th>ทำ</th><th>stack หลังทำ (ซ้ายคือก้น)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>(</code></td><td>push</td><td><code>(</code></td></tr>
+            <tr><td><code>[</code></td><td>push</td><td><code>( [</code></td></tr>
+            <tr><td><code>)</code></td><td>บนสุดคือ <code>[</code> ไม่ใช่ <code>(</code></td><td>ผิด หยุดได้เลย</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="brackets"><pre><code>#include &lt;stdio.h&gt;
+
+char stack[100001];
+int size = 0;
+
+char opening_of(char c) // (1)!
+{
+    if (c == ')') {
+        return '(';
+    } else if (c == ']') {
+        return '[';
+    }
+    return '{';
+}
+
+int is_balanced(char s[])
+{
+    size = 0; // (2)!
+    for (int i = 0; s[i] != '\0'; i++) {
+        char c = s[i];
+        if (c == '(' || c == '[' || c == '{') {
+            stack[size] = c;
+            size++;
+        } else {
+            if (size == 0) { // (3)!
+                return 0;
+            }
+            if (stack[size - 1] != opening_of(c)) {
+                return 0;
+            }
+            size--;
+        }
+    }
+    return size == 0; // (4)!
+}
+
+int main()
+{
+    char s[100001];
+    while (scanf("%100000s", s) == 1) {
+        if (is_balanced(s)) {
+            printf("YES\n");
+        } else {
+            printf("NO\n");
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>บอกว่าวงเล็บปิดแต่ละตัวต้องคู่กับวงเล็บเปิดตัวไหน</li>
+        <li>เริ่ม stack ว่างใหม่ทุกครั้ง ถ้าลืม ของที่ค้างจากบรรทัดก่อนจะมาปนกับบรรทัดนี้</li>
+        <li>เช็กว่าง <strong>ก่อน</strong> ดูตัวบนสุดเสมอ ถ้า stack ว่างแล้วไปอ่าน <code>stack[size - 1]</code> คือ <code>stack[-1]</code> ซึ่งไม่มีอยู่จริง</li>
+        <li>ปิดครบทุกตัวหรือยัง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="brackets" data-title="ข้อมูลเข้า"><pre><code>{[()()]}
+([)]
+(()
+())
+)(
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="brackets" data-title="C:\code\brackets.exe"><pre><code>YES
+NO
+NO
+NO
+NO
+</code></pre></div>
+      </div>
+
+      <p>สี่บรรทัดหลังผิดคนละแบบ <code>([)]</code> คู่ผิดชนิด <code>(()</code> เหลือวงเล็บเปิด <code>())</code> ปิดตอน stack ว่าง และ <code>)(</code> มีวงเล็บเปิดปิดเท่ากันแต่ผิดลำดับ ชุดทดสอบของโจทย์แนวนี้มีครบทุกแบบเสมอ ทดสอบของตัวเองให้ครบด้วย</p>
+
+      <h2 id="postfix">คำนวณ postfix</h2>
+
+      <p>นิพจน์ที่เราเขียนกันปกติ เช่น <code>(8 + 2 * 5) / (1 + 3 * 2 - 4)</code> เรียกว่า <strong>infix</strong> คือเครื่องหมายอยู่ระหว่างตัวเลข ต้องรู้ลำดับคูณก่อนบวก และต้องมีวงเล็บ คอมพิวเตอร์คำนวณตรงๆ ได้ยาก อีกแบบหนึ่งคือ <strong>postfix</strong> ที่เขียนเครื่องหมายไว้<strong>หลัง</strong>ตัวเลขสองตัวที่มันใช้ นิพจน์เดียวกันเขียนเป็น postfix ได้ว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>8 2 5 * + 1 3 2 * + 4 - /
+</code></pre></div>
+
+      <p>postfix ไม่ต้องมีวงเล็บ และไม่ต้องจำลำดับการคำนวณเลย อ่านจากซ้ายไปขวาด้วย stack ตามกฎสองข้อ</p>
+
+      <ol>
+        <li>เจอตัวเลข push</li>
+        <li>เจอเครื่องหมาย pop สองครั้ง ตัวที่ออกมาก่อนคือตัว<strong>ขวา</strong> ตัวที่ออกทีหลังคือตัว<strong>ซ้าย</strong> คำนวณ ซ้าย เครื่องหมาย ขวา แล้ว push ผลกลับ</li>
+      </ol>
+
+      <p>อ่านครบแล้วจะเหลือค่าเดียวใน stack คือคำตอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>อ่าน</th><th>ทำ</th><th>stack หลังทำ (ซ้ายคือก้น)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>8</code> <code>2</code> <code>5</code></td><td>push สามตัว</td><td>8 2 5</td></tr>
+            <tr><td><code>*</code></td><td>2 * 5 = 10</td><td>8 10</td></tr>
+            <tr><td><code>+</code></td><td>8 + 10 = 18</td><td>18</td></tr>
+            <tr><td><code>1</code> <code>3</code> <code>2</code></td><td>push สามตัว</td><td>18 1 3 2</td></tr>
+            <tr><td><code>*</code></td><td>3 * 2 = 6</td><td>18 1 6</td></tr>
+            <tr><td><code>+</code></td><td>1 + 6 = 7</td><td>18 7</td></tr>
+            <tr><td><code>4</code></td><td>push</td><td>18 7 4</td></tr>
+            <tr><td><code>-</code></td><td>7 - 4 = 3</td><td>18 3</td></tr>
+            <tr><td><code>/</code></td><td>18 / 3 = 6</td><td>6</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>โปรแกรมอ่านทีละคำด้วย <code>%s</code> เพราะตัวเลขมีหลายหลักได้ ถ้าตัวแรกของคำเป็นเลขโดด แปลงทั้งคำเป็นตัวเลขแบบหน้า 6.1 ถ้าไม่ใช่ก็เป็นเครื่องหมาย ใช้ <code>long long</code> เพราะผลคูณต่อกันหลายครั้งโตเร็ว</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="postfix"><pre><code>#include &lt;stdio.h&gt;
+
+long long stack[1000];
+int size = 0;
+
+void push(long long x)
+{
+    stack[size] = x;
+    size++;
+}
+
+long long pop(void)
+{
+    size--;
+    return stack[size];
+}
+
+int main()
+{
+    char token[20];
+    while (scanf("%19s", token) == 1) {
+        if (token[0] &gt;= '0' &amp;&amp; token[0] &lt;= '9') {
+            long long number = 0;
+            for (int i = 0; token[i] != '\0'; i++) {
+                number = number * 10 + (token[i] - '0');
+            }
+            push(number);
+        } else {
+            long long right = pop(); // (1)!
+            long long left = pop();
+            if (token[0] == '+') {
+                push(left + right);
+            } else if (token[0] == '-') {
+                push(left - right);
+            } else if (token[0] == '*') {
+                push(left * right);
+            } else {
+                push(left / right);
+            }
+        }
+    }
+    printf("%lld\n", pop());
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตัวที่ push ทีหลังออกก่อน ตัวแรกที่ pop ได้จึงเป็นตัวขวา บวกกับคูณสลับกันได้ แต่ลบกับหารสลับไม่ได้</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="postfix" data-title="ข้อมูลเข้า"><pre><code>8 2 5 * + 1 3 2 * + 4 - /
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="postfix" data-title="C:\code\postfix.exe"><pre><code>6
+</code></pre></div>
+      </div>
+
+      <p>การหารใช้ <code>/</code> ของภาษา C ตรงๆ จึงตัดเศษทิ้งไปทาง 0 แบบหน้า 1.2 ถ้าโจทย์กำหนดการหารแบบอื่นต้องเขียนเพิ่มเอง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="swap-operands">แบบที่ 1 pop ตัวซ้ายก่อน</h3>
+
+      <p>ในโปรแกรม postfix สลับสองบรรทัดเป็น <code>long long left = pop();</code> แล้วตามด้วย <code>long long right = pop();</code> ป้อนนิพจน์ <code>10 2 -</code> ซึ่งควรได้ 8</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="swap-operands"><pre><code>#include &lt;stdio.h&gt;
+
+long long stack[1000];
+int size = 0;
+
+void push(long long x)
+{
+    stack[size] = x;
+    size++;
+}
+
+long long pop(void)
+{
+    size--;
+    return stack[size];
+}
+
+int main()
+{
+    char token[20];
+    while (scanf("%19s", token) == 1) {
+        if (token[0] &gt;= '0' &amp;&amp; token[0] &lt;= '9') {
+            long long number = 0;
+            for (int i = 0; token[i] != '\0'; i++) {
+                number = number * 10 + (token[i] - '0');
+            }
+            push(number);
+        } else {
+            long long left = pop();
+            long long right = pop();
+            if (token[0] == '+') {
+                push(left + right);
+            } else if (token[0] == '-') {
+                push(left - right);
+            } else if (token[0] == '*') {
+                push(left * right);
+            } else {
+                push(left / right);
+            }
+        }
+    }
+    printf("%lld\n", pop());
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="swap-operands" data-title="ข้อมูลเข้า"><pre><code>10 2 -
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="swap-operands" data-title="C:\code\postfix.exe"><pre><code>-8
+</code></pre></div>
+      </div>
+
+      <p>ได้ 2 - 10 แทน 10 - 2 บั๊กนี้หลบได้ถ้าทดสอบแค่ <code>3 4 +</code> หรือ <code>3 4 *</code> เพราะบวกกับคูณสลับข้างแล้วได้เท่าเดิม ทดสอบเครื่องหมายลบและหารด้วยเสมอ</p>
+
+      <h3 id="pop-empty">แบบที่ 2 pop ตอน stack ว่าง</h3>
+
+      <p>โปรแกรม postfix เชื่อว่าข้อมูลเข้าถูกต้องเสมอ ลองป้อนนิพจน์ที่ผิด เช่น <code>3 +</code> ที่มีตัวเลขไม่พอ หรือ <code>2 3</code> ที่ไม่มีเครื่องหมาย บนเครื่องที่เขียนเอกสารนี้ <code>3 +</code> ได้ <code>3</code> และ <code>2 3</code> ได้ <code>3</code> ไม่มี error ไม่พัง ดูเหมือนคำตอบปกติ</p>
+
+      <p>กรณี <code>3 +</code> pop ครั้งที่สองเกิดตอน <code>size</code> เป็น 0 จึงลดเป็น -1 แล้วอ่าน <code>stack[-1]</code> ซึ่งอยู่นอกอาเรย์ บนเครื่องนี้ตรงนั้นบังเอิญเป็น 0 จึงได้ 0 + 3 แต่จะเป็นค่าอะไรก็ได้ตามหน้า 5.5 กรณี <code>2 3</code> ไม่มีอะไรผิดกฎของภาษา แค่ <code>printf</code> หยิบตัวบนสุดคือ 3 ออกมา แล้วไม่มีใครสังเกตว่ายังมี 2 ค้างอยู่</p>
+
+      <p>ถ้าโจทย์รับประกันว่าข้อมูลเข้าถูกต้อง ไม่ต้องเช็กก็ได้ แต่ถ้าโจทย์ให้บอกว่านิพจน์ถูกหรือผิด หรือเวลาที่หาบั๊กของตัวเองไม่เจอ ให้เช็กก่อน pop ทุกครั้งแบบนี้</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="postfix-safe"><pre><code>#include &lt;stdio.h&gt;
+
+long long stack[1000];
+int size = 0;
+
+void push(long long x)
+{
+    stack[size] = x;
+    size++;
+}
+
+long long pop(void)
+{
+    size--;
+    return stack[size];
+}
+
+int main()
+{
+    char token[20];
+    while (scanf("%19s", token) == 1) {
+        if (token[0] &gt;= '0' &amp;&amp; token[0] &lt;= '9') {
+            long long number = 0;
+            for (int i = 0; token[i] != '\0'; i++) {
+                number = number * 10 + (token[i] - '0');
+            }
+            push(number);
+        } else {
+            if (size &lt; 2) { // (1)!
+                printf("invalid: not enough numbers for %s\n", token);
+                return 0;
+            }
+            long long right = pop();
+            long long left = pop();
+            if (token[0] == '+') {
+                push(left + right);
+            } else if (token[0] == '-') {
+                push(left - right);
+            } else if (token[0] == '*') {
+                push(left * right);
+            } else {
+                push(left / right);
+            }
+        }
+    }
+    if (size != 1) { // (2)!
+        printf("invalid: %d numbers left\n", size);
+        return 0;
+    }
+    printf("%lld\n", pop());
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เครื่องหมายต้องการตัวเลขสองตัว ถ้ามีไม่ถึง หยุดเลย <code>return 0;</code> ใน <code>main</code> คือจบโปรแกรม</li>
+        <li>อ่านครบแล้วต้องเหลือค่าเดียวพอดี</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="postfix-safe" data-title="ข้อมูลเข้า"><pre><code>3 +
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="postfix-safe" data-title="C:\code\postfix.exe"><pre><code>invalid: not enough numbers for +
+</code></pre></div>
+      </div>
+
+      <p>อีกด้านหนึ่งคือ push ตอนอาเรย์เต็ม ซึ่งจะเขียนเลยท้ายอาเรย์ไปทับของอื่น ผลเหมือนอาการที่ 2 ในหน้า 5.5 วิธีป้องกันคือคิดจากขอบเขตของโจทย์ว่า stack สูงได้มากสุดเท่าไร แล้วประกาศอาเรย์ให้พอ เช่น ตรวจวงเล็บของสตริงยาวแสนตัว stack สูงได้ถึงแสนเมื่อทุกตัวเป็นวงเล็บเปิด โปรแกรม brackets จึงประกาศ 100001 ช่อง ถ้าคิดแล้วไม่แน่ใจ ให้ <code>push</code> เช็ก <code>size</code> กับขนาดอาเรย์ก่อนใส่</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>stack เข้าทีหลังออกก่อน ทุกงานทำที่ด้านบนด้านเดียว</li>
+        <li>ทำด้วยอาเรย์กับ <code>size</code> push ใส่ช่อง <code>size</code> แล้วเพิ่ม pop ลด <code>size</code> แล้วอ่านช่อง <code>size</code> ตัวบนสุดคือช่อง <code>size - 1</code></li>
+        <li>ใช้เมื่อต้องจับคู่กับ "ตัวล่าสุดที่ยังค้างอยู่" เช่น วงเล็บ หรือเมื่อต้องย้อนลำดับ</li>
+        <li>ตรวจวงเล็บ เช็ก stack ว่างก่อนดูตัวบนสุด และจบแล้ว stack ต้องว่าง</li>
+        <li>postfix pop ได้ตัวขวาก่อนตัวซ้าย ทดสอบเครื่องหมายลบและหารเสมอ</li>
+        <li>pop ตอนว่างอาจไม่พังแต่ได้ค่ามั่ว ถ้าข้อมูลเข้าอาจผิด ต้องเช็ก <code>size</code> ก่อน</li>
+      </ul>
+    </article>

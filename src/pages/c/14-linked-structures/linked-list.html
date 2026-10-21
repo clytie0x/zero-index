@@ -1,0 +1,526 @@
+<article class="doc">
+      <h1>14.1 linked list</h1>
+
+      <p>ในหน้า 5.5 เราแทรกคนเข้าหัวแถวที่เก็บในอาเรย์ ทุกคนในแถวต้องถอยหลังหนึ่งช่อง แถวยาว N คน การแทรกครั้งเดียวต้องเลื่อน N ครั้ง ถ้าโจทย์สั่งแทรกหัวแถวหนึ่งแสนครั้ง ก็ต้องเลื่อนรวมกันราว 5 × 10<sup>9</sup> ครั้ง ไม่ทันเวลาแน่นอน ปัญหาอยู่ที่อาเรย์บังคับให้ของที่อยู่ติดกันในแถว ต้องอยู่ช่องติดกันในหน่วยความจำด้วย</p>
+
+      <p>ลองนึกถึงขบวนรถไฟ ตู้แต่ละตู้ไม่ได้จอดอยู่ในช่องที่ตีเส้นไว้ แต่ละตู้แค่มีขอเกี่ยวไปยังตู้ถัดไป จะพ่วงตู้ใหม่ไว้หน้าขบวนก็แค่เกี่ยวขอของตู้ใหม่เข้ากับตู้แรก ตู้อื่นไม่ต้องขยับเลย โครงสร้างข้อมูลแบบนี้เรียกว่า <strong>linked list</strong> (รายการโยง) หน้านี้สร้าง linked list ด้วย <code>struct</code> <code>malloc</code> และ <code>-&gt;</code> จากบทที่ 10 และ 11</p>
+
+      <h2 id="node">node หนึ่งตู้</h2>
+
+      <p>ข้อมูลหนึ่งตัวใน linked list เรียกว่า <strong>node</strong> (โหนด) node หนึ่งเก็บสองอย่าง คือ ค่าของมัน กับ pointer ที่ชี้ไป node ถัดไป node สุดท้ายไม่มีตัวถัดไป จึงให้ pointer เป็น <code>NULL</code> และเราจำแค่ pointer ที่ชี้ node แรก เรียกว่า <code>head</code> (หัว) ที่เหลือเดินตาม pointer ไปเอา</p>
+
+      <figure>
+        <svg viewBox="0 0 660 120" width="660" style="max-width:100%;height:auto" role="img" aria-label="head ชี้ node แรกที่เก็บ 3 node แรกชี้ node ที่เก็บ 9 ซึ่งชี้ node ที่เก็บ 2 ซึ่งชี้ node ที่เก็บ 7 node สุดท้ายชี้ NULL">
+          <defs>
+            <marker id="ll-arrow-1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="70" y="18" text-anchor="middle" style="fill:var(--ink);font-size:15px">head</text>
+            <line x1="70" y1="24" x2="70" y2="46" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-1)"/>
+            <rect x="40" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="100" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="180" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="240" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="320" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="380" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="460" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="520" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <text x="70" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <text x="210" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">9</text>
+            <text x="350" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <text x="490" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">7</text>
+            <circle cx="118" cy="72" r="4" style="fill:var(--brand)"/>
+            <circle cx="258" cy="72" r="4" style="fill:var(--brand)"/>
+            <circle cx="398" cy="72" r="4" style="fill:var(--brand)"/>
+            <circle cx="538" cy="72" r="4" style="fill:var(--brand)"/>
+            <line x1="118" y1="72" x2="177" y2="72" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-1)"/>
+            <line x1="258" y1="72" x2="317" y2="72" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-1)"/>
+            <line x1="398" y1="72" x2="457" y2="72" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-1)"/>
+            <line x1="538" y1="72" x2="586" y2="72" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-1)"/>
+            <text x="592" y="77" style="fill:var(--muted);font-size:15px">NULL</text>
+            <text x="70" y="112" text-anchor="middle" style="fill:var(--muted);font-size:13px">value</text>
+            <text x="118" y="112" text-anchor="middle" style="fill:var(--muted);font-size:13px">next</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>กล่องซ้ายของแต่ละ node คือค่า กล่องขวาคือ pointer ชื่อ <code>next</code> ลูกศรแปลว่า "เก็บที่อยู่ของ node นั้นไว้" node ทั้งสี่ไม่จำเป็นต้องอยู่ติดกันในหน่วยความจำ จะกระจัดกระจายแค่ไหนก็ได้ ขอแค่ลูกศรต่อกันครบ</p>
+
+      <p>struct ของ node คือแบบเดียวกับที่ประกาศไว้ในหน้า 11.4</p>
+
+      <div class="code" data-lang="c" data-annotate><pre><code>typedef struct Node { // (1)!
+    int value;
+    struct Node *next; // (2)!
+} Node;
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตั้งชื่อ struct ว่า <code>Node</code> ไว้หลังคำว่า <code>struct</code> ด้วย และใช้ <code>typedef</code> ให้ชื่อ <code>Node</code> เฉยๆ ใช้แทน <code>struct Node</code> ได้</li>
+        <li>ตรงนี้ต้องเขียนเต็มว่า <code>struct Node *</code> เพราะชื่อสั้น <code>Node</code> จาก <code>typedef</code> ยังไม่เกิด ถ้าเขียนแบบสั้นจะเจอ <code>unknown type name 'Node'</code> ตามส่วนลองทำให้พังของหน้า 11.4</li>
+      </ol>
+
+      <p>หน้า 11.4 ต่อ node สองตัวที่เป็นตัวแปรธรรมดาใน <code>main</code> แต่ลิสต์จริงต้องยาวได้ตามข้อมูลเข้า ซึ่งไม่รู้ล่วงหน้าว่ากี่ตัว จึงต้องขอ node ใหม่ระหว่างรันด้วย <code>malloc</code> จากบทที่ 10 node ที่ได้จาก <code>malloc</code> อยู่จนกว่าจะ <code>free</code> ไม่หายไปตอนฟังก์ชันที่สร้างมันจบ</p>
+
+      <h2 id="by-hand">ต่อสาม node ด้วยมือ</h2>
+
+      <p>เริ่มจากขบวนรถไฟสามตู้ หมายเลข 3 9 และ 2 ขอหน่วยความจำให้แต่ละตู้ด้วย <code>malloc</code> แล้วเกี่ยว <code>next</code> ทีละตู้</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="three-cars"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+int main()
+{
+    Node *a = malloc(sizeof(Node)); // (1)!
+    Node *b = malloc(sizeof(Node));
+    Node *c = malloc(sizeof(Node));
+    a-&gt;value = 3;
+    b-&gt;value = 9;
+    c-&gt;value = 2;
+    a-&gt;next = b; // (2)!
+    b-&gt;next = c;
+    c-&gt;next = NULL; // (3)!
+    Node *head = a;
+    for (Node *p = head; p != NULL; p = p-&gt;next) { // (4)!
+        printf("%d ", p-&gt;value);
+    }
+    printf("\n");
+    free(a); // (5)!
+    free(b);
+    free(c);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ขอพื้นที่ขนาดหนึ่ง <code>Node</code> แล้วได้ที่อยู่ของพื้นที่นั้นกลับมา <code>malloc</code> อยู่ใน <code>stdlib.h</code></li>
+        <li>เก็บที่อยู่ของตู้ 9 ไว้ใน <code>next</code> ของตู้ 3 นี่คือการเกี่ยวขอ</li>
+        <li>ตู้สุดท้ายต้องบอกว่าไม่มีตู้ต่อแล้ว ห้ามลืมบรรทัดนี้</li>
+        <li>เดินจากหัวไปทีละตู้จนเจอ <code>NULL</code> อธิบายในหัวข้อถัดไป</li>
+        <li>ทุกพื้นที่ที่ได้จาก <code>malloc</code> ต้องคืนด้วย <code>free</code> เมื่อเลิกใช้</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="three-cars" data-title="C:\code\three_cars.exe"><pre><code>3 9 2
+</code></pre></div>
+
+      <h2 id="walk">เดินไปตามลิสต์</h2>
+
+      <p>อาเรย์ไปช่องถัดไปด้วย <code>i++</code> linked list ไป node ถัดไปด้วย <code>p = p-&gt;next</code> คือเอาที่อยู่ที่เก็บใน <code>next</code> ของ node ปัจจุบันมาใส่ <code>p</code> ลูปจึงมีหน้าตาแบบนี้เสมอ</p>
+
+      <div class="code" data-lang="c"><pre><code>for (Node *p = head; p != NULL; p = p-&gt;next) {
+    // ทำอะไรกับ p-&gt;value
+}
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>รอบ</th><th><code>p</code> ชี้ node ที่เก็บ</th><th>พิมพ์</th><th>หลัง <code>p = p-&gt;next</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>3</td><td>3</td><td>ชี้ node 9</td></tr>
+            <tr><td>2</td><td>9</td><td>9</td><td>ชี้ node 2</td></tr>
+            <tr><td>3</td><td>2</td><td>2</td><td><code>NULL</code> ลูปหยุด</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เงื่อนไข <code>p != NULL</code> คือหัวใจของลูปนี้ ถ้าลิสต์ว่าง <code>head</code> เป็น <code>NULL</code> ตั้งแต่แรก ลูปจะไม่ทำเลยสักรอบ โดยไม่ต้องเขียนกรณีพิเศษ</p>
+
+      <p>สังเกตว่าเราใช้ตัวแปร <code>p</code> แยกต่างหาก ไม่ได้เลื่อน <code>head</code> เอง เพราะ <code>head</code> เป็นทางเดียวที่จะกลับมาหาลิสต์ได้ ถ้าเลื่อนมันไปจนเป็น <code>NULL</code> ลิสต์ทั้งขบวนก็หายไปจากมือเรา ดูได้ในส่วนลองทำให้พัง</p>
+
+      <p>อีกเรื่องที่ต่างจากอาเรย์ คือ linked list ไม่มี <code>a[i]</code> อยากได้ตัวที่ 1000 ต้องเดินจากหัวไป 999 ก้าว ไม่มีทางลัด</p>
+
+      <h2 id="push-front">เพิ่มที่หัว</h2>
+
+      <p>พ่วงตู้ใหม่ไว้หน้าขบวนทำสองจังหวะ</p>
+
+      <ol>
+        <li>ให้ <code>next</code> ของตู้ใหม่ชี้ตู้ที่เป็นหัวอยู่ตอนนี้</li>
+        <li>ย้าย <code>head</code> มาชี้ตู้ใหม่</li>
+      </ol>
+
+      <figure>
+        <svg viewBox="0 0 560 220" width="560" style="max-width:100%;height:auto" role="img" aria-label="ก่อนเพิ่ม head ชี้ node 9 ซึ่งชี้ node 2 หลังเพิ่ม node ใหม่ที่เก็บ 7 ชี้ node 9 และ head ย้ายมาชี้ node 7">
+          <defs>
+            <marker id="ll-arrow-2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+            <marker id="ll-arrow-2-new" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--warning)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="6" y="22" style="fill:var(--muted);font-size:13px">before</text>
+            <text x="210" y="22" text-anchor="middle" style="fill:var(--ink);font-size:15px">head</text>
+            <line x1="210" y1="28" x2="210" y2="46" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-2)"/>
+            <rect x="40" y="50" width="60" height="44" style="fill:var(--surface);stroke:var(--warning);stroke-width:2;stroke-dasharray:5 4"/>
+            <rect x="100" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--warning);stroke-width:2;stroke-dasharray:5 4"/>
+            <text x="70" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">7</text>
+            <text x="88" y="112" text-anchor="middle" style="fill:var(--muted);font-size:13px">new node</text>
+            <rect x="180" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="240" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="320" y="50" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="380" y="50" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <text x="210" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">9</text>
+            <text x="350" y="78" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <circle cx="258" cy="72" r="4" style="fill:var(--brand)"/>
+            <circle cx="398" cy="72" r="4" style="fill:var(--brand)"/>
+            <line x1="258" y1="72" x2="317" y2="72" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-2)"/>
+            <line x1="398" y1="72" x2="446" y2="72" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-2)"/>
+            <text x="452" y="77" style="fill:var(--muted);font-size:15px">NULL</text>
+
+            <text x="6" y="132" style="fill:var(--muted);font-size:13px">after</text>
+            <text x="70" y="132" text-anchor="middle" style="fill:var(--ink);font-size:15px">head</text>
+            <line x1="70" y1="138" x2="70" y2="156" style="stroke:var(--warning);stroke-width:2" marker-end="url(#ll-arrow-2-new)"/>
+            <rect x="40" y="160" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="100" y="160" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="180" y="160" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="240" y="160" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <rect x="320" y="160" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="380" y="160" width="36" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+            <text x="70" y="188" text-anchor="middle" style="fill:var(--ink);font-size:18px">7</text>
+            <text x="210" y="188" text-anchor="middle" style="fill:var(--ink);font-size:18px">9</text>
+            <text x="350" y="188" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <circle cx="118" cy="182" r="4" style="fill:var(--warning)"/>
+            <circle cx="258" cy="182" r="4" style="fill:var(--brand)"/>
+            <circle cx="398" cy="182" r="4" style="fill:var(--brand)"/>
+            <line x1="118" y1="182" x2="177" y2="182" style="stroke:var(--warning);stroke-width:2" marker-end="url(#ll-arrow-2-new)"/>
+            <line x1="258" y1="182" x2="317" y2="182" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-2)"/>
+            <line x1="398" y1="182" x2="446" y2="182" style="stroke:var(--brand);stroke-width:2" marker-end="url(#ll-arrow-2)"/>
+            <text x="452" y="187" style="fill:var(--muted);font-size:15px">NULL</text>
+            <text x="148" y="174" style="fill:var(--warning);font-size:13px">1</text>
+            <text x="80" y="150" style="fill:var(--warning);font-size:13px">2</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ลูกศรสีส้มคือสองเส้นที่เปลี่ยน ตู้ 9 กับตู้ 2 ไม่ได้ถูกแตะเลย ไม่ว่าขบวนยาวแค่ไหนก็ทำแค่สองจังหวะนี้ เขียนเป็นฟังก์ชันได้ดังนี้ ฟังก์ชันเปลี่ยน <code>head</code> ของ <code>main</code> ตรงๆ ไม่ได้ เพราะได้รับแค่สำเนาค่า จึง<strong>คืนหัวใหม่กลับไป</strong> แล้วให้คนเรียกเขียน <code>head = push_front(head, x);</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="push-front"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+Node *push_front(Node *head, int value)
+{
+    Node *node = malloc(sizeof(Node));
+    node-&gt;value = value;
+    node-&gt;next = head; // (1)!
+    return node; // (2)!
+}
+
+void free_list(Node *head) // (3)!
+{
+    while (head != NULL) {
+        Node *next = head-&gt;next;
+        free(head);
+        head = next;
+    }
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    Node *head = NULL; // (4)!
+    for (int i = 0; i &lt; n; i++) {
+        int car;
+        scanf("%d", &amp;car);
+        head = push_front(head, car);
+    }
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        printf("%d ", p-&gt;value);
+    }
+    printf("\n");
+    free_list(head);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จังหวะที่ 1 ตู้ใหม่เกี่ยวตู้หัวเดิม ถ้าลิสต์ว่าง <code>head</code> เป็น <code>NULL</code> ตู้ใหม่ก็กลายเป็นตู้สุดท้ายเองโดยอัตโนมัติ</li>
+        <li>จังหวะที่ 2 ส่งที่อยู่ของตู้ใหม่กลับไป ให้คนเรียกเอาไปใส่ <code>head</code></li>
+        <li>คืนหน่วยความจำทุก node อธิบายในหัวข้อ <a href="#free">คืนหน่วยความจำทั้งลิสต์</a></li>
+        <li>ลิสต์ว่างคือ <code>head</code> เป็น <code>NULL</code> ต้องกำหนดค่านี้เสมอ ถ้าปล่อยเป็นค่าขยะ ลูปจะเดินไปตามที่อยู่มั่วๆ</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="push-front" data-title="ข้อมูลเข้า"><pre><code>4
+3 9 2 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="push-front" data-title="C:\code\push_front.exe"><pre><code>7 2 9 3
+</code></pre></div>
+      </div>
+
+      <p>ลำดับกลับกันกับที่ป้อน เพราะตู้ที่มาทีหลังไปอยู่หน้าเสมอ เป็นวิธีกลับลำดับที่ง่ายที่สุดวิธีหนึ่ง และจะเห็นอีกครั้งในหน้า 14.4 เพราะการเพิ่มและเอาออกที่หัวคือ stack นั่นเอง</p>
+
+      <h2 id="push-back">เพิ่มที่ท้าย</h2>
+
+      <p>ถ้าอยากได้ลำดับเดียวกับที่ป้อน ต้องพ่วงตู้ใหม่ไว้ท้ายขบวน วิธีตรงๆ คือเดินจากหัวไปหาตู้สุดท้ายทุกครั้ง แต่ตู้ที่ i ต้องเดิน i ก้าว รวม N ตู้ก็ราว N × N / 2 ก้าว ช้าพอๆ กับแทรกหัวอาเรย์ที่เราหนีมา วิธีที่ดีกว่าคือจำตู้สุดท้ายไว้อีกตัวแปรหนึ่ง เรียกว่า <code>tail</code> (หาง)</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="push-back"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+void free_list(Node *head)
+{
+    while (head != NULL) {
+        Node *next = head-&gt;next;
+        free(head);
+        head = next;
+    }
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    Node *head = NULL;
+    Node *tail = NULL;
+    for (int i = 0; i &lt; n; i++) {
+        Node *node = malloc(sizeof(Node));
+        scanf("%d", &amp;node-&gt;value); // (1)!
+        node-&gt;next = NULL; // (2)!
+        if (head == NULL) { // (3)!
+            head = node;
+        } else {
+            tail-&gt;next = node;
+        }
+        tail = node;
+    }
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        printf("%d ", p-&gt;value);
+    }
+    printf("\n");
+    free_list(head);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>node-&gt;value</code> คือตัวแปร <code>int</code> ตัวหนึ่ง จึงส่งที่อยู่ <code>&amp;node-&gt;value</code> ให้ <code>scanf</code> ได้เลย</li>
+        <li>ตู้ใหม่จะเป็นตู้สุดท้าย จึงไม่มีตู้ต่อ</li>
+        <li>ตู้แรกเป็นกรณีพิเศษ ตอนนั้นยังไม่มี <code>tail</code> ให้เกี่ยว ถ้าเขียน <code>tail-&gt;next</code> ตอน <code>tail</code> เป็น <code>NULL</code> โปรแกรมจะพัง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="push-back" data-title="ข้อมูลเข้า"><pre><code>4
+3 9 2 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="push-back" data-title="C:\code\push_back.exe"><pre><code>3 9 2 7
+</code></pre></div>
+      </div>
+
+      <p>ทุกครั้งที่เขียนโค้ดลิสต์ ให้ถามตัวเองสามคำถาม ถ้าลิสต์ว่างจะเป็นอย่างไร ถ้ามีตัวเดียวจะเป็นอย่างไร และตัวแปร <code>head</code> กับ <code>tail</code> ยังชี้ถูกตัวไหม บั๊กของ linked list เกือบทั้งหมดอยู่ที่สามจุดนี้</p>
+
+      <h2 id="find">ค้นหา</h2>
+
+      <p>หาตู้ที่มีหมายเลขที่ต้องการ ต้องเดินดูทีละตู้แบบค้นหาในอาเรย์ ถ้าเจอให้คืน pointer ของตู้นั้น ถ้าเดินจนสุดแล้วไม่เจอให้คืน <code>NULL</code> คืนเป็น pointer ดีกว่าคืนลำดับที่ เพราะหน้าถัดไปจะเอา pointer นี้ไปแทรกตู้ต่อท้ายตู้ที่หาเจอได้ทันที</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="find"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+Node *push_front(Node *head, int value)
+{
+    Node *node = malloc(sizeof(Node));
+    node-&gt;value = value;
+    node-&gt;next = head;
+    return node;
+}
+
+Node *find(Node *head, int value)
+{
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        if (p-&gt;value == value) {
+            return p;
+        }
+    }
+    return NULL;
+}
+
+int length(Node *head)
+{
+    int count = 0;
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        count++;
+    }
+    return count;
+}
+
+void free_list(Node *head)
+{
+    while (head != NULL) {
+        Node *next = head-&gt;next;
+        free(head);
+        head = next;
+    }
+}
+
+int main()
+{
+    int n, q;
+    scanf("%d %d", &amp;n, &amp;q);
+    Node *head = NULL;
+    for (int i = 0; i &lt; n; i++) {
+        int car;
+        scanf("%d", &amp;car);
+        head = push_front(head, car);
+    }
+    printf("length = %d\n", length(head));
+    for (int i = 0; i &lt; q; i++) {
+        int car;
+        scanf("%d", &amp;car);
+        Node *found = find(head, car);
+        if (found != NULL) { // (1)!
+            printf("car %d found\n", found-&gt;value);
+        } else {
+            printf("car %d not found\n", car);
+        }
+    }
+    free_list(head);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ต้องเช็ก <code>NULL</code> ก่อนใช้ <code>found-&gt;value</code> เสมอ ถ้า <code>find</code> หาไม่เจอแล้วเราใช้ <code>-&gt;</code> กับ <code>NULL</code> โปรแกรมพังทันที</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="find" data-title="ข้อมูลเข้า"><pre><code>4 3
+3 9 2 7
+9
+5
+7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="find" data-title="C:\code\find.exe"><pre><code>length = 4
+car 9 found
+car 5 not found
+car 7 found
+</code></pre></div>
+      </div>
+
+      <h2 id="free">คืนหน่วยความจำทั้งลิสต์</h2>
+
+      <p>node ทุกตัวได้มาจาก <code>malloc</code> จึงต้อง <code>free</code> ทีละตัว ฟังก์ชัน <code>free_list</code> ที่ใช้มาตั้งแต่โปรแกรม push-front ทำแบบนี้</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate><pre><code>void free_list(Node *head)
+{
+    while (head != NULL) {
+        Node *next = head-&gt;next; // (1)!
+        free(head);
+        head = next; // (2)!
+    }
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จำที่อยู่ของ node ถัดไปไว้ <strong>ก่อน</strong> free เพราะหลัง free แล้ว node นี้ไม่ใช่ของเรา ห้ามอ่าน <code>head-&gt;next</code> อีก</li>
+        <li><code>head</code> ในฟังก์ชันเป็นสำเนา เลื่อนได้ตามสบาย <code>head</code> ของ <code>main</code> ไม่เปลี่ยน แต่หลังเรียกฟังก์ชันนี้แล้ว ห้ามใช้ลิสต์นั้นอีก</li>
+      </ol>
+
+      <p>ถ้าไม่ free เรียกว่า <strong>memory leak</strong> (หน่วยความจำรั่ว) โปรแกรมที่รันครั้งเดียวแล้วจบ Windows จะเก็บคืนให้ตอนจบอยู่แล้ว แต่ถ้าโจทย์มีหลายชุดข้อมูลในไฟล์เดียว แล้วแต่ละชุดสร้างลิสต์ใหม่โดยไม่คืนลิสต์เก่า หน่วยความจำจะสะสมจนเกินที่โจทย์กำหนดได้ ฝึกคืนให้ครบตั้งแต่ตอนนี้ หน้า 14.3 จะมีอีกวิธีที่ไม่ต้องคิดเรื่องนี้เลย</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-null">แบบที่ 1 ลืมปิดท้ายด้วย NULL</h3>
+
+      <p>ในโปรแกรม push-back ลบบรรทัด <code>node-&gt;next = NULL;</code> ออก คอมไพล์ผ่านโดยไม่มีคำเตือน แล้วป้อน <code>3</code> กับ <code>9 2 7</code></p>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ โปรแกรมยังพิมพ์ <code>9 2 7</code> ถูกต้อง ดูเหมือนไม่มีอะไรผิด แต่พอลบ <code>free_list</code> ออกอีกอย่าง ซึ่งไม่เกี่ยวกับการสร้างหรือพิมพ์ลิสต์เลย แล้วรันจากโปรแกรม terminal ชื่อ Git Bash โปรแกรมพังทุกครั้งที่ลอง ส่วนรันจาก Command Prompt ยังได้ <code>9 2 7</code> ถูก</p>
+
+      <p>สาเหตุคือ <code>malloc</code> ไม่ได้ล้างพื้นที่ให้เป็น 0 ใน <code>next</code> ของตู้สุดท้ายจึงเป็นค่าที่ค้างอยู่ในหน่วยความจำตรงนั้น บางครั้งบังเอิญเป็น 0 ซึ่งก็คือ <code>NULL</code> ลูปจึงหยุดถูกที่ บางครั้งเป็นที่อยู่มั่วๆ ลูปก็เดินเลยตู้สุดท้ายไปที่ที่ไม่มีสิทธิ์อ่าน บั๊กแบบนี้ทดสอบในเครื่องตัวเองผ่าน แล้วไปพังใน grader ได้ <strong>ตู้สุดท้ายต้องตั้ง <code>next</code> เป็น <code>NULL</code> เองทุกครั้ง</strong></p>
+
+      <h3 id="moving-head">แบบที่ 2 เลื่อน head แทนที่จะใช้ p</h3>
+
+      <p>ต่อจากโปรแกรม push-back อยากพิมพ์ลิสต์สองรอบ แต่รอบแรกเขียนลูปด้วย <code>head</code> ตรงๆ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="moving-head"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    Node *head = NULL;
+    Node *tail = NULL;
+    for (int i = 0; i &lt; n; i++) {
+        Node *node = malloc(sizeof(Node));
+        scanf("%d", &amp;node-&gt;value);
+        node-&gt;next = NULL;
+        if (head == NULL) {
+            head = node;
+        } else {
+            tail-&gt;next = node;
+        }
+        tail = node;
+    }
+    printf("first:");
+    while (head != NULL) {
+        printf(" %d", head-&gt;value);
+        head = head-&gt;next;
+    }
+    printf("\n");
+    printf("second:");
+    for (Node *p = head; p != NULL; p = p-&gt;next) {
+        printf(" %d", p-&gt;value);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="moving-head" data-title="ข้อมูลเข้า"><pre><code>4
+3 9 2 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="moving-head" data-title="C:\code\moving_head.exe"><pre><code>first: 3 9 2 7
+second:
+</code></pre></div>
+      </div>
+
+      <p>รอบแรกถูก แต่จบรอบแรก <code>head</code> เป็น <code>NULL</code> ไปแล้ว รอบที่สองจึงไม่มีอะไรให้พิมพ์ ตู้ทั้งสี่ยังอยู่ในหน่วยความจำ แต่ไม่มีตัวแปรไหนรู้ที่อยู่ของมันอีก จะใช้หรือจะ free ก็ทำไม่ได้แล้ว โปรแกรมนี้จึงไม่ได้เรียก <code>free_list</code> ตอนจบ เพราะไม่มีหัวให้เรียก เดินลิสต์ด้วยตัวแปรแยกเสมอ</p>
+
+      <h3 id="empty-list">แบบที่ 3 ใช้ head ของลิสต์ว่าง</h3>
+
+      <p>เขียนโปรแกรมที่สร้างลิสต์ด้วย <code>push_front</code> แล้วพิมพ์ตู้หัวขบวนด้วย <code>printf("first = %d\n", head-&gt;value);</code> โดยไม่เช็กอะไร ป้อน <code>0</code> คือไม่มีตู้เลย คอมไพล์ผ่านโดยไม่มีคำเตือน แต่โปรแกรมปิดตัวโดยไม่พิมพ์อะไร และ Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p>รหัสเดียวกับใช้ index ไกลเกินอาเรย์ในหน้า 5.5 คือเข้าถึงหน่วยความจำที่ไม่มีสิทธิ์ <code>NULL</code> คือที่อยู่ที่ไม่มีของอะไรเลย ใช้ <code>-&gt;</code> กับมันเมื่อไรก็พัง ก่อนเขียน <code>x-&gt;</code> ทุกครั้ง ให้ถามว่า <code>x</code> เป็น <code>NULL</code> ได้ไหม ถ้าได้ต้องเช็กก่อน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>node เก็บค่ากับ <code>next</code> ที่ชี้ node ถัดไป node สุดท้ายชี้ <code>NULL</code> ลิสต์ว่างคือ <code>head == NULL</code></li>
+        <li>ใน struct ของตัวเองต้องเขียน <code>struct Node *next</code> เต็มชื่อ</li>
+        <li>เดินลิสต์ด้วย <code>for (Node *p = head; p != NULL; p = p-&gt;next)</code> ใช้ตัวแปรแยก ไม่เลื่อน <code>head</code></li>
+        <li>เพิ่มที่หัวทำสองจังหวะ ไม่ต้องขยับตู้อื่น เพิ่มที่ท้ายให้จำ <code>tail</code> ไว้</li>
+        <li>ฟังก์ชันที่อาจเปลี่ยนหัว ให้คืนหัวใหม่ แล้วเขียน <code>head = f(head, ...)</code></li>
+        <li>ไม่มี <code>a[i]</code> อยากได้ตัวที่ i ต้องเดินจากหัว</li>
+        <li><code>free</code> ทุก node โดยจำ <code>next</code> ไว้ก่อน free</li>
+      </ul>
+    </article>

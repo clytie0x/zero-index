@@ -216,7 +216,15 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "14"
 title = "บทที่ 14 linked list stack queue"
 summary = "โครงสร้างข้อมูลพื้นฐานที่เขียนเองด้วยภาษา C"
-# dir = "c/14-linked-structures"
+path = "c/14-linked-structures/index.html"
+pages = [
+  { num = "14.1", title = "linked list", path = "c/14-linked-structures/linked-list.html" },
+  { num = "14.2", title = "แทรก ลบ และกลับลำดับ", path = "c/14-linked-structures/list-ops.html" },
+  { num = "14.3", title = "ลิสต์ด้วยอาเรย์", path = "c/14-linked-structures/array-list.html" },
+  { num = "14.4", title = "stack", path = "c/14-linked-structures/stack.html" },
+  { num = "14.5", title = "queue และ deque", path = "c/14-linked-structures/queue.html" },
+  { num = "14.6", title = "แบบฝึกหัด", path = "c/14-linked-structures/exercises.html", exercises = "c/14-linked-structures" },
+]
 
 [[chapters]]
 track = "ภาษา C++ และ STL  ปลายค่าย 1"
