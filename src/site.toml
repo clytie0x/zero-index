@@ -47,14 +47,28 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "2"
 title = "บทที่ 2 รับและแสดงผล"
 summary = "scanf printf จัดทศนิยม อ่านโจทย์ และรับข้อมูลแบบ grader"
-# dir = "c/02-input-output"
+path = "c/02-input-output/index.html"
+pages = [
+  { num = "2.1", title = "แสดงผลด้วย printf", path = "c/02-input-output/printf.html" },
+  { num = "2.2", title = "จัดความกว้างและตาราง", path = "c/02-input-output/width.html" },
+  { num = "2.3", title = "รับข้อมูลด้วย scanf", path = "c/02-input-output/scanf.html" },
+  { num = "2.4", title = "อ่านโจทย์แบบ grader", path = "c/02-input-output/grader.html" },
+  { num = "2.5", title = "แบบฝึกหัด", path = "c/02-input-output/exercises.html", exercises = "c/02-input-output" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "3"
 title = "บทที่ 3 เงื่อนไข"
 summary = "if else switch การเปรียบเทียบ และตรรกะ"
-# dir = "c/03-conditions"
+path = "c/03-conditions/index.html"
+pages = [
+  { num = "3.1", title = "การเปรียบเทียบและ if", path = "c/03-conditions/compare.html" },
+  { num = "3.2", title = "else if และ if ซ้อน", path = "c/03-conditions/else-if.html" },
+  { num = "3.3", title = "ตรรกะ และ หรือ ไม่", path = "c/03-conditions/logic.html" },
+  { num = "3.4", title = "switch และ ? :", path = "c/03-conditions/switch.html" },
+  { num = "3.5", title = "แบบฝึกหัด", path = "c/03-conditions/exercises.html", exercises = "c/03-conditions" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"

@@ -1,0 +1,259 @@
+<article class="doc">
+      <h1>2.4 อ่านโจทย์แบบ grader</h1>
+
+      <p>ในการสอบ TOI Zero และค่าย สอวน. ไม่มีคนนั่งอ่านโค้ดของเรา โปรแกรมตรวจที่เรียกว่า grader จะรันโค้ดกับข้อมูลชุดที่เราไม่เคยเห็น แล้วเทียบผลลัพธ์กับคำตอบ โค้ดที่คิดถูกแต่พิมพ์ผลเกินมาหนึ่งคำก็ได้ศูนย์ หน้านี้รวมทุกอย่างจากสามหน้าก่อน มาใช้อ่านโจทย์จริงหนึ่งข้อ เขียนทีละขั้นจนเสร็จ แล้วทดสอบแบบที่ grader ทดสอบ</p>
+
+      <h2 id="how-grader-works">grader ทำงานยังไง</h2>
+
+      <ol>
+        <li>คอมไพล์โค้ดที่ส่ง ถ้าคอมไพล์ไม่ผ่าน ก็จบตรงนั้น</li>
+        <li>รันโปรแกรมกับ<strong>ชุดทดสอบ (test case)</strong> ทีละชุด แต่ละชุดคือข้อมูลเข้าหนึ่งก้อน ป้อนให้โปรแกรมแบบเดียวกับที่เราพิมพ์ในหน้าต่างดำ</li>
+        <li>เก็บทุกอย่างที่โปรแกรมพิมพ์ออกมา เอาไปเทียบกับคำตอบของชุดนั้นทีละตัวอักษร</li>
+        <li>ให้ผลแต่ละชุด เช่น ผ่าน คำตอบผิด ใช้เวลาเกิน หรือโปรแกรมพังกลางทางอย่างหารด้วยศูนย์ในหน้า <a href="../01-variables/operators.html#divide-by-zero">1.2</a> คะแนนมักคิดตามจำนวนชุดที่ผ่าน</li>
+      </ol>
+
+      <p>grader ไม่เห็นหน้าจอ ไม่เห็นบรรทัด Process returned ไม่อ่านคำอธิบาย และไม่เดาว่าเราตั้งใจพิมพ์อะไร มันเห็นแค่ตัวอักษรที่ <code>printf</code> พิมพ์ออกมาเท่านั้น</p>
+
+      <h2 id="anatomy">ส่วนประกอบของโจทย์</h2>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">โจทย์ตัวอย่าง ยอดขายสหกรณ์</p>
+        <p>สหกรณ์โรงเรียนขายสมุดราคาเล่มละ P บาท วันหนึ่งขายได้ N เล่ม ให้พิมพ์รายงานยอดขายของวันนั้น</p>
+        <p><strong>ข้อมูลเข้า</strong> บรรทัดแรกเป็นวันที่ขาย ในรูปแบบ D/M/Y เมื่อ Y เป็นปี พ.ศ. (1 ≤ D ≤ 31, 1 ≤ M ≤ 12, 2500 ≤ Y ≤ 2600) บรรทัดที่สองมีจำนวนเต็ม N และ P คั่นด้วยช่องว่าง (1 ≤ N, P ≤ 100000)</p>
+        <p><strong>ข้อมูลออก</strong> บรรทัดแรกพิมพ์ <code>Date</code> ตามด้วยวันที่ในรูปแบบ DD/MM/YYYY ที่วันและเดือนเป็นเลขสองหลักเสมอ บรรทัดที่สองพิมพ์ <code>Total</code> ตามด้วยยอดขายและคำว่า <code>baht</code> ทุกส่วนคั่นด้วยช่องว่างหนึ่งช่อง</p>
+      </div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>5/3/2569
+120 25
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-title="ผลลัพธ์ที่ต้องได้"><pre><code>Date 05/03/2569
+Total 3000 baht
+</code></pre></div>
+      </div>
+
+      <p>โจทย์แบบ grader เกือบทุกข้อมีห้าส่วนนี้ แต่ละส่วนตอบคำถามคนละข้อ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ส่วน</th><th>ใช้ตัดสินใจเรื่อง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เรื่องราว</td><td>ต้องคำนวณอะไร</td></tr>
+            <tr><td>ข้อมูลเข้า</td><td>เขียน <code>scanf</code> ยังไง กี่ตัว ตัวคั่นคืออะไร</td></tr>
+            <tr><td>ขอบเขต</td><td>ใช้ <code>int</code> หรือ <code>long long</code> กล่อง <code>%s</code> กี่ช่อง ตารางกว้างเท่าไร</td></tr>
+            <tr><td>ข้อมูลออก</td><td>เขียน <code>printf</code> ยังไง ทุกตัวอักษร</td></tr>
+            <tr><td>ตัวอย่าง</td><td>เช็กว่าเข้าใจโจทย์ถูก และเป็นชุดทดสอบชุดแรกของเรา</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="step-1" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>1</span> อ่านข้อมูลเข้า</h2>
+
+      <p>บรรทัดแรกเป็นวันที่คั่นด้วย <code>/</code> ใช้ <code>"%d/%d/%d"</code> แบบในหน้า <a href="scanf.html#separators">2.3</a> บรรทัดที่สองเป็นตัวเลขสองตัว เขียน <code>scanf</code> แยกตามบรรทัดจะอ่านง่าย ส่วนการขึ้นบรรทัดระหว่างสองบรรทัดนั้นไม่ต้องสนใจ <code>%d</code> ข้ามให้เอง</p>
+
+      <h2 id="step-2" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>2</span> ดูขอบเขต</h2>
+
+      <p>ยอดขายคือ N × P ซึ่งมากสุดได้ 100000 × 100000 = 10<sup>10</sup> เกิน 2 × 10<sup>9</sup> ของ <code>int</code> ตามตารางในหน้า <a href="../01-variables/integers.html#when-to-use">1.3</a> จึงต้องเก็บ N กับ P เป็น <code>long long</code> ตั้งแต่ตอนรับ ส่วนวัน เดือน ปี เล็กมาก ใช้ <code>int</code> ได้</p>
+
+      <h2 id="step-3" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>3</span> อ่านข้อมูลออกทีละตัวอักษร</h2>
+
+      <p>เทียบกับผลลัพธ์ตัวอย่าง แล้วแปลงเป็นข้อความแม่แบบของ <code>printf</code></p>
+
+      <ul>
+        <li><code>Date</code> ตัว D ใหญ่ ตามด้วยช่องว่างหนึ่งช่อง วันที่ต้องได้ <code>05/03</code> ทั้งที่ข้อมูลเข้าเป็น <code>5/3</code> จึงใช้ <code>%02d</code> จากหน้า <a href="width.html#leading-zeros">2.2</a> ส่วนปีมี 4 หลักอยู่แล้ว ใช้ <code>%d</code></li>
+        <li><code>Total</code> ตัว T ใหญ่ ช่องว่าง ตัวเลข ช่องว่าง แล้ว <code>baht</code> ตัวเล็กทั้งคำ</li>
+        <li>สองบรรทัด จึงมี <code>\n</code> ท้ายทั้งสองบรรทัด</li>
+      </ul>
+
+      <h2 id="step-4" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>4</span> เขียนโปรแกรม</h2>
+
+      <div class="code" data-lang="c" data-linenums data-test="coop"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int day, month, year;
+    long long books, price;
+    scanf("%d/%d/%d", &amp;day, &amp;month, &amp;year);
+    scanf("%lld %lld", &amp;books, &amp;price);
+    printf("Date %02d/%02d/%d\n", day, month, year);
+    printf("Total %lld baht\n", books * price);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coop" data-title="ข้อมูลเข้า"><pre><code>5/3/2569
+120 25
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="coop" data-title="C:\code\coop.exe"><pre><code>Date 05/03/2569
+Total 3000 baht
+</code></pre></div>
+      </div>
+
+      <h2 id="step-5" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>5</span> ทดสอบด้วยตัวอย่าง</h2>
+
+      <p>ข้อมูลเข้าสองบรรทัดยังพิมพ์เองไหว แต่โจทย์บางข้อมีข้อมูลเข้าเป็นสิบบรรทัด พิมพ์เองทั้งช้าและพิมพ์ผิดง่าย ให้ <strong>คัดลอกข้อมูลเข้าทั้งก้อนไปวางในหน้าต่างดำทีเดียว</strong></p>
+
+      <ol>
+        <li>คัดลอกข้อมูลเข้าตัวอย่าง ในเว็บนี้เลื่อนเมาส์ไปวางบนกล่องข้อมูลเข้า จะมีปุ่มคัดลอกที่มุมขวาบน ถ้าเป็นโจทย์ไฟล์ PDF ให้ลากคลุมตัวอย่างแล้วกด <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>C</kbd></span></li>
+        <li>กด <span class="keys"><kbd>F9</kbd></span> รอจนหน้าต่างดำขึ้นและว่างอยู่</li>
+        <li>คลิกขวาในหน้าต่างดำ หรือกด <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>V</kbd></span> ถ้ามีกล่องถามยืนยันว่าจะวางข้อความหลายบรรทัด ให้กดยืนยัน</li>
+        <li>ถ้าโปรแกรมยังนิ่งอยู่ แปลว่าบรรทัดสุดท้ายที่คัดลอกมาไม่มีการขึ้นบรรทัดปิดท้าย กด <span class="keys"><kbd>Enter</kbd></span> อีกครั้ง</li>
+      </ol>
+
+      <p>หน้าต่างดำจะแสดงข้อมูลเข้าที่วางไว้ก่อน ตามด้วยผลลัพธ์ หน้าตาแบบนี้</p>
+
+      <div class="code" data-lang="text"><pre><code>5/3/2569
+120 25
+Date 05/03/2569
+Total 3000 baht
+</code></pre></div>
+
+      <p>สองบรรทัดแรกคือสิ่งที่เราวาง หน้าต่างดำแสดงให้ดูเฉยๆ ไม่ใช่สิ่งที่โปรแกรมพิมพ์ grader ไม่เห็นสองบรรทัดนี้ เทียบเฉพาะสองบรรทัดหลังกับผลลัพธ์ที่ต้องได้ ทีละตัวอักษร</p>
+
+      <h2 id="step-6" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>6</span> ทดสอบค่าขอบ</h2>
+
+      <p>ผ่านตัวอย่างยังไม่พอ ชุดทดสอบของ grader มีค่าที่โจทย์อนุญาตทุกแบบ โดยเฉพาะค่ามากสุดกับน้อยสุด ให้แต่งข้อมูลเข้าเองจากขอบเขต แล้วคิดคำตอบด้วยมือเทียบ ถ้าขั้นที่ 2 พลาดไปใช้ <code>int</code> ค่ามากสุดจะจับได้ทันที</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="coop-int"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int day, month, year;
+    int books, price;
+    scanf("%d/%d/%d", &amp;day, &amp;month, &amp;year);
+    scanf("%d %d", &amp;books, &amp;price);
+    printf("Date %02d/%02d/%d\n", day, month, year);
+    printf("Total %d baht\n", books * price);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coop-int" data-title="ข้อมูลเข้า"><pre><code>31/12/2600
+100000 100000
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="coop-int" data-title="C:\code\coop.exe"><pre><code>Date 31/12/2600
+Total 1410065408 baht
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ <code>10000000000</code> ซึ่งโปรแกรมในขั้นที่ 4 พิมพ์ได้ถูก ส่วนแบบ <code>int</code> ได้เลขบวกที่ดูปกติ ไม่ติดลบเหมือนตัวอย่างในหน้า 1.3 ถ้าไม่ได้คิดคำตอบด้วยมือไว้ก่อน จะดูไม่ออกเลยว่าผิด</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">ชุดทดสอบที่ควรลองเองทุกข้อ</p>
+        <p>ตัวอย่างในโจทย์ ค่าน้อยสุดทุกตัว ค่ามากสุดทุกตัว และค่าที่ทำให้รูปแบบผลลัพธ์เปลี่ยน อย่างวันที่หลักเดียวกับสองหลักในข้อนี้</p>
+      </div>
+
+      <h2 id="exact-output">ผลลัพธ์ต้องตรงทุกตัวอักษร</h2>
+
+      <p>ถ้าคำตอบที่ต้องได้คือ <code>Total 3000 baht</code> ผลเหล่านี้ไม่ผ่านทั้งหมด แม้ตัวเลขจะถูก</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>โปรแกรมพิมพ์</th><th>ผิดตรงไหน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>total 3000 baht</code></td><td>ตัวพิมพ์เล็กพิมพ์ใหญ่ต่างกัน</td></tr>
+            <tr><td><code>Total 3000 Baht</code></td><td>เหมือนกัน</td></tr>
+            <tr><td><code>Total&nbsp;&nbsp;3000 baht</code></td><td>ช่องว่างสองช่อง</td></tr>
+            <tr><td><code>Total 3000baht</code></td><td>ขาดช่องว่าง</td></tr>
+            <tr><td><code>Total 3000.00 baht</code></td><td>คำตอบเป็นจำนวนเต็ม แต่พิมพ์ทศนิยม</td></tr>
+            <tr><td><code>Total = 3000 baht</code></td><td>มีเครื่องหมายเกินมา</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เรื่องที่ตาเปล่ามองไม่เห็น</p>
+
+      <ul>
+        <li><strong>ช่องว่างท้ายบรรทัด</strong> เช่น <code>printf("Total %lld baht \n", ...)</code> มีช่องว่างหลัง <code>baht</code> grader บางระบบตัดช่องว่างท้ายบรรทัดทิ้งก่อนเทียบ บางระบบไม่ตัด อย่าเสี่ยง ให้ไม่มีเลย</li>
+        <li><strong>การขึ้นบรรทัด</strong> ทุกบรรทัดจบด้วย <code>\n</code> รวมถึงบรรทัดสุดท้าย และไม่พิมพ์บรรทัดว่างเกินมา</li>
+        <li><strong>ข้อความที่ใส่ไว้ตรวจเอง</strong> เช่น <code>[</code> <code>]</code> จากหน้า 2.2 หรือการพิมพ์ค่าที่รับมาดู ต้องลบออกก่อนส่ง</li>
+      </ul>
+
+      <h2 id="unknown-count">ข้อมูลเข้าที่ไม่บอกจำนวน</h2>
+
+      <p>โจทย์ในบทนี้บอกเสมอว่ามีข้อมูลกี่ตัว จึงเขียน <code>scanf</code> ได้ครบ แต่บางโจทย์ให้ "รับตัวเลขไปเรื่อยๆ จนจบข้อมูลเข้า" หรือให้จำนวน N มาก่อนแล้วตามด้วยตัวเลข N ตัว แบบนี้ต้องใช้วนซ้ำ ซึ่งจะเรียนในบทที่ 4</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="prompts">แบบที่ 1 พิมพ์ข้อความบอกให้กรอก</h3>
+
+      <p>โปรแกรมที่เขียนให้คนใช้ มักบอกก่อนว่าต้องพิมพ์อะไร ลองเพิ่มเข้าไปในโปรแกรม coop</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="coop-prompt"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int day, month, year;
+    long long books, price;
+    printf("Enter date: ");
+    scanf("%d/%d/%d", &amp;day, &amp;month, &amp;year);
+    printf("Enter books and price: ");
+    scanf("%lld %lld", &amp;books, &amp;price);
+    printf("Date %02d/%02d/%d\n", day, month, year);
+    printf("Total %lld baht\n", books * price);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coop-prompt" data-title="ข้อมูลเข้า"><pre><code>5/3/2569
+120 25
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="coop-prompt" data-title="C:\code\coop.exe"><pre><code>Enter date: Enter books and price: Date 05/03/2569
+Total 3000 baht
+</code></pre></div>
+      </div>
+
+      <p>นี่คือสิ่งที่ grader เห็น บรรทัดแรกไม่ตรงกับ <code>Date 05/03/2569</code> ข้อนี้ได้ผิดทุกชุด ทั้งที่คำนวณถูกหมด ข้อความบอกให้กรอกมีประโยชน์กับคนเท่านั้น grader ไม่ต้องการ <strong>พิมพ์เฉพาะสิ่งที่ข้อมูลออกสั่งเท่านั้น</strong></p>
+
+      <h3 id="missing-newline">แบบที่ 2 ลืม \n</h3>
+
+      <p>ลบ <code>\n</code> ออกจาก <code>printf</code> บรรทัด Date</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="coop-newline"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int day, month, year;
+    long long books, price;
+    scanf("%d/%d/%d", &amp;day, &amp;month, &amp;year);
+    scanf("%lld %lld", &amp;books, &amp;price);
+    printf("Date %02d/%02d/%d", day, month, year);
+    printf("Total %lld baht\n", books * price);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coop-newline" data-title="ข้อมูลเข้า"><pre><code>5/3/2569
+120 25
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="coop-newline" data-title="C:\code\coop.exe"><pre><code>Date 05/03/2569Total 3000 baht
+</code></pre></div>
+      </div>
+
+      <p><code>printf</code> สองครั้งไม่ได้แปลว่าสองบรรทัด ข้อความจะต่อกันไปเรื่อยๆ จนกว่าจะเจอ <code>\n</code> ทั้งสองค่าถูก แต่รวมเป็นบรรทัดเดียว grader ให้ผิด</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>grader เห็นแค่สิ่งที่ <code>printf</code> พิมพ์ และเทียบทีละตัวอักษร</li>
+        <li>ข้อมูลเข้าบอกวิธีเขียน <code>scanf</code> ขอบเขตบอกชนิดตัวแปร ข้อมูลออกบอกข้อความแม่แบบของ <code>printf</code></li>
+        <li>ทดสอบด้วยการคัดลอกข้อมูลเข้าทั้งก้อนไปวางในหน้าต่างดำ</li>
+        <li>ทดสอบค่ามากสุดน้อยสุดเองเสมอ และคิดคำตอบด้วยมือไว้เทียบ</li>
+        <li>ห้ามพิมพ์ข้อความบอกให้กรอก ห้ามมีช่องว่างเกิน และทุกบรรทัดจบด้วย <code>\n</code></li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

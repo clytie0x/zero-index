@@ -1,0 +1,452 @@
+<article class="doc">
+      <h1>3.1 การเปรียบเทียบและ if</h1>
+
+      <p>ทุกโปรแกรมในบทที่ 1 และ 2 ทำงานครบทุกบรรทัดจากบนลงล่าง ข้อมูลเข้าเป็นอะไรก็เดินทางเดิม แต่โจทย์ส่วนใหญ่ต้องการคำตอบที่ต่างกันตามข้อมูล เช่น คะแนนถึง 50 ให้พิมพ์ pass ไม่ถึงให้พิมพ์ fail หน้านี้มีสองเรื่องที่ทำให้โปรแกรมเลือกทางได้ คือการ <strong>เปรียบเทียบ</strong> ค่าสองค่า และคำสั่ง <strong><code>if</code></strong> ที่ใช้ผลเปรียบเทียบนั้นตัดสินว่าจะทำคำสั่งไหน</p>
+
+      <h2 id="comparison">เปรียบเทียบสองค่า</h2>
+
+      <p>ภาษา C มีตัวดำเนินการเปรียบเทียบ 6 ตัว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวดำเนินการ</th><th>ความหมาย</th><th>ตัวอย่างที่เป็นจริง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>==</code></td><td>เท่ากับ ใช้เครื่องหมายเท่ากับสองตัว</td><td><code>5 == 5</code></td></tr>
+            <tr><td><code>!=</code></td><td>ไม่เท่ากับ</td><td><code>5 != 3</code></td></tr>
+            <tr><td><code>&lt;</code></td><td>น้อยกว่า</td><td><code>3 &lt; 5</code></td></tr>
+            <tr><td><code>&gt;</code></td><td>มากกว่า</td><td><code>5 &gt; 3</code></td></tr>
+            <tr><td><code>&lt;=</code></td><td>น้อยกว่าหรือเท่ากับ</td><td><code>5 &lt;= 5</code></td></tr>
+            <tr><td><code>&gt;=</code></td><td>มากกว่าหรือเท่ากับ</td><td><code>5 &gt;= 5</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ตัวที่มีสองเครื่องหมาย เขียนติดกันห้ามเว้นวรรค และ <code>=</code> อยู่หลังเสมอ อ่านตามลำดับที่เขียนว่า "น้อยกว่า หรือเท่ากับ" จะไม่สลับกัน</p>
+
+      <p>ผลของการเปรียบเทียบคือตัวเลข ลองพิมพ์ออกมาดู</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="compare"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 72;
+    printf("%d\n", score &gt; 50);
+    printf("%d\n", score &lt; 50);
+    printf("%d\n", score &gt;= 72);
+    printf("%d\n", score &lt;= 71);
+    printf("%d\n", score == 72);
+    printf("%d\n", score != 72);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="compare" data-title="C:\code\compare.exe"><pre><code>1
+0
+1
+0
+1
+0
+</code></pre></div>
+
+      <p>ในภาษา C <strong>จริงคือ 1 เท็จคือ 0</strong> ผลของการเปรียบเทียบเป็น <code>int</code> ธรรมดา จึงพิมพ์ด้วย <code>%d</code> ได้ และเอาไปบวกลบต่อได้ด้วย ภาษา C++ มีชนิด <code>bool</code> ที่เก็บจริงเท็จโดยเฉพาะ ซึ่งจะเจอในบทที่ 15 ระหว่างนี้เราใช้ <code>int</code> ไปก่อน</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">= ตัวเดียว กับ == สองตัว</p>
+        <p><code>=</code> ตัวเดียวคือ <strong>กำหนดค่า</strong> เอาค่าทางขวาใส่กล่องทางซ้าย ตามหน้า 1.1 ส่วน <code>==</code> สองตัวคือ <strong>ถามว่าเท่ากันไหม</strong> ไม่เปลี่ยนค่าอะไรเลย สองตัวนี้สลับกันแล้วยังคอมไพล์ผ่าน แต่ได้ผลผิด ดูได้ในส่วนลองทำให้พัง</p>
+      </div>
+
+      <h2 id="if">คำสั่ง if</h2>
+
+      <p><code>if</code> แปลว่า "ถ้า" รูปแบบคือ</p>
+
+      <div class="code" data-lang="text"><pre><code>if (เงื่อนไข) {
+    คำสั่งที่ทำเมื่อเงื่อนไขเป็นจริง
+}
+</code></pre></div>
+
+      <p>ถ้าเงื่อนไขเป็นจริง ทำคำสั่งในปีกกา ถ้าเป็นเท็จ ข้ามปีกกาทั้งก้อนไปเลย แล้วทำบรรทัดถัดจากปีกกาปิดต่อ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="pass"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    scanf("%d", &amp;score);
+    if (score &gt;= 50) { // (1)!
+        printf("pass\n"); // (2)!
+    }
+    printf("done\n"); // (3)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เงื่อนไขต้องอยู่ในวงเล็บเสมอ และ <strong>ไม่มี <code>;</code></strong> หลังวงเล็บปิด เพราะ <code>if</code> ยังไม่จบ ต้องมีคำสั่งตามมา</li>
+        <li>คำสั่งในปีกกาเยื้องเข้าไป 4 ช่อง ให้เห็นว่าอยู่ใต้ <code>if</code> compiler ไม่สนการเยื้อง แต่คนอ่านสน</li>
+        <li>บรรทัดนี้อยู่นอกปีกกา ทำทุกครั้งไม่ว่าเงื่อนไขจะเป็นอะไร</li>
+      </ol>
+
+      <div class="code" data-lang="input" data-for="pass" data-title="ข้อมูลเข้า"><pre><code>72
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="pass" data-title="C:\code\pass.exe"><pre><code>pass
+done
+</code></pre></div>
+
+      <p>รันใหม่แล้วป้อน <code>35</code> เงื่อนไข <code>35 &gt;= 50</code> เป็นเท็จ บรรทัดที่ 8 ถูกข้าม จะได้แค่ <code>done</code> บรรทัดเดียว ทุกครั้งที่เขียน <code>if</code> ให้ลองป้อนค่าที่ทำให้เงื่อนไขจริงหนึ่งครั้ง และเท็จหนึ่งครั้ง และอย่าลืมค่าที่อยู่ตรงขอบพอดี ในที่นี้คือ 50 ซึ่งต้องได้ pass เพราะใช้ <code>&gt;=</code></p>
+
+      <h2 id="block">หลายคำสั่งในปีกกาเดียว</h2>
+
+      <p>ของที่อยู่ในปีกกาเรียกว่า <strong>block</strong> (ก้อนคำสั่ง) ใส่กี่คำสั่งก็ได้ ทั้งหมดจะทำหรือไม่ทำไปพร้อมกัน ร้านค้าแห่งหนึ่งลดให้ 100 บาทเมื่อซื้อครบ 1000 บาท</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="discount"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int price;
+    scanf("%d", &amp;price);
+    if (price &gt;= 1000) {
+        printf("discount 100\n");
+        price = price - 100;
+    }
+    printf("pay %d\n", price);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="discount" data-title="ข้อมูลเข้า"><pre><code>1250
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="discount" data-title="C:\code\discount.exe"><pre><code>discount 100
+pay 1150
+</code></pre></div>
+
+      <p>ถ้าป้อน <code>800</code> ทั้งสองบรรทัดในปีกกาถูกข้าม ได้ <code>pay 800</code> ราคาไม่ถูกลด</p>
+
+      <p>ถ้า block มีคำสั่งเดียว ภาษา C ยอมให้ไม่ใส่ปีกกา เช่น <code>if (score &gt;= 50) printf("pass\n");</code> แต่เอกสารนี้ <strong>ใส่ปีกกาทุกครั้ง</strong> เพราะวันหนึ่งที่เพิ่มคำสั่งที่สองเข้าไป คำสั่งนั้นจะไม่อยู่ใต้ <code>if</code> อย่างที่ตาเห็น ดูแบบที่ 3 ในส่วนลองทำให้พัง</p>
+
+      <h2 id="if-else">if else ทางเลือกสองทาง</h2>
+
+      <p>บ่อยครั้งเราต้องการให้ทำอย่างหนึ่งเมื่อจริง และอีกอย่างหนึ่งเมื่อเท็จ ใช้ <code>else</code> (มิฉะนั้น) ต่อท้าย <code>if</code> โปรแกรมจะเดินทางใดทางหนึ่งเท่านั้น ไม่มีทางทำทั้งสองก้อน และไม่มีทางข้ามทั้งสองก้อน</p>
+
+      <figure>
+        <svg viewBox="0 0 440 290" width="440" style="max-width:100%;height:auto" role="img" aria-label="ผังการทำงานของ if else ถ้า score >= 50 เป็นจริงไปพิมพ์ pass ถ้าเป็นเท็จไปพิมพ์ fail แล้วทั้งสองทางมาบรรจบกันที่คำสั่งถัดไป">
+          <defs>
+            <marker id="if-else-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/>
+            </marker>
+          </defs>
+          <g style="fill:none;stroke:var(--muted);stroke-width:2">
+            <path d="M110 60 H85 V136" marker-end="url(#if-else-arrow)"/>
+            <path d="M330 60 H355 V136" marker-end="url(#if-else-arrow)"/>
+            <path d="M85 184 V258 H141" marker-end="url(#if-else-arrow)"/>
+            <path d="M355 184 V258 H299" marker-end="url(#if-else-arrow)"/>
+          </g>
+          <polygon points="220,20 330,60 220,100 110,60" style="fill:var(--surface);stroke:var(--brand);stroke-width:2"/>
+          <rect x="10" y="140" width="150" height="44" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="280" y="140" width="150" height="44" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="145" y="236" width="150" height="44" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <g style="font-family:var(--font-code);font-size:14px;fill:var(--ink)" text-anchor="middle">
+            <text x="220" y="65">score &gt;= 50</text>
+            <text x="85" y="167">pass</text>
+            <text x="355" y="167">fail</text>
+            <text x="220" y="263">next line</text>
+          </g>
+          <g style="font-size:14px;fill:var(--muted)" text-anchor="middle">
+            <text x="70" y="50">จริง</text>
+            <text x="370" y="50">เท็จ</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ตัวอย่างที่ใช้บ่อยที่สุด คือบอกว่าเป็นเลขคู่หรือเลขคี่ เลขคู่คือเลขที่หารด้วย 2 ลงตัว หรือ <code>n % 2 == 0</code> ตามที่เห็นในหน้า 1.2</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="even-odd"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    if (n % 2 == 0) {
+        printf("even\n");
+    } else {
+        printf("odd\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="even-odd" data-title="ข้อมูลเข้า"><pre><code>17
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="even-odd" data-title="C:\code\even_odd.exe"><pre><code>odd
+</code></pre></div>
+
+      <p><code>else</code> ไม่มีเงื่อนไขของตัวเอง มันคือ "กรณีที่เหลือทั้งหมด" ตำแหน่งของ <code>else</code> ต้องต่อจากปีกกาปิดของ <code>if</code> ทันที เอกสารนี้เขียน <code>} else {</code> ไว้บรรทัดเดียวกัน</p>
+
+      <h2 id="abs">ตัวอย่าง ส่วนต่างที่ไม่ติดลบ</h2>
+
+      <p>น้องสองคนสูง 150 กับ 163 เซนติเมตร สูงต่างกันกี่เซนติเมตร ถ้าเอาคนแรกลบคนที่สองจะได้ -13 แต่ส่วนต่างควรเป็น 13 ไม่ว่าจะป้อนใครก่อน วิธีคือลบไปก่อน แล้วถ้าผลติดลบ ค่อยกลับเครื่องหมาย ค่าที่ได้เรียกว่า <strong>ค่าสัมบูรณ์ (absolute value)</strong></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="height-diff"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int first, second;
+    scanf("%d %d", &amp;first, &amp;second);
+    int diff = first - second;
+    if (diff &lt; 0) {
+        diff = -diff;
+    }
+    printf("%d\n", diff);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="height-diff" data-title="ข้อมูลเข้า"><pre><code>150 163
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="height-diff" data-title="C:\code\height_diff.exe"><pre><code>13
+</code></pre></div>
+
+      <p>ตัวอย่างนี้ใช้ <code>if</code> ที่ไม่มี <code>else</code> เพื่อ <strong>แก้ค่าตัวแปรเฉพาะบางกรณี</strong> ถ้าผลไม่ติดลบก็ปล่อยไว้อย่างนั้น รูปแบบนี้จะเจออีกในหน้า 3.2 ตอนหาค่ามากสุด</p>
+
+      <h2 id="char-compare">เปรียบเทียบตัวอักษร</h2>
+
+      <p>จากหน้า 1.4 <code>char</code> คือตัวเลขรหัส ASCII จึงเปรียบเทียบด้วยตัวดำเนินการชุดเดียวกันได้เลย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="answer"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char answer;
+    scanf(" %c", &amp;answer);
+    if (answer == 'y') {
+        printf("start\n");
+    } else {
+        printf("stop\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="answer" data-title="ข้อมูลเข้า"><pre><code>y
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="answer" data-title="C:\code\answer.exe"><pre><code>start
+</code></pre></div>
+
+      <ul>
+        <li>ตัวอักษรต้องอยู่ในเครื่องหมายคำพูดเดี่ยว <code>'y'</code> เสมอ ถ้าเขียน <code>"y"</code> จะเป็นข้อความ เทียบกับ <code>char</code> ไม่ได้ compiler จะเตือนว่า <code>comparison between pointer and integer</code></li>
+        <li>ตัวพิมพ์ใหญ่กับพิมพ์เล็กมีรหัสต่างกัน <code>'Y'</code> คือ 89 ส่วน <code>'y'</code> คือ 121 ป้อน <code>Y</code> โปรแกรมนี้จึงตอบ <code>stop</code> วิธีรับได้ทั้งสองแบบอยู่ในหน้า 3.3</li>
+        <li><code>&lt;</code> กับ <code>&gt;</code> ใช้กับตัวอักษรได้ด้วย <code>'a' &lt; 'b'</code> เป็นจริงเพราะ 97 น้อยกว่า 98 เรื่องนี้ใช้ตรวจว่าเป็นตัวพิมพ์ใหญ่หรือไม่ในหน้า 3.3</li>
+      </ul>
+
+      <h2 id="truthy">ค่าอะไรนับว่าจริง</h2>
+
+      <p><code>if</code> ไม่ได้รับแค่ผลเปรียบเทียบ รับตัวเลขอะไรก็ได้ กฎคือ <strong>0 เป็นเท็จ ค่าอื่นทุกค่าเป็นจริง</strong> รวมถึงเลขติดลบด้วย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="stock"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int stock;
+    scanf("%d", &amp;stock);
+    if (stock) {
+        printf("in stock\n");
+    } else {
+        printf("sold out\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="stock" data-title="ข้อมูลเข้า"><pre><code>0
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="stock" data-title="C:\code\stock.exe"><pre><code>sold out
+</code></pre></div>
+
+      <p><code>if (stock)</code> ทำงานเหมือน <code>if (stock != 0)</code> ทุกอย่าง จะเห็นแบบสั้นนี้ในโค้ดของคนอื่นบ่อย แต่ตอนเริ่มเรียนให้เขียน <code>!= 0</code> ให้ชัดไปเลย กฎข้อนี้สำคัญเพราะเป็นต้นเหตุของกับดักแบบที่ 1 ข้างล่าง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <p>ทำทีละแบบ อ่านข้อความที่ได้ แล้วแก้กลับให้ถูกก่อนลองแบบถัดไป</p>
+
+      <h3 id="assign-not-compare">แบบที่ 1 ใช้ <code>=</code> แทน <code>==</code></h3>
+
+      <p>อยากพิมพ์ <code>perfect</code> เมื่อได้ 100 คะแนน แต่พิมพ์ <code>=</code> ไปตัวเดียว</p>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="perfect"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    scanf("%d", &amp;score);
+    if (score = 100) {
+        printf("perfect\n");
+    }
+    printf("score = %d\n", score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>perfect.c:7:9: warning: suggest parentheses around assignment used as truth value [-Wparentheses]
+    7 |     if (score = 100) {
+      |         ^~~~~
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="perfect" data-title="ข้อมูลเข้า"><pre><code>75
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="perfect" data-title="C:\code\perfect.exe"><pre><code>perfect
+score = 100
+</code></pre></div>
+
+      <p>ได้ 75 แต่โปรแกรมบอกว่า perfect แถมคะแนนกลายเป็น 100 เพราะ <code>score = 100</code> ไม่ได้ถาม แต่ <strong>เอา 100 ใส่ลง <code>score</code></strong> แล้วค่าของทั้งนิพจน์คือ 100 ซึ่งไม่ใช่ 0 จึงนับว่าจริงทุกครั้ง ไม่ว่าจะป้อนอะไร</p>
+
+      <p>คำเตือนแนะว่าให้ใส่วงเล็บเพิ่ม ซึ่งเป็นทางออกสำหรับคนที่ตั้งใจกำหนดค่าใน <code>if</code> จริงๆ แต่กรณีของเราไม่ได้ตั้งใจ วิธีแก้ที่ถูกคือเปลี่ยนเป็น <code>==</code> เห็นคำเตือนนี้เมื่อไร ให้ไปดูตำแหน่งที่ <code>^</code> ชี้ก่อนเลย</p>
+
+      <h3 id="semicolon-after-if">แบบที่ 2 ใส่ <code>;</code> หลัง if</h3>
+
+      <p>ในโปรแกรม pass เผลอพิมพ์ <code>;</code> ต่อท้ายวงเล็บเงื่อนไข</p>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="pass-semicolon"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    scanf("%d", &amp;score);
+    if (score &gt;= 50); {
+        printf("pass\n");
+    }
+    printf("done\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>pass.c:7:5: warning: this 'if' clause does not guard... [-Wmisleading-indentation]
+    7 |     if (score &gt;= 50); {
+      |     ^~
+pass.c:7:23: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'
+    7 |     if (score &gt;= 50); {
+      |                       ^
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="pass-semicolon" data-title="ข้อมูลเข้า"><pre><code>30
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="pass-semicolon" data-title="C:\code\pass.exe"><pre><code>pass
+done
+</code></pre></div>
+
+      <p>ได้ 30 ก็ยังผ่าน <code>;</code> ตัวเดียวนับเป็นหนึ่งคำสั่งที่ไม่ทำอะไร <code>if</code> จึงคุมแค่คำสั่งว่างนั้น ส่วนปีกกาที่ตามมากลายเป็น block ลอยๆ ที่ทำทุกครั้ง คำเตือนบอกว่า <code>if</code> นี้ "does not guard" คือไม่ได้คุมคำสั่งที่ <code>^</code> ตัวที่สองชี้ แม้ตำแหน่งจะทำให้ดูเหมือนคุมอยู่</p>
+
+      <h3 id="missing-braces">แบบที่ 3 ลืมปีกกา</h3>
+
+      <p>เขียน <code>if</code> แบบไม่มีปีกกาไว้ แล้วมาเพิ่มคำสั่งที่สองทีหลัง</p>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="pass-braces"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    scanf("%d", &amp;score);
+    if (score &gt;= 50)
+        printf("pass\n");
+        printf("well done\n");
+    printf("done\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>pass.c:7:5: warning: this 'if' clause does not guard... [-Wmisleading-indentation]
+    7 |     if (score &gt;= 50)
+      |     ^~
+pass.c:9:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'
+    9 |         printf("well done\n");
+      |         ^~~~~~
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="pass-braces" data-title="ข้อมูลเข้า"><pre><code>30
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="pass-braces" data-title="C:\code\pass.exe"><pre><code>well done
+done
+</code></pre></div>
+
+      <p>ไม่มีปีกกา <code>if</code> คุมได้แค่ <strong>คำสั่งเดียวถัดจากมัน</strong> คือบรรทัดที่ 8 บรรทัดที่ 9 เยื้องเข้าไปก็จริง แต่ compiler ไม่ดูการเยื้อง มันจึงทำทุกครั้ง ได้ 30 คะแนนแล้วยังได้คำชม</p>
+
+      <p>ถ้าในสภาพนี้เติม <code>else</code> ต่อท้าย จะคอมไพล์ไม่ผ่านเลย</p>
+
+      <div class="code" data-lang="c"><pre><code>    if (score &gt;= 50)
+        printf("pass\n");
+        printf("well done\n");
+    else
+        printf("fail\n");
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>pass.c:7:5: warning: this 'if' clause does not guard... [-Wmisleading-indentation]
+    7 |     if (score &gt;= 50)
+      |     ^~
+pass.c:9:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'
+    9 |         printf("well done\n");
+      |         ^~~~~~
+pass.c:10:5: error: 'else' without a previous 'if'
+   10 |     else
+      |     ^~~~
+</code></pre></div>
+
+      <p><code>if</code> จบไปตั้งแต่บรรทัดที่ 8 แล้ว บรรทัดที่ 9 เป็นคำสั่งธรรมดา <code>else</code> ในบรรทัดที่ 10 จึงหา <code>if</code> ของตัวเองไม่เจอ แก้ทั้งสองแบบด้วยวิธีเดียว คือใส่ปีกกาทุกครั้ง</p>
+
+      <h3 id="negative-odd">แบบที่ 4 ตรวจเลขคี่ด้วย <code>== 1</code></h3>
+
+      <p>เลขคี่หาร 2 เหลือเศษ 1 จึงน่าจะเขียนแบบนี้ได้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="odd-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    if (n % 2 == 1) {
+        printf("odd\n");
+    } else {
+        printf("even\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="odd-bug" data-title="ข้อมูลเข้า"><pre><code>-7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="odd-bug" data-title="C:\code\odd.exe"><pre><code>even
+</code></pre></div>
+
+      <p>-7 เป็นเลขคี่ แต่โปรแกรมบอกว่าคู่ จำจากหน้า 1.2 ได้ไหมว่าเศษจาก <code>%</code> มีเครื่องหมายตามตัวตั้ง <code>-7 % 2</code> จึงได้ -1 ไม่ใช่ 1 ไม่มีคำเตือนอะไรเลย ชุดทดสอบที่มีแต่เลขบวกก็ผ่านหมด ทางที่ปลอดภัยคือเทียบกับ 0 เสมอ <code>n % 2 == 0</code> เป็นคู่ <code>n % 2 != 0</code> เป็นคี่ ใช้ได้ทั้งเลขบวกและลบ</p>
+
+      <h3 id="reversed-operator">แบบที่ 5 เขียน <code>=&lt;</code> สลับกัน</h3>
+
+      <p>ในโปรแกรม pass เขียน <code>score =&lt; 50</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>pass.c:7:16: error: expected expression before '&lt;' token
+    7 |     if (score =&lt; 50) {
+      |                ^
+</code></pre></div>
+
+      <p>compiler อ่าน <code>=</code> เป็นการกำหนดค่า แล้วเจอ <code>&lt;</code> ตามมาโดยไม่มีค่าอยู่ข้างหน้า ข้อความไม่ได้บอกว่าสลับเครื่องหมาย แต่ <code>^</code> ชี้ตรงจุดนั้นพอดี จำแค่ว่า <code>=</code> อยู่หลังเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เปรียบเทียบด้วย <code>== != &lt; &gt; &lt;= &gt;=</code> ผลเป็น <code>int</code> จริงได้ 1 เท็จได้ 0</li>
+        <li><code>if (เงื่อนไข) { ... }</code> ทำ block เมื่อเงื่อนไขจริง ถ้ามี <code>else</code> จะทำ block ใด block หนึ่งเสมอ</li>
+        <li>ใน <code>if</code> ค่า 0 คือเท็จ ค่าอื่นทุกค่าคือจริง</li>
+        <li><code>=</code> คือกำหนดค่า <code>==</code> คือถามว่าเท่ากันไหม สลับกันแล้วได้แค่คำเตือน</li>
+        <li>ห้ามมี <code>;</code> หลังวงเล็บเงื่อนไข และใส่ปีกกาทุกครั้ง</li>
+        <li>ตรวจคู่คี่ด้วย <code>n % 2 == 0</code> หรือ <code>!= 0</code> ไม่ใช่ <code>== 1</code></li>
+        <li>ทดสอบทุก <code>if</code> ด้วยค่าที่ทำให้จริง ค่าที่ทำให้เท็จ และค่าตรงขอบ</li>
+      </ul>
+    </article>

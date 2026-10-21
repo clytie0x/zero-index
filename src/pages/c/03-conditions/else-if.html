@@ -1,0 +1,349 @@
+<article class="doc">
+      <h1>3.2 else if และ if ซ้อน</h1>
+
+      <p><code>if else</code> เลือกได้สองทาง แต่โจทย์จริงมักมีมากกว่านั้น เกรดมี 8 ระดับ ค่าไฟคิดหลายอัตรา ตั๋วเครื่องเล่นขึ้นกับทั้งส่วนสูงและอายุ หน้านี้ต่อ <code>if</code> เป็นสายยาวด้วย <code>else if</code> และวาง <code>if</code> ไว้ใน <code>if</code> อีกชั้น แล้วใช้สองอย่างนี้ทำโจทย์แนวที่ออกสอบบ่อย คือตัดเกรด คิดค่าบริการแบบขั้นบันได และหาค่ามากสุดของสามตัว</p>
+
+      <h2 id="else-if">เลือกหนึ่งจากหลายทาง</h2>
+
+      <p>บอกสภาพอากาศจากอุณหภูมิ ต่ำกว่า 20 องศาคือ cold ตั้งแต่ 20 แต่ต่ำกว่า 30 คือ warm ตั้งแต่ 30 ขึ้นไปคือ hot</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="weather"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int temp;
+    scanf("%d", &amp;temp);
+    if (temp &lt; 20) {
+        printf("cold\n");
+    } else if (temp &lt; 30) {
+        printf("warm\n");
+    } else {
+        printf("hot\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="weather" data-title="ข้อมูลเข้า"><pre><code>25
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="weather" data-title="C:\code\weather.exe"><pre><code>warm
+</code></pre></div>
+
+      <p>โปรแกรมตรวจเงื่อนไข <strong>จากบนลงล่างทีละข้อ</strong> เจอข้อแรกที่จริงเมื่อไร ทำ block นั้น แล้วข้ามที่เหลือทั้งสายไปเลย ถ้าไม่มีข้อไหนจริง ทำ <code>else</code> ตัวสุดท้าย</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>temp</th><th><code>temp &lt; 20</code></th><th><code>temp &lt; 30</code></th><th>พิมพ์</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>15</td><td>จริง</td><td>ไม่ได้ตรวจ</td><td>cold</td></tr>
+            <tr><td>25</td><td>เท็จ</td><td>จริง</td><td>warm</td></tr>
+            <tr><td>34</td><td>เท็จ</td><td>เท็จ</td><td>hot</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>สังเกตว่าเงื่อนไขที่สองเขียนแค่ <code>temp &lt; 30</code> ไม่ต้องเขียนว่า "ตั้งแต่ 20 ด้วย" เพราะการที่โปรแกรมมาถึงบรรทัดที่ 9 ได้ แปลว่าเงื่อนไขแรกเป็นเท็จไปแล้ว temp จึงไม่ต่ำกว่า 20 แน่นอน นี่คือข้อดีของ <code>else if</code> แต่ละข้อรู้ว่าข้อก่อนหน้าไม่จริง</p>
+
+      <p><code>else if</code> ไม่ใช่คำสั่งใหม่ มันคือ <code>else</code> ที่ตามด้วย <code>if</code> อีกตัว จะต่อกี่ข้อก็ได้ ส่วน <code>else</code> ตัวท้ายจะมีหรือไม่มีก็ได้ ถ้าไม่มีแล้วไม่มีข้อไหนจริง ก็ไม่ทำอะไรเลย</p>
+
+      <h2 id="grade">ตัดเกรด</h2>
+
+      <p>เกณฑ์ที่โรงเรียนส่วนใหญ่ใช้ คือ 80 ขึ้นไปได้ A ลดลงช่วงละ 5 คะแนน จนต่ำกว่า 50 ได้ F</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="grade"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    scanf("%d", &amp;score);
+    if (score &gt;= 80) {
+        printf("A\n");
+    } else if (score &gt;= 75) {
+        printf("B+\n");
+    } else if (score &gt;= 70) {
+        printf("B\n");
+    } else if (score &gt;= 65) {
+        printf("C+\n");
+    } else if (score &gt;= 60) {
+        printf("C\n");
+    } else if (score &gt;= 55) {
+        printf("D+\n");
+    } else if (score &gt;= 50) {
+        printf("D\n");
+    } else {
+        printf("F\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="grade" data-title="ข้อมูลเข้า"><pre><code>77
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="grade" data-title="C:\code\grade.exe"><pre><code>B+
+</code></pre></div>
+
+      <p>หลักการคือ <strong>เรียงจากเกณฑ์สูงลงต่ำ</strong> แต่ละข้อเขียนแค่ขอบล่าง เพราะขอบบนถูกข้อก่อนหน้ากันไว้แล้ว 77 ไม่ผ่าน <code>&gt;= 80</code> แต่ผ่าน <code>&gt;= 75</code> จึงได้ B+ แล้วหยุด ไม่ไปถึง <code>&gt;= 70</code> ทั้งที่ 77 ก็มากกว่า 70</p>
+
+      <p>เวลาทดสอบโปรแกรมแบบนี้ ให้ป้อนค่าที่ขอบของทุกช่วง คือ 80 กับ 79 ได้ A กับ B+ และ 50 กับ 49 ได้ D กับ F เกรดผิดส่วนใหญ่เกิดตรงขอบ เช่นเผลอเขียน <code>&gt;</code> แทน <code>&gt;=</code> ซึ่งทำให้ 80 พอดีได้ B+</p>
+
+      <h2 id="nested">if ซ้อน</h2>
+
+      <p>block ของ <code>if</code> ใส่คำสั่งอะไรก็ได้ รวมถึง <code>if</code> อีกตัว เรียกว่า <strong>if ซ้อน (nested if)</strong> ใช้เมื่อต้องตัดสินเป็นขั้นๆ เครื่องเล่นในสวนสนุกให้ขึ้นได้เมื่อสูงตั้งแต่ 120 เซนติเมตร คนที่ขึ้นได้ ถ้าอายุต่ำกว่า 12 ปี ต้องมีผู้ใหญ่นั่งด้วย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="ride"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int age, height;
+    scanf("%d %d", &amp;age, &amp;height);
+    if (height &gt;= 120) {
+        if (age &gt;= 12) {
+            printf("ride alone\n");
+        } else {
+            printf("ride with adult\n");
+        }
+    } else {
+        printf("too short\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="ride" data-title="ข้อมูลเข้า"><pre><code>10 135
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="ride" data-title="C:\code\ride.exe"><pre><code>ride with adult
+</code></pre></div>
+
+      <p>ขั้นแรกดูส่วนสูง ผ่านแล้วค่อยดูอายุในขั้นที่สอง ถ้าไม่ผ่านขั้นแรก อายุเท่าไรก็ไม่มีความหมาย โปรแกรมไม่ได้ตรวจอายุเลย การเยื้องทำให้เห็นชั้นได้ชัด <code>if</code> ชั้นในเยื้องลึกกว่าชั้นนอก 4 ช่อง ถ้าการเยื้องผิด จะอ่านไม่ออกว่า <code>else</code> ตัวไหนเป็นของ <code>if</code> ตัวไหน</p>
+
+      <p>ทดสอบ if ซ้อนต้องให้ครบทุกกิ่ง ในที่นี้มีสามกิ่ง ป้อน <code>15 130</code> ได้ <code>ride alone</code> ป้อน <code>15 110</code> ได้ <code>too short</code> และตรงขอบ <code>12 120</code> ได้ <code>ride alone</code></p>
+
+      <h2 id="tiered-pricing">ค่าบริการแบบขั้นบันได</h2>
+
+      <p>ค่าไฟ ค่าน้ำ และภาษีเงินได้ ไม่ได้คิดอัตราเดียวทั้งหมด แต่คิดเป็นขั้น สมมติการไฟฟ้าแห่งหนึ่งคิดแบบนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน่วยที่</th><th>ราคาต่อหน่วย</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1 ถึง 100</td><td>3 บาท</td></tr>
+            <tr><td>101 ถึง 200</td><td>4 บาท</td></tr>
+            <tr><td>201 ขึ้นไป</td><td>5 บาท</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ใช้ไป 250 หน่วย <strong>ไม่ได้</strong> แปลว่าจ่ายหน่วยละ 5 บาททั้ง 250 หน่วย แต่ 100 หน่วยแรกจ่ายหน่วยละ 3 อีก 100 หน่วยถัดมาจ่ายหน่วยละ 4 และ 50 หน่วยที่เหลือจ่ายหน่วยละ 5</p>
+
+      <figure>
+        <svg viewBox="0 0 500 110" width="500" style="max-width:100%;height:auto" role="img" aria-label="แถบ 250 หน่วยแบ่งเป็นสามช่วง 100 หน่วยแรกราคา 3 บาท 100 หน่วยถัดมาราคา 4 บาท 50 หน่วยสุดท้ายราคา 5 บาท รวม 300 บวก 400 บวก 250">
+          <rect x="10" y="20" width="192" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="202" y="20" width="192" height="44" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/>
+          <rect x="394" y="20" width="96" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <g style="font-family:var(--font-code);font-size:14px;fill:var(--ink)" text-anchor="middle">
+            <text x="106" y="47">100 x 3 = 300</text>
+            <text x="298" y="47">100 x 4 = 400</text>
+            <text x="442" y="47">50 x 5</text>
+          </g>
+          <g style="font-family:var(--font-code);font-size:13px;fill:var(--muted)" text-anchor="middle">
+            <text x="10" y="86">0</text>
+            <text x="202" y="86">100</text>
+            <text x="394" y="86">200</text>
+            <text x="490" y="86">250</text>
+          </g>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="c" data-linenums data-test="bill"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int units;
+    scanf("%d", &amp;units);
+    int bill;
+    if (units &lt;= 100) {
+        bill = units * 3;
+    } else if (units &lt;= 200) {
+        bill = 100 * 3 + (units - 100) * 4;
+    } else {
+        bill = 100 * 3 + 100 * 4 + (units - 200) * 5;
+    }
+    printf("%d\n", bill);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="bill" data-title="ข้อมูลเข้า"><pre><code>250
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bill" data-title="C:\code\bill.exe"><pre><code>950
+</code></pre></div>
+
+      <p>แต่ละกิ่งคิดสองส่วน ส่วนแรกคือขั้นที่ใช้เต็มแล้วทั้งขั้น ซึ่งเป็นค่าคงที่ ส่วนที่สองคือหน่วยที่เกินขอบล่างของขั้นปัจจุบัน คูณด้วยราคาของขั้นนั้น ถ้าคิดหน่วยละ 5 บาททั้งหมดจะได้ 1250 ซึ่งผิด</p>
+
+      <p>วิธีตรวจว่าเขียนถูก คือลองค่าสองฝั่งของทุกขอบ แล้วดูว่าค่าไฟเพิ่มขึ้นทีละเท่าราคาของขั้นนั้นพอดี ไม่กระโดด</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน่วย</th><th>ค่าไฟที่โปรแกรมคิดได้</th><th>เพิ่มจากแถวบน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>100</td><td>300</td><td></td></tr>
+            <tr><td>101</td><td>304</td><td>4 ราคาขั้นที่สอง</td></tr>
+            <tr><td>200</td><td>700</td><td></td></tr>
+            <tr><td>201</td><td>705</td><td>5 ราคาขั้นที่สาม</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าเห็นค่าไฟที่ 101 หน่วยกระโดดไปเป็น 404 แปลว่าคิดทั้งหมดด้วยราคาขั้นที่สอง หรือถ้าน้อยกว่าที่ 100 หน่วย แปลว่าลืมบวกส่วนของขั้นก่อนหน้า</p>
+
+      <h2 id="max-of-three">หาค่ามากสุดของสามตัว</h2>
+
+      <p>หาค่ามากสุดของสองตัวใช้ <code>if else</code> ตรงๆ ได้ แต่พอเป็นสามตัว ถ้าเทียบทุกคู่จะต้องเขียน if ซ้อนหลายชั้น วิธีที่ง่ายกว่าคือ <strong>สมมติให้ตัวแรกเป็นค่ามากสุดไปก่อน</strong> แล้วเอาตัวที่เหลือมาท้าชิงทีละตัว ตัวไหนมากกว่าแชมป์ปัจจุบัน ก็ขึ้นเป็นแชมป์แทน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="max3"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a, b, c;
+    scanf("%d %d %d", &amp;a, &amp;b, &amp;c);
+    int largest = a;
+    if (b &gt; largest) {
+        largest = b;
+    }
+    if (c &gt; largest) {
+        largest = c;
+    }
+    printf("%d\n", largest);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="max3" data-title="ข้อมูลเข้า"><pre><code>72 95 88
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="max3" data-title="C:\code\max3.exe"><pre><code>95
+</code></pre></div>
+
+      <p>ข้อนี้ต้องใช้ <code>if</code> สองตัวแยกกัน <strong>ไม่ใช่</strong> <code>else if</code> เพราะทุกตัวต้องได้ท้าชิง ถึงตัวที่สองจะชนะไปแล้ว ตัวที่สามก็ยังอาจมากกว่าได้ ค่าเท่ากันก็ไม่มีปัญหา ถ้า b เท่ากับแชมป์ <code>b &gt; largest</code> เป็นเท็จ แชมป์ก็เป็นค่าเดิมซึ่งเท่ากันอยู่แล้ว</p>
+
+      <p>หาค่าน้อยสุดใช้วิธีเดียวกัน แค่กลับเครื่องหมายเป็น <code>&lt;</code> วิธีนี้ขยายเป็น 4 หรือ 5 ตัวได้โดยเพิ่ม <code>if</code> ทีละตัว และเป็นแบบเดียวกับที่จะใช้หาค่ามากสุดของข้อมูลเป็นแสนตัวด้วยวนซ้ำในบทที่ 4</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="wrong-order">แบบที่ 1 เรียงเงื่อนไขผิดลำดับ</h3>
+
+      <p>ตัดเกรดแบบย่อ 5 ระดับ แต่เรียงจากเกณฑ์ต่ำขึ้นสูง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="grade-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    scanf("%d", &amp;score);
+    if (score &gt;= 50) {
+        printf("D\n");
+    } else if (score &gt;= 60) {
+        printf("C\n");
+    } else if (score &gt;= 70) {
+        printf("B\n");
+    } else if (score &gt;= 80) {
+        printf("A\n");
+    } else {
+        printf("F\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="grade-bug" data-title="ข้อมูลเข้า"><pre><code>92
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="grade-bug" data-title="C:\code\grade.exe"><pre><code>D
+</code></pre></div>
+
+      <p>92 คะแนนได้ D เพราะ 92 ผ่าน <code>&gt;= 50</code> ซึ่งเป็นข้อแรก แล้วสายทั้งหมดก็จบตรงนั้น สาม <code>else if</code> ข้างล่างไม่มีวันได้ทำงาน ไม่มีคำเตือน เพราะไม่ผิดไวยากรณ์ ถ้าใช้ <code>&gt;=</code> ต้องเรียงจากมากไปน้อย ถ้าอยากเรียงจากน้อยไปมาก ต้องเปลี่ยนเป็น <code>&lt;</code> ทุกตัว เช่น <code>score &lt; 50</code> ได้ F ก่อน</p>
+
+      <h3 id="separate-ifs">แบบที่ 2 ใช้ if แยกกันแทน else if</h3>
+
+      <p>ในโปรแกรม weather ลบ <code>else</code> หน้า <code>if</code> ตัวที่สองออก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="weather-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int temp;
+    scanf("%d", &amp;temp);
+    if (temp &lt; 20) {
+        printf("cold\n");
+    }
+    if (temp &lt; 30) {
+        printf("warm\n");
+    } else {
+        printf("hot\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="weather-bug" data-title="ข้อมูลเข้า"><pre><code>15
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="weather-bug" data-title="C:\code\weather.exe"><pre><code>cold
+warm
+</code></pre></div>
+
+      <p>ตอนนี้มีสองเรื่องแยกกัน เรื่องแรกคือ <code>if</code> เดี่ยวที่บรรทัด 7 เรื่องที่สองคือ <code>if else</code> ที่บรรทัด 10 15 องศาจริงทั้งสองเรื่อง จึงพิมพ์สองบรรทัด ส่วน 25 องศาจะได้ warm บรรทัดเดียวถูกต้องโดยบังเอิญ เวลาที่คำตอบต้องมี <strong>อย่างเดียว</strong> จากหลายแบบ ให้ใช้ <code>else if</code> แต่ถ้าแต่ละเรื่องเป็นอิสระต่อกันแบบหาค่ามากสุด ให้ใช้ <code>if</code> แยก</p>
+
+      <h3 id="dangling-else">แบบที่ 3 else ห้อยผิดตัว</h3>
+
+      <p>โปรแกรม ride ที่เขียนโดยไม่ใส่ปีกกา และตั้งใจให้ <code>else</code> เป็นของเงื่อนไขส่วนสูง</p>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="ride-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int age, height;
+    scanf("%d %d", &amp;age, &amp;height);
+    if (height &gt;= 120)
+        if (age &gt;= 12)
+            printf("ride alone\n");
+    else
+        printf("too short\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>ride.c:7:8: warning: suggest explicit braces to avoid ambiguous 'else' [-Wdangling-else]
+    7 |     if (height &gt;= 120)
+      |        ^
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="ride-bug" data-title="ข้อมูลเข้า"><pre><code>10 135
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="ride-bug" data-title="C:\code\ride.exe"><pre><code>too short
+</code></pre></div>
+
+      <p>สูง 135 แต่โปรแกรมบอกว่าเตี้ยไป กฎของภาษา C คือ <strong><code>else</code> จับคู่กับ <code>if</code> ที่ใกล้ที่สุดที่ยังไม่มีคู่</strong> ไม่ได้ดูการเยื้อง <code>else</code> บรรทัด 10 จึงเป็นของ <code>age &gt;= 12</code> ไม่ใช่ของ <code>height &gt;= 120</code> เด็กสูงพออายุ 10 ปีเลยได้ too short และถ้าป้อน <code>10 110</code> โปรแกรมจะไม่พิมพ์อะไรเลย เพราะไม่มี <code>else</code> ของส่วนสูง แก้ด้วยการใส่ปีกกาแบบโปรแกรม ride ต้นฉบับ ปีกกาบอกชัดว่าอะไรอยู่ชั้นไหน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>if ... else if ... else</code> ตรวจจากบนลงล่าง ทำแค่ block แรกที่จริง แล้วข้ามที่เหลือ</li>
+        <li>ตัดเกรดหรือแบ่งช่วง ให้เรียงเกณฑ์ตามลำดับ แต่ละข้อเขียนแค่ขอบเดียว อีกขอบถูกข้อก่อนหน้ากันไว้แล้ว</li>
+        <li>if ซ้อนใช้ตัดสินเป็นขั้น ใส่ปีกกาทุกชั้น เพราะ <code>else</code> จับคู่กับ <code>if</code> ที่ใกล้ที่สุด</li>
+        <li>ค่าบริการขั้นบันไดคิดแต่ละขั้นด้วยราคาของขั้นนั้น ตรวจด้วยค่าสองฝั่งของทุกขอบ</li>
+        <li>ค่ามากสุดของหลายตัว ตั้งตัวแรกเป็นแชมป์ แล้วใช้ <code>if</code> แยกให้ตัวที่เหลือท้าชิงทีละตัว</li>
+        <li>ทดสอบให้ครบทุกกิ่ง และทุกค่าตรงขอบของแต่ละช่วง</li>
+      </ul>
+    </article>

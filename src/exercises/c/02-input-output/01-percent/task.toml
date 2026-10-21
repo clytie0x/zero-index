@@ -1,0 +1,3 @@
+title = "เปอร์เซ็นต์คะแนน"
+level = 1
+hint = '''<p>ถ้าเขียน <code>score * 100 / total</code> ทั้งหมดเป็น <code>int</code> ทศนิยมจะหายไปก่อนถึง <code>printf</code> ให้คูณด้วย <code>100.0</code> แทน แล้วพิมพ์ด้วย <code>%.2f</code> ส่วนเครื่องหมาย <code>%</code> ท้ายตัวเลขต้องเขียนเป็น <code>%%</code></p>'''

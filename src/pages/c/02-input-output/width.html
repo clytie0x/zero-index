@@ -1,0 +1,215 @@
+<article class="doc">
+      <h1>2.2 จัดความกว้างและตาราง</h1>
+
+      <p>นาฬิกาดิจิทัลแสดง <code>07:05</code> ไม่ใช่ <code>7:5</code> ใบเสร็จร้านค้าเรียงราคาให้ตรงกันเป็นคอลัมน์ โจทย์หลายข้อสั่งรูปแบบแบบนี้มาตรงๆ เช่น "พิมพ์เวลาเป็นเลขสองหลัก" หรือ "พิมพ์ตารางตามตัวอย่าง" หน้านี้ใช้ตัวเลขที่ใส่ไว้หลัง <code>%</code> กำหนดว่าแต่ละช่องกว้างเท่าไร ชิดซ้ายหรือขวา และเติมอะไรลงในที่ว่าง</p>
+
+      <h2 id="width">กำหนดความกว้างขั้นต่ำ</h2>
+
+      <p>ตัวอย่างนี้ใส่ <code>[</code> กับ <code>]</code> ครอบไว้ จะได้มองเห็นว่าช่องว่างอยู่ตรงไหน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="width"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 42;
+    printf("[%d]\n", score);
+    printf("[%5d]\n", score);
+    printf("[%-5d]\n", score);
+    printf("[%05d]\n", score);
+    printf("[%3d]\n", 123456);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="width" data-title="C:\code\width.exe"><pre><code>[42]
+[   42]
+[42   ]
+[00042]
+[123456]
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เขียน</th><th>ความหมาย</th><th>42 ได้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>%5d</code></td><td>กว้างอย่างน้อย 5 ตัว ชิดขวา เติมช่องว่างด้านซ้าย</td><td><code>[   42]</code></td></tr>
+            <tr><td><code>%-5d</code></td><td>กว้างอย่างน้อย 5 ตัว ชิดซ้าย เติมช่องว่างด้านขวา</td><td><code>[42   ]</code></td></tr>
+            <tr><td><code>%05d</code></td><td>กว้างอย่างน้อย 5 ตัว เติมเลข 0 ด้านซ้ายแทนช่องว่าง</td><td><code>[00042]</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>บรรทัดที่ 10 สำคัญ ตัวเลขที่ยาวกว่าความกว้าง <strong>ไม่ถูกตัด</strong> <code>printf</code> พิมพ์ครบทั้ง 6 หลัก ความกว้างจึงเป็นแค่ความกว้างขั้นต่ำ ถ้าค่าในตารางยาวเกินช่อง คอลัมน์จะเบี้ยว ต้องเลือกความกว้างจากขอบเขตของข้อมูลในโจทย์</p>
+
+      <h2 id="leading-zeros">เลข 0 นำหน้า</h2>
+
+      <p>โปรแกรมแปลงนาทีเป็นชั่วโมงในหน้า <a href="../01-variables/operators.html#time">1.2</a> พิมพ์ <code>7 hours 5 minutes</code> ถ้าอยากได้แบบนาฬิกาดิจิทัล ใช้ <code>%02d</code> คือกว้าง 2 ตัว เติม 0 ข้างหน้า</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="clock"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int total;
+    scanf("%d", &amp;total);
+    int hours = total / 60;
+    int minutes = total % 60;
+    printf("%02d:%02d\n", hours, minutes);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="clock" data-title="ข้อมูลเข้า"><pre><code>425
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="clock" data-title="C:\code\clock.exe"><pre><code>07:05
+</code></pre></div>
+      </div>
+
+      <p>ค่าที่มีสองหลักอยู่แล้วอย่าง 45 ก็พิมพ์ <code>45</code> ตามปกติ เลข 0 เติมเฉพาะตอนที่หลักไม่พอ รูปแบบเดียวกันใช้กับวันที่ <code>05/03/2569</code> หรือรหัสนักเรียน <code>%05d</code> ที่ต้องยาว 5 หลักเสมอ</p>
+
+      <h2 id="other-types">ใช้กับชนิดอื่น</h2>
+
+      <p>ความกว้างใส่ได้กับทุกตัวกำหนด ส่วน <code>%f</code> ใส่ได้ทั้งความกว้างและจำนวนทศนิยมพร้อมกัน เช่น <code>%8.2f</code> คือกว้าง 8 ตัว ทศนิยม 2 ตำแหน่ง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="other-width"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("[%8.2f]\n", 3.14159);
+    printf("[%-8.2f]\n", 3.14159);
+    printf("[%10s]\n", "Mali");
+    printf("[%-10s]\n", "Mali");
+    printf("[%3c]\n", 'A');
+    printf("[%05d]\n", -42);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="other-width" data-title="C:\code\other_width.exe"><pre><code>[    3.14]
+[3.14    ]
+[      Mali]
+[Mali      ]
+[  A]
+[-0042]
+</code></pre></div>
+
+      <ul>
+        <li>ความกว้างของ <code>%8.2f</code> นับทุกตัวอักษร <code>3.14</code> ยาว 4 ตัวรวมจุด จึงเติมช่องว่างอีก 4 ช่อง</li>
+        <li>เครื่องหมายลบก็นับในความกว้าง <code>-42</code> กับ <code>%05d</code> ได้ <code>-0042</code> ยาว 5 ตัวพอดี</li>
+      </ul>
+
+      <h2 id="table">จัดตาราง</h2>
+
+      <p>ตารางคะแนนที่แต่ละคอลัมน์ตรงกัน ทำได้ด้วยการให้ทุกบรรทัดใช้ความกว้างชุดเดียวกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="table"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("%-10s%6s%6s%8s\n", "Name", "Math", "Sci", "Avg");
+    printf("%-10s%6d%6d%8.2f\n", "Mali", 78, 91, (78 + 91) / 2.0);
+    printf("%-10s%6d%6d%8.2f\n", "Somchai", 85, 62, (85 + 62) / 2.0);
+    printf("%-10s%6d%6d%8.2f\n", "Kanokwan", 100, 97, (100 + 97) / 2.0);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="table" data-title="C:\code\table.exe"><pre><code>Name        Math   Sci     Avg
+Mali          78    91   84.50
+Somchai       85    62   73.50
+Kanokwan     100    97   98.50
+</code></pre></div>
+
+      <p>วิธีคิด</p>
+
+      <ol>
+        <li>คอลัมน์ชื่อเป็นข้อความ คนอ่านชินกับข้อความชิดซ้าย จึงใช้ <code>%-10s</code> กว้างกว่าชื่อที่ยาวที่สุด (8 ตัว) เพื่อให้มีช่องว่างคั่นคอลัมน์ถัดไป</li>
+        <li>คอลัมน์ตัวเลขชิดขวา หลักหน่วยจะตรงกัน เทียบค่ามากน้อยง่าย</li>
+        <li>หัวตารางใช้ความกว้างเดียวกับข้อมูลในคอลัมน์นั้น <code>"Math"</code> ใช้ <code>%6s</code> คู่กับ <code>%6d</code> จึงชิดขวาตรงกับตัวเลข</li>
+      </ol>
+
+      <p>ตอนนี้ต้องเขียน <code>printf</code> ทีละแถว พอเรียนวนซ้ำในบทที่ 4 และอาเรย์ในบทที่ 5 จะพิมพ์ตารางกี่แถวก็ได้ด้วยคำสั่งชุดเดียว แต่วิธีกำหนดความกว้างยังเป็นแบบนี้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="space-instead-of-zero">แบบที่ 1 ลืมเลข 0</h3>
+
+      <p>ในโปรแกรม clock เขียน <code>%2d</code> แทน <code>%02d</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="clock-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int total;
+    scanf("%d", &amp;total);
+    printf("%2d:%2d\n", total / 60, total % 60);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="clock-bug" data-title="ข้อมูลเข้า"><pre><code>425
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="clock-bug" data-title="C:\code\clock.exe"><pre><code> 7: 5
+</code></pre></div>
+      </div>
+
+      <p>กว้าง 2 ตัวครบ แต่เติมด้วยช่องว่าง ไม่มีคำเตือนใดๆ บนจอมองผ่านๆ แทบไม่เห็นช่องว่างหน้าเลข 7 แต่ grader เห็น ข้อนี้ได้ผิด ถ้ามองด้วยตาไม่ออก ลองพิมพ์ <code>[</code> <code>]</code> ครอบแบบตัวอย่างแรกของหน้านี้ แล้วค่อยลบออกก่อนส่ง</p>
+
+      <h3 id="tab-overflow">แบบที่ 2 จัดตารางด้วย \t</h3>
+
+      <p>ในหน้า <a href="printf.html#escape">2.1</a> <code>\t</code> ทำให้คอลัมน์ตรงกันได้ ลองใช้กับตารางคะแนนแทนความกว้าง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="tabs"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("Name\tMath\tSci\n");
+    printf("Mali\t78\t91\n");
+    printf("Somchai\t85\t62\n");
+    printf("Kanokwan\t100\t97\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="tabs" data-title="C:\code\tabs.exe"><pre><code>Name	Math	Sci
+Mali	78	91
+Somchai	85	62
+Kanokwan	100	97
+</code></pre></div>
+
+      <p>สามแถวแรกตรงกัน แต่ <code>Kanokwan</code> ยาว 8 ตัว ไปถึงจุดหยุด tab แรกพอดี <code>\t</code> จึงกระโดดไปจุดหยุดถัดไปแทน ทั้งแถวเลื่อนไปหนึ่งคอลัมน์ <code>\t</code> ใช้ได้ถ้ารู้แน่ว่าข้อความทุกตัวสั้นกว่าระยะ tab ถ้าไม่แน่ใจ ใช้ความกว้างแบบตัวอย่าง table ที่คุมได้ทุกตัวอักษร</p>
+
+      <p>อีกเรื่องคือโจทย์ที่ตัวอย่างผลลัพธ์ดูเหมือนเว้นหลายช่อง อาจเป็นช่องว่างหลายตัวหรือ tab ตัวเดียวก็ได้ ซึ่ง grader ถือว่าต่างกัน ถ้าโจทย์ไม่ได้บอกชัด ให้คัดลอกตัวอย่างผลลัพธ์มาดูว่าเป็นอะไร</p>
+
+      <h3 id="width-not-decimals">แบบที่ 3 ลืมจุดใน %.2f</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="avg"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    double average = 81.666667;
+    printf("%2f\n", average);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="avg" data-title="C:\code\avg.exe"><pre><code>81.666667
+</code></pre></div>
+
+      <p>ตั้งใจจะได้ <code>81.67</code> แต่ได้ทศนิยม 6 ตำแหน่ง และไม่มีคำเตือน เพราะ <code>%2f</code> ถูกไวยากรณ์ แปลว่า "กว้างอย่างน้อย 2 ตัว ทศนิยมตามปกติ" ตัวเลขหน้าจุดคือความกว้าง ตัวเลขหลังจุดคือจำนวนทศนิยม จุดตัวเดียวเปลี่ยนความหมายทั้งหมด</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>%5d</code> ชิดขวา <code>%-5d</code> ชิดซ้าย <code>%05d</code> เติม 0 ทั้งหมดคือกว้างอย่างน้อย 5 ตัว</li>
+        <li>ค่าที่ยาวกว่าความกว้างพิมพ์ครบ ไม่ถูกตัด</li>
+        <li><code>%02d</code> ใช้กับเวลาและวันที่ <code>%8.2f</code> คือกว้าง 8 ทศนิยม 2</li>
+        <li>จัดตารางด้วยความกว้างชุดเดียวกันทุกแถว ข้อความชิดซ้าย ตัวเลขชิดขวา</li>
+        <li><code>\t</code> เบี้ยวเมื่อข้อความยาวถึงระยะ tab ความกว้างคุมได้แน่นอนกว่า</li>
+      </ul>
+    </article>

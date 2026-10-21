@@ -85,7 +85,9 @@ def render_nav(current: Page, home: Page, tree) -> str:
     toc = TOC_INLINE if home is current else ""
     lines.append(f'      <li><a href="{rel(home.path, current)}"{cur(home)}>{esc(home.title)}</a>{toc}</li>')
     for chapter, children in tree:
-        lines.append('      <li class="nav-section">')
+        # กางเฉพาะบทที่กำลังเปิด บทอื่นเหลือแค่ชื่อบท เมนูจะได้ไม่ยาวเกินเมื่อมีหลายสิบบท
+        is_open = current is chapter or current in children
+        lines.append(f'      <li class="nav-section{" is-open" if is_open else ""}">')
         lines.append(f'        <a class="nav-section-title" href="{rel(chapter.path, current)}"{cur(chapter)}>'
                      f'<span class="num-chip">{esc(chapter.num)}</span>{esc(chapter.title)}</a>')
         if chapter is current:
@@ -325,13 +327,20 @@ def build() -> int:
 
     listed = {p.path for p in order if not p.exercises}
     on_disk = {f.relative_to(PAGES).as_posix() for f in PAGES.rglob("*.html")}
+    # บทที่ยังเขียนไม่เสร็จอยู่ในโฟลเดอร์ที่ยังไม่มีบทไหนใน site.toml ใช้ ข้ามไปก่อนแค่เตือน
+    chapter_dirs = {posixpath.dirname(p.path) for p in order if p.kind == "chapter"}
+    drafts = sorted(p for p in on_disk - listed if posixpath.dirname(p) not in chapter_dirs)
     errors = [f"site.toml มี {p} แต่ไม่มีไฟล์ src/pages/{p}" for p in sorted(listed - on_disk)]
-    errors += [f"src/pages/{p} ไม่ได้อยู่ใน site.toml" for p in sorted(on_disk - listed)]
+    errors += [f"src/pages/{p} ไม่ได้อยู่ใน site.toml" for p in sorted(on_disk - listed - set(drafts))]
     ex_listed = {p.exercises for p in order if p.exercises}
     errors += [f"site.toml อ้าง src/exercises/{e} ที่ไม่มี" for e in sorted(ex_listed) if not (EXERCISES / e).is_dir()]
     if EXERCISES.exists():
         ex_dirs = {t.parent.parent.relative_to(EXERCISES).as_posix() for t in EXERCISES.rglob("task.toml")}
-        errors += [f"src/exercises/{e} ไม่ได้อยู่ใน site.toml" for e in sorted(ex_dirs - ex_listed)]
+        unlisted = ex_dirs - ex_listed
+        drafts += sorted(f"exercises/{e}" for e in unlisted if e not in chapter_dirs)
+        errors += [f"src/exercises/{e} ไม่ได้อยู่ใน site.toml" for e in sorted(unlisted) if e in chapter_dirs]
+    if drafts:
+        print(f"ข้ามไฟล์ร่างที่ยังไม่อยู่ใน site.toml {len(drafts)} รายการ", file=sys.stderr)
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1

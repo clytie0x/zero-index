@@ -1,0 +1,505 @@
+<article class="doc">
+      <h1>3.3 ตรรกะ และ หรือ ไม่</h1>
+
+      <p>เงื่อนไขในชีวิตจริงมักมีหลายข้อพร้อมกัน สมัครค่ายได้ถ้าอายุไม่เกิน 18 <strong>และ</strong> สอบคัดเลือกผ่าน ตอบ y <strong>หรือ</strong> Y ก็นับว่าตกลง คะแนนที่ <strong>ไม่</strong> อยู่ในช่วง 0 ถึง 100 ถือว่าผิด หน้านี้รู้จักตัวดำเนินการตรรกะสามตัวที่ใช้ต่อเงื่อนไขเข้าด้วยกัน วิธีเขียนช่วงของตัวเลขให้ถูก และใช้ทั้งหมดตรวจปีอธิกสุรทิน ซึ่งเป็นโจทย์คลาสสิกของเรื่องนี้</p>
+
+      <h2 id="and"><code>&amp;&amp;</code> และ</h2>
+
+      <p><code>A &amp;&amp; B</code> เป็นจริงเมื่อ <strong>ทั้ง</strong> A และ B จริง ข้อใดข้อหนึ่งเท็จก็เท็จทั้งหมด</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="camp"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int age, score;
+    scanf("%d %d", &amp;age, &amp;score);
+    if (age &lt;= 18 &amp;&amp; score &gt;= 60) {
+        printf("accepted\n");
+    } else {
+        printf("rejected\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="camp" data-title="ข้อมูลเข้า"><pre><code>16 75
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="camp" data-title="C:\code\camp.exe"><pre><code>accepted
+</code></pre></div>
+
+      <p>ถ้าป้อน <code>19 75</code> หรือ <code>16 40</code> จะได้ rejected ทั้งคู่ เพราะเงื่อนไขข้อหนึ่งไม่ผ่าน ทั้งหมดนี้เขียนด้วย if ซ้อนแบบหน้า 3.2 ก็ได้ แต่ <code>&amp;&amp;</code> สั้นกว่าเมื่อทั้งสองข้อนำไปสู่ผลเดียวกัน</p>
+
+      <h2 id="or"><code>||</code> หรือ</h2>
+
+      <p><code>A || B</code> เป็นจริงเมื่อ <strong>อย่างน้อยหนึ่ง</strong> ใน A หรือ B จริง จะเท็จก็ต่อเมื่อเท็จทั้งคู่ เครื่องหมาย <code>|</code> อยู่บนปุ่มเดียวกับ <code>\</code> กด <span class="keys"><kbd>Shift</kbd><span class="plus">+</span><kbd>\</kbd></span> สองครั้ง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="yes"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char answer;
+    scanf(" %c", &amp;answer);
+    if (answer == 'y' || answer == 'Y') {
+        printf("yes\n");
+    } else {
+        printf("no\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="yes" data-title="ข้อมูลเข้า"><pre><code>Y
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="yes" data-title="C:\code\yes.exe"><pre><code>yes
+</code></pre></div>
+
+      <p>นี่คือวิธีรับได้ทั้งตัวพิมพ์เล็กและพิมพ์ใหญ่ ที่ค้างไว้จากหน้า 3.1 สังเกตว่าต้องเขียน <code>answer ==</code> ซ้ำทั้งสองข้าง ถ้าเขียนย่อจะพัง ดูแบบที่ 2 ในส่วนลองทำให้พัง</p>
+
+      <h2 id="not"><code>!</code> ไม่</h2>
+
+      <p><code>!A</code> กลับค่าความจริง จริงกลายเป็นเท็จ เท็จกลายเป็นจริง ใช้กับตัวแปรที่เก็บ 1 กับ 0 ไว้บอกสถานะได้อ่านง่าย ร้านกาแฟคิดแก้วละ 60 บาท คนที่ไม่ใช่สมาชิกจ่ายเพิ่ม 10 บาท</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="member"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int is_member;
+    scanf("%d", &amp;is_member);
+    int price = 60;
+    if (!is_member) {
+        price = price + 10;
+    }
+    printf("%d\n", price);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="member" data-title="ข้อมูลเข้า"><pre><code>0
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="member" data-title="C:\code\member.exe"><pre><code>70
+</code></pre></div>
+
+      <p><code>!is_member</code> อ่านว่า "ไม่ใช่สมาชิก" <code>is_member</code> เป็น 0 จึงได้ 1 ซึ่งเป็นจริง ราคาเลยเพิ่ม ชื่อตัวแปรที่ขึ้นต้นด้วย <code>is_</code> ช่วยให้รู้ว่าเก็บแค่จริงกับเท็จ</p>
+
+      <p>ส่วนเงื่อนไขเปรียบเทียบ ไม่ค่อยต้องใช้ <code>!</code> เพราะมีตัวตรงข้ามอยู่แล้ว <code>!(score &gt;= 50)</code> คือ <code>score &lt; 50</code> และ <code>!(a == b)</code> คือ <code>a != b</code> แบบหลังอ่านง่ายกว่า</p>
+
+      <h2 id="truth-table">ตารางสรุป</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>A</th><th>B</th><th><code>A &amp;&amp; B</code></th><th><code>A || B</code></th><th><code>!A</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+            <tr><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+            <tr><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+            <tr><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ผลของ <code>&amp;&amp;</code> <code>||</code> <code>!</code> เป็น 1 หรือ 0 เสมอ เหมือนการเปรียบเทียบ จำง่ายๆ ว่า <code>&amp;&amp;</code> เข้มงวด ต้องผ่านทุกข้อ <code>||</code> ใจดี ผ่านข้อเดียวก็พอ</p>
+
+      <h2 id="range">เขียนช่วงของตัวเลข</h2>
+
+      <p>ในคณิตศาสตร์เขียน 0 ≤ score ≤ 100 แต่ในภาษา C ต้องแยกเป็นสองเงื่อนไขแล้วต่อด้วย <code>&amp;&amp;</code> คือ score ต้องไม่น้อยกว่า 0 <strong>และ</strong> ไม่มากกว่า 100</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="valid"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    scanf("%d", &amp;score);
+    if (0 &lt;= score &amp;&amp; score &lt;= 100) {
+        printf("valid\n");
+    } else {
+        printf("invalid\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="valid" data-title="ข้อมูลเข้า"><pre><code>105
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="valid" data-title="C:\code\valid.exe"><pre><code>invalid
+</code></pre></div>
+
+      <p>เขียนตัวเล็กไว้ซ้าย ตัวใหญ่ไว้ขวา เรียงเหมือนเส้นจำนวน <code>low &lt;= x &amp;&amp; x &lt;= high</code> อ่านแล้วเห็นภาพว่า x อยู่ระหว่างกลาง ส่วน <strong>นอกช่วง</strong> คือน้อยกว่าขอบล่าง <strong>หรือ</strong> มากกว่าขอบบน</p>
+
+      <div class="code" data-lang="text"><pre><code>อยู่ในช่วง   0 &lt;= score &amp;&amp; score &lt;= 100
+อยู่นอกช่วง  score &lt; 0 || score &gt; 100
+</code></pre></div>
+
+      <p>สังเกตว่าพอกลับจากในช่วงเป็นนอกช่วง <code>&amp;&amp;</code> กลายเป็น <code>||</code> และเครื่องหมายเปรียบเทียบกลับด้านทุกตัว ถ้าสับสน เขียน <code>!(0 &lt;= score &amp;&amp; score &lt;= 100)</code> ก็ได้ผลเดียวกัน</p>
+
+      <p>ตัวอักษรก็เขียนช่วงได้ เพราะ <code>'A'</code> ถึง <code>'Z'</code> มีรหัสเรียงกัน ตัวเลข <code>'0'</code> ถึง <code>'9'</code> ก็เช่นกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="char-type"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char c;
+    scanf(" %c", &amp;c);
+    if ('A' &lt;= c &amp;&amp; c &lt;= 'Z') {
+        printf("upper\n");
+    } else if ('a' &lt;= c &amp;&amp; c &lt;= 'z') {
+        printf("lower\n");
+    } else if ('0' &lt;= c &amp;&amp; c &lt;= '9') {
+        printf("digit\n");
+    } else {
+        printf("other\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="char-type" data-title="ข้อมูลเข้า"><pre><code>g
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="char-type" data-title="C:\code\char_type.exe"><pre><code>lower
+</code></pre></div>
+
+      <h2 id="precedence">ลำดับการประเมิน</h2>
+
+      <p>นิพจน์อย่าง <code>a + 1 &gt; b * 2 &amp;&amp; c != 0</code> ทำส่วนไหนก่อน ภาษา C มีลำดับตายตัว เรียงจากทำก่อนไปทำทีหลัง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ลำดับ</th><th>ตัวดำเนินการ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><code>!</code> และเครื่องหมายลบหน้าตัวเลข</td></tr>
+            <tr><td>2</td><td><code>* / %</code></td></tr>
+            <tr><td>3</td><td><code>+ -</code></td></tr>
+            <tr><td>4</td><td><code>&lt; &lt;= &gt; &gt;=</code></td></tr>
+            <tr><td>5</td><td><code>== !=</code></td></tr>
+            <tr><td>6</td><td><code>&amp;&amp;</code></td></tr>
+            <tr><td>7</td><td><code>||</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ลำดับนี้ออกแบบมาให้ใช้งานทั่วไปได้โดยไม่ต้องใส่วงเล็บ คำนวณก่อน แล้วเปรียบเทียบ แล้วค่อยต่อด้วยตรรกะ <code>a + 1 &gt; b * 2 &amp;&amp; c != 0</code> จึงหมายถึง <code>((a + 1) &gt; (b * 2)) &amp;&amp; (c != 0)</code> ตามที่ตั้งใจ แต่มีสองจุดที่ทำให้พลาดบ่อย</p>
+
+      <p><strong>จุดแรก <code>&amp;&amp;</code> มาก่อน <code>||</code></strong> สวนสาธารณะลดราคาให้เด็กต่ำกว่า 12 ปี และผู้สูงอายุตั้งแต่ 60 ปีที่เป็นสมาชิก</p>
+
+      <div class="code" data-lang="c"><pre><code>    if (age &lt; 12 || age &gt;= 60 &amp;&amp; member == 1) {
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>senior.c:7:31: warning: suggest parentheses around '&amp;&amp;' within '||' [-Wparentheses]
+    7 |     if (age &lt; 12 || age &gt;= 60 &amp;&amp; member == 1) {
+      |                     ~~~~~~~~~~^~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p>โค้ดนี้ทำงานเหมือน <code>age &lt; 12 || (age &gt;= 60 &amp;&amp; member == 1)</code> ซึ่งบังเอิญตรงกับที่ต้องการ แต่ถ้าโจทย์คือ "เด็กหรือผู้สูงอายุ ที่เป็นสมาชิกทั้งคู่" ต้องเขียน <code>(age &lt; 12 || age &gt;= 60) &amp;&amp; member == 1</code> คำเตือนนี้ขอให้ใส่วงเล็บบอกให้ชัดว่าหมายถึงแบบไหน <strong>ผสม <code>&amp;&amp;</code> กับ <code>||</code> เมื่อไร ใส่วงเล็บทุกครั้ง</strong></p>
+
+      <p><strong>จุดที่สอง <code>!</code> มาก่อนทุกอย่าง</strong> เขียน <code>!score &gt;= 50</code> ตั้งใจให้หมายถึงคะแนนไม่ถึง 50</p>
+
+      <div class="code" data-lang="gcc"><pre><code>fail.c:7:16: warning: comparison of constant '50' with boolean expression is always false [-Wbool-compare]
+    7 |     if (!score &gt;= 50) {
+      |                ^~
+fail.c:7:16: warning: logical not is only applied to the left hand side of comparison [-Wlogical-not-parentheses]
+fail.c:7:9: note: add parentheses around left hand side expression to silence this warning
+    7 |     if (!score &gt;= 50) {
+      |         ^~~~~~
+      |         (     )
+</code></pre></div>
+
+      <p>C ทำ <code>!score</code> ก่อน ได้ 0 หรือ 1 แล้วค่อยเอาไปเทียบกับ 50 ซึ่งไม่มีทางถึง compiler บอกตรงๆ ว่า always false คือเท็จเสมอ ที่ตั้งใจคือ <code>!(score &gt;= 50)</code> หรือเขียน <code>score &lt; 50</code> ไปเลยดีที่สุด</p>
+
+      <h2 id="short-circuit">หยุดเมื่อรู้คำตอบแล้ว</h2>
+
+      <p>C ประเมิน <code>&amp;&amp;</code> กับ <code>||</code> จากซ้ายไปขวา และ <strong>หยุดทันทีที่รู้คำตอบ</strong> เรียกว่า short-circuit evaluation</p>
+
+      <ul>
+        <li><code>A &amp;&amp; B</code> ถ้า A เท็จ ผลเป็นเท็จแน่นอน ไม่ประเมิน B เลย</li>
+        <li><code>A || B</code> ถ้า A จริง ผลเป็นจริงแน่นอน ไม่ประเมิน B เลย</li>
+      </ul>
+
+      <p>นิสัยนี้ใช้เป็นด่านกันพังได้ แบ่งลูกอมให้เพื่อนเท่าๆ กันได้ไหม ต้องหารลงตัว แต่ถ้าจำนวนคนเป็น 0 การใช้ <code>%</code> จะพังตามที่เห็นในหน้า 1.2</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="fair"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int total, people;
+    scanf("%d %d", &amp;total, &amp;people);
+    if (people != 0 &amp;&amp; total % people == 0) {
+        printf("fair\n");
+    } else {
+        printf("not fair\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="fair" data-title="ข้อมูลเข้า"><pre><code>10 0
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="fair" data-title="C:\code\fair.exe"><pre><code>not fair
+</code></pre></div>
+
+      <p><code>people != 0</code> เป็นเท็จ C จึงไม่ไปทำ <code>total % people</code> เลย โปรแกรมไม่พัง ถ้าสลับเป็น <code>total % people == 0 &amp;&amp; people != 0</code> ส่วนที่หารจะถูกทำก่อน แล้วโปรแกรมก็ปิดตัวพร้อมรหัสเดียวกับหน้า 1.2</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741676 (0xC0000094)
+</code></pre></div>
+
+      <p>ลำดับซ้ายขวาของ <code>&amp;&amp;</code> จึงมีความหมาย ให้วางเงื่อนไขที่เป็นด่านกันไว้ซ้ายสุดเสมอ</p>
+
+      <h2 id="leap-year">ปีอธิกสุรทิน</h2>
+
+      <p>ปีอธิกสุรทินคือปีที่เดือนกุมภาพันธ์มี 29 วัน ทั้งปีจึงมี 366 วัน กฎตามปฏิทินสากลมีสามข้อ</p>
+
+      <ol>
+        <li>ปีที่หารด้วย 4 ลงตัว เป็นปีอธิกสุรทิน</li>
+        <li>ยกเว้นปีที่หารด้วย 100 ลงตัว ไม่เป็น</li>
+        <li>ยกเว้นอีกชั้น ปีที่หารด้วย 400 ลงตัว เป็น</li>
+      </ol>
+
+      <p>รวบเป็นประโยคเดียวได้ว่า หาร 4 ลงตัว <strong>และ</strong> หาร 100 ไม่ลงตัว <strong>หรือ</strong> หาร 400 ลงตัว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="leap"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int year;
+    scanf("%d", &amp;year);
+    if ((year % 4 == 0 &amp;&amp; year % 100 != 0) || year % 400 == 0) {
+        printf("leap\n");
+    } else {
+        printf("common\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="leap" data-title="ข้อมูลเข้า"><pre><code>1900
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="leap" data-title="C:\code\leap.exe"><pre><code>common
+</code></pre></div>
+
+      <p>อีกวิธีที่อ่านง่ายไม่แพ้กัน คือไล่ด้วย <code>else if</code> จาก <strong>กฎที่เจาะจงที่สุดก่อน</strong> หาร 400 ลงตัวเป็นกรณีพิเศษที่สุด จึงตรวจก่อน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="leap-chain"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int year;
+    scanf("%d", &amp;year);
+    if (year % 400 == 0) {
+        printf("leap\n");
+    } else if (year % 100 == 0) {
+        printf("common\n");
+    } else if (year % 4 == 0) {
+        printf("leap\n");
+    } else {
+        printf("common\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="leap-chain" data-title="ข้อมูลเข้า"><pre><code>2000
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="leap-chain" data-title="C:\code\leap.exe"><pre><code>leap
+</code></pre></div>
+
+      <p>ถ้าสลับให้ตรวจ <code>% 4</code> ก่อน ปี 1900 จะหลุดไปเป็น leap ตั้งแต่ข้อแรก เป็นกับดักเดียวกับการเรียงเกรดผิดลำดับในหน้า 3.2 ปีที่ต้องลองทุกครั้งที่เขียนเรื่องนี้มีสี่ปี</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ปี</th><th>ผล</th><th>เพราะ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2024</td><td>leap</td><td>หาร 4 ลงตัว หาร 100 ไม่ลงตัว</td></tr>
+            <tr><td>2023</td><td>common</td><td>หาร 4 ไม่ลงตัว</td></tr>
+            <tr><td>1900</td><td>common</td><td>หาร 100 ลงตัว แต่หาร 400 ไม่ลงตัว</td></tr>
+            <tr><td>2000</td><td>leap</td><td>หาร 400 ลงตัว</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>โจทย์ภาษาไทยบางข้อให้ปีเป็นพุทธศักราช ต้องลบ 543 ให้เป็นคริสต์ศักราชก่อน แล้วค่อยใช้กฎ เช่น พ.ศ. 2567 คือ ค.ศ. 2024</p>
+
+      <h2 id="double-equal">เทียบทศนิยมว่าเท่ากัน</h2>
+
+      <p>หน้า 1.4 เห็นแล้วว่า <code>0.1 + 0.2</code> ไม่ได้เป็น 0.3 พอดี ผลคือการเทียบด้วย <code>==</code> ใช้ไม่ได้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="double-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    double total = 0.1 + 0.2;
+    if (total == 0.3) {
+        printf("equal\n");
+    } else {
+        printf("not equal\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="double-bug" data-title="C:\code\total.exe"><pre><code>not equal
+</code></pre></div>
+
+      <p>ไม่มีคำเตือนอะไรเลย วิธีที่ใช้กันคือถามว่า <strong>ใกล้กันมากพอไหม</strong> แทนที่จะถามว่าเท่ากันเป๊ะไหม คือผลต่างอยู่ในช่วงแคบๆ รอบ 0 ใช้วิธีเขียนช่วงที่เพิ่งเรียน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="double-eps"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    double total = 0.1 + 0.2;
+    double diff = total - 0.3;
+    if (-1e-9 &lt; diff &amp;&amp; diff &lt; 1e-9) {
+        printf("equal\n");
+    } else {
+        printf("not equal\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="double-eps" data-title="C:\code\total.exe"><pre><code>equal
+</code></pre></div>
+
+      <p><code>1e-9</code> คือวิธีเขียนเลขแบบวิทยาศาสตร์ในภาษา C แปลว่า 1 × 10<sup>-9</sup> หรือ 0.000000001 ค่าเล็กๆ นี้เรียกว่า epsilon จะเลือกเท่าไรขึ้นกับขนาดของตัวเลขในโจทย์ ทางที่ดีกว่านั้นคือเลี่ยงทศนิยมไปเลยถ้าทำได้ เช่น เก็บเงินเป็นสตางค์ด้วย <code>int</code> แทนการเก็บบาทเป็น <code>double</code> แล้วเทียบด้วย <code>==</code> ได้ตามปกติ</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="chained-compare">แบบที่ 1 เขียนช่วงแบบคณิตศาสตร์</h3>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="range-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int x;
+    scanf("%d", &amp;x);
+    if (1 &lt;= x &lt;= 10) {
+        printf("in range\n");
+    } else {
+        printf("out of range\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>range.c:7:16: warning: comparison of constant '10' with boolean expression is always true [-Wbool-compare]
+    7 |     if (1 &lt;= x &lt;= 10) {
+      |                ^~
+range.c:7:11: warning: comparisons like 'X&lt;=Y&lt;=Z' do not have their mathematical meaning [-Wparentheses]
+    7 |     if (1 &lt;= x &lt;= 10) {
+      |         ~~^~~~
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="range-bug" data-title="ข้อมูลเข้า"><pre><code>0
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="range-bug" data-title="C:\code\range.exe"><pre><code>in range
+</code></pre></div>
+
+      <p>0 ไม่อยู่ในช่วง 1 ถึง 10 แต่ได้ in range C ไม่ได้อ่านแบบคณิตศาสตร์ มันทำทีละคู่จากซ้ายไปขวา <code>1 &lt;= 0</code> ได้ 0 แล้วเอา 0 ไปเทียบต่อ <code>0 &lt;= 10</code> ได้ 1 ไม่ว่า x เป็นอะไร ผลของคู่แรกเป็นได้แค่ 0 หรือ 1 ซึ่งไม่เกิน 10 เสมอ คำเตือนแรกจึงบอกว่า always true คำเตือนที่สองบอกตรงๆ ว่าการเขียนแบบ <code>X&lt;=Y&lt;=Z</code> ไม่ได้มีความหมายแบบคณิตศาสตร์ แก้เป็น <code>1 &lt;= x &amp;&amp; x &lt;= 10</code></p>
+
+      <h3 id="or-shortcut">แบบที่ 2 เขียน <code>||</code> แบบย่อ</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="yes-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char answer;
+    scanf(" %c", &amp;answer);
+    if (answer == 'y' || 'Y') {
+        printf("yes\n");
+    } else {
+        printf("no\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="yes-bug" data-title="ข้อมูลเข้า"><pre><code>n
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="yes-bug" data-title="C:\code\yes.exe"><pre><code>yes
+</code></pre></div>
+
+      <p>ตอบ n แต่ได้ yes ภาษาพูดว่า "answer เป็น y หรือ Y" แต่ C อ่านเป็นสองเงื่อนไขแยกกัน คือ <code>answer == 'y'</code> หรือ <code>'Y'</code> เฉยๆ ซึ่งเป็นรหัส 89 ไม่ใช่ 0 จึงจริงเสมอ คราวนี้ไม่มีคำเตือนแม้แต่บรรทัดเดียว ทั้งสองข้างของ <code>||</code> ต้องเป็นเงื่อนไขที่สมบูรณ์ในตัวเอง</p>
+
+      <h3 id="and-instead-of-or">แบบที่ 3 ใช้ <code>&amp;&amp;</code> ตรงที่ต้องใช้ <code>||</code></h3>
+
+      <p>ตรวจคะแนนนอกช่วง 0 ถึง 100 แต่ต่อด้วย <code>&amp;&amp;</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="valid-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    scanf("%d", &amp;score);
+    if (score &lt; 0 &amp;&amp; score &gt; 100) {
+        printf("invalid\n");
+    } else {
+        printf("valid\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="valid-bug" data-title="ข้อมูลเข้า"><pre><code>-5
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="valid-bug" data-title="C:\code\valid.exe"><pre><code>valid
+</code></pre></div>
+
+      <p>ไม่มีตัวเลขไหนที่น้อยกว่า 0 และมากกว่า 100 พร้อมกัน เงื่อนไขนี้จึงเท็จเสมอ ทุกคะแนนกลายเป็น valid วิธีจับผิดคือถามตัวเองว่า มีค่าไหนบ้างไหมที่ทำให้เงื่อนไขนี้จริง ถ้าหาไม่ได้เลย แปลว่าเขียนผิด นอกช่วงต้องใช้ <code>||</code></p>
+
+      <h3 id="max-ties">แบบที่ 4 หาค่ามากสุดด้วย <code>&amp;&amp;</code> แล้วเจอค่าเท่ากัน</h3>
+
+      <p>อีกวิธีหาค่ามากสุดของสามตัวที่หลายคนคิดได้ก่อน คือถามว่า a มากกว่าทั้ง b และ c ไหม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="max-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a, b, c;
+    scanf("%d %d %d", &amp;a, &amp;b, &amp;c);
+    int largest;
+    if (a &gt; b &amp;&amp; a &gt; c) {
+        largest = a;
+    } else if (b &gt; a &amp;&amp; b &gt; c) {
+        largest = b;
+    } else {
+        largest = c;
+    }
+    printf("%d\n", largest);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="max-bug" data-title="ข้อมูลเข้า"><pre><code>5 5 3
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="max-bug" data-title="C:\code\max3.exe"><pre><code>3
+</code></pre></div>
+
+      <p>ค่ามากสุดคือ 5 แต่ได้ 3 เพราะ a กับ b เท่ากัน ไม่มีใคร <strong>มากกว่า</strong> อีกตัว ทั้งสองข้อแรกจึงเท็จ ตกไปที่ <code>else</code> ซึ่งเดาว่าเป็น c ทั้งที่ c น้อยที่สุด ชุดทดสอบที่ตัวเลขไม่ซ้ำกันเลยจะผ่านหมด แต่ตกชุดที่มีค่าเท่ากัน แก้ได้ด้วยการเปลี่ยนเป็น <code>&gt;=</code> แต่วิธีตั้งแชมป์ในหน้า 3.2 ไม่มีปัญหานี้ตั้งแต่ต้น</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>&amp;&amp;</code> จริงเมื่อจริงทั้งคู่ <code>||</code> จริงเมื่อจริงอย่างน้อยหนึ่ง <code>!</code> กลับค่าความจริง</li>
+        <li>ช่วงเขียนเป็น <code>low &lt;= x &amp;&amp; x &lt;= high</code> นอกช่วงเขียนเป็น <code>x &lt; low || x &gt; high</code> ห้ามเขียน <code>low &lt;= x &lt;= high</code></li>
+        <li>ทั้งสองข้างของ <code>&amp;&amp;</code> และ <code>||</code> ต้องเป็นเงื่อนไขเต็ม <code>c == 'y' || c == 'Y'</code></li>
+        <li><code>!</code> ทำก่อนการเปรียบเทียบ และ <code>&amp;&amp;</code> ทำก่อน <code>||</code> ผสมกันเมื่อไรใส่วงเล็บ</li>
+        <li><code>&amp;&amp;</code> กับ <code>||</code> หยุดเมื่อรู้คำตอบ วางเงื่อนไขกันพังไว้ซ้าย เช่น <code>b != 0 &amp;&amp; a % b == 0</code></li>
+        <li>ปีอธิกสุรทินคือ <code>(y % 4 == 0 &amp;&amp; y % 100 != 0) || y % 400 == 0</code> ทดสอบด้วย 2024 2023 1900 2000</li>
+        <li>ทศนิยมห้ามเทียบด้วย <code>==</code> ให้ดูว่าผลต่างอยู่ในช่วงแคบรอบ 0 หรือเลี่ยงไปใช้จำนวนเต็ม</li>
+      </ul>
+    </article>

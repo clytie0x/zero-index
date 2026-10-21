@@ -1,0 +1,315 @@
+<article class="doc">
+      <h1>2.3 รับข้อมูลด้วย scanf</h1>
+
+      <p>บทที่ 1 รับแต่ตัวเลขที่คั่นด้วยช่องว่าง แต่ข้อมูลเข้าของโจทย์จริงมีหลายหน้าตา ตัวเลขอยู่คนละบรรทัด มีตัวอักษรปน มีชื่อคน มีเวลาแบบ <code>12:30</code> หรือวันที่แบบ <code>21/10/2569</code> หน้านี้ทำให้รับได้ทุกแบบที่โจทย์ระดับ TOI Zero ให้มา และรู้จักกับดักของ <code>%c</code> ที่ทำให้คนเสียคะแนนกันบ่อย</p>
+
+      <h2 id="specifiers">ตัวกำหนดของ scanf</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ชนิด</th><th>เขียน</th><th>หมายเหตุ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>int</code></td><td><code>scanf("%d", &amp;x);</code></td><td>เหมือน <code>printf</code></td></tr>
+            <tr><td><code>long long</code></td><td><code>scanf("%lld", &amp;x);</code></td><td>เหมือน <code>printf</code></td></tr>
+            <tr><td><code>double</code></td><td><code>scanf("%lf", &amp;x);</code></td><td>ต้องเป็น <code>%lf</code> ใช้ <code>%f</code> ไม่ได้</td></tr>
+            <tr><td><code>char</code></td><td><code>scanf(" %c", &amp;x);</code></td><td>มีช่องว่างหน้า <code>%c</code> เหตุผลอยู่ด้านล่าง</td></tr>
+            <tr><td>คำหนึ่งคำ</td><td><code>scanf("%s", name);</code></td><td>ไม่มี <code>&amp;</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทุกตัวต้องมี <code>&amp;</code> หน้าตัวแปรตามที่เห็นในหน้า <a href="../01-variables/variables.html#scanf">1.1</a> ยกเว้น <code>%s</code> ตัวเดียว</p>
+
+      <h2 id="whitespace">ช่องว่างกับการขึ้นบรรทัด</h2>
+
+      <p>ก่อนอ่านตัวเลข <code>%d</code> <code>%lld</code> <code>%lf</code> จะข้าม<strong>ช่องว่างทุกแบบ</strong>ไปก่อน ทั้งเว้นวรรค tab และการขึ้นบรรทัดใหม่ ข้ามกี่ตัวก็ได้ ข้อมูลเข้าจะแบ่งบรรทัดยังไง โปรแกรมก็ได้ตัวเลขชุดเดิม</p>
+
+      <p>โจทย์ให้รหัสนักเรียนในบรรทัดแรก และคะแนนสามวิชาในบรรทัดที่สอง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="report"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int student_id, math, science, english;
+    scanf("%d", &amp;student_id);
+    scanf("%d %d %d", &amp;math, &amp;science, &amp;english);
+    printf("student %d total %d\n", student_id, math + science + english);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="report" data-title="ข้อมูลเข้า"><pre><code>6701
+70 85 90
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="report" data-title="C:\code\report.exe"><pre><code>student 6701 total 245
+</code></pre></div>
+      </div>
+
+      <p>ลองป้อนข้อมูลเข้าที่จัดบรรทัดเละๆ แบบนี้ โปรแกรมเดิมยังพิมพ์ <code>student 6701 total 245</code> เหมือนเดิม</p>
+
+      <div class="code" data-lang="text"><pre><code>  6701   70
+
+85
+     90
+</code></pre></div>
+
+      <p>สรุปได้สองข้อ</p>
+
+      <ul>
+        <li>จะเขียน <code>scanf</code> บรรทัดละครั้งตามข้อมูลเข้า หรือรวมเป็น <code>scanf</code> เดียวที่มี <code>%d</code> สี่ตัวก็ได้ผลเท่ากัน เลือกแบบที่อ่านง่าย</li>
+        <li>ช่องว่างระหว่าง <code>%d</code> ในข้อความแม่แบบ แปลว่า "ข้ามช่องว่างกี่ตัวก็ได้" เขียน <code>"%d%d%d"</code> ก็ได้ผลเหมือน <code>"%d %d %d"</code> เพราะ <code>%d</code> ข้ามเองอยู่แล้ว เอกสารนี้ใส่ช่องว่างไว้ให้อ่านง่าย</li>
+      </ul>
+
+      <h2 id="char">รับตัวอักษรด้วย %c</h2>
+
+      <p><code>%c</code> ต่างจากตัวอื่น มัน<strong>ไม่ข้ามช่องว่าง</strong> อ่านตัวถัดไปทันที ไม่ว่าจะเป็นตัวอะไร ลองรับคะแนนในบรรทัดแรก และเกรดในบรรทัดที่สอง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="grade-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    char grade;
+    scanf("%d", &amp;score);
+    scanf("%c", &amp;grade);
+    printf("score = %d\n", score);
+    printf("grade = [%c]\n", grade);
+    printf("code = %d\n", grade);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="grade-bug" data-title="ข้อมูลเข้า"><pre><code>85
+A
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="grade-bug" data-title="C:\code\grade.exe"><pre><code>score = 85
+grade = [
+]
+code = 10
+</code></pre></div>
+      </div>
+
+      <p>เกรดไม่ใช่ <code>A</code> แต่เป็นการขึ้นบรรทัด วงเล็บปิดจึงไปอยู่บรรทัดถัดไป และรหัสที่ได้คือ 10 ซึ่งเป็นรหัส ASCII ของการขึ้นบรรทัด ดูว่าเกิดอะไรขึ้นทีละตัวอักษร</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวอักษรในข้อมูลเข้า</th><th><code>8</code></th><th><code>5</code></th><th>ขึ้นบรรทัด</th><th><code>A</code></th><th>ขึ้นบรรทัด</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ถูกอ่านโดย</td><td><code>%d</code></td><td><code>%d</code></td><td><code>%c</code></td><td>ไม่มีใครอ่าน</td><td>ไม่มีใครอ่าน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><code>%d</code> อ่าน 8 กับ 5 แล้วหยุดตรงที่ไม่ใช่ตัวเลข การขึ้นบรรทัดหลัง 85 จึงยังค้างอยู่ <code>%c</code> มาเจอเป็นตัวแรก ก็หยิบไปเลย แก้ด้วยการใส่ <strong>ช่องว่างหน้า <code>%c</code></strong> ช่องว่างในข้อความแม่แบบแปลว่าข้ามช่องว่างทุกแบบที่มีก่อน แล้ว <code>%c</code> ค่อยอ่าน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="grade"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    char grade;
+    scanf("%d", &amp;score);
+    scanf(" %c", &amp;grade);
+    printf("score = %d\n", score);
+    printf("grade = [%c]\n", grade);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="grade" data-title="ข้อมูลเข้า"><pre><code>85
+A
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="grade" data-title="C:\code\grade.exe"><pre><code>score = 85
+grade = [A]
+</code></pre></div>
+      </div>
+
+      <p>ตัวอักษรสองตัวที่คั่นด้วยช่องว่างในบรรทัดเดียว เช่น <code>A B</code> ก็เจอปัญหาเดียวกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="two-chars"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char first, second;
+    scanf("%c%c", &amp;first, &amp;second);
+    printf("[%c] [%c]\n", first, second);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="two-chars" data-title="ข้อมูลเข้า"><pre><code>A B
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="two-chars" data-title="C:\code\two_chars.exe"><pre><code>[A] [ ]
+</code></pre></div>
+      </div>
+
+      <p>ตัวที่สองได้ช่องว่าง เพราะช่องว่างก็เป็นตัวอักษรหนึ่งตัว แก้เป็น <code>"%c %c"</code> จะได้ <code>[A] [B]</code> จำง่ายๆ ว่า <strong>รับ <code>char</code> ให้ใส่ช่องว่างหน้า <code>%c</code> เสมอ</strong> ยกเว้นโจทย์ที่ต้องการอ่านช่องว่างจริงๆ ซึ่งแทบไม่มีในระดับนี้</p>
+
+      <h2 id="words">รับคำด้วย %s</h2>
+
+      <p>ชื่อคนหรือชื่อสินค้าเป็นตัวอักษรหลายตัว เก็บใน <code>char</code> ตัวเดียวไม่ได้ ต้องใช้กล่องที่เก็บตัวอักษรได้หลายตัว</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="who"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char name[21]; // (1)!
+    scanf("%s", name); // (2)!
+    printf("Hello, %s!\n", name);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ขอกล่องเก็บตัวอักษร 21 ช่องชื่อ <code>name</code> ใช้เก็บคำยาวได้ไม่เกิน 20 ตัว อีกหนึ่งช่องเก็บเครื่องหมายบอกจุดจบของข้อความ วงเล็บเหลี่ยมแบบนี้คือ array ซึ่งจะเรียนในบทที่ 5 และเรื่องข้อความจะลงลึกในบทที่ 6</li>
+        <li><code>%s</code> ไม่ต้องมี <code>&amp;</code> เพราะชื่อ <code>name</code> บอกที่อยู่ของกล่องอยู่แล้ว เหตุผลเต็มๆ อยู่ในบทที่ 10</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="who" data-title="ข้อมูลเข้า"><pre><code>Somchai Jaidee
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="who" data-title="C:\code\who.exe"><pre><code>Hello, Somchai!
+</code></pre></div>
+      </div>
+
+      <p><code>%s</code> ข้ามช่องว่างข้างหน้าเหมือน <code>%d</code> แล้วอ่านไป<strong>จนเจอช่องว่าง</strong> จึงได้แค่ <code>Somchai</code> ส่วน <code>Jaidee</code> ยังค้างอยู่ในข้อมูลเข้า ถ้าโจทย์ให้ชื่อกับนามสกุล ให้รับเป็นสองคำ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="fullname"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char first[21], last[21];
+    scanf("%s %s", first, last);
+    printf("Hello, %s!\n", first);
+    printf("%s, %s\n", last, first);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="fullname" data-title="ข้อมูลเข้า"><pre><code>Somchai Jaidee
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="fullname" data-title="C:\code\fullname.exe"><pre><code>Hello, Somchai!
+Jaidee, Somchai
+</code></pre></div>
+      </div>
+
+      <p>ตอนนี้ใช้ได้แค่รับคำแล้วพิมพ์ออกไปทั้งคำ การนับตัวอักษร การรับข้อความทั้งบรรทัดที่มีช่องว่าง และการแก้ตัวอักษรข้างใน รอบทที่ 6 และต้องดูขอบเขตในโจทย์เสมอว่าคำยาวได้กี่ตัว แล้วขอกล่องให้มากกว่านั้นหนึ่งช่อง</p>
+
+      <h2 id="separators">ตัวคั่นพิเศษ</h2>
+
+      <p>ตัวอักษรอื่นในข้อความแม่แบบที่ไม่ใช่ <code>%</code> และไม่ใช่ช่องว่าง <code>scanf</code> จะ<strong>จับคู่ตรงตัว</strong> เวลา <code>07:45</code> จึงรับด้วย <code>"%d:%d"</code> อ่านตัวเลข เจอ <code>:</code> ข้ามไป แล้วอ่านตัวเลขอีกตัว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="minutes"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int hour, minute;
+    scanf("%d:%d", &amp;hour, &amp;minute);
+    printf("%d minutes after midnight\n", hour * 60 + minute);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="minutes" data-title="ข้อมูลเข้า"><pre><code>07:45
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="minutes" data-title="C:\code\minutes.exe"><pre><code>465 minutes after midnight
+</code></pre></div>
+      </div>
+
+      <p><code>%d</code> อ่าน <code>07</code> เป็น 7 ได้ตามปกติ เลข 0 ข้างหน้าไม่มีผล วันที่ก็ใช้วิธีเดียวกัน ตัวอย่างนี้แปลงวันที่แบบไทยที่ใช้ปี พ.ศ. เป็นแบบสากลที่ขึ้นต้นด้วยปี ค.ศ. และใช้ <code>%02d</code> จากหน้า <a href="width.html#leading-zeros">2.2</a></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="date"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int day, month, year;
+    scanf("%d/%d/%d", &amp;day, &amp;month, &amp;year);
+    printf("%d-%02d-%02d\n", year - 543, month, day);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="date" data-title="ข้อมูลเข้า"><pre><code>21/10/2569
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="date" data-title="C:\code\date.exe"><pre><code>2026-10-21
+</code></pre></div>
+      </div>
+
+      <p>ป้อน <code>5/3/2569</code> ที่ไม่มีเลข 0 นำหน้า ก็ได้ <code>2026-03-05</code> เพราะ <code>%d</code> อ่านได้ทั้งเลขหลักเดียวและสองหลัก</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="wrong-separator">แบบที่ 1 ลืมตัวคั่น</h3>
+
+      <p>รับเวลาด้วย <code>"%d %d"</code> แทน <code>"%d:%d"</code> แล้วป้อน <code>12:30</code></p>
+
+      <div class="code" data-lang="c"><pre><code>int hour, minute;
+scanf("%d %d", &amp;hour, &amp;minute);
+printf("%d hours %d minutes\n", hour, minute);
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือน เพราะ compiler ไม่รู้ว่าข้อมูลเข้าจะหน้าตาแบบไหน ตอนรัน <code>%d</code> ตัวแรกได้ 12 แล้ว <code>%d</code> ตัวที่สองเจอ <code>:</code> ซึ่งไม่ใช่ตัวเลข <code>scanf</code> เลยหยุดอ่านทันที <code>minute</code> ไม่เคยถูกใส่ค่า จึงเป็นค่าขยะ บนเครื่องที่เขียนเอกสารนี้ได้ <code>12 hours 0 minutes</code> ซึ่งดูน่าเชื่อจนอาจไม่ทันสังเกต <code>scanf</code> ไม่ขึ้นข้อความเตือนอะไรเลยตอนอ่านไม่สำเร็จ ถ้าไม่ลองพิมพ์ค่าที่รับมาดู จะไม่รู้เลย</p>
+
+      <h3 id="ampersand-string">แบบที่ 2 ใส่ &amp; หน้า %s</h3>
+
+      <p>ในโปรแกรม who เขียน <code>scanf("%s", &amp;name);</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>who.c:6:13: warning: format '%s' expects argument of type 'char *', but argument 2 has type 'char (*)[21]' [-Wformat=]
+    6 |     scanf("%s", &amp;name);
+      |            ~^   ~~~~~
+      |             |   |
+      |             |   char (*)[21]
+      |             char *
+</code></pre></div>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ยังพิมพ์ <code>Hello, Somchai!</code> ได้ถูก แต่ compiler บอกว่าชนิดไม่ตรง <code>char (*)[21]</code> กับ <code>char *</code> เป็นเรื่องของบทที่ 10 ตอนนี้จำแค่ว่า <code>%s</code> ไม่ต้องมี <code>&amp;</code> และทำตามคำเตือนทุกครั้ง</p>
+
+      <h3 id="float-format">แบบที่ 3 รับ double ด้วย %f</h3>
+
+      <p>ใน <code>printf</code> ใช้ <code>%f</code> กับ <code>double</code> ได้ หลายคนเลยเขียน <code>scanf</code> แบบเดียวกัน</p>
+
+      <div class="code" data-lang="c"><pre><code>double height;
+scanf("%f", &amp;height);
+printf("%f\n", height);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>height.c:6:13: warning: format '%f' expects argument of type 'float *', but argument 2 has type 'double *' [-Wformat=]
+    6 |     scanf("%f", &amp;height);
+      |            ~^   ~~~~~~~
+      |             |   |
+      |             |   double *
+      |             float *
+      |            %lf
+</code></pre></div>
+
+      <p>ใน <code>scanf</code> <code>%f</code> คือ <code>float</code> ชนิดทศนิยมที่เล็กกว่า <code>double</code> ครึ่งหนึ่ง <code>scanf</code> จึงเขียนค่าลงกล่องแค่ครึ่งเดียว บนเครื่องที่เขียนเอกสารนี้ ป้อน <code>1.75</code> แล้วได้ <code>0.000000</code> ทางแก้อยู่ในบรรทัดสุดท้ายของคำเตือนแล้ว คือ <code>%lf</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>%d</code> <code>%lld</code> <code>%lf</code> <code>%s</code> ข้ามช่องว่างและการขึ้นบรรทัดให้เอง ข้อมูลเข้าแบ่งบรรทัดยังไงก็อ่านได้</li>
+        <li><code>%c</code> ไม่ข้ามอะไรเลย รับ <code>char</code> ด้วย <code>" %c"</code> ที่มีช่องว่างข้างหน้า</li>
+        <li><code>%s</code> อ่านหนึ่งคำจนเจอช่องว่าง ไม่มี <code>&amp;</code> และกล่องต้องใหญ่กว่าคำที่ยาวที่สุดหนึ่งช่อง</li>
+        <li>ตัวคั่นอย่าง <code>:</code> หรือ <code>/</code> ใส่ในข้อความแม่แบบให้ตรงกับข้อมูลเข้า เช่น <code>"%d:%d"</code></li>
+        <li><code>double</code> ใน <code>scanf</code> ต้องเป็น <code>%lf</code></li>
+        <li><code>scanf</code> อ่านไม่สำเร็จจะไม่มีข้อความเตือน ถ้าผลแปลก ให้พิมพ์ค่าที่รับมาดูก่อน</li>
+      </ul>
+    </article>

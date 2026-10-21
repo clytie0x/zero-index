@@ -1,0 +1,324 @@
+<article class="doc">
+      <h1>3.4 switch และ ? :</h1>
+
+      <p>เมื่อต้องเอาตัวแปรตัวเดียวไปเทียบกับค่าตายตัวหลายค่า เช่น เลขวันเป็นชื่อวัน เลขเดือนเป็นไตรมาส ตัวอักษรเกรดเป็นแต้ม <code>else if</code> ทำได้ แต่ต้องเขียน <code>day ==</code> ซ้ำทุกบรรทัด ภาษา C มีคำสั่ง <code>switch</code> ที่เขียนเรื่องแบบนี้ได้เป็นระเบียบกว่า ท้ายหน้ามีตัวดำเนินการ <code>? :</code> สำหรับเลือกค่าหนึ่งในสองค่าให้จบในบรรทัดเดียว</p>
+
+      <h2 id="switch">คำสั่ง switch</h2>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="weekday"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int day;
+    scanf("%d", &amp;day);
+    switch (day) { // (1)!
+        case 1: // (2)!
+            printf("Monday\n");
+            break; // (3)!
+        case 2:
+            printf("Tuesday\n");
+            break;
+        case 3:
+            printf("Wednesday\n");
+            break;
+        case 4:
+            printf("Thursday\n");
+            break;
+        case 5:
+            printf("Friday\n");
+            break;
+        case 6:
+            printf("Saturday\n");
+            break;
+        case 7:
+            printf("Sunday\n");
+            break;
+        default: // (4)!
+            printf("invalid\n");
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ค่าในวงเล็บคือค่าที่จะเอาไปเทียบ ต้องเป็นจำนวนเต็มหรือ <code>char</code></li>
+        <li><code>case</code> ตามด้วยค่าคงที่หนึ่งค่า และเครื่องหมาย <code>:</code> ถ้า <code>day</code> เท่ากับค่านี้ โปรแกรมจะกระโดดมาเริ่มทำตรงนี้</li>
+        <li><code>break</code> คือออกจาก <code>switch</code> ไปทำบรรทัดถัดจากปีกกาปิดของมัน</li>
+        <li><code>default</code> ทำเมื่อไม่ตรงกับ <code>case</code> ไหนเลย เหมือน <code>else</code> ตัวท้าย จะมีหรือไม่มีก็ได้</li>
+      </ol>
+
+      <div class="code" data-lang="input" data-for="weekday" data-title="ข้อมูลเข้า"><pre><code>3
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="weekday" data-title="C:\code\weekday.exe"><pre><code>Wednesday
+</code></pre></div>
+
+      <p>โปรแกรมนี้ทำงานเหมือนสาย <code>if (day == 1) ... else if (day == 2) ...</code> ทุกอย่าง แต่อ่านง่ายกว่าเพราะเห็นค่าที่เทียบเรียงกันเป็นแถว ถ้าป้อน <code>9</code> จะได้ <code>invalid</code> ถ้าตัด <code>default</code> ออกแล้วป้อน 9 โปรแกรมจะไม่พิมพ์อะไรเลย ในโจทย์ที่รับประกันว่าข้อมูลเข้าถูกต้องเสมอ ไม่ใส่ <code>default</code> ก็ได้ แต่ใส่ไว้ช่วยจับตอนป้อนผิดระหว่างทดสอบ</p>
+
+      <h2 id="fall-through">ไม่มี break แล้วไหลต่อ</h2>
+
+      <p>สิ่งที่ <code>switch</code> ต่างจาก <code>else if</code> มากที่สุด คือ <code>case</code> เป็นแค่ <strong>จุดเริ่มต้น</strong> ไม่ใช่ block ที่มีขอบ พอกระโดดมาที่ <code>case</code> ที่ตรงแล้ว โปรแกรมจะทำคำสั่งไล่ลงไปเรื่อยๆ ผ่าน <code>case</code> ตัวถัดไปด้วย จนกว่าจะเจอ <code>break</code> หรือถึงปีกกาปิดของ <code>switch</code> การไหลต่อแบบนี้เรียกว่า <strong>fall through</strong></p>
+
+      <p>ส่วนใหญ่มันคือบั๊ก ดูแบบที่ 1 ในส่วนลองทำให้พัง แต่มีกรณีหนึ่งที่ใช้ประโยชน์ได้ คือให้หลายค่าทำสิ่งเดียวกัน โดยวาง <code>case</code> ติดกันไว้โดยไม่มีคำสั่งคั่น</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="quarter"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int month;
+    scanf("%d", &amp;month);
+    switch (month) {
+        case 1:
+        case 2:
+        case 3:
+            printf("Q1\n");
+            break;
+        case 4:
+        case 5:
+        case 6:
+            printf("Q2\n");
+            break;
+        case 7:
+        case 8:
+        case 9:
+            printf("Q3\n");
+            break;
+        case 10:
+        case 11:
+        case 12:
+            printf("Q4\n");
+            break;
+        default:
+            printf("invalid\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="quarter" data-title="ข้อมูลเข้า"><pre><code>8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="quarter" data-title="C:\code\quarter.exe"><pre><code>Q3
+</code></pre></div>
+
+      <p>เดือน 8 กระโดดมาที่ <code>case 8:</code> บรรทัดที่ 19 ซึ่งไม่มีคำสั่ง จึงไหลลงไป <code>case 9:</code> ซึ่งก็ไม่มีคำสั่งอีก แล้วไหลต่อถึง <code>printf("Q3\n")</code> และ <code>break</code> วิธีนี้ใช้บ่อยกับโจทย์จำนวนวันในแต่ละเดือน ที่เดือน 1 3 5 7 8 10 12 มี 31 วันเหมือนกัน</p>
+
+      <h2 id="switch-char">switch กับตัวอักษร</h2>
+
+      <p><code>char</code> คือตัวเลข จึงใช้กับ <code>switch</code> ได้ ใส่ตัวอักษรในเครื่องหมายคำพูดเดี่ยวหลัง <code>case</code> ตัวอย่างนี้แปลงเกรดเป็นแต้ม และรับได้ทั้งตัวพิมพ์เล็กและพิมพ์ใหญ่ด้วยการวาง <code>case</code> คู่กัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="points"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char grade;
+    scanf(" %c", &amp;grade);
+    switch (grade) {
+        case 'A':
+        case 'a':
+            printf("4\n");
+            break;
+        case 'B':
+        case 'b':
+            printf("3\n");
+            break;
+        case 'C':
+        case 'c':
+            printf("2\n");
+            break;
+        case 'D':
+        case 'd':
+            printf("1\n");
+            break;
+        case 'F':
+        case 'f':
+            printf("0\n");
+            break;
+        default:
+            printf("unknown\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="points" data-title="ข้อมูลเข้า"><pre><code>b
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="points" data-title="C:\code\points.exe"><pre><code>3
+</code></pre></div>
+
+      <h2 id="switch-limits">switch ทำอะไรไม่ได้</h2>
+
+      <p><code>switch</code> เทียบได้แค่ว่า <strong>เท่ากับค่าคงที่ไหม</strong> เท่านั้น จึงมีข้อจำกัดที่ต้องรู้</p>
+
+      <ul>
+        <li><strong>เทียบช่วงไม่ได้</strong> ตัดเกรดจากคะแนนด้วย <code>case score &gt;= 80:</code> ไม่ได้ ต้องใช้ <code>else if</code> แบบหน้า 3.2</li>
+        <li><strong>ใช้กับ <code>double</code> ไม่ได้</strong> ค่าในวงเล็บต้องเป็นจำนวนเต็มหรือ <code>char</code></li>
+        <li><strong>ค่าหลัง <code>case</code> ต้องเป็นค่าคงที่</strong> เช่น <code>5</code> หรือ <code>'A'</code> ใส่ชื่อตัวแปรไม่ได้</li>
+        <li><strong>ค่าหลัง <code>case</code> ห้ามซ้ำกัน</strong></li>
+      </ul>
+
+      <p>ถ้าลองฝ่าฝืน จะได้ error ตอนคอมไพล์ ดูได้ในส่วนลองทำให้พัง กฎง่ายๆ ในการเลือกคือ ค่าตายตัวไม่กี่ค่าใช้ <code>switch</code> ช่วงหรือเงื่อนไขซับซ้อนใช้ <code>if</code></p>
+
+      <h2 id="ternary"><code>? :</code> เลือกค่าแบบสั้น</h2>
+
+      <p>บางครั้งเราแค่อยากได้ <strong>ค่า</strong> หนึ่งในสองค่าตามเงื่อนไข เช่น ค่าที่มากกว่าของสองตัว ถ้าใช้ <code>if else</code> ต้องเขียนห้าบรรทัด ตัวดำเนินการ <code>? :</code> ทำได้ในนิพจน์เดียว</p>
+
+      <div class="code" data-lang="text"><pre><code>เงื่อนไข ? ค่าเมื่อจริง : ค่าเมื่อเท็จ
+</code></pre></div>
+
+      <div class="code" data-lang="c" data-linenums data-test="larger"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a, b;
+    scanf("%d %d", &amp;a, &amp;b);
+    int larger = a &gt; b ? a : b;
+    printf("larger = %d\n", larger);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="larger" data-title="ข้อมูลเข้า"><pre><code>14 9
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="larger" data-title="C:\code\larger.exe"><pre><code>larger = 14
+</code></pre></div>
+
+      <p>อ่านบรรทัดที่ 7 ว่า "a มากกว่า b ไหม ถ้าใช่เอา a ถ้าไม่ใช่เอา b" ได้ผลเหมือนเขียน <code>if (a &gt; b) { larger = a; } else { larger = b; }</code> ตัวดำเนินการนี้มีสามส่วน จึงมักเรียกว่า ternary operator</p>
+
+      <p>เพราะ <code>? :</code> ให้ผลเป็นค่า จึงวางไว้ใน <code>printf</code> ได้เลย ใช้บ่อยกับการเลือกคำให้ถูกกับจำนวน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="items"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int count;
+    scanf("%d", &amp;count);
+    printf("%d %s\n", count, count == 1 ? "item" : "items");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="items" data-title="ข้อมูลเข้า"><pre><code>1
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="items" data-title="C:\code\items.exe"><pre><code>1 item
+</code></pre></div>
+
+      <p>ป้อน <code>3</code> จะได้ <code>3 items</code> ใช้ <code>? :</code> เฉพาะตอนที่เลือกค่าง่ายๆ แบบนี้ ถ้าต้องทำหลายคำสั่ง หรือมีมากกว่าสองทาง ให้กลับไปใช้ <code>if</code> การเอา <code>? :</code> มาซ้อนกันหลายชั้นเขียนได้ แต่อ่านยากมาก</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="missing-break">แบบที่ 1 ลืม break</h3>
+
+      <p>โปรแกรมชื่อวันที่ตัดเหลือสามวัน และลืม <code>break</code> ของสอง <code>case</code> แรก</p>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="day-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int day;
+    scanf("%d", &amp;day);
+    switch (day) {
+        case 1:
+            printf("Monday\n");
+        case 2:
+            printf("Tuesday\n");
+        case 3:
+            printf("Wednesday\n");
+            break;
+        default:
+            printf("other\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="day-bug" data-title="ข้อมูลเข้า"><pre><code>1
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="day-bug" data-title="C:\code\day.exe"><pre><code>Monday
+Tuesday
+Wednesday
+</code></pre></div>
+
+      <p>ป้อน 1 ได้สามวัน เพราะเริ่มที่ <code>case 1:</code> แล้วไหลผ่าน <code>case 2:</code> กับ <code>case 3:</code> ไปจนเจอ <code>break</code> บรรทัดที่ 14 ป้อน 2 จะได้ Tuesday กับ Wednesday ส่วนป้อน 3 ได้ถูกต้องเพราะมี <code>break</code> พอดี</p>
+
+      <p>ที่น่ากลัวคือ <code>-Wall</code> ไม่เตือนเรื่องนี้เลย ถ้าเปิดคำเตือนเพิ่มด้วย <code>-Wextra</code> (ในหน้า Compiler Flags เดียวกับที่ติ๊ก <code>-Wall</code> ไว้ในบทที่ 0 มีช่อง <strong>Enable extra compiler warnings [-Wextra]</strong>) จะได้</p>
+
+      <div class="code" data-lang="gcc"><pre><code>day.c:9:13: warning: this statement may fall through [-Wimplicit-fallthrough=]
+    9 |             printf("Monday\n");
+      |             ^~~~~~~~~~~~~~~~~~
+day.c:10:9: note: here
+   10 |         case 2:
+      |         ^~~~
+day.c:11:13: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   11 |             printf("Tuesday\n");
+      |             ^~~~~~~~~~~~~~~~~~~
+day.c:12:9: note: here
+   12 |         case 3:
+      |         ^~~~
+</code></pre></div>
+
+      <p>คำเตือนนี้ไม่ขึ้นกับ <code>case</code> ที่วางติดกันโดยไม่มีคำสั่งคั่นแบบโปรแกรม quarter เพราะแบบนั้นชัดเจนว่าตั้งใจ นิสัยที่ช่วยได้มากกว่าคำเตือน คือเขียน <code>case</code> แล้วพิมพ์ <code>break;</code> ปิดไว้ก่อนทันที ค่อยเติมคำสั่งตรงกลาง</p>
+
+      <h3 id="case-range">แบบที่ 2 ใส่ช่วงหลัง case</h3>
+
+      <div class="code" data-lang="c"><pre><code>    switch (score) {
+        case score &gt;= 80:
+            printf("A\n");
+            break;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>grade.c:8:9: error: case label does not reduce to an integer constant
+    8 |         case score &gt;= 80:
+      |         ^~~~
+</code></pre></div>
+
+      <p><code>case label</code> คือค่าหลัง <code>case</code> ข้อความบอกว่ามันไม่ได้เป็นค่าคงที่จำนวนเต็ม เพราะมีตัวแปร <code>score</code> อยู่ข้างใน ค่าของมันรู้ตอนรันเท่านั้น <code>switch</code> ต้องรู้ทุกค่าตั้งแต่ตอนคอมไพล์ งานแบ่งช่วงให้ใช้ <code>else if</code></p>
+
+      <h3 id="switch-double">แบบที่ 3 switch กับ double</h3>
+
+      <div class="code" data-lang="c"><pre><code>    double height;
+    scanf("%lf", &amp;height);
+    switch (height) {
+        case 1.5:
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>height.c:7:13: error: switch quantity not an integer
+    7 |     switch (height) {
+      |             ^~~~~~
+height.c:8:9: error: case label does not reduce to an integer constant
+    8 |         case 1.5:
+      |         ^~~~
+</code></pre></div>
+
+      <p>ได้สอง error ตัวแรกบอกว่าค่าที่เอามา switch ไม่ใช่จำนวนเต็ม ตัวที่สองบอกว่า 1.5 ไม่ใช่ค่าคงที่จำนวนเต็ม ทศนิยมเทียบเท่ากันตรงๆ ไม่ได้อยู่แล้วตามหน้า 3.3 ภาษา C จึงไม่ยอมตั้งแต่ต้น</p>
+
+      <h3 id="duplicate-case">แบบที่ 4 case ซ้ำ</h3>
+
+      <p>ในโปรแกรม quarter พิมพ์ <code>case 4:</code> ผิดเป็น <code>case 3:</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>quarter.c:13:9: error: duplicate case value
+   13 |         case 3:
+      |         ^~~~
+quarter.c:10:9: note: previously used here
+   10 |         case 3:
+      |         ^~~~
+</code></pre></div>
+
+      <p>ค่าเดียวกันอยู่สองที่ C ไม่รู้ว่าจะกระโดดไปที่ไหน จึงไม่ยอมคอมไพล์ และบอกตำแหน่งให้ทั้งสองจุด บรรทัด <code>note</code> คือข้อมูลเสริมของ error ข้างบน ชี้ไปที่ตัวแรกที่ใช้ค่านี้ไปแล้ว</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>switch</code> เทียบตัวแปรหนึ่งตัวกับค่าคงที่หลายค่า ใช้ได้กับจำนวนเต็มและ <code>char</code></li>
+        <li>ทุก <code>case</code> ต้องจบด้วย <code>break</code> ไม่อย่างนั้นจะไหลต่อไป <code>case</code> ถัดไป และ <code>-Wall</code> ไม่เตือน</li>
+        <li>วาง <code>case</code> ติดกันโดยไม่มีคำสั่งคั่น เพื่อให้หลายค่าทำสิ่งเดียวกัน</li>
+        <li><code>default</code> ทำเมื่อไม่ตรงกับ <code>case</code> ไหน เหมือน <code>else</code> ตัวท้าย</li>
+        <li>ช่วงตัวเลข ทศนิยม และเงื่อนไขที่มี <code>&amp;&amp;</code> <code>||</code> ใช้ <code>if</code></li>
+        <li><code>เงื่อนไข ? ก : ข</code> ให้ค่า ก เมื่อจริง ข เมื่อเท็จ ใช้กับการเลือกค่าง่ายๆ เท่านั้น</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

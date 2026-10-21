@@ -1,0 +1,236 @@
+<article class="doc">
+      <h1>2.1 แสดงผลด้วย printf</h1>
+
+      <p>ในการแข่งขัน คนตรวจคำตอบคือโปรแกรมที่เรียกว่า <strong>grader</strong> มันเทียบผลลัพธ์ของเรากับคำตอบทีละตัวอักษร ทศนิยมเกินมาหนึ่งหลัก หรือเว้นวรรคผิดหนึ่งช่อง ก็ได้ศูนย์คะแนนในชุดนั้นทันที <code>printf</code> คือเครื่องมือที่ทำให้เราคุมได้ทุกตัวอักษร บทที่ 1 ใช้ไปแล้วสามสี่แบบ หน้านี้รวมทุกแบบที่โจทย์ระดับ TOI Zero ต้องใช้ ทั้งชนิดข้อมูล จำนวนทศนิยม และตัวอักษรพิเศษอย่างเครื่องหมายคำพูด</p>
+
+      <h2 id="format-specifiers">ตัวกำหนดรูปแบบทั้งหมด</h2>
+
+      <p>ข้อความแรกใน <code>printf</code> เรียกว่า <strong>format string</strong> (ข้อความแม่แบบ) ตัวอักษรธรรมดาในนั้นพิมพ์ออกมาตรงตัว ส่วนที่ขึ้นต้นด้วย <code>%</code> เรียกว่า <strong>format specifier</strong> (ตัวกำหนดรูปแบบ) เป็นช่องที่รอค่ามาเติม ค่าที่อยู่หลังข้อความจะเติมลงช่องตามลำดับ อย่างที่เห็นในหน้า <a href="../01-variables/variables.html#initialize">1.1</a></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวกำหนด</th><th>ใช้พิมพ์</th><th>เจอครั้งแรก</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>%d</code></td><td><code>int</code></td><td><a href="../01-variables/variables.html#first-variable">1.1</a></td></tr>
+            <tr><td><code>%lld</code></td><td><code>long long</code></td><td><a href="../01-variables/integers.html#long-long">1.3</a></td></tr>
+            <tr><td><code>%f</code></td><td><code>double</code></td><td><a href="../01-variables/double-char.html#double">1.4</a></td></tr>
+            <tr><td><code>%c</code></td><td><code>char</code> ตัวอักษรหนึ่งตัว</td><td><a href="../01-variables/double-char.html#char">1.4</a></td></tr>
+            <tr><td><code>%s</code></td><td>ข้อความ (string)</td><td>หน้านี้</td></tr>
+            <tr><td><code>%%</code></td><td>เครื่องหมาย <code>%</code> หนึ่งตัว</td><td><a href="../01-variables/operators.html#arithmetic">1.2</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-test="specs"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 45;
+    long long views = 3500000000;
+    double height = 158.5;
+    char grade = 'B';
+    printf("%s got %d points, grade %c\n", "Mali", score, grade);
+    printf("height %f cm\n", height);
+    printf("views %lld\n", views);
+    printf("progress 75%%\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="specs" data-title="C:\code\specs.exe"><pre><code>Mali got 45 points, grade B
+height 158.500000 cm
+views 3500000000
+progress 75%
+</code></pre></div>
+
+      <ul>
+        <li>บรรทัดที่ 9 มีช่องสามช่อง <code>%s</code> <code>%d</code> <code>%c</code> ค่าสามค่าเติมตามลำดับ ชนิดของค่าต้องตรงกับช่อง</li>
+        <li><code>%s</code> ใช้กับข้อความในเครื่องหมายคำพูดคู่ ตอนนี้ยังไม่มีตัวแปรที่เก็บข้อความ จะได้เริ่มใช้ในหน้า <a href="scanf.html#words">2.3</a> และเรียนเต็มๆ ในบทที่ 6</li>
+        <li>บรรทัดที่ 12 ไม่มีค่าให้เติมเลย <code>%%</code> ไม่ใช่ช่อง แค่บอกให้พิมพ์ <code>%</code> หนึ่งตัว</li>
+      </ul>
+
+      <h2 id="decimal-places">กำหนดจำนวนทศนิยมด้วย %.Nf</h2>
+
+      <p><code>%f</code> พิมพ์ทศนิยม 6 ตำแหน่งเสมอ แต่โจทย์มักสั่งว่า "ตอบเป็นทศนิยม 2 ตำแหน่ง" ถ้าพิมพ์ 6 ตำแหน่งไป ผลไม่ตรงกับคำตอบ ก็ไม่ได้คะแนน วิธีกำหนดคือใส่จุดกับตัวเลขไว้ระหว่าง <code>%</code> กับ <code>f</code> เช่น <code>%.2f</code> แปลว่าทศนิยม 2 ตำแหน่ง</p>
+
+      <p>ใช้โปรแกรม BMI จากหน้า <a href="../01-variables/double-char.html#double">1.4</a> พิมพ์ค่าเดียวกันหลายแบบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="bmi"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    double weight, height;
+    scanf("%lf %lf", &amp;weight, &amp;height);
+    double bmi = weight / (height * height);
+    printf("%f\n", bmi);
+    printf("%.3f\n", bmi);
+    printf("%.2f\n", bmi);
+    printf("%.1f\n", bmi);
+    printf("%.0f\n", bmi);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bmi" data-title="ข้อมูลเข้า"><pre><code>60 1.70
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="bmi" data-title="C:\code\bmi.exe"><pre><code>20.761246
+20.761
+20.76
+20.8
+21
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>printf</code> <strong>ปัดเศษ</strong> ไม่ได้ตัดทิ้ง ค่าจริงคือ 20.7612456... พอเหลือ 1 ตำแหน่ง หลักถัดไปคือ 6 จึงปัดขึ้นเป็น 20.8 พอเหลือ 0 ตำแหน่ง ก็ปัดขึ้นเป็น 21</li>
+        <li><code>%.0f</code> ไม่พิมพ์จุดทศนิยมเลย</li>
+        <li>การปัดเกิดตอนพิมพ์เท่านั้น ค่าใน <code>bmi</code> ยังเป็น 20.7612456... เหมือนเดิม</li>
+      </ul>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">printf ปัด แต่ cast ตัด</p>
+        <p><code>%.0f</code> กับ 20.76 ได้ 21 แต่ <code>(int)20.76</code> ได้ 20 เพราะ cast ตัดทศนิยมทิ้งตามที่เห็นในหน้า <a href="../01-variables/double-char.html#cast">1.4</a> โจทย์ที่สั่งให้ "ปัดเศษ" ใช้ <code>%.0f</code> ได้ ส่วนโจทย์ที่สั่งให้ "ตัดเศษทิ้ง" ใช้ cast</p>
+      </div>
+
+      <p><code>printf</code> ไม่มีแบบ <code>%lf</code> ที่ต่างจาก <code>%f</code> เขียน <code>%lf</code> ใน <code>printf</code> ก็ได้ผลเหมือนกัน แต่ใน <code>scanf</code> ต้องเป็น <code>%lf</code> เท่านั้น ดูเหตุผลในหน้า <a href="scanf.html#break-it">2.3</a></p>
+
+      <h2 id="rounding">ปัดเศษไม่ได้ตรงอย่างที่คิดทุกครั้ง</h2>
+
+      <p>2.675 ปัดเป็นทศนิยม 2 ตำแหน่ง คิดในใจได้ 2.68 แต่ลองรันดู</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="round"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("%.2f\n", 2.675);
+    printf("%.20f\n", 2.675);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="round" data-title="C:\code\round.exe"><pre><code>2.67
+2.67499999999999982236
+</code></pre></div>
+
+      <p>บรรทัดที่สองเฉลยว่าทำไม 2.675 เก็บในฐานสองแบบลงตัวไม่ได้ เรื่องเดียวกับ 0.1 + 0.2 ในหน้า <a href="../01-variables/double-char.html#precision">1.4</a> ค่าที่เก็บจริงน้อยกว่า 2.675 นิดเดียว หลักที่สามจึงเป็น 4 และปัดลง</p>
+
+      <p>ไม่ต้องกลัวเรื่องนี้ในการแข่งขัน คนตั้งโจทย์รู้ปัญหานี้ และเลือกข้อมูลไม่ให้คำตอบตกตรงขอบของการปัดเศษ แต่ถ้าคำนวณเองแล้วได้ต่างจากตัวอย่างเฉพาะหลักสุดท้าย ให้นึกถึงเรื่องนี้ก่อนจะคิดว่าสูตรผิด</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">เลขที่ตกตรงครึ่งพอดี ต่างกันตามระบบ</p>
+        <p>เลขอย่าง 0.25 กับ 2.5 เก็บในฐานสองได้ลงตัวพอดี พอปัดตรงครึ่ง ระบบแต่ละแบบเลือกไม่เหมือนกัน วัดบนเครื่องที่เขียนเอกสารนี้ ฝั่ง Windows 11 ใช้ GCC 14.2 ของ Code::Blocks ฝั่ง Linux ใช้ Debian ใน WSL กับ GCC 16.2</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>คำสั่ง</th><th>Windows</th><th>Linux</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>printf("%.1f\n", 0.25);</code></td><td><code>0.3</code></td><td><code>0.2</code></td></tr>
+              <tr><td><code>printf("%.2f\n", 0.125);</code></td><td><code>0.13</code></td><td><code>0.12</code></td></tr>
+              <tr><td><code>printf("%.0f\n", 2.5);</code></td><td><code>3</code></td><td><code>2</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>grader อาจไม่ได้ใช้ระบบเดียวกับเครื่องเรา โจทย์ที่ดีจึงเลี่ยงตัวเลขพวกนี้ แบบฝึกหัดในเว็บนี้ก็เลี่ยงเหมือนกัน</p>
+      </div>
+
+      <h2 id="escape">ตัวอักษรพิเศษที่ขึ้นต้นด้วย backslash</h2>
+
+      <p>บางตัวอักษรพิมพ์ลงในข้อความตรงๆ ไม่ได้ การขึ้นบรรทัดใหม่กด <span class="keys"><kbd>Enter</kbd></span> กลางข้อความไม่ได้ เครื่องหมาย <code>"</code> ก็ใส่ตรงๆ ไม่ได้เพราะ compiler จะคิดว่าข้อความจบแล้ว ภาษา C จึงให้เขียนเป็นสองตัวอักษรที่ขึ้นต้นด้วย <code>\</code> (backslash) เรียกว่า <strong>escape sequence</strong></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เขียน</th><th>ได้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>\n</code></td><td>ขึ้นบรรทัดใหม่ (newline)</td></tr>
+            <tr><td><code>\t</code></td><td>tab กระโดดไปคอลัมน์ถัดไป</td></tr>
+            <tr><td><code>\"</code></td><td>เครื่องหมายคำพูด <code>"</code></td></tr>
+            <tr><td><code>\\</code></td><td>backslash <code>\</code> หนึ่งตัว</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าทำข้อ <a href="../00-start/exercises.html#ex-quotes">เครื่องหมายคำพูด</a> ในบทที่ 0 มาแล้ว จะเคยใช้ <code>\"</code> กับ <code>\\</code> ไปแล้ว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="escape"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("Teacher said \"save it in C:\\code\"\n");
+    printf("Name\tScore\n");
+    printf("Mali\t85\n");
+    printf("Somchai\t92\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="escape" data-title="C:\code\escape.exe"><pre><code>Teacher said "save it in C:\code"
+Name	Score
+Mali	85
+Somchai	92
+</code></pre></div>
+
+      <p><code>\t</code> ไม่ได้แปลว่าเว้นกี่ช่องตายตัว แต่แปลว่าเลื่อนไปจุดหยุดถัดไป ในหน้าต่างดำของ Windows จุดหยุดอยู่ทุก 8 ตัวอักษร (กล่องผลลัพธ์ในเว็บนี้แสดงแคบกว่านั้น) <code>Mali</code> ยาว 4 ตัว กับ <code>Somchai</code> ยาว 7 ตัว จึงไปหยุดที่ตำแหน่งเดียวกัน ตัวเลขเลยตรงกัน ถ้าชื่อยาวตั้งแต่ 8 ตัวขึ้นไปจะเกิดอะไร ดูในหน้า <a href="width.html#break-it">2.2</a></p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="missing-value">แบบที่ 1 ใส่ค่าไม่ครบช่อง</h3>
+
+      <p>มีช่อง <code>%d</code> สองช่อง แต่ส่งค่าไปตัวเดียว</p>
+
+      <div class="code" data-lang="c"><pre><code>int math = 78, science = 91;
+printf("math = %d, science = %d\n", math);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>scores.c:6:35: warning: format '%d' expects a matching 'int' argument [-Wformat=]
+    6 |     printf("math = %d, science = %d\n", math);
+      |                                  ~^
+      |                                   |
+      |                                   int
+scores.c:5:20: warning: unused variable 'science' [-Wunused-variable]
+    5 |     int math = 78, science = 91;
+      |                    ^~~~~~~
+</code></pre></div>
+
+      <p><code>expects a matching 'int' argument</code> แปลว่าช่องนี้รอ <code>int</code> มาเติม แต่ไม่มีให้ คำเตือนที่สองบอกว่า <code>science</code> ประกาศไว้แต่ไม่ได้ใช้ ซึ่งเป็นเบาะแสเดียวกัน รันต่อได้ แต่ช่องที่ไม่มีค่าจะได้ค่าขยะ บนเครื่องที่เขียนเอกสารนี้ได้ <code>math = 78, science = -1910617456</code></p>
+
+      <h3 id="single-backslash">แบบที่ 2 ใช้ backslash ตัวเดียว</h3>
+
+      <p>พิมพ์ path ของไฟล์โดยลืมว่า <code>\</code> ต้องเขียนสองตัว</p>
+
+      <div class="code" data-lang="c" data-linenums data-allow-warnings data-test="path"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("C:\code\new.c\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>path.c:5:29: warning: unknown escape sequence: '\c'
+    5 |     printf("C:\code\new.c\n");
+      |                             ^
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="path" data-title="C:\code\path.exe"><pre><code>C:code
+ew.c
+</code></pre></div>
+
+      <p>compiler เตือนแค่ <code>\c</code> ที่ไม่มีความหมาย แล้วทิ้ง backslash ไปเหลือแค่ <code>c</code> แต่ <code>\n</code> หน้าคำว่า <code>new</code> เป็น escape sequence ที่ถูกต้อง compiler จึงไม่เตือนอะไร และกลายเป็นการขึ้นบรรทัดใหม่ ตัว <code>n</code> หายไปด้วย ถ้าข้อความมี <code>\</code> ให้เขียน <code>\\</code> ทุกครั้ง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>%d</code> <code>%lld</code> <code>%f</code> <code>%c</code> <code>%s</code> ใช้กับ <code>int</code> <code>long long</code> <code>double</code> <code>char</code> และข้อความ <code>%%</code> พิมพ์ <code>%</code></li>
+        <li><code>%.2f</code> คือทศนิยม 2 ตำแหน่ง <code>printf</code> ปัดเศษ แต่ cast ตัดทิ้ง</li>
+        <li>ทศนิยมที่เก็บไม่ลงตัวอาจปัดผิดจากที่คิดในหลักสุดท้าย</li>
+        <li><code>\n</code> ขึ้นบรรทัด <code>\t</code> tab <code>\"</code> เครื่องหมายคำพูด <code>\\</code> backslash</li>
+        <li>จำนวนช่องกับจำนวนค่าต้องเท่ากัน ชนิดต้องตรงกัน ถ้าไม่ตรง <code>-Wall</code> มักเตือน</li>
+      </ul>
+    </article>

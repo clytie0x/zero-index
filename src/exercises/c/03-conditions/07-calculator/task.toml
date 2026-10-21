@@ -1,0 +1,3 @@
+title = "เครื่องคิดเลข"
+level = 2
+hint = '''<p>รับด้วย <code>scanf("%lld %c %lld", ...)</code> แล้วใช้ <code>switch</code> กับเครื่องหมาย ใน <code>case '/'</code> กับ <code>case '%'</code> ต้องตรวจก่อนว่า B เป็น 0 ไหม ถ้าหารด้วย 0 โปรแกรมจะพังตามหน้า 1.2 ผลคูณใหญ่ถึง 10<sup>18</sup> จึงต้องใช้ <code>long long</code></p>'''

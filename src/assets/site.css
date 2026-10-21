@@ -314,7 +314,10 @@ svg.ic { width: 20px; height: 20px; flex: none; }
   font-weight: 600;
 }
 
-.nav-section { margin-top: 18px; }
+.nav-section { margin-top: 6px; }
+.nav-section.is-open { margin: 14px 0; }
+.nav-section:not(.is-open) > ul { display: none; }
+.nav .nav-section:not(.is-open) .nav-section-title { color: var(--ink-2); font-weight: 600; }
 
 .nav .nav-section-title {
   font-weight: 700;
@@ -843,7 +846,7 @@ kbd {
   font-size: 12.5px;
   line-height: 1.5;
 }
-.code[data-lang="output"] pre { color: var(--term-ink); }
+.code[data-lang="output"] pre { color: var(--term-ink); tab-size: 8; }  /* หน้าต่างดำของ Windows หยุด tab ทุก 8 ตัวอักษร */
 
 /* ข้อความจาก compiler */
 .code[data-lang="gcc"] { background: var(--surface); }
