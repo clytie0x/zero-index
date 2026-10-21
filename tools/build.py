@@ -15,6 +15,7 @@ import html
 import posixpath
 import re
 import shutil
+import subprocess
 import sys
 import tomllib
 from dataclasses import dataclass
@@ -67,7 +68,12 @@ def load_site() -> tuple[dict, list[Page], list[tuple[Page, list[Page]]]]:
     return site, order, tree
 
 
+BASE = "/"  # ที่อยู่ของเว็บบนเซิร์ฟเวอร์ ตั้งจาก site.toml ตอน build ใช้กับหน้า 404 ที่ถูกเปิดได้จากทุก URL
+
+
 def rel(target: str, current: Page) -> str:
+    if current.kind == "404":
+        return BASE + target
     return posixpath.relpath(target, posixpath.dirname(current.path) or ".")
 
 
@@ -96,7 +102,9 @@ def render_nav(current: Page, home: Page, tree) -> str:
 
 
 def render_pager(current: Page, prev: Page | None, nxt: Page | None) -> str:
-    lines = ['    <nav class="pager" aria-label="หน้าก่อนหน้าและถัดไป">']
+    if not prev and not nxt:
+        return ""
+    lines =['    <nav class="pager" aria-label="หน้าก่อนหน้าและถัดไป">']
     if prev:
         lines += [f'      <a class="prev" href="{rel(prev.path, current)}">',
                   f"        {ICON_PREV}",
@@ -110,6 +118,13 @@ def render_pager(current: Page, prev: Page | None, nxt: Page | None) -> str:
     lines.append("    </nav>")
     return "\n".join(lines)
 
+
+NOT_FOUND = """<article class="doc">
+      <h1>ไม่พบหน้านี้</h1>
+
+      <p>ลิงก์นี้อาจพิมพ์ผิด หรือหน้านี้ถูกย้ายไปแล้ว ลองเริ่มจาก<a href="{base}index.html">หน้าแรก</a> หรือเลือกบทจากเมนูด้านซ้าย</p>
+    </article>
+"""
 
 LEVELS = {1: "ง่าย", 2: "กลาง", 3: "ยาก"}
 
@@ -190,6 +205,36 @@ def render_course_map(site: dict, current: Page) -> str:
     return "\n".join(lines)
 
 
+THAI_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+
+
+def last_updated(src: Path) -> str:
+    """วันที่ commit ล่าสุดของไฟล์ต้นฉบับ เป็นปี พ.ศ. ถ้ายังไม่เคย commit ให้คืนค่าว่าง"""
+    try:
+        r = subprocess.run(["git", "log", "-1", "--format=%cs", "--", str(src)], cwd=ROOT,
+                           capture_output=True, text=True, check=True)
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+    if not r.stdout.strip():
+        return ""
+    y, m, d = (int(x) for x in r.stdout.strip().split("-"))
+    return f"{d} {THAI_MONTHS[m - 1]} {y + 543}"
+
+
+def render_page_meta(site: dict, page: Page) -> str:
+    if page.kind == "404":
+        return ""
+    if page.exercises:
+        src, url = EXERCISES / page.exercises, f"tree/main/src/exercises/{page.exercises}"
+    else:
+        src, url = PAGES / page.path, f"edit/main/src/pages/{page.path}"
+    parts = [f'<a href="https://github.com/{site["repo"]}/{url}">แก้หน้านี้บน GitHub</a>']
+    date = last_updated(src)
+    if date:
+        parts.append(f"แก้ล่าสุด {date}")
+    return f'  <p class="page-meta">{"  ".join(parts)}</p>\n'
+
+
 def render(site: dict, layout: str, page: Page, home: Page, tree, prev, nxt, article: str) -> str:
     if "<!-- course-map -->" in article:
         article = article.replace("<!-- course-map -->", render_course_map(site, page))
@@ -200,8 +245,9 @@ def render(site: dict, layout: str, page: Page, home: Page, tree, prev, nxt, art
     values = {
         "title": site["name"] if page.kind == "home" else f"{page.label} - {site['name']}",
         "description": site["description"],
-        "root": rel("assets", page)[: -len("assets")],
-        "body_attr": ' class="page-home"' if page.kind == "home" else "",
+        "root": rel("assets/", page)[: -len("assets/")] if page.kind == "404" else rel("assets", page)[: -len("assets")],
+        "body_attr": (' class="page-home"' if page.kind == "home" else "") + f' data-page="{page.path}"',
+        "page_meta": render_page_meta(site, page),
         "home": rel(home.path, page),
         "name": esc(site["name"]),
         "repo": site["repo"],
@@ -302,6 +348,13 @@ def build() -> int:
         out = DIST / page.path
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(render(site, layout, page, home, tree, prev, nxt, article), encoding="utf-8", newline="\n")
+
+    global BASE
+    BASE = site.get("base", "/")
+    missing = Page("404.html", "404", "ไม่พบหน้านี้")
+    article = NOT_FOUND.replace("{base}", BASE)
+    (DIST / missing.path).write_text(render(site, layout, missing, home, tree, None, None, article),
+                                     encoding="utf-8", newline="\n")
 
     errors = check(order)
     if errors:

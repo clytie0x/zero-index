@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ต้องมีประวัติครบ จึงจะบอกวันที่แก้ล่าสุดของแต่ละหน้าได้
       # GCC 14 รุ่นเดียวกับที่มากับ Code::Blocks 25.03
       - run: sudo apt-get update && sudo apt-get install -y gcc-14 g++-14
       - run: python3 tools/check_code.py

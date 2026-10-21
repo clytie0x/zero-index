@@ -364,7 +364,42 @@
     update();
   }
 
+  /* ---------- เช็กลิสต์ จำค่าไว้ในเครื่อง ---------- */
+
+  function store(key, value) {
+    try {
+      if (value === undefined) return localStorage.getItem(key);
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+    } catch (e) { /* เบราว์เซอร์ไม่ให้เก็บ เช็กลิสต์ยังกดได้แต่จะไม่จำ */ }
+    return null;
+  }
+
+  function initChecklist() {
+    var page = location.pathname;
+    var boxes = $all(".task-list input[type=checkbox]");
+    boxes.forEach(function (box, i) {
+      var key = "zi-check:" + page + ":" + i;
+      box.checked = store(key) === "1";
+      box.addEventListener("change", function () {
+        store(key, box.checked ? "1" : null);
+        var all = boxes.every(function (b) { return b.checked; });
+        store("zi-done:" + page, all ? "1" : null);
+        markDone();
+      });
+    });
+    markDone();
+  }
+
+  function markDone() {
+    $all(".sidebar a[href]").forEach(function (a) {
+      var path = new URL(a.getAttribute("href"), location.href).pathname;
+      a.classList.toggle("is-done", store("zi-done:" + path) === "1");
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    initChecklist();
     initTheme();
     initDrawer();
     initCode();
