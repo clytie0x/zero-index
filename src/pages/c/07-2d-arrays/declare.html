@@ -1,0 +1,382 @@
+<article class="doc">
+      <h1>7.1 ประกาศและอ่านตาราง</h1>
+
+      <p>ในบทที่ 5 เราเก็บคะแนนสอบของนักเรียนทั้งห้องไว้ในอาเรย์ตัวเดียว ทีนี้ถ้านักเรียน 4 คนสอบคนละ 3 วิชา ข้อมูลจะเป็น <strong>ตาราง</strong> มีแถวและคอลัมน์ จะประกาศอาเรย์สี่ตัวแยกกันก็ได้ แต่พอมี 1000 คนก็ไม่ไหว ภาษา C จึงให้ประกาศอาเรย์ที่มีสองมิติได้ เรียกว่า <strong>อาเรย์สองมิติ (2D array)</strong> ใช้เก็บอะไรก็ได้ที่เป็นตาราง เช่น ตารางคะแนน ผังที่นั่ง กระดานเกม และแผนที่</p>
+
+      <h2 id="declare">ประกาศอาเรย์สองมิติ</h2>
+
+      <p>เขียนขนาดสองวงเล็บ วงเล็บแรกคือจำนวน <strong>แถว (row)</strong> วงเล็บที่สองคือจำนวน <strong>คอลัมน์ (column)</strong></p>
+
+      <div class="code" data-lang="c"><pre><code>int score[4][3];
+</code></pre></div>
+
+      <p>ได้ช่องทั้งหมด 4 × 3 = 12 ช่อง แต่ละช่องคือ <code>int</code> หนึ่งตัว เรียกช่องด้วยเลขสองตัว <code>score[แถว][คอลัมน์]</code> และเหมือนอาเรย์ในบทที่ 5 ทุกอย่าง คือ <strong>เลขเริ่มที่ 0</strong> แถวมีเลข 0 ถึง 3 คอลัมน์มีเลข 0 ถึง 2</p>
+
+      <figure>
+        <svg viewBox="0 0 480 252" width="480" style="max-width:100%;height:auto" role="img" aria-label="ตาราง score มี 4 แถว เลขแถว 0 ถึง 3 และ 3 คอลัมน์ เลขคอลัมน์ 0 ถึง 2 ช่องแถว 2 คอลัมน์ 1 มีค่า 88 คือ score[2][1]">
+          <g style="font-family:var(--font-code)">
+            <text x="218.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:14px;font-family:var(--font-text)">คอลัมน์ (column)</text>
+            <text x="146.0" y="52" text-anchor="middle" style="fill:var(--muted);font-size:15px">0</text>
+            <text x="218.0" y="52" text-anchor="middle" style="fill:var(--muted);font-size:15px">1</text>
+            <text x="290.0" y="52" text-anchor="middle" style="fill:var(--muted);font-size:15px">2</text>
+            <text x="30" y="157" text-anchor="middle" style="fill:var(--muted);font-size:14px;font-family:var(--font-text)">แถว</text>
+            <text x="30" y="175" text-anchor="middle" style="fill:var(--muted);font-size:13px">(row)</text>
+            <text x="92" y="92.0" text-anchor="middle" style="fill:var(--muted);font-size:15px">0</text>
+            <rect x="110" y="64" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="146.0" y="93.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">78</text>
+            <rect x="182" y="64" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="218.0" y="93.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">65</text>
+            <rect x="254" y="64" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="290.0" y="93.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">90</text>
+            <text x="92" y="136.0" text-anchor="middle" style="fill:var(--muted);font-size:15px">1</text>
+            <rect x="110" y="108" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="146.0" y="137.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">82</text>
+            <rect x="182" y="108" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="218.0" y="137.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">91</text>
+            <rect x="254" y="108" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="290.0" y="137.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">70</text>
+            <text x="92" y="180.0" text-anchor="middle" style="fill:var(--muted);font-size:15px">2</text>
+            <rect x="110" y="152" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="146.0" y="181.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">55</text>
+            <rect x="182" y="152" width="72" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="218.0" y="181.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">88</text>
+            <rect x="254" y="152" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="290.0" y="181.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">73</text>
+            <text x="92" y="224.0" text-anchor="middle" style="fill:var(--muted);font-size:15px">3</text>
+            <rect x="110" y="196" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="146.0" y="225.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">95</text>
+            <rect x="182" y="196" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="218.0" y="225.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">60</text>
+            <rect x="254" y="196" width="72" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="290.0" y="225.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">84</text>
+            <text x="346" y="180.0" text-anchor="start" style="fill:var(--ink);font-size:15px;fill:var(--brand-text)">score[2][1]</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ให้คิดว่าแถวคือนักเรียน คอลัมน์คือวิชา <code>score[2][1]</code> คือคะแนนของนักเรียนคนที่มีเลข 2 ในวิชาที่มีเลข 1 ได้ 88 ลำดับสำคัญมาก <strong>แถวมาก่อน คอลัมน์มาทีหลังเสมอ</strong></p>
+
+      <h2 id="first-table">ใส่ค่าเริ่มต้นและเรียกใช้ช่อง</h2>
+
+      <p>ใส่ค่าตอนประกาศได้ด้วยปีกกาซ้อนปีกกา ปีกกาด้านในหนึ่งชุดคือหนึ่งแถว</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="score"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score[4][3] = { // (1)!
+        {78, 65, 90},
+        {82, 91, 70},
+        {55, 88, 73},
+        {95, 60, 84}
+    };
+    printf("score[2][1] = %d\n", score[2][1]);
+    score[2][1] = 93; // (2)!
+    printf("after fix = %d\n", score[2][1]);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ปีกกาด้านนอกครอบทั้งตาราง ปีกกาด้านในแต่ละชุดคือหนึ่งแถว มี 3 ค่าตามจำนวนคอลัมน์ แถวสุดท้ายไม่ต้องมีจุลภาคต่อท้าย</li>
+        <li>หนึ่งช่องใช้เหมือนตัวแปร <code>int</code> ธรรมดาทุกอย่าง กำหนดค่าใหม่ บวก ลบ หรือส่งให้ <code>scanf</code> ด้วย <code>&amp;score[r][c]</code> ก็ได้</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="score" data-title="C:\code\score.exe"><pre><code>score[2][1] = 88
+after fix = 93
+</code></pre></div>
+
+      <h2 id="print-table">พิมพ์ทั้งตารางด้วยลูปซ้อน</h2>
+
+      <p>ตารางมีสองมิติ จึงใช้ลูปซ้อนสองชั้นแบบที่เรียนในบทที่ 4 ลูปนอกเดินทีละแถว ลูปในเดินทีละคอลัมน์ของแถวนั้น ตั้งชื่อตัวนับว่า <code>r</code> (row) กับ <code>c</code> (column) จะไม่สับสนว่าตัวไหนคือแถว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="print-table"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score[4][3] = {
+        {78, 65, 90},
+        {82, 91, 70},
+        {55, 88, 73},
+        {95, 60, 84}
+    };
+    for (int r = 0; r &lt; 4; r++) {
+        for (int c = 0; c &lt; 3; c++) {
+            printf("%d", score[r][c]);
+            if (c &lt; 3 - 1) {
+                printf(" ");
+            }
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="print-table" data-title="C:\code\print_table.exe"><pre><code>78 65 90
+82 91 70
+55 88 73
+95 60 84
+</code></pre></div>
+
+      <p>บรรทัดที่ 14 ใส่ช่องว่างหลังทุกตัวยกเว้นตัวสุดท้ายของแถว แต่ละบรรทัดจึงไม่มีช่องว่างเกินท้าย ส่วน <code>printf("\n")</code> บรรทัดที่ 18 อยู่นอกลูปใน แต่ยังอยู่ในลูปนอก จึงขึ้นบรรทัดใหม่ครั้งเดียวต่อหนึ่งแถว ลองย้ายมันเข้าไปไว้ในลูปใน แล้วดูว่าผลเปลี่ยนเป็นอย่างไร</p>
+
+      <h2 id="read-table">รับตารางจากข้อมูลเข้า</h2>
+
+      <p>โจทย์ตารางเกือบทุกข้อให้ข้อมูลเข้ารูปแบบเดียวกัน บรรทัดแรกบอกจำนวนแถว R กับจำนวนคอลัมน์ C บรรทัดต่อมาอีก R บรรทัดเป็นตัวเลขบรรทัดละ C ตัว เราไม่รู้ R กับ C ล่วงหน้า จึง <strong>ประกาศอาเรย์ขนาดเท่าขอบเขตที่มากที่สุดในโจทย์</strong> แล้วใช้แค่มุมบนซ้าย R × C ช่อง</p>
+
+      <p>ตัวอย่างนี้เป็นสวนมะม่วงที่แบ่งเป็นแปลง R แถว C คอลัมน์ แต่ละแปลงเก็บมะม่วงได้กี่ลัง โจทย์บอกว่า R และ C ไม่เกิน 100</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="read-grid"><pre><code>#include &lt;stdio.h&gt;
+
+int crates[100][100]; // (1)!
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            scanf("%d", &amp;crates[r][c]); // (2)!
+        }
+    }
+    int total = 0;
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            total += crates[r][c];
+        }
+    }
+    printf("%d rows, %d columns\n", rows, cols);
+    printf("total = %d crates\n", total);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ประกาศไว้นอก <code>main</code> เหมือนอาเรย์ใหญ่ในบทที่ 5 ทุกช่องจึงเริ่มต้นเป็น 0 และไม่ทำให้โปรแกรมพังเมื่อขนาดใหญ่ เหตุผลดูได้ในส่วนลองทำให้พังท้ายหน้า</li>
+        <li>อ่านทีละตัว ไล่ทีละแถวจากซ้ายไปขวา ตรงกับลำดับตัวเลขในข้อมูลเข้า <code>scanf</code> ข้ามช่องว่างและการขึ้นบรรทัดให้เอง จึงไม่ต้องสนใจว่าตัวเลขอยู่บรรทัดไหน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="read-grid" data-title="ข้อมูลเข้า"><pre><code>3 4
+5 2 7 1
+0 9 3 4
+8 6 2 6
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="read-grid" data-title="C:\code\mango.exe"><pre><code>3 rows, 4 columns
+total = 53 crates
+</code></pre></div>
+      </div>
+
+      <h2 id="max-position">หาค่ามากสุดและตำแหน่ง</h2>
+
+      <p>หาค่ามากสุดทำแบบเดียวกับอาเรย์หนึ่งมิติ ต่างกันแค่ตำแหน่งต้องจำสองค่า คือแถวกับคอลัมน์ ให้เริ่มจากช่อง <code>[0][0]</code> แล้วเทียบทุกช่อง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="max-pos"><pre><code>#include &lt;stdio.h&gt;
+
+int crates[100][100];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            scanf("%d", &amp;crates[r][c]);
+        }
+    }
+    int best_r = 0, best_c = 0;
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (crates[r][c] &gt; crates[best_r][best_c]) {
+                best_r = r;
+                best_c = c;
+            }
+        }
+    }
+    printf("best plot: row %d column %d\n", best_r + 1, best_c + 1);
+    printf("crates = %d\n", crates[best_r][best_c]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="max-pos" data-title="ข้อมูลเข้า"><pre><code>3 4
+5 2 7 1
+0 9 3 4
+8 6 2 6
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="max-pos" data-title="C:\code\best_plot.exe"><pre><code>best plot: row 2 column 2
+crates = 9
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>เก็บแค่ตำแหน่ง <code>best_r</code> กับ <code>best_c</code> ก็พอ ค่ามากสุดหาได้จาก <code>crates[best_r][best_c]</code></li>
+        <li>ในโค้ดแถวแรกคือแถว 0 แต่โจทย์ส่วนใหญ่นับแถวแรกเป็นแถวที่ 1 จึงต้อง <code>+ 1</code> ตอนพิมพ์ อ่านโจทย์ให้ดีทุกครั้งว่านับจาก 0 หรือ 1</li>
+        <li>ใช้ <code>&gt;</code> ไม่ใช่ <code>&gt;=</code> ถ้ามีค่ามากสุดซ้ำกันหลายช่อง จะได้ช่องที่เจอก่อน คือแถวบนสุด และถ้าแถวเดียวกันก็ซ้ายสุด โจทย์มักกำหนดแบบนี้เมื่อคำตอบเสมอกัน</li>
+      </ul>
+
+      <h2 id="memory">ในหน่วยความจำ ตารางคือแถวยาวแถวเดียว</h2>
+
+      <p>หน่วยความจำของคอมพิวเตอร์ไม่มีแถวและคอลัมน์ มีแต่ช่องเรียงกันเป็นเส้นตรง ภาษา C จึงเก็บอาเรย์สองมิติโดยวางแถว 0 ทั้งแถวก่อน ต่อด้วยแถว 1 ทั้งแถว ไปเรื่อยๆ</p>
+
+      <figure>
+        <svg viewBox="0 0 640 120" width="640" style="max-width:100%;height:auto" role="img" aria-label="ในหน่วยความจำ ช่องของ score เรียงต่อกันเป็นแถวเดียว แถว 0 ทั้งแถวก่อน ตามด้วยแถว 1 แถว 2 และแถว 3">
+          <g style="font-family:var(--font-code)">
+            <rect x="20" y="30" width="50" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="45.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">78</text>
+            <text x="45.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[0][0]</text>
+            <rect x="70" y="30" width="50" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="95.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">65</text>
+            <text x="95.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[0][1]</text>
+            <rect x="120" y="30" width="50" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="145.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">90</text>
+            <text x="145.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[0][2]</text>
+            <path d="M24 80 v8 H166 v-8" style="fill:none;stroke:var(--muted);stroke-width:1.5"/>
+            <text x="95.0" y="108" text-anchor="middle" style="fill:var(--muted);font-size:14px;font-family:var(--font-text)">แถว 0</text>
+            <rect x="170" y="30" width="50" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="195.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">82</text>
+            <text x="195.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[1][0]</text>
+            <rect x="220" y="30" width="50" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="245.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">91</text>
+            <text x="245.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[1][1]</text>
+            <rect x="270" y="30" width="50" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="295.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">70</text>
+            <text x="295.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[1][2]</text>
+            <path d="M174 80 v8 H316 v-8" style="fill:none;stroke:var(--muted);stroke-width:1.5"/>
+            <text x="245.0" y="108" text-anchor="middle" style="fill:var(--muted);font-size:14px;font-family:var(--font-text)">แถว 1</text>
+            <rect x="320" y="30" width="50" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="345.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">55</text>
+            <text x="345.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[2][0]</text>
+            <rect x="370" y="30" width="50" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="395.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">88</text>
+            <text x="395.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[2][1]</text>
+            <rect x="420" y="30" width="50" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="445.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">73</text>
+            <text x="445.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[2][2]</text>
+            <path d="M324 80 v8 H466 v-8" style="fill:none;stroke:var(--muted);stroke-width:1.5"/>
+            <text x="395.0" y="108" text-anchor="middle" style="fill:var(--muted);font-size:14px;font-family:var(--font-text)">แถว 2</text>
+            <rect x="470" y="30" width="50" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="495.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">95</text>
+            <text x="495.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[3][0]</text>
+            <rect x="520" y="30" width="50" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="545.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">60</text>
+            <text x="545.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[3][1]</text>
+            <rect x="570" y="30" width="50" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="595.0" y="56" text-anchor="middle" style="fill:var(--ink);font-size:16px">84</text>
+            <text x="595.0" y="20" text-anchor="middle" style="fill:var(--muted);font-size:11px">[3][2]</text>
+            <path d="M474 80 v8 H616 v-8" style="fill:none;stroke:var(--muted);stroke-width:1.5"/>
+            <text x="545.0" y="108" text-anchor="middle" style="fill:var(--muted);font-size:14px;font-family:var(--font-text)">แถว 3</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>เรื่องนี้มีผลสองอย่างที่ต้องรู้</p>
+
+      <ul>
+        <li><strong>ขนาดโตเร็วมาก</strong> <code>int grid[1000][1000]</code> คือหนึ่งล้านช่อง ช่องละ 4 byte รวม 4 ล้าน byte หรือราว 4 MB เกิน stack ราว 2 MB ที่วัดได้ในหน้า 5.5 ไปมาก ถ้าประกาศไว้ใน <code>main</code> จะพัง ตารางจึงประกาศไว้นอก <code>main</code> เสมอ</li>
+        <li><strong>เลขคอลัมน์ที่เกินจะล้นไปแถวถัดไปเงียบๆ</strong> ช่องถัดจาก <code>score[0][2]</code> ในหน่วยความจำคือ <code>score[1][0]</code> ถ้าเขียน <code>score[0][3]</code> ซึ่งไม่มีอยู่จริง โปรแกรมจะไม่ฟ้อง แต่หยิบ <code>score[1][0]</code> มาให้แทน เรื่องนี้จะกลับมาเป็นบั๊กที่หายากในหน้า 7.4</li>
+      </ul>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="missing-size">แบบที่ 1 ไม่บอกจำนวนคอลัมน์</h3>
+
+      <p>อาเรย์หนึ่งมิติที่ใส่ค่าเริ่มต้นไม่ต้องบอกขนาดก็ได้ หลายคนจึงลองเขียนแบบเดียวกันกับตาราง ในโปรแกรม score เปลี่ยนบรรทัดที่ 5 เป็น <code>int score[][] = {</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>score.c: In function 'main':
+score.c:5:9: error: array type has incomplete element type 'int[]'
+    5 |     int score[][] = {
+      |         ^~~~~
+score.c:5:9: note: declaration of 'score' as multidimensional array must have bounds for all dimensions except the first
+score.c:5:9: warning: unused variable 'score' [-Wunused-variable]
+</code></pre></div>
+
+      <p>บรรทัด note บอกกฎไว้ตรงๆ อาเรย์หลายมิติละขนาดได้แค่มิติแรก เพราะ compiler ต้องรู้ว่าหนึ่งแถวยาวกี่ช่อง ถึงจะรู้ว่าแถวถัดไปเริ่มตรงไหนในหน่วยความจำ เขียน <code>int score[][3]</code> จึงใช้ได้ แต่เขียนขนาดครบทั้งสองมิติอ่านง่ายกว่า</p>
+
+      <h3 id="out-of-range">แบบที่ 2 เรียกแถวที่ไม่มีอยู่</h3>
+
+      <p>ตารางมี 4 แถว คือแถว 0 ถึง 3 ในโปรแกรม score แก้บรรทัดที่ 11 ให้พิมพ์ <code>score[4][1]</code></p>
+
+      <div class="code" data-lang="c"><pre><code>printf("score[4][1] = %d\n", score[4][1]);
+</code></pre></div>
+
+      <p>คอมไพล์ใน Code::Blocks ที่เปิดแค่ <code>-Wall</code> ไม่มีคำเตือนเลย บนเครื่องที่เขียนเอกสารนี้รันแล้วได้ <code>score[4][1] = 95</code> ดูเหมือนคะแนนจริงเสียด้วย ทั้งที่เป็นค่าขยะจากหน่วยความจำที่อยู่ถัดจากตาราง ถ้าคอมไพล์แบบเปิด <code>-O2</code> เพิ่ม gcc ถึงจะเตือน และรันแล้วได้ <code>254</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>score.c: In function 'main':
+score.c:11:39: warning: array subscript 4 is above array bounds of 'int[4][3]' [-Warray-bounds=]
+   11 |     printf("score[4][1] = %d\n", score[4][1]);
+      |                                  ~~~~~^~~
+score.c:5:9: note: while referencing 'score'
+    5 |     int score[4][3] = {
+      |         ^~~~~
+</code></pre></div>
+
+      <p>คำเตือนนี้ขึ้นได้เพราะเลข 4 เขียนตายตัวในโค้ด ถ้าเลขแถวมาจากตัวแปรในลูป ไม่มีใครเตือน ต้องคุมเองว่าลูปเดินถึง <code>r &lt; rows</code> ไม่ใช่ <code>r &lt;= rows</code></p>
+
+      <h3 id="swap-rows-cols">แบบที่ 3 สลับแถวกับคอลัมน์ตอนอ่าน</h3>
+
+      <p>ในโปรแกรม mango ลูปอ่านเขียนสลับกันเป็น <code>r &lt; cols</code> และ <code>c &lt; rows</code> ส่วนลูปอื่นยังถูก แล้วเพิ่มส่วนพิมพ์ตารางท้ายโปรแกรม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="swap-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int crates[100][100];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; cols; r++) {
+        for (int c = 0; c &lt; rows; c++) {
+            scanf("%d", &amp;crates[r][c]);
+        }
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            printf("%d", crates[r][c]);
+            if (c &lt; cols - 1) {
+                printf(" ");
+            }
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="swap-bug" data-title="ข้อมูลเข้า"><pre><code>3 4
+5 2 7 1
+0 9 3 4
+8 6 2 6
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="swap-bug" data-title="C:\code\mango.exe"><pre><code>5 2 7 0
+1 0 9 0
+3 4 8 0
+</code></pre></div>
+      </div>
+
+      <p>ลูปอ่านเห็นตารางเป็น 4 แถว แถวละ 3 ตัว ตัวเลขจึงถูกเก็บผิดช่องทั้งหมด และคอลัมน์สุดท้ายเป็น 0 เพราะไม่เคยถูกอ่านใส่ ถ้าทดสอบแค่ตารางจัตุรัสอย่าง 3 × 3 จะไม่เห็นบั๊กนี้ เพราะ <code>rows</code> กับ <code>cols</code> เท่ากัน ทดสอบโปรแกรมตารางให้ใช้ R กับ C ที่ไม่เท่ากันเสมอ</p>
+
+      <h3 id="local-big">แบบที่ 4 ประกาศตารางใหญ่ไว้ใน main</h3>
+
+      <p>ย้าย <code>crates</code> เข้าไปไว้ใน <code>main</code> และขยายเป็น <code>int crates[1000][1000];</code> เผื่อโจทย์ที่ R และ C ถึง 1000 คอมไพล์ผ่านโดยไม่มีคำเตือน แต่พอรันแล้วป้อนตารางเล็กๆ โปรแกรมปิดตัวทันทีโดยไม่พิมพ์อะไร Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p>นี่คือ stack overflow แบบเดียวกับในหน้า 5.5 ตารางขนาดนี้ดูไม่ใหญ่เพราะเขียนแค่ 1000 แต่ 1000 × 1000 คือหนึ่งล้านช่อง ราว 4 MB เกิน stack ราว 2 MB ไปเท่าตัว ย้ายกลับไปไว้นอก <code>main</code> แล้วจะรันได้ปกติ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>int a[R][C];</code> ได้ตาราง R แถว C คอลัมน์ เรียกช่องด้วย <code>a[แถว][คอลัมน์]</code> เลขเริ่มที่ 0</li>
+        <li>เดินทั้งตารางด้วยลูปซ้อน ลูปนอกคือแถว ลูปในคือคอลัมน์ ตั้งชื่อตัวนับ <code>r</code> กับ <code>c</code> จะไม่สับสน</li>
+        <li>ประกาศขนาดเท่าขอบเขตมากสุดในโจทย์ ไว้นอก <code>main</code> แล้วใช้แค่ R × C ช่องมุมบนซ้าย</li>
+        <li>หาค่ามากสุดในตารางต้องจำตำแหน่งสองค่า และระวังว่าโจทย์นับแถวจาก 0 หรือ 1</li>
+        <li>ในหน่วยความจำตารางเรียงทีละแถว เลขเกินขอบไม่ฟ้อง แต่หยิบช่องอื่นมาแทน</li>
+        <li>ทดสอบด้วยตารางที่ R ไม่เท่ากับ C เสมอ</li>
+      </ul>
+    </article>

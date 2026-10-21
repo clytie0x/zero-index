@@ -1,1 +1,3 @@
 dist/
+# ชุดทดสอบใหญ่สร้างใหม่ได้ด้วย python tools/prepare_tests.py
+src/exercises/**/tests/big*

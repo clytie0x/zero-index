@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 7 อาเรย์สองมิติ</h1>
+
+      <p>จบบทนี้ น้องจะเก็บข้อมูลที่เป็นตารางได้ ไม่ว่าจะเป็นตารางคะแนน เมทริกซ์ หรือแผนที่ที่วาดด้วย <code>#</code> กับ <code>.</code> รวมผลตามแถว ตามคอลัมน์ และตามเส้นทแยง คูณเมทริกซ์ เดินดูช่องข้างเคียงโดยไม่หลุดออกนอกตาราง จำลองตารางที่เปลี่ยนไปทีละรอบ และตอบผลรวมในสี่เหลี่ยมเป็นแสนคำถามได้ทันเวลา โจทย์กริดแบบนี้ออกในการสอบ TOI Zero ระดับ A2 และ A3 แทบทุกปี และเป็นพื้นฐานของ BFS บนตารางในบทที่ 27</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="declare.html">7.1 ประกาศและอ่านตาราง</a></td><td>ประกาศ ใส่ค่า อ่านตาราง R × C พิมพ์ หาค่ามากสุดพร้อมตำแหน่ง และตารางอยู่ในหน่วยความจำอย่างไร</td></tr>
+            <tr><td><a href="matrix.html">7.2 แถว คอลัมน์ และเมทริกซ์</a></td><td>ผลรวมแถว คอลัมน์ เส้นทแยง transpose บวกและคูณเมทริกซ์</td></tr>
+            <tr><td><a href="char-grid.html">7.3 ตารางตัวอักษร</a></td><td>อ่านแผนที่ทีละแถวด้วย <code>%s</code> หาตำแหน่ง และแปลงแผนที่ตัวเลขหลักเดียว</td></tr>
+            <tr><td><a href="neighbors.html">7.4 ช่องข้างเคียง</a></td><td>เดิน 4 ทิศและ 8 ทิศด้วย <code>dr</code> <code>dc</code> เช็กขอบตาราง และจำลองทีละรอบแบบ Game of Life</td></tr>
+            <tr><td><a href="prefix-sum.html">7.5 ผลรวมสะสมสองมิติ</a></td><td>สร้างตาราง prefix แล้วตอบผลรวมในสี่เหลี่ยมด้วยการบวกลบสี่ค่า</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>อ่านตาราง 3 แถว 4 คอลัมน์ แล้วพิมพ์ผลรวมของแต่ละแถวและแต่ละคอลัมน์ได้ถูกทั้งเจ็ดค่า</span></label></li>
+        <li><label><input type="checkbox"><span>transpose ตาราง <code>1 2 3</code> <code>4 5 6</code> แล้วได้ <code>1 4</code> <code>2 5</code> <code>3 6</code> และคูณเมทริกซ์ตัวอย่างในหน้า 7.2 ได้ <code>69 71</code> <code>108 89</code></span></label></li>
+        <li><label><input type="checkbox"><span>อ่านแผนที่ <code>#</code> กับ <code>.</code> ด้วย <code>%s</code> ทีละแถว แล้วนับ <code>#</code> ได้ถูก ทั้งแผนที่จัตุรัสและแผนที่ที่ R ไม่เท่ากับ C</span></label></li>
+        <li><label><input type="checkbox"><span>ใช้ <code>dr</code> <code>dc</code> นับ <code>#</code> รอบทุกช่องใน 8 ทิศ แล้วตรวจด้วยมือว่าช่องมุมทั้งสี่ได้ค่าถูก</span></label></li>
+        <li><label><input type="checkbox"><span>สร้างตาราง prefix ของตาราง 3 × 4 ในหน้า 7.5 ด้วยมือ แล้วตรงกับที่โปรแกรมพิมพ์ทุกช่อง และตอบสี่เหลี่ยมกลางตารางได้ตรงกับการบวกทีละช่อง</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ</span></label></li>
+      </ul>
+    </article>

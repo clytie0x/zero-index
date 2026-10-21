@@ -1,0 +1,505 @@
+<article class="doc">
+      <h1>7.2 แถว คอลัมน์ และเมทริกซ์</h1>
+
+      <p>พอเก็บตารางได้แล้ว งานที่เจอบ่อยที่สุดคือรวมตัวเลขตามแนวต่างๆ คะแนนรวมของนักเรียนแต่ละคนคือผลรวมตามแถว คะแนนรวมของแต่ละวิชาคือผลรวมตามคอลัมน์ หน้านี้ฝึกเดินตารางตามแถว ตามคอลัมน์ และตามเส้นทแยง แล้วต่อด้วยงานของ <strong>เมทริกซ์ (matrix)</strong> ซึ่งคือชื่อในวิชาคณิตศาสตร์ของตารางตัวเลข ได้แก่ สลับแถวเป็นคอลัมน์ บวก และคูณ</p>
+
+      <h2 id="row-col-sum">ผลรวมแต่ละแถวและแต่ละคอลัมน์</h2>
+
+      <p>ใช้ตารางคะแนนจากหน้า 7.1 แต่คราวนี้รับจากข้อมูลเข้า บรรทัดแรกคือจำนวนนักเรียนกับจำนวนวิชา</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="row-col-sum"><pre><code>#include &lt;stdio.h&gt;
+
+int score[100][100];
+
+int main()
+{
+    int students, subjects;
+    scanf("%d %d", &amp;students, &amp;subjects);
+    for (int r = 0; r &lt; students; r++) {
+        for (int c = 0; c &lt; subjects; c++) {
+            scanf("%d", &amp;score[r][c]);
+        }
+    }
+    for (int r = 0; r &lt; students; r++) {
+        int total = 0; // (1)!
+        for (int c = 0; c &lt; subjects; c++) {
+            total += score[r][c];
+        }
+        printf("student %d: %d\n", r + 1, total);
+    }
+    for (int c = 0; c &lt; subjects; c++) { // (2)!
+        int total = 0;
+        for (int r = 0; r &lt; students; r++) {
+            total += score[r][c];
+        }
+        printf("subject %d: %d\n", c + 1, total);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตั้ง <code>total</code> เป็น 0 ใหม่ทุกครั้งที่เริ่มแถวใหม่ ถ้าตั้งไว้นอกลูปนอก ผลรวมจะทบต่อจากแถวก่อน ดูในส่วนลองทำให้พัง</li>
+        <li>ผลรวมตามคอลัมน์ สลับให้ลูปนอกเดินคอลัมน์ ลูปในเดินแถว ส่วน <code>score[r][c]</code> ยังเขียนแบบเดิม แถวมาก่อนคอลัมน์เสมอ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="row-col-sum" data-title="ข้อมูลเข้า"><pre><code>4 3
+78 65 90
+82 91 70
+55 88 73
+95 60 84
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="row-col-sum" data-title="C:\code\totals.exe"><pre><code>student 1: 233
+student 2: 243
+student 3: 216
+student 4: 239
+subject 1: 310
+subject 2: 304
+subject 3: 317
+</code></pre></div>
+      </div>
+
+      <p>สองส่วนนี้ต่างกันแค่ว่าลูปไหนอยู่นอก ลูปนอกคือสิ่งที่เราอยากได้คำตอบทีละตัว อยากได้คำตอบต่อนักเรียนหนึ่งคน ลูปนอกก็คือแถว อยากได้คำตอบต่อวิชา ลูปนอกก็คือคอลัมน์</p>
+
+      <h2 id="diagonals">เส้นทแยง</h2>
+
+      <p>ตารางที่จำนวนแถวเท่ากับจำนวนคอลัมน์เรียกว่า <strong>ตารางจัตุรัส (square matrix)</strong> ขนาด N × N มีเส้นทแยงสองเส้น <strong>เส้นทแยงหลัก</strong> ลากจากมุมบนซ้ายลงไปมุมล่างขวา และ <strong>เส้นทแยงรอง</strong> ลากจากมุมบนขวาลงไปมุมล่างซ้าย</p>
+
+      <figure>
+        <svg viewBox="0 0 520 254" width="520" style="max-width:100%;height:auto" role="img" aria-label="ตาราง 4 คูณ 4 เส้นทแยงหลักคือช่องที่เลขแถวเท่ากับเลขคอลัมน์ เส้นทแยงรองคือช่องที่เลขแถวบวกเลขคอลัมน์ได้ 3">
+          <g style="font-family:var(--font-code)">
+            <text x="95.0" y="28" text-anchor="middle" style="fill:var(--muted);font-size:14px">0</text>
+            <text x="145.0" y="28" text-anchor="middle" style="fill:var(--muted);font-size:14px">1</text>
+            <text x="195.0" y="28" text-anchor="middle" style="fill:var(--muted);font-size:14px">2</text>
+            <text x="245.0" y="28" text-anchor="middle" style="fill:var(--muted);font-size:14px">3</text>
+            <text x="54" y="70.0" text-anchor="middle" style="fill:var(--muted);font-size:14px">0</text>
+            <rect x="70" y="40" width="50" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="95.0" y="70.0" text-anchor="middle" style="fill:var(--ink);font-size:13px">0,0</text>
+            <rect x="120" y="40" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <rect x="170" y="40" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <rect x="220" y="40" width="50" height="50" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="245.0" y="70.0" text-anchor="middle" style="fill:var(--ink);font-size:13px">0,3</text>
+            <text x="54" y="120.0" text-anchor="middle" style="fill:var(--muted);font-size:14px">1</text>
+            <rect x="70" y="90" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <rect x="120" y="90" width="50" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="145.0" y="120.0" text-anchor="middle" style="fill:var(--ink);font-size:13px">1,1</text>
+            <rect x="170" y="90" width="50" height="50" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="195.0" y="120.0" text-anchor="middle" style="fill:var(--ink);font-size:13px">1,2</text>
+            <rect x="220" y="90" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="54" y="170.0" text-anchor="middle" style="fill:var(--muted);font-size:14px">2</text>
+            <rect x="70" y="140" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <rect x="120" y="140" width="50" height="50" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="145.0" y="170.0" text-anchor="middle" style="fill:var(--ink);font-size:13px">2,1</text>
+            <rect x="170" y="140" width="50" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="195.0" y="170.0" text-anchor="middle" style="fill:var(--ink);font-size:13px">2,2</text>
+            <rect x="220" y="140" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="54" y="220.0" text-anchor="middle" style="fill:var(--muted);font-size:14px">3</text>
+            <rect x="70" y="190" width="50" height="50" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="95.0" y="220.0" text-anchor="middle" style="fill:var(--ink);font-size:13px">3,0</text>
+            <rect x="120" y="190" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <rect x="170" y="190" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <rect x="220" y="190" width="50" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="245.0" y="220.0" text-anchor="middle" style="fill:var(--ink);font-size:13px">3,3</text>
+            <rect x="300" y="60" width="22" height="22" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="332" y="77" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">แถว = คอลัมน์</text>
+            <text x="332" y="98" text-anchor="start" style="fill:var(--muted);font-size:14px">a[i][i]</text>
+            <rect x="300" y="140" width="22" height="22" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="332" y="157" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">แถว + คอลัมน์ = N - 1</text>
+            <text x="332" y="178" text-anchor="start" style="fill:var(--muted);font-size:14px">a[i][N - 1 - i]</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ดูเลขแถวกับเลขคอลัมน์ของแต่ละช่องแล้วจะเห็นกฎ</p>
+
+      <ul>
+        <li>เส้นทแยงหลัก เลขแถวเท่ากับเลขคอลัมน์ ช่องในแถว i คือ <code>a[i][i]</code></li>
+        <li>เส้นทแยงรอง เลขแถวบวกเลขคอลัมน์ได้ N - 1 เสมอ ช่องในแถว i จึงอยู่คอลัมน์ N - 1 - i คือ <code>a[i][N - 1 - i]</code></li>
+      </ul>
+
+      <p>แต่ละแถวมีช่องบนเส้นทแยงแค่ช่องเดียว จึงใช้ลูปชั้นเดียวก็พอ ไม่ต้องไล่ทั้งตารางแล้วเช็กว่า <code>r == c</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="diagonal"><pre><code>#include &lt;stdio.h&gt;
+
+int a[100][100];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int r = 0; r &lt; n; r++) {
+        for (int c = 0; c &lt; n; c++) {
+            scanf("%d", &amp;a[r][c]);
+        }
+    }
+    int main_sum = 0, anti_sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        main_sum += a[i][i];
+        anti_sum += a[i][n - 1 - i];
+    }
+    printf("main diagonal = %d\n", main_sum);
+    printf("anti diagonal = %d\n", anti_sum);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="diagonal" data-title="ข้อมูลเข้า"><pre><code>4
+3 8 1 6
+7 2 9 4
+5 0 6 1
+2 7 3 8
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="diagonal" data-title="C:\code\diagonal.exe"><pre><code>main diagonal = 19
+anti diagonal = 17
+</code></pre></div>
+      </div>
+
+      <p>3 + 2 + 6 + 8 = 19 และ 6 + 9 + 0 + 2 = 17 ถ้า N เป็นเลขคี่ ช่องตรงกลางพอดีจะอยู่บนเส้นทแยงทั้งสองเส้น โจทย์ที่ให้รวมสองเส้นเข้าด้วยกันจึงต้องระวังนับช่องนี้ซ้ำ</p>
+
+      <h2 id="transpose">สลับแถวเป็นคอลัมน์ (transpose)</h2>
+
+      <p>การสลับให้แถวที่ 1 กลายเป็นคอลัมน์ที่ 1 แถวที่ 2 กลายเป็นคอลัมน์ที่ 2 ไปเรื่อยๆ เรียกว่า <strong>transpose</strong> ตาราง R × C จะกลายเป็น C × R เช่น ตารางคะแนนที่แถวเป็นนักเรียน พอ transpose แล้วแถวจะเป็นวิชาแทน</p>
+
+      <figure>
+        <svg viewBox="0 0 410 192" width="410" style="max-width:100%;height:auto" role="img" aria-label="ตาราง a มี 2 แถว 3 คอลัมน์ พอสลับแถวเป็นคอลัมน์ได้ตาราง t มี 3 แถว 2 คอลัมน์ แถวแรกของ a คือ 1 2 3 กลายเป็นคอลัมน์แรกของ t">
+          <g style="font-family:var(--font-code)">
+            <text x="99.0" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">a  2 x 3</text>
+            <rect x="30" y="40" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="53.0" y="69.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">1</text>
+            <rect x="76" y="40" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="99.0" y="69.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="122" y="40" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="145.0" y="69.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="30" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="53.0" y="115.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">4</text>
+            <rect x="76" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="99.0" y="115.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="122" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="145.0" y="115.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <path d="M188 86 h70" style="fill:none;stroke:var(--muted);stroke-width:2"/>
+            <path d="M250 80 l8 6 l-8 6" style="fill:none;stroke:var(--muted);stroke-width:2"/>
+            <text x="334" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">t  3 x 2</text>
+            <rect x="288" y="40" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="311.0" y="69.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">1</text>
+            <rect x="334" y="40" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="357.0" y="69.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">4</text>
+            <rect x="288" y="86" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="311.0" y="115.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="334" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="357.0" y="115.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="288" y="132" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="311.0" y="161.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="334" y="132" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="357.0" y="161.0" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ช่อง <code>a[r][c]</code> ย้ายไปอยู่ที่ <code>t[c][r]</code> แค่สลับเลขสองตัว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="transpose"><pre><code>#include &lt;stdio.h&gt;
+
+int a[100][100], t[100][100];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            scanf("%d", &amp;a[r][c]);
+            t[c][r] = a[r][c];
+        }
+    }
+    for (int r = 0; r &lt; cols; r++) {
+        for (int c = 0; c &lt; rows; c++) {
+            printf("%d", t[r][c]);
+            if (c &lt; rows - 1) {
+                printf(" ");
+            }
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="transpose" data-title="ข้อมูลเข้า"><pre><code>2 3
+1 2 3
+4 5 6
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="transpose" data-title="C:\code\transpose.exe"><pre><code>1 4
+2 5
+3 6
+</code></pre></div>
+      </div>
+
+      <p>ตาราง <code>t</code> มี <code>cols</code> แถว และ <code>rows</code> คอลัมน์ ลูปพิมพ์จึงสลับขอบเขตกับลูปอ่าน ถ้าแค่ต้องการพิมพ์ ไม่ได้เอา <code>t</code> ไปใช้ต่อ ไม่ต้องมี <code>t</code> ก็ได้ ให้ลูปนอกเดินคอลัมน์ของ <code>a</code> ลูปในเดินแถว แล้วพิมพ์ <code>a[r][c]</code> แบบเดียวกับผลรวมตามคอลัมน์</p>
+
+      <h2 id="add">บวกเมทริกซ์</h2>
+
+      <p>ตารางสองตารางขนาดเท่ากัน บวกกันได้โดยบวกช่องที่ตำแหน่งตรงกัน เช่น คะแนนกลางภาคกับคะแนนปลายภาคของนักเรียนคนเดียวกันวิชาเดียวกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="add"><pre><code>#include &lt;stdio.h&gt;
+
+int midterm[100][100], final_exam[100][100];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            scanf("%d", &amp;midterm[r][c]);
+        }
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            scanf("%d", &amp;final_exam[r][c]);
+        }
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            printf("%d", midterm[r][c] + final_exam[r][c]);
+            if (c &lt; cols - 1) {
+                printf(" ");
+            }
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="add" data-title="ข้อมูลเข้า"><pre><code>2 3
+30 25 40
+35 20 28
+45 38 41
+50 29 33
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="add" data-title="C:\code\add.exe"><pre><code>75 63 81
+85 49 61
+</code></pre></div>
+      </div>
+
+      <p>ลบเมทริกซ์ก็ทำแบบเดียวกัน แค่เปลี่ยนบวกเป็นลบ</p>
+
+      <h2 id="multiply">คูณเมทริกซ์</h2>
+
+      <p>การคูณเมทริกซ์ไม่ได้คูณช่องที่ตรงกันแบบการบวก ดูจากเรื่องนี้ก่อน ลูกค้า 2 คนจะซื้อของ 3 อย่าง ตาราง <code>qty</code> บอกว่าลูกค้าแต่ละคนซื้ออะไรกี่ชิ้น ส่วนตาราง <code>price</code> บอกราคาของแต่ละอย่างที่ร้าน 2 ร้าน อยากรู้ว่าลูกค้าแต่ละคนจะจ่ายเท่าไรถ้าซื้อที่แต่ละร้าน</p>
+
+      <figure>
+        <svg viewBox="0 0 560 316" width="560" style="max-width:100%;height:auto" role="img" aria-label="ตาราง qty ขนาด 2 คูณ 3 คูณกับตาราง price ขนาด 3 คูณ 2 ได้ตาราง total ขนาด 2 คูณ 2 ช่องแถว 1 คอลัมน์ 0 ของ total มาจากแถว 1 ของ qty คูณกับคอลัมน์ 0 ของ price ทีละคู่แล้วบวกกัน ได้ 108">
+          <g style="font-family:var(--font-code)">
+            <text x="86.0" y="184" text-anchor="middle" style="fill:var(--muted);font-size:13px">qty 2 x 3</text>
+            <rect x="20" y="196" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="42.0" y="224.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">2</text>
+            <rect x="64" y="196" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="86.0" y="224.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <rect x="108" y="196" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="130.0" y="224.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">3</text>
+            <rect x="20" y="240" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="42.0" y="268.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">0</text>
+            <rect x="64" y="240" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="86.0" y="268.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">4</text>
+            <rect x="108" y="240" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="130.0" y="268.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <text x="246" y="14" text-anchor="middle" style="fill:var(--muted);font-size:13px">price 3 x 2</text>
+            <rect x="202" y="26" width="44" height="44" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="224.0" y="54.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">10</text>
+            <rect x="246" y="26" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="268.0" y="54.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">12</text>
+            <rect x="202" y="70" width="44" height="44" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="224.0" y="98.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">25</text>
+            <rect x="246" y="70" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="268.0" y="98.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">20</text>
+            <rect x="202" y="114" width="44" height="44" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="224.0" y="142.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">8</text>
+            <rect x="246" y="114" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="268.0" y="142.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">9</text>
+            <rect x="202" y="196" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="224.0" y="224.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">69</text>
+            <rect x="246" y="196" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="268.0" y="224.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">71</text>
+            <rect x="202" y="240" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <text x="224.0" y="268.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">108</text>
+            <rect x="246" y="240" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="268.0" y="268.0" text-anchor="middle" style="fill:var(--ink);font-size:17px">89</text>
+            <text x="304" y="268.0" text-anchor="start" style="fill:var(--ink);font-size:14px">0x10 + 4x25 + 1x8 = 108</text>
+            <text x="246" y="306" text-anchor="middle" style="fill:var(--muted);font-size:13px">total 2 x 2</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ลูกค้าคนที่มีเลข 1 ไปร้านที่มีเลข 0 จ่าย 0 × 10 + 4 × 25 + 1 × 8 = 108 คือเอา <strong>แถว 1 ของ qty</strong> มาคูณกับ <strong>คอลัมน์ 0 ของ price</strong> ทีละคู่ แล้วบวกกันทั้งหมด เขียนเป็นสูตรได้ว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>total[i][j] = qty[i][0] * price[0][j] + qty[i][1] * price[1][j] + ... + qty[i][M-1] * price[M-1][j]
+</code></pre></div>
+
+      <p>คูณได้เมื่อ <strong>จำนวนคอลัมน์ของตารางซ้ายเท่ากับจำนวนแถวของตารางขวา</strong> ในที่นี้คือจำนวนชนิดของสินค้า M = 3 ตาราง N × M คูณกับ M × P ได้ N × P โปรแกรมต้องมีลูปสามชั้น สองชั้นนอกเลือกช่อง <code>[i][j]</code> ของคำตอบ ชั้นในสุดเดิน k ไปตามแถวของตารางซ้ายพร้อมกับคอลัมน์ของตารางขวา</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="multiply"><pre><code>#include &lt;stdio.h&gt;
+
+int qty[100][100], price[100][100];
+long long total[100][100];
+
+int main()
+{
+    int customers, items, shops;
+    scanf("%d %d %d", &amp;customers, &amp;items, &amp;shops);
+    for (int i = 0; i &lt; customers; i++) {
+        for (int k = 0; k &lt; items; k++) {
+            scanf("%d", &amp;qty[i][k]);
+        }
+    }
+    for (int k = 0; k &lt; items; k++) {
+        for (int j = 0; j &lt; shops; j++) {
+            scanf("%d", &amp;price[k][j]);
+        }
+    }
+    for (int i = 0; i &lt; customers; i++) {
+        for (int j = 0; j &lt; shops; j++) {
+            total[i][j] = 0;
+            for (int k = 0; k &lt; items; k++) {
+                total[i][j] += (long long)qty[i][k] * price[k][j]; // (1)!
+            }
+        }
+    }
+    for (int i = 0; i &lt; customers; i++) {
+        for (int j = 0; j &lt; shops; j++) {
+            printf("%lld", total[i][j]);
+            if (j &lt; shops - 1) {
+                printf(" ");
+            }
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ถ้าโจทย์ให้ค่าแต่ละช่องถึง 10<sup>4</sup> ผลคูณหนึ่งคู่ถึง 10<sup>8</sup> พอบวกกัน 100 คู่ได้ถึง 10<sup>10</sup> เกิน <code>int</code> จึงเก็บคำตอบใน <code>long long</code> และ cast ก่อนคูณ ตามกับดัก <code>int</code> คูณ <code>int</code> ในหน้า 1.3</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="multiply" data-title="ข้อมูลเข้า"><pre><code>2 3 2
+2 1 3
+0 4 1
+10 12
+25 20
+8 9
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="multiply" data-title="C:\code\shopping.exe"><pre><code>69 71
+108 89
+</code></pre></div>
+      </div>
+
+      <p>ลูกค้าคนแรกควรซื้อร้านแรก จ่าย 69 ส่วนคนที่สองควรซื้อร้านที่สอง จ่าย 89 ตัวนับในโปรแกรมนี้ใช้ <code>i</code> <code>j</code> <code>k</code> แทน <code>r</code> กับ <code>c</code> เพราะมีสามตาราง <code>k</code> เป็นคอลัมน์ของ <code>qty</code> แต่เป็นแถวของ <code>price</code> ตั้งชื่อตามตารางใดตารางหนึ่งจะชวนสับสน</p>
+
+      <p>ลูปสามชั้นทำงาน N × M × P รอบ ถ้าทั้งสามค่าเป็น 100 คือหนึ่งล้านรอบ เร็วมาก แต่ถ้าเป็น 1000 จะเป็นพันล้านรอบ ซึ่งเริ่มช้า เรื่องประมาณเวลาจากขอบเขตโจทย์จะเรียนในบทที่ 18</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forgot-reset">แบบที่ 1 ตั้งผลรวมเป็นศูนย์ครั้งเดียว</h3>
+
+      <p>ย้าย <code>int total = 0;</code> ออกไปไว้ก่อนลูปนอก ตัดส่วนผลรวมคอลัมน์ออกให้สั้นลง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="reset-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int score[100][100];
+
+int main()
+{
+    int students, subjects;
+    scanf("%d %d", &amp;students, &amp;subjects);
+    for (int r = 0; r &lt; students; r++) {
+        for (int c = 0; c &lt; subjects; c++) {
+            scanf("%d", &amp;score[r][c]);
+        }
+    }
+    int total = 0;
+    for (int r = 0; r &lt; students; r++) {
+        for (int c = 0; c &lt; subjects; c++) {
+            total += score[r][c];
+        }
+        printf("student %d: %d\n", r + 1, total);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="reset-bug" data-title="ข้อมูลเข้า"><pre><code>4 3
+78 65 90
+82 91 70
+55 88 73
+95 60 84
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="reset-bug" data-title="C:\code\totals.exe"><pre><code>student 1: 233
+student 2: 476
+student 3: 692
+student 4: 931
+</code></pre></div>
+      </div>
+
+      <p>คนแรกถูก คนต่อมาผิดหมด เพราะคะแนนของคนก่อนหน้าทบเข้ามาด้วย 476 คือ 233 + 243 อาการ "ตัวแรกถูก ตัวหลังโตขึ้นเรื่อยๆ" แบบนี้ ให้สงสัยไว้ก่อนเลยว่าลืมตั้งค่าเริ่มต้นใหม่ในลูปนอก</p>
+
+      <h3 id="transpose-in-place">แบบที่ 2 transpose ในตารางเดิมด้วยการสลับทุกช่อง</h3>
+
+      <p>ตารางจัตุรัส transpose ในตารางเดิมได้ ไม่ต้องมีตารางที่สอง โดยสลับค่า <code>a[r][c]</code> กับ <code>a[c][r]</code> หลายคนเขียนลูปเดินทั้งตารางแบบนี้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="transpose-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a[3][3] = {
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
+    };
+    for (int r = 0; r &lt; 3; r++) {
+        for (int c = 0; c &lt; 3; c++) {
+            int temp = a[r][c];
+            a[r][c] = a[c][r];
+            a[c][r] = temp;
+        }
+    }
+    for (int r = 0; r &lt; 3; r++) {
+        printf("%d %d %d\n", a[r][0], a[r][1], a[r][2]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="transpose-bug" data-title="C:\code\transpose.exe"><pre><code>1 2 3
+4 5 6
+7 8 9
+</code></pre></div>
+
+      <p>ได้ตารางเดิมเป๊ะ เพราะทุกคู่ถูกสลับสองครั้ง ตอน r = 0, c = 1 สลับ 2 กับ 4 ไปแล้ว พอถึง r = 1, c = 0 ก็สลับคู่เดิมกลับคืน แก้โดยสลับเฉพาะช่องที่อยู่เหนือเส้นทแยงหลัก ให้ลูปในเริ่มที่ <code>c = r + 1</code> แต่ละคู่จะถูกสลับครั้งเดียว</p>
+
+      <div class="code" data-lang="c"><pre><code>for (int r = 0; r &lt; 3; r++) {
+    for (int c = r + 1; c &lt; 3; c++) {
+</code></pre></div>
+
+      <p>แก้แล้วจะได้ <code>1 4 7</code> <code>2 5 8</code> <code>3 6 9</code> วิธีนี้ใช้ได้กับตารางจัตุรัสเท่านั้น ตาราง R × C ที่ R ไม่เท่ากับ C เปลี่ยนรูปร่างหลัง transpose จึงต้องใช้ตารางที่สองแบบในหัวข้อ transpose</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ผลรวมตามแถว ลูปนอกเดินแถว ผลรวมตามคอลัมน์ ลูปนอกเดินคอลัมน์ ตั้งผลรวมเป็น 0 ใหม่ทุกรอบของลูปนอก</li>
+        <li>เส้นทแยงหลักคือ <code>a[i][i]</code> เส้นทแยงรองคือ <code>a[i][N - 1 - i]</code> ใช้ลูปชั้นเดียว</li>
+        <li>transpose ย้าย <code>a[r][c]</code> ไป <code>t[c][r]</code> ตาราง R × C กลายเป็น C × R</li>
+        <li>บวกเมทริกซ์คือบวกช่องที่ตรงกัน ต้องขนาดเท่ากัน</li>
+        <li>คูณเมทริกซ์ N × M กับ M × P ได้ N × P แต่ละช่องคือแถวซ้ายคูณคอลัมน์ขวาทีละคู่แล้วบวก ใช้ลูปสามชั้น และระวังผลรวมล้น <code>int</code></li>
+      </ul>
+    </article>

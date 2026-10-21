@@ -1,0 +1,383 @@
+<article class="doc">
+      <h1>7.5 ผลรวมสะสมสองมิติ</h1>
+
+      <p>ในหน้า 5.4 เราใช้ผลรวมสะสม (prefix sum) ตอบคำถาม "ผลรวมตั้งแต่ตัวที่ l ถึงตัวที่ r" ได้ทันทีโดยไม่ต้องบวกใหม่ทุกครั้ง หน้านี้ขยายความคิดเดียวกันไปเป็นตาราง เพื่อตอบคำถาม "ผลรวมในสี่เหลี่ยมนี้" ได้ทันที โจทย์แนวนี้ให้คำถามมาเป็นแสนข้อ วิธีบวกทีละช่องจะช้าเกินเวลา</p>
+
+      <h2 id="problem">โจทย์ผลรวมในสี่เหลี่ยม</h2>
+
+      <p>ทุ่งนาแบ่งเป็นแปลง R แถว C คอลัมน์ แต่ละแปลงรู้ผลผลิตเป็นกิโลกรัม มีคำถาม Q ข้อ แต่ละข้อบอกมุมบนซ้าย <code>(r1, c1)</code> กับมุมล่างขวา <code>(r2, c2)</code> ของสี่เหลี่ยม ให้ตอบผลผลิตรวมของทุกแปลงในสี่เหลี่ยมนั้น แถวและคอลัมน์ในโจทย์นับจาก 1</p>
+
+      <p>หน้านี้ <strong>เก็บตารางตั้งแต่แถว 1 คอลัมน์ 1</strong> ให้ตรงกับโจทย์ แถว 0 กับคอลัมน์ 0 ปล่อยว่างไว้เป็น 0 จึงประกาศขนาด <code>[1001][1001]</code> สำหรับ R และ C ไม่เกิน 1000 เหตุผลที่ต้องมีแถว 0 จะเห็นตอนสร้างตาราง</p>
+
+      <p>วิธีตรงไปตรงมาคือบวกทุกช่องในสี่เหลี่ยมทุกครั้งที่ถาม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="naive"><pre><code>#include &lt;stdio.h&gt;
+
+int field[1001][1001];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 1; r &lt;= rows; r++) {
+        for (int c = 1; c &lt;= cols; c++) {
+            scanf("%d", &amp;field[r][c]);
+        }
+    }
+    int questions;
+    scanf("%d", &amp;questions);
+    for (int i = 0; i &lt; questions; i++) {
+        int r1, c1, r2, c2;
+        scanf("%d %d %d %d", &amp;r1, &amp;c1, &amp;r2, &amp;c2);
+        long long sum = 0;
+        for (int r = r1; r &lt;= r2; r++) {
+            for (int c = c1; c &lt;= c2; c++) {
+                sum += field[r][c];
+            }
+        }
+        printf("%lld\n", sum);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="naive" data-title="ข้อมูลเข้า"><pre><code>3 4
+5 2 7 1
+0 9 3 4
+8 6 2 6
+3
+1 1 3 4
+2 2 3 3
+1 4 3 4
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="naive" data-title="C:\code\field.exe"><pre><code>53
+20
+11
+</code></pre></div>
+      </div>
+
+      <p>คำตอบถูก แต่ถ้า R และ C เป็น 1000 และสี่เหลี่ยมใหญ่เกือบเต็มทุ่ง คำถามหนึ่งข้อต้องบวกเกือบล้านครั้ง Q เป็นแสนข้อคือราวแสนล้านครั้ง ไม่มีทางทันเวลา 1 วินาที</p>
+
+      <h2 id="idea">ความคิด เก็บผลรวมจากมุมบนซ้าย</h2>
+
+      <p>ให้ <code>prefix[i][j]</code> คือผลรวมของสี่เหลี่ยมตั้งแต่มุมบนซ้าย <code>(1, 1)</code> ถึงช่อง <code>(i, j)</code> ถ้ามีตารางนี้แล้ว ทุกคำถามตอบได้ด้วยการบวกลบแค่สี่ค่า ไม่ว่าสี่เหลี่ยมจะใหญ่แค่ไหน</p>
+
+      <h2 id="build">สร้างตาราง prefix</h2>
+
+      <p>ไล่ทีละช่องจากบนลงล่าง ซ้ายไปขวา ตอนคิดช่อง <code>(i, j)</code> ช่องข้างบนและข้างซ้ายคิดเสร็จไปแล้ว เอามาประกอบกันได้</p>
+
+      <figure>
+        <svg viewBox="0 0 560 206" width="560" style="max-width:100%;height:auto" role="img" aria-label="P ของช่องแถว 3 คอลัมน์ 4 คือผลรวมสี่เหลี่ยมจากมุมบนซ้ายถึงช่องนั้น ประกอบจากส่วนบน P[i-1][j] ส่วนซ้าย P[i][j-1] ซึ่งซ้อนกันตรง P[i-1][j-1] จึงต้องลบออกหนึ่งครั้ง แล้วบวกช่องตัวเอง a[i][j]">
+          <g style="font-family:var(--font-code)">
+            <text x="60.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">1</text>
+            <text x="100.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">2</text>
+            <text x="140.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">3</text>
+            <text x="180.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">4</text>
+            <text x="220.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">5</text>
+            <text x="26" y="59.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">1</text>
+            <rect x="40" y="34" width="40" height="40" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="80" y="34" width="40" height="40" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="120" y="34" width="40" height="40" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="160" y="34" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="200" y="34" width="40" height="40" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="26" y="99.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">2</text>
+            <rect x="40" y="74" width="40" height="40" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="80" y="74" width="40" height="40" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="120" y="74" width="40" height="40" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="160" y="74" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="200" y="74" width="40" height="40" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="26" y="139.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">3</text>
+            <rect x="40" y="114" width="40" height="40" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <rect x="80" y="114" width="40" height="40" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <rect x="120" y="114" width="40" height="40" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <rect x="160" y="114" width="40" height="40" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <rect x="200" y="114" width="40" height="40" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="26" y="179.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">4</text>
+            <rect x="40" y="154" width="40" height="40" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="80" y="154" width="40" height="40" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="120" y="154" width="40" height="40" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="160" y="154" width="40" height="40" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="200" y="154" width="40" height="40" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="270" y="38" width="22" height="22" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="302" y="55" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">P[i-1][j] ส่วนบน</text>
+            <rect x="270" y="74" width="22" height="22" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="302" y="91" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">P[i][j-1] ส่วนซ้าย</text>
+            <rect x="270" y="110" width="22" height="22" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <text x="302" y="127" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">P[i-1][j-1] ถูกนับซ้ำ</text>
+            <rect x="270" y="146" width="22" height="22" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <text x="302" y="163" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">a[i][j] ช่องตัวเอง</text>
+          </g>
+        </svg>
+      </figure>
+
+      <ul>
+        <li><code>prefix[i-1][j]</code> คือส่วนบน ทุกแถวเหนือแถว i ตั้งแต่คอลัมน์ 1 ถึง j</li>
+        <li><code>prefix[i][j-1]</code> คือส่วนซ้าย ทุกคอลัมน์ทางซ้ายของคอลัมน์ j ตั้งแต่แถว 1 ถึง i</li>
+        <li>สองส่วนนี้ซ้อนกันตรงมุมบนซ้าย <code>prefix[i-1][j-1]</code> บวกสองส่วนแล้วมุมนี้ถูกนับสองครั้ง ต้องลบออกหนึ่งครั้ง</li>
+        <li>ขาดแค่ช่อง <code>(i, j)</code> เอง บวกเข้าไป</li>
+      </ul>
+
+      <div class="code" data-lang="text"><pre><code>prefix[i][j] = field[i][j] + prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1]
+</code></pre></div>
+
+      <p>การบวกสองส่วนที่ซ้อนกันแล้วลบส่วนที่ซ้อนออก มีชื่อเรียกว่า <strong>หลักการเพิ่มเข้าตัดออก (inclusion-exclusion)</strong> ตอนคิดแถว 1 จะต้องใช้ <code>prefix[0][j]</code> และตอนคิดคอลัมน์ 1 จะต้องใช้ <code>prefix[i][0]</code> นี่คือเหตุผลที่เก็บตารางตั้งแต่ 1 แถว 0 กับคอลัมน์ 0 เป็น 0 อยู่แล้ว สูตรเดียวจึงใช้ได้ทุกช่อง ไม่ต้องมี <code>if</code> แยกกรณีขอบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="build"><pre><code>#include &lt;stdio.h&gt;
+
+int field[1001][1001];
+long long prefix[1001][1001];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 1; r &lt;= rows; r++) {
+        for (int c = 1; c &lt;= cols; c++) {
+            scanf("%d", &amp;field[r][c]);
+        }
+    }
+    for (int r = 1; r &lt;= rows; r++) {
+        for (int c = 1; c &lt;= cols; c++) {
+            prefix[r][c] = field[r][c] + prefix[r - 1][c] + prefix[r][c - 1] - prefix[r - 1][c - 1];
+        }
+    }
+    for (int r = 1; r &lt;= rows; r++) {
+        for (int c = 1; c &lt;= cols; c++) {
+            printf("%3lld", prefix[r][c]);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="build" data-title="ข้อมูลเข้า"><pre><code>3 4
+5 2 7 1
+0 9 3 4
+8 6 2 6
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="build" data-title="C:\code\build.exe"><pre><code>  5  7 14 15
+  5 16 26 31
+ 13 30 42 53
+</code></pre></div>
+      </div>
+
+      <p><code>%3lld</code> จัดให้ตัวเลขกว้าง 3 ช่องตามบทที่ 2 จะได้อ่านเป็นตารางง่าย ลองตรวจช่องแถว 2 คอลัมน์ 2 ด้วยมือ 9 + 7 + 5 - 5 = 16 ตรงกับผลรวมจริงของ 5 2 0 9 และช่องล่างขวาสุด 53 คือผลรวมทั้งตาราง</p>
+
+      <p><code>prefix</code> เป็น <code>long long</code> เพราะผลรวมของทั้งตารางใหญ่ได้ถึง R × C เท่าของค่ามากสุด ตาราง 1000 × 1000 ที่ช่องละ 10<sup>4</sup> รวมได้ถึง 10<sup>10</sup> เกิน <code>int</code></p>
+
+      <h2 id="query">ตอบผลรวมในสี่เหลี่ยม</h2>
+
+      <p>สี่เหลี่ยม <code>(r1, c1)</code> ถึง <code>(r2, c2)</code> คิดย้อนแบบเดียวกัน เริ่มจากก้อนใหญ่ <code>prefix[r2][c2]</code> ที่มีส่วนเกินอยู่ทางบนและทางซ้าย ตัดสองส่วนนั้นออก แล้วบวกมุมบนซ้ายที่ถูกตัดซ้ำสองครั้งคืน</p>
+
+      <figure>
+        <svg viewBox="0 0 620 236" width="620" style="max-width:100%;height:auto" role="img" aria-label="หาผลรวมสี่เหลี่ยมจากแถว 3 คอลัมน์ 3 ถึงแถว 4 คอลัมน์ 5 เริ่มจาก P[r2][c2] ซึ่งคือทั้งก้อนจากมุมบนซ้าย ตัดส่วนบนและส่วนซ้ายออก แล้วบวกมุมบนซ้ายที่ถูกตัดซ้ำคืนหนึ่งครั้ง">
+          <g style="font-family:var(--font-code)">
+            <text x="59.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">1</text>
+            <text x="97.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">2</text>
+            <text x="135.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">3</text>
+            <text x="173.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">4</text>
+            <text x="211.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">5</text>
+            <text x="249.0" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">6</text>
+            <text x="26" y="58.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">1</text>
+            <rect x="40" y="34" width="38" height="38" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="78" y="34" width="38" height="38" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="116" y="34" width="38" height="38" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="154" y="34" width="38" height="38" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="192" y="34" width="38" height="38" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="230" y="34" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="26" y="96.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">2</text>
+            <rect x="40" y="72" width="38" height="38" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="78" y="72" width="38" height="38" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <rect x="116" y="72" width="38" height="38" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="154" y="72" width="38" height="38" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="192" y="72" width="38" height="38" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="230" y="72" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="26" y="134.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">3</text>
+            <rect x="40" y="110" width="38" height="38" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <rect x="78" y="110" width="38" height="38" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <rect x="116" y="110" width="38" height="38" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <rect x="154" y="110" width="38" height="38" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <rect x="192" y="110" width="38" height="38" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <rect x="230" y="110" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="26" y="172.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">4</text>
+            <rect x="40" y="148" width="38" height="38" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <rect x="78" y="148" width="38" height="38" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <rect x="116" y="148" width="38" height="38" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <rect x="154" y="148" width="38" height="38" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <rect x="192" y="148" width="38" height="38" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <rect x="230" y="148" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="26" y="210.0" text-anchor="middle" style="fill:var(--muted);font-size:13px">5</text>
+            <rect x="40" y="186" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="78" y="186" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="116" y="186" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="154" y="186" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="192" y="186" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="230" y="186" width="38" height="38" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <rect x="294" y="38" width="22" height="22" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <text x="326" y="55" text-anchor="start" style="fill:var(--ink);font-size:13px;font-family:var(--font-text)">สี่เหลี่ยมที่ถาม (3,3) ถึง (4,5)</text>
+            <rect x="294" y="74" width="22" height="22" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="326" y="91" text-anchor="start" style="fill:var(--ink);font-size:13px;font-family:var(--font-text)">ตัดส่วนบน P[r1-1][c2]</text>
+            <rect x="294" y="110" width="22" height="22" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="326" y="127" text-anchor="start" style="fill:var(--ink);font-size:13px;font-family:var(--font-text)">ตัดส่วนซ้าย P[r2][c1-1]</text>
+            <rect x="294" y="146" width="22" height="22" style="fill:var(--brand);fill-opacity:.32;stroke:var(--brand);stroke-width:2"/>
+            <text x="326" y="163" text-anchor="start" style="fill:var(--ink);font-size:13px;font-family:var(--font-text)">ถูกตัดสองครั้ง บวกคืน P[r1-1][c1-1]</text>
+          </g>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="text"><pre><code>sum = prefix[r2][c2] - prefix[r1-1][c2] - prefix[r2][c1-1] + prefix[r1-1][c1-1]
+</code></pre></div>
+
+      <p>เมื่อ <code>r1</code> เป็น 1 จะได้ <code>prefix[0][...]</code> ซึ่งเป็น 0 ไม่มีส่วนบนให้ตัด สูตรยังถูกโดยไม่ต้องแยกกรณี รวมเป็นโปรแกรมเต็มได้ดังนี้ สร้าง <code>prefix</code> ไปพร้อมกับตอนอ่าน เพราะตอนอ่านช่อง <code>(r, c)</code> ช่องข้างบนและข้างซ้ายถูกอ่านมาแล้ว</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="prefix"><pre><code>#include &lt;stdio.h&gt;
+
+int field[1001][1001];
+long long prefix[1001][1001];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 1; r &lt;= rows; r++) {
+        for (int c = 1; c &lt;= cols; c++) {
+            scanf("%d", &amp;field[r][c]);
+            prefix[r][c] = field[r][c] + prefix[r - 1][c] + prefix[r][c - 1] - prefix[r - 1][c - 1];
+        }
+    }
+    int questions;
+    scanf("%d", &amp;questions);
+    for (int i = 0; i &lt; questions; i++) {
+        int r1, c1, r2, c2;
+        scanf("%d %d %d %d", &amp;r1, &amp;c1, &amp;r2, &amp;c2);
+        long long sum = prefix[r2][c2] - prefix[r1 - 1][c2] - prefix[r2][c1 - 1] + prefix[r1 - 1][c1 - 1]; // (1)!
+        printf("%lld\n", sum);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>คำถามหนึ่งข้อบวกลบแค่สี่ค่า ไม่มีลูป สี่เหลี่ยมเล็กหรือใหญ่ใช้เวลาเท่ากัน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="prefix" data-title="ข้อมูลเข้า"><pre><code>3 4
+5 2 7 1
+0 9 3 4
+8 6 2 6
+3
+1 1 3 4
+2 2 3 3
+1 4 3 4
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="prefix" data-title="C:\code\field.exe"><pre><code>53
+20
+11
+</code></pre></div>
+      </div>
+
+      <p>คำถามที่สองคิดด้วยมือได้ 42 - 14 - 13 + 5 = 20 ตรงกับ 9 + 3 + 6 + 2</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนโน้ตบุ๊ก AMD Ryzen AI 9 HX 370 กับ Windows 11 และ GCC 14.2 ของ Code::Blocks ตารางขนาด 1000 × 1000 ค่าในช่องสุ่มตั้งแต่ 0 ถึง 1000 มีคำถาม 100000 ข้อ ชุดแรกสุ่มสี่เหลี่ยมขนาดไหนก็ได้ ชุดที่สองทุกคำถามเป็นสี่เหลี่ยมใหญ่ มุมบนซ้ายอยู่ในแถวและคอลัมน์ 1 ถึง 100 มุมล่างขวาอยู่ใน 901 ถึง 1000 เวลานับรวมการอ่านข้อมูลเข้าราว 5.5 MB และการพิมพ์คำตอบแล้ว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>คอมไพล์แบบ</th><th>สี่เหลี่ยมสุ่ม</th><th>สี่เหลี่ยมใหญ่</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>บวกทีละช่อง</td><td>Code::Blocks (<code>-Wall</code>)</td><td>10.16 วินาที</td><td>54.25 วินาที</td></tr>
+            <tr><td>บวกทีละช่อง</td><td><code>-O2</code> แบบที่ grader ส่วนใหญ่ใช้</td><td>2.87 วินาที</td><td>19.33 วินาที</td></tr>
+            <tr><td>prefix</td><td>Code::Blocks (<code>-Wall</code>)</td><td>0.22 วินาที</td><td>0.21 วินาที</td></tr>
+            <tr><td>prefix</td><td><code>-O2</code></td><td>0.22 วินาที</td><td>0.21 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วิธีบวกทีละช่องช้าขึ้นตามขนาดของสี่เหลี่ยม ส่วน prefix ใช้เวลาเกือบเท่าเดิมทั้งสองชุด เวลาเกือบทั้งหมดของ prefix คือการอ่านตัวเลขล้านตัว ไม่ใช่การคำนวณ ราคาที่จ่ายคือหน่วยความจำของตาราง <code>prefix</code> อีกหนึ่งตาราง ตาราง <code>long long</code> ขนาด 1001 × 1001 ใช้ราว 8 MB ซึ่งไม่มีปัญหาเมื่อประกาศไว้นอก <code>main</code></p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forgot-corner">แบบที่ 1 ลืมบวกมุมคืน</h3>
+
+      <p>ในโปรแกรม prefix เขียนสูตรคำตอบขาดพจน์สุดท้าย</p>
+
+      <div class="code" data-lang="c"><pre><code>long long sum = prefix[r2][c2] - prefix[r1 - 1][c2] - prefix[r2][c1 - 1];
+</code></pre></div>
+
+      <p>คอมไพล์ผ่าน รันกับข้อมูลเข้าชุดเดิมได้</p>
+
+      <div class="code" data-lang="text"><pre><code>53
+15
+11
+</code></pre></div>
+
+      <p>ผิดแค่คำถามที่สอง คำถามแรกกับคำถามที่สามมี <code>r1</code> เป็น 1 มุมที่ลืมบวกคืนคือ <code>prefix[0][...]</code> ซึ่งเป็น 0 อยู่แล้ว จึงบังเอิญถูก ถ้าทดสอบแค่สี่เหลี่ยมที่เริ่มจากขอบบนหรือขอบซ้าย จะไม่มีวันเห็นบั๊กนี้ ทดสอบด้วยสี่เหลี่ยมที่อยู่กลางตารางเสมอ</p>
+
+      <h3 id="int-prefix">แบบที่ 2 ตาราง prefix เป็น int</h3>
+
+      <p>ค่าในแต่ละช่องเก็บใน <code>int</code> ได้สบาย หลายคนจึงประกาศ <code>prefix</code> เป็น <code>int</code> ตามไปด้วย ลองกับโจทย์ที่ค่าในช่องถึง 10<sup>9</sup></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="int-prefix-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int field[1001][1001];
+int prefix[1001][1001];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 1; r &lt;= rows; r++) {
+        for (int c = 1; c &lt;= cols; c++) {
+            scanf("%d", &amp;field[r][c]);
+            prefix[r][c] = field[r][c] + prefix[r - 1][c] + prefix[r][c - 1] - prefix[r - 1][c - 1];
+        }
+    }
+    int questions;
+    scanf("%d", &amp;questions);
+    for (int i = 0; i &lt; questions; i++) {
+        int r1, c1, r2, c2;
+        scanf("%d %d %d %d", &amp;r1, &amp;c1, &amp;r2, &amp;c2);
+        long long sum = prefix[r2][c2] - prefix[r1 - 1][c2] - prefix[r2][c1 - 1] + prefix[r1 - 1][c1 - 1];
+        printf("%lld\n", sum);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="int-prefix-bug" data-title="ข้อมูลเข้า"><pre><code>2 2
+1000000000 1000000000
+1000000000 1000000000
+2
+1 1 1 2
+1 1 2 2
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="int-prefix-bug" data-title="C:\code\field.exe"><pre><code>2000000000
+-294967296
+</code></pre></div>
+      </div>
+
+      <p>คำถามแรกถูก เพราะผลรวมของสองช่องคือสองพันล้าน ยังไม่เกิน <code>int</code> แต่ผลรวมทั้งสี่ช่องคือสี่พันล้าน <code>prefix[2][2]</code> ล้นไปตั้งแต่ตอนสร้างตาราง คำตอบจึงติดลบ ตัวแปร <code>sum</code> เป็น <code>long long</code> ก็ช่วยไม่ได้ เพราะค่าที่เอามาบวกลบผิดไปก่อนแล้ว เหมือนกับดัก <code>int</code> คูณ <code>int</code> ในหน้า 1.3 ค่าในช่องเล็กไม่ได้แปลว่าผลรวมจะเล็ก ให้คิดจากผลรวมทั้งตาราง คือ R × C × ค่ามากสุด</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>prefix[i][j]</code> คือผลรวมจากมุมบนซ้าย <code>(1, 1)</code> ถึง <code>(i, j)</code></li>
+        <li>สร้างด้วย <code>field[i][j] + prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1]</code></li>
+        <li>ตอบด้วย <code>prefix[r2][c2] - prefix[r1-1][c2] - prefix[r2][c1-1] + prefix[r1-1][c1-1]</code> คำถามละสี่ค่า ไม่มีลูป</li>
+        <li>เก็บตารางตั้งแต่ 1 ให้แถว 0 กับคอลัมน์ 0 เป็นศูนย์ สูตรเดียวใช้ได้ทุกช่อง</li>
+        <li>ใช้ <code>long long</code> กับตาราง <code>prefix</code> และทดสอบด้วยสี่เหลี่ยมกลางตาราง</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

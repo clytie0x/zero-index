@@ -112,7 +112,15 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "7"
 title = "บทที่ 7 อาเรย์สองมิติ"
 summary = "ตาราง เมทริกซ์ และการเดินในกริด"
-# dir = "c/07-2d-arrays"
+path = "c/07-2d-arrays/index.html"
+pages = [
+  { num = "7.1", title = "ประกาศและอ่านตาราง", path = "c/07-2d-arrays/declare.html" },
+  { num = "7.2", title = "แถว คอลัมน์ และเมทริกซ์", path = "c/07-2d-arrays/matrix.html" },
+  { num = "7.3", title = "ตารางตัวอักษร", path = "c/07-2d-arrays/char-grid.html" },
+  { num = "7.4", title = "ช่องข้างเคียง", path = "c/07-2d-arrays/neighbors.html" },
+  { num = "7.5", title = "ผลรวมสะสมสองมิติ", path = "c/07-2d-arrays/prefix-sum.html" },
+  { num = "7.6", title = "แบบฝึกหัด", path = "c/07-2d-arrays/exercises.html", exercises = "c/07-2d-arrays" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"

@@ -1,0 +1,305 @@
+<article class="doc">
+      <h1>7.3 ตารางตัวอักษร</h1>
+
+      <p>โจทย์กริดใน TOI Zero ส่วนใหญ่ไม่ได้ให้ตัวเลข แต่ให้ <strong>แผนที่</strong> ที่วาดด้วยตัวอักษร เช่น <code>#</code> คือกำแพงหรือต้นไม้ <code>.</code> คือทางว่าง <code>S</code> คือจุดเริ่ม หน้านี้จะเก็บแผนที่แบบนี้ไว้ในอาเรย์สองมิติของ <code>char</code> อ่านทีละแถวด้วย <code>%s</code> แล้วไล่ดูทีละช่อง</p>
+
+      <h2 id="map-input">ข้อมูลเข้าที่เป็นแผนที่</h2>
+
+      <p>รูปแบบที่เจอบ่อยที่สุด บรรทัดแรกคือ R กับ C จากนั้นอีก R บรรทัด บรรทัดละ C ตัวอักษรติดกันไม่มีช่องว่าง</p>
+
+      <div class="code" data-lang="text"><pre><code>4 6
+#..#..
+.##...
+....#.
+#....#
+</code></pre></div>
+
+      <p>แต่ละบรรทัดคือข้อความหนึ่งข้อความแบบในบทที่ 6 ทั้งแผนที่จึงเป็นข้อความหลายข้อความเรียงกัน เก็บใน <code>char map[R][C + 1]</code> หนึ่งแถวของอาเรย์คือหนึ่งข้อความ ต้องจองเกินไปหนึ่งช่องสำหรับตัวปิดท้าย <code>'\0'</code> ที่ <code>scanf</code> เติมให้</p>
+
+      <figure>
+        <svg viewBox="0 0 520 100" width="520" style="max-width:100%;height:auto" role="img" aria-label="แถวของแผนที่ยาว 4 ตัวอักษร เก็บเป็นข้อความต้องมีช่องที่ 5 ไว้ใส่ตัวปิดท้าย backslash 0">
+          <g style="font-family:var(--font-code)">
+            <rect x="30" y="36" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="55.0" y="68.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">#</text>
+            <text x="55.0" y="26" text-anchor="middle" style="fill:var(--muted);font-size:13px">0</text>
+            <rect x="80" y="36" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="105.0" y="68.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">.</text>
+            <text x="105.0" y="26" text-anchor="middle" style="fill:var(--muted);font-size:13px">1</text>
+            <rect x="130" y="36" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="155.0" y="68.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">.</text>
+            <text x="155.0" y="26" text-anchor="middle" style="fill:var(--muted);font-size:13px">2</text>
+            <rect x="180" y="36" width="50" height="50" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="205.0" y="68.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">#</text>
+            <text x="205.0" y="26" text-anchor="middle" style="fill:var(--muted);font-size:13px">3</text>
+            <rect x="230" y="36" width="50" height="50" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/>
+            <text x="255.0" y="68.0" text-anchor="middle" style="fill:var(--ink);font-size:20px">\0</text>
+            <text x="255.0" y="26" text-anchor="middle" style="fill:var(--muted);font-size:13px">4</text>
+            <text x="296" y="67.0" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">C = 4 ต้องจองอย่างน้อย 5 ช่อง</text>
+          </g>
+        </svg>
+      </figure>
+
+      <h2 id="read-map">อ่านและนับในแผนที่</h2>
+
+      <p>สวนแห่งหนึ่งวาดแผนที่ไว้ <code>#</code> คือต้นไม้ <code>.</code> คือพื้นว่าง ให้นับว่ามีต้นไม้กี่ต้น R และ C ไม่เกิน 100</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="trees"><pre><code>#include &lt;stdio.h&gt;
+
+char map[100][101]; // (1)!
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        scanf("%s", map[r]); // (2)!
+    }
+    int trees = 0;
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (map[r][c] == '#') { // (3)!
+                trees++;
+            }
+        }
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        printf("%s\n", map[r]);
+    }
+    printf("trees = %d\n", trees);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>100 แถว แถวละ 101 ช่อง 100 ช่องสำหรับตัวอักษร อีก 1 ช่องสำหรับ <code>'\0'</code></li>
+        <li><code>map[r]</code> ที่มีวงเล็บแค่ชุดเดียวคือทั้งแถวที่ r ซึ่งเป็นอาเรย์ของ <code>char</code> หนึ่งมิติ ใช้กับ <code>%s</code> ได้เหมือนข้อความในบทที่ 6 และไม่ต้องมี <code>&amp;</code> เหมือนกัน</li>
+        <li><code>map[r][c]</code> ที่มีวงเล็บสองชุดคือตัวอักษรหนึ่งตัว เทียบกับ <code>'#'</code> ที่ใช้เครื่องหมายคำพูดเดี่ยว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="trees" data-title="ข้อมูลเข้า"><pre><code>4 6
+#..#..
+.##...
+....#.
+#....#
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="trees" data-title="C:\code\trees.exe"><pre><code>#..#..
+.##...
+....#.
+#....#
+trees = 7
+</code></pre></div>
+      </div>
+
+      <p>อ่านทีละแถว แต่ใช้งานทีละช่องได้ตามปกติ <code>map[1][2]</code> คือ <code>'#'</code> ตัวที่สองของแถวที่มีเลข 1 พิมพ์ทั้งแถวด้วย <code>printf("%s\n", map[r])</code> ก็ได้ เพราะทุกแถวปิดท้ายด้วย <code>'\0'</code></p>
+
+      <h2 id="find">หาตำแหน่งของตัวอักษร</h2>
+
+      <p>โจทย์เขาวงกตมักบอกจุดเริ่ม <code>S</code> กับจุดหมาย <code>E</code> ไว้ในแผนที่ ไม่ได้บอกพิกัดมาตรงๆ ต้องไล่หาเอง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="find"><pre><code>#include &lt;stdio.h&gt;
+
+char map[100][101];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        scanf("%s", map[r]);
+    }
+    int start_r = -1, start_c = -1, end_r = -1, end_c = -1;
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (map[r][c] == 'S') {
+                start_r = r;
+                start_c = c;
+            } else if (map[r][c] == 'E') {
+                end_r = r;
+                end_c = c;
+            }
+        }
+    }
+    printf("S at row %d column %d\n", start_r + 1, start_c + 1);
+    printf("E at row %d column %d\n", end_r + 1, end_c + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="find" data-title="ข้อมูลเข้า"><pre><code>5 7
+#######
+#S..#.#
+#.#.#.#
+#...E.#
+#######
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="find" data-title="C:\code\maze.exe"><pre><code>S at row 2 column 2
+E at row 4 column 5
+</code></pre></div>
+      </div>
+
+      <p>ตั้งค่าเริ่มต้นเป็น -1 ไว้ก่อน ถ้าแผนที่ไม่มี <code>S</code> เลย ตำแหน่งจะยังเป็น -1 เอาไปเช็กต่อได้ว่าหาไม่เจอ การหาทางเดินจาก <code>S</code> ไป <code>E</code> ให้สั้นที่สุดต้องใช้ BFS ซึ่งจะเรียนในบทที่ 27 บทนี้ฝึกแค่อ่านและเดินดูแผนที่ให้คล่องก่อน</p>
+
+      <h2 id="mirror">พิมพ์แผนที่แบบกลับด้าน</h2>
+
+      <p>อยากได้ภาพสะท้อนในกระจกซ้ายขวา ให้แต่ละแถวพิมพ์ตั้งแต่คอลัมน์สุดท้ายย้อนกลับมาคอลัมน์แรก ทีละตัวด้วย <code>%c</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="mirror"><pre><code>#include &lt;stdio.h&gt;
+
+char map[100][101];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        scanf("%s", map[r]);
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = cols - 1; c &gt;= 0; c--) {
+            printf("%c", map[r][c]);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="mirror" data-title="ข้อมูลเข้า"><pre><code>4 6
+#..#..
+.##...
+....#.
+#....#
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="mirror" data-title="C:\code\mirror.exe"><pre><code>..#..#
+...##.
+.#....
+#....#
+</code></pre></div>
+      </div>
+
+      <p>ถ้าอยากกลับบนลงล่าง ให้ลูปแถวเดินจาก <code>rows - 1</code> ลงมาแทน ส่วนลูปคอลัมน์เดินตามปกติ ลองเขียนดู</p>
+
+      <h2 id="digit-grid">แผนที่ที่เป็นตัวเลขหลักเดียว</h2>
+
+      <p>บางโจทย์ให้ตัวเลข 0 ถึง 9 ติดกันเป็นบรรทัด เช่น ผลผลิตของแปลงนาแต่ละแปลงเป็นตัน บรรทัด <code>3051</code> คือแปลงที่ผลผลิต 3, 0, 5 และ 1 ตัน อ่านด้วย <code>%d</code> ไม่ได้ เพราะ <code>scanf</code> จะอ่านเป็นเลขสามพันห้าสิบเอ็ดตัวเดียว ให้อ่านเป็นข้อความด้วย <code>%s</code> แล้วแปลงทีละตัวด้วย <code>- '0'</code> ตามหน้า 1.4</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="digits"><pre><code>#include &lt;stdio.h&gt;
+
+char line[100][101];
+int yield[100][100];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        scanf("%s", line[r]);
+        for (int c = 0; c &lt; cols; c++) {
+            yield[r][c] = line[r][c] - '0';
+        }
+    }
+    int total = 0;
+    for (int r = 0; r &lt; rows; r++) {
+        int row_total = 0;
+        for (int c = 0; c &lt; cols; c++) {
+            row_total += yield[r][c];
+        }
+        printf("row %d: %d\n", r + 1, row_total);
+        total += row_total;
+    }
+    printf("total = %d\n", total);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="digits" data-title="ข้อมูลเข้า"><pre><code>3 4
+3051
+1207
+4419
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="digits" data-title="C:\code\yield.exe"><pre><code>row 1: 9
+row 2: 10
+row 3: 18
+total = 37
+</code></pre></div>
+      </div>
+
+      <p>หลังแปลงแล้ว ตาราง <code>yield</code> ใช้งานเหมือนตารางตัวเลขในหน้า 7.1 และ 7.2 ทุกอย่าง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="percent-c">แบบที่ 1 อ่านทีละตัวด้วย %c</h3>
+
+      <p>แผนที่เป็นตัวอักษร หลายคนจึงอ่านทีละตัวด้วย <code>%c</code> แทนที่จะอ่านทีละแถว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="percent-c-bug"><pre><code>#include &lt;stdio.h&gt;
+
+char map[100][101];
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            scanf("%c", &amp;map[r][c]);
+        }
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            printf("%c", map[r][c]);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="percent-c-bug" data-title="ข้อมูลเข้า"><pre><code>3 4
+#..#
+.##.
+#..#
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="percent-c-bug" data-title="C:\code\map.exe"><pre><code>
+#..
+#
+.#
+#.
+#
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดแรกของผลลัพธ์ว่าง แล้วแผนที่ก็เละ เพราะ <code>%c</code> อ่านทุกตัวอักษรจริงๆ รวมถึงการขึ้นบรรทัด <code>'\n'</code> ด้วย ตัวแรกที่อ่านได้คือ <code>'\n'</code> ท้ายบรรทัด <code>3 4</code> ไม่ใช่ <code>#</code> ทุกช่องหลังจากนั้นจึงเลื่อนไปหนึ่งตัว และมี <code>'\n'</code> ของบรรทัดอื่นแทรกเข้ามาอีก</p>
+
+      <p>แก้ได้สองวิธี วิธีแรกคืออ่านทีละแถวด้วย <code>%s</code> แบบในหน้านี้ ซึ่งข้ามช่องว่างและการขึ้นบรรทัดให้เอง วิธีที่สองคือเติมช่องว่างหน้า <code>%c</code> เป็น <code>scanf(" %c", &amp;map[r][c]);</code> แบบในบทที่ 2 ช่องว่างนั้นสั่งให้ข้ามช่องว่างและการขึ้นบรรทัดทั้งหมดก่อนอ่าน วิธีที่สองจำเป็นเมื่อโจทย์ให้ตัวอักษรคั่นด้วยช่องว่าง เช่น <code># . . #</code></p>
+
+      <h3 id="no-room">แบบที่ 2 ไม่เผื่อที่ให้ '\0'</h3>
+
+      <p>แผนที่ 3 × 4 ประกาศเป็น <code>char map[3][4]</code> พอดีเป๊ะ แล้วอ่านด้วย <code>%s</code> และพิมพ์ทีละแถวด้วย <code>%s</code> คอมไพล์ผ่านโดยไม่มีคำเตือน ใช้ข้อมูลเข้าเดียวกับแบบที่ 1 บนเครื่องที่เขียนเอกสารนี้ได้</p>
+
+      <div class="code" data-lang="text"><pre><code>#..#.##.#..#
+.##.#..#
+#..#
+</code></pre></div>
+
+      <p>แถวละ 4 ตัวพอดีกับที่จอง <code>'\0'</code> ของแถว 0 จึงล้นไปลงช่องแรกของแถว 1 แล้วถูกตัวอักษรของแถว 1 เขียนทับตอนอ่านแถวถัดไป ตอนพิมพ์ <code>%s</code> จึงหา <code>'\0'</code> ไม่เจอจนสุดแถว และพิมพ์เลยไปถึงแถวอื่นด้วย ส่วน <code>'\0'</code> ของแถวสุดท้ายล้นออกนอกอาเรย์ไปเลย ซึ่งอาจไปทับตัวแปรอื่น ประกาศ <code>C + 1</code> ทุกครั้งที่เก็บแถวเป็นข้อความ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>แผนที่ R × C เก็บใน <code>char map[R][C + 1]</code> เผื่อช่องให้ <code>'\0'</code></li>
+        <li>อ่านทีละแถวด้วย <code>scanf("%s", map[r])</code> ไม่ต้องมี <code>&amp;</code></li>
+        <li><code>map[r]</code> คือทั้งแถวเป็นข้อความ <code>map[r][c]</code> คือตัวอักษรหนึ่งตัว เทียบด้วย <code>'#'</code></li>
+        <li>ตัวเลขหลักเดียวติดกันให้อ่านเป็นข้อความ แล้วแปลงด้วย <code>- '0'</code></li>
+        <li><code>%c</code> อ่าน <code>'\n'</code> ด้วย ถ้าจะอ่านทีละตัวให้ใช้ <code>" %c"</code></li>
+      </ul>
+    </article>

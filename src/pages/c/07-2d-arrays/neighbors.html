@@ -1,0 +1,395 @@
+<article class="doc">
+      <h1>7.4 ช่องข้างเคียง</h1>
+
+      <p>โจทย์กริดเกือบทุกข้อถามเรื่องช่องที่อยู่ติดกัน ระเบิดรอบช่องนี้มีกี่ลูก ไฟลามไปช่องไหนต่อ ช่องนี้สูงกว่าทุกช่องรอบตัวไหม หน้านี้สอนวิธีเดินไปดูช่องข้างเคียงด้วยอาเรย์ทิศทาง <code>dr</code> กับ <code>dc</code> วิธีกันไม่ให้หลุดออกนอกตาราง และการจำลองตารางที่เปลี่ยนไปทีละรอบ</p>
+
+      <h2 id="directions">ช่องข้างเคียง 4 ทิศและ 8 ทิศ</h2>
+
+      <p>ช่องแถว r คอลัมน์ c มีช่องติดกันด้านข้าง 4 ช่อง คือบน ล่าง ซ้าย ขวา ถ้านับช่องทแยงด้วยจะเป็น 8 ช่อง โจทย์จะบอกเสมอว่าติดกันแบบไหน ต้องอ่านให้ดี</p>
+
+      <figure>
+        <svg viewBox="0 0 600 240" width="600" style="max-width:100%;height:auto" role="img" aria-label="ช่อง r c อยู่ตรงกลาง ช่องบนคือแถวลบหนึ่ง ช่องล่างคือแถวบวกหนึ่ง ช่องซ้ายคือคอลัมน์ลบหนึ่ง ช่องขวาคือคอลัมน์บวกหนึ่ง และมีช่องทแยงอีกสี่ช่อง">
+          <g style="font-family:var(--font-code)">
+            <rect x="40" y="20" width="70" height="70" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="75.0" y="61.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">-1, -1</text>
+            <rect x="110" y="20" width="70" height="70" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="145.0" y="61.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">-1, 0</text>
+            <rect x="180" y="20" width="70" height="70" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="215.0" y="61.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">-1, +1</text>
+            <rect x="40" y="90" width="70" height="70" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="75.0" y="131.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">0, -1</text>
+            <rect x="110" y="90" width="70" height="70" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="145.0" y="131.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">r, c</text>
+            <rect x="180" y="90" width="70" height="70" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="215.0" y="131.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">0, +1</text>
+            <rect x="40" y="160" width="70" height="70" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="75.0" y="201.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">+1, -1</text>
+            <rect x="110" y="160" width="70" height="70" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="145.0" y="201.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">+1, 0</text>
+            <rect x="180" y="160" width="70" height="70" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="215.0" y="201.0" text-anchor="middle" style="fill:var(--ink);font-size:15px">+1, +1</text>
+            <rect x="280" y="50" width="22" height="22" style="fill:var(--tip);fill-opacity:.16;stroke:var(--tip);stroke-width:2"/>
+            <text x="312" y="67" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">4 ทิศ บน ล่าง ซ้าย ขวา</text>
+            <rect x="280" y="100" width="22" height="22" style="fill:var(--code-bg);stroke:var(--line);stroke-width:1.5"/>
+            <text x="312" y="117" text-anchor="start" style="fill:var(--ink);font-size:14px;font-family:var(--font-text)">เพิ่มอีก 4 ทแยง รวมเป็น 8 ทิศ</text>
+            <text x="280" y="170" text-anchor="start" style="fill:var(--muted);font-size:13px;font-family:var(--font-text)">ตัวเลขในช่องคือค่าที่บวกเข้ากับ r และ c</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ขึ้นไปหนึ่งช่องคือแถวลดลงหนึ่ง <code>r - 1</code> ลงไปหนึ่งช่องคือ <code>r + 1</code> ไปทางซ้ายคือคอลัมน์ลดลง <code>c - 1</code> ไปทางขวาคือ <code>c + 1</code> ทแยงคือเปลี่ยนทั้งสองค่าพร้อมกัน</p>
+
+      <h2 id="dr-dc">อาเรย์ทิศทาง dr กับ dc</h2>
+
+      <p>จะดูช่องข้างเคียงทั้งสี่ เขียน <code>if</code> สี่ก้อนก็ได้ แต่สี่ก้อนนั้นเหมือนกันเกือบทุกตัวอักษร ต่างกันแค่ตัวเลขที่บวกกับ r และ c ถ้าแก้ก้อนหนึ่งแล้วลืมแก้อีกก้อน ก็ได้บั๊กทันที วิธีที่ใช้กันทั่วไปคือเก็บตัวเลขที่ต้องบวกไว้ในอาเรย์สองตัว</p>
+
+      <div class="code" data-lang="c"><pre><code>int dr[4] = {-1, 1, 0, 0};
+int dc[4] = {0, 0, -1, 1};
+</code></pre></div>
+
+      <p>อ่านคู่กันในแนวตั้ง ทิศที่ 0 คือ <code>(-1, 0)</code> ขึ้นบน ทิศที่ 1 คือ <code>(1, 0)</code> ลงล่าง ทิศที่ 2 คือ <code>(0, -1)</code> ไปซ้าย ทิศที่ 3 คือ <code>(0, 1)</code> ไปขวา แล้วใช้ลูปเดียวเดินครบทุกทิศ ช่องข้างเคียงทิศที่ d คือ <code>(r + dr[d], c + dc[d])</code></p>
+
+      <p>ตัวอย่างนี้นับว่าแต่ละช่องมี <code>#</code> ติดกันใน 4 ทิศกี่ช่อง แล้วพิมพ์เป็นตารางตัวเลข</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="count4"><pre><code>#include &lt;stdio.h&gt;
+
+char map[100][101];
+int dr[4] = {-1, 1, 0, 0};
+int dc[4] = {0, 0, -1, 1};
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        scanf("%s", map[r]);
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            int count = 0;
+            for (int d = 0; d &lt; 4; d++) {
+                int nr = r + dr[d]; // (1)!
+                int nc = c + dc[d];
+                if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; map[nr][nc] == '#') { // (2)!
+                    count++;
+                }
+            }
+            printf("%d", count);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>nr</code> กับ <code>nc</code> ย่อมาจาก next row กับ next column คือพิกัดของช่องข้างเคียงทิศที่ d</li>
+        <li>เช็กก่อนว่าพิกัดอยู่ในตาราง แล้วค่อยดูว่าเป็น <code>#</code> ไหม ลำดับนี้สำคัญ ดูหัวข้อถัดไป</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count4" data-title="ข้อมูลเข้า"><pre><code>3 4
+#..#
+..#.
+#...
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="count4" data-title="C:\code\count4.exe"><pre><code>0120
+2102
+0110
+</code></pre></div>
+      </div>
+
+      <p>ช่อง <code>(1, 0)</code> ได้ 2 เพราะช่องบน <code>(0, 0)</code> กับช่องล่าง <code>(2, 0)</code> เป็น <code>#</code> ส่วนช่องซ้ายไม่มี เพราะอยู่ขอบตาราง</p>
+
+      <h2 id="bounds">เช็กขอบตารางทุกครั้ง</h2>
+
+      <p>ช่องที่อยู่ขอบมีข้างเคียงไม่ครบ ช่องมุมบนซ้าย <code>(0, 0)</code> ถ้าขึ้นบนจะได้แถว -1 ซึ่งไม่มีอยู่จริง จึงต้องเช็กสี่ข้อให้ผ่านทั้งหมดก่อนแตะช่องนั้น</p>
+
+      <div class="code" data-lang="c"><pre><code>nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols
+</code></pre></div>
+
+      <p>เงื่อนไขที่ต่อด้วย <code>&amp;&amp;</code> หยุดทันทีที่เจอข้อที่เป็นเท็จ ตามเรื่อง short-circuit ในบทที่ 3 ถ้า <code>nr</code> เป็น -1 ข้อแรกเป็นเท็จ ส่วน <code>map[nr][nc] == '#'</code> ที่อยู่ท้ายสุดจะไม่ถูกทำเลย จึงไม่มีการอ่านช่องที่ไม่มีจริง ถ้าสลับเอา <code>map[nr][nc] == '#'</code> ไว้ข้างหน้า จะอ่านก่อนเช็ก ซึ่งผิด</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">อีกวิธี เว้นขอบไว้หนึ่งชั้น</p>
+        <p>เก็บตารางตั้งแต่แถว 1 ถึง R และคอลัมน์ 1 ถึง C แทนที่จะเริ่มที่ 0 แถว 0 กับแถว R + 1 และคอลัมน์ 0 กับ C + 1 จะเป็นขอบที่ว่างอยู่ ตารางที่ประกาศนอก <code>main</code> มีค่าขอบเป็น 0 ให้เอง ช่องข้างเคียงของทุกช่องจริงจึงอยู่ในอาเรย์เสมอ ไม่ต้องเช็กขอบ ต้องประกาศอาเรย์ใหญ่กว่าขอบเขตอีกสองแถวสองคอลัมน์ และใช้ได้เฉพาะเมื่อค่าที่ขอบไม่ทำให้คำตอบผิด เช่น นับ <code>#</code> ได้ เพราะขอบเป็น 0 ไม่ใช่ <code>'#'</code> หน้า 7.5 จะใช้การเริ่มที่ 1 แบบนี้</p>
+      </div>
+
+      <h2 id="eight">8 ทิศ</h2>
+
+      <p>เพิ่มอีกสี่ทิศทแยงเข้าไปในอาเรย์ เรียงทีละแถวของภาพ 3 × 3 ตั้งแต่บนซ้ายถึงล่างขวา โดยข้ามช่องตรงกลาง จะตรวจด้วยตาได้ง่ายว่าครบ</p>
+
+      <div class="code" data-lang="c"><pre><code>int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+</code></pre></div>
+
+      <p>ตัวอย่างนี้เป็นแผนที่ความสูงของภูเขา หา <strong>ยอดเขา</strong> คือช่องที่สูงกว่าทุกช่องข้างเคียงทั้ง 8 ทิศ ช่องข้างเคียงที่อยู่นอกแผนที่ไม่ต้องเทียบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="peaks"><pre><code>#include &lt;stdio.h&gt;
+
+int height[100][100];
+int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            scanf("%d", &amp;height[r][c]);
+        }
+    }
+    int peaks = 0;
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            int is_peak = 1;
+            for (int d = 0; d &lt; 8; d++) {
+                int nr = r + dr[d];
+                int nc = c + dc[d];
+                if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols) {
+                    if (height[nr][nc] &gt;= height[r][c]) {
+                        is_peak = 0;
+                    }
+                }
+            }
+            if (is_peak) {
+                printf("peak at row %d column %d\n", r + 1, c + 1);
+                peaks++;
+            }
+        }
+    }
+    printf("%d peaks\n", peaks);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="peaks" data-title="ข้อมูลเข้า"><pre><code>4 5
+1 2 1 0 3
+2 6 2 1 2
+1 2 3 2 7
+0 1 2 5 4
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="peaks" data-title="C:\code\peaks.exe"><pre><code>peak at row 1 column 5
+peak at row 2 column 2
+peak at row 3 column 5
+3 peaks
+</code></pre></div>
+      </div>
+
+      <p>ช่องสูง 5 ที่แถว 4 คอลัมน์ 4 ไม่ใช่ยอดเขา เพราะช่องทแยงขวาบนสูง 7 ถ้าโจทย์นี้ใช้แค่ 4 ทิศ ช่องนี้จะกลายเป็นยอดเขา คำตอบจึงขึ้นกับว่าใช้กี่ทิศ เปลี่ยน <code>dr</code> <code>dc</code> เป็นแบบ 4 ทิศ และเลข 8 ในลูปเป็น 4 แล้วลองรันดู</p>
+
+      <h2 id="simulation">จำลองทีละรอบ</h2>
+
+      <p>โจทย์อีกแบบให้ตารางที่เปลี่ยนไปตามเวลา ทุกรอบแต่ละช่องจะเปลี่ยนตามช่องข้างเคียงของมัน ตัวอย่างที่รู้จักกันดีคือ <strong>Game of Life</strong> ของนักคณิตศาสตร์ John Conway ช่อง <code>#</code> คือเซลล์ที่มีชีวิต <code>.</code> คือช่องว่าง ทุกรอบเปลี่ยนพร้อมกันทั้งตารางตามกฎนี้ โดยนับเซลล์ที่มีชีวิตในช่องข้างเคียง 8 ทิศ</p>
+
+      <ul>
+        <li>เซลล์ที่มีชีวิต ถ้ามีเพื่อนบ้าน 2 หรือ 3 เซลล์ จะอยู่ต่อ ถ้าน้อยหรือมากกว่านั้นจะตาย</li>
+        <li>ช่องว่าง ถ้ามีเพื่อนบ้านพอดี 3 เซลล์ จะเกิดเซลล์ใหม่</li>
+      </ul>
+
+      <p>คำว่า <strong>พร้อมกัน</strong> สำคัญที่สุด ทุกช่องต้องดูเพื่อนบ้านจากตารางของรอบที่แล้ว จึงต้องเขียนผลลงตารางใหม่อีกตัว พอคิดครบทุกช่องแล้วค่อยคัดลอกกลับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="life"><pre><code>#include &lt;stdio.h&gt;
+
+char cur[100][101], next_map[100][101];
+int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+int main()
+{
+    int rows, cols, rounds;
+    scanf("%d %d %d", &amp;rows, &amp;cols, &amp;rounds);
+    for (int r = 0; r &lt; rows; r++) {
+        scanf("%s", cur[r]);
+    }
+    for (int t = 0; t &lt; rounds; t++) {
+        for (int r = 0; r &lt; rows; r++) {
+            for (int c = 0; c &lt; cols; c++) {
+                int alive = 0;
+                for (int d = 0; d &lt; 8; d++) {
+                    int nr = r + dr[d];
+                    int nc = c + dc[d];
+                    if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; cur[nr][nc] == '#') {
+                        alive++;
+                    }
+                }
+                if (cur[r][c] == '#' &amp;&amp; (alive == 2 || alive == 3)) {
+                    next_map[r][c] = '#'; // (1)!
+                } else if (cur[r][c] == '.' &amp;&amp; alive == 3) {
+                    next_map[r][c] = '#';
+                } else {
+                    next_map[r][c] = '.';
+                }
+            }
+        }
+        for (int r = 0; r &lt; rows; r++) { // (2)!
+            for (int c = 0; c &lt; cols; c++) {
+                cur[r][c] = next_map[r][c];
+            }
+        }
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        printf("%s\n", cur[r]);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เขียนลง <code>next_map</code> เท่านั้น ระหว่างคิดรอบนี้ <code>cur</code> ต้องเป็นสภาพของรอบที่แล้วตลอด</li>
+        <li>คิดครบทุกช่องแล้วถึงคัดลอกกลับมาที่ <code>cur</code> เพื่อเริ่มรอบถัดไป คัดลอกแค่ <code>cols</code> ตัวแรก <code>'\0'</code> ที่ <code>cur[r][cols]</code> จาก <code>scanf</code> จึงยังอยู่ และพิมพ์ด้วย <code>%s</code> ได้</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="life" data-title="ข้อมูลเข้า"><pre><code>8 8 1
+........
+.##.....
+.##.....
+........
+........
+....###.
+........
+........
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="life" data-title="C:\code\life.exe"><pre><code>........
+.##.....
+.##.....
+........
+.....#..
+.....#..
+.....#..
+........
+</code></pre></div>
+      </div>
+
+      <p>ก้อนสี่เหลี่ยมมุมบนซ้ายอยู่นิ่ง เพราะทุกเซลล์มีเพื่อนบ้าน 3 เซลล์พอดี ส่วนแท่งแนวนอนสามช่องหมุนเป็นแนวตั้ง ลองเปลี่ยนจำนวนรอบเป็น 2 แท่งนี้จะกลับมาเป็นแนวนอน</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">นับกลุ่มที่ติดกัน รอเรียนในบทที่ 27</p>
+        <p>โจทย์แนว "มีเกาะกี่เกาะ" ซึ่งเกาะคือกลุ่มของ <code>#</code> ที่ติดกันเป็นรูปร่างอะไรก็ได้ ต้องเดินตามช่องที่ติดกันไปเรื่อยๆ จนครบทั้งกลุ่ม วิธีนั้นคือ DFS และ BFS ในบทที่ 27 แต่ถ้าโจทย์รับประกันว่ากลุ่มมีรูปร่างแบบง่าย เช่น เป็นสี่เหลี่ยมผืนผ้าที่ไม่แตะกัน ก็นับได้ด้วยการดูช่องข้างเคียงอย่างเดียว ซึ่งจะได้ลองในแบบฝึกหัด</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-bounds">แบบที่ 1 ไม่เช็กขอบ</h3>
+
+      <p>ใช้แผนที่ 3 × 4 เดียวกับโปรแกรม count4 แต่ประกาศขนาดพอดี <code>char map[3][4]</code> ใส่ค่าในโค้ด และตัดการเช็กขอบออก เหลือแค่ <code>if (map[nr][nc] == '#')</code></p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+char map[3][4] = {
+    "#..#",
+    "..#.",
+    "#..."
+};
+int dr[4] = {-1, 1, 0, 0};
+int dc[4] = {0, 0, -1, 1};
+
+int main()
+{
+    for (int r = 0; r &lt; 3; r++) {
+        for (int c = 0; c &lt; 4; c++) {
+            int count = 0;
+            for (int d = 0; d &lt; 4; d++) {
+                int nr = r + dr[d];
+                int nc = c + dc[d];
+                if (map[nr][nc] == '#') {
+                    count++;
+                }
+            }
+            printf("%d", count);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือนทั้งแบบ <code>-Wall</code> และ <code>-O2</code> โปรแกรมไม่พัง บนเครื่องที่เขียนเอกสารนี้ได้</p>
+
+      <div class="code" data-lang="text"><pre><code>0120
+3103
+0110
+</code></pre></div>
+
+      <p>คำตอบที่ถูกคือ <code>2102</code> ในแถวกลาง ช่องซ้ายสุดและขวาสุดของแถวกลางนับเกินมาช่องละหนึ่ง เพราะตารางเรียงต่อกันเป็นแถวยาวในหน่วยความจำตามหน้า 7.1 <code>map[1][-1]</code> จึงคือตัวสุดท้ายของแถว 0 และ <code>map[1][4]</code> คือตัวแรกของแถว 2 ซึ่งบังเอิญเป็น <code>#</code> ทั้งคู่ ส่วนแถวบนสุดและล่างสุดอ่านไปนอกอาเรย์เลย บนเครื่องนี้บังเอิญไม่เจอ <code>#</code> แต่เครื่องอื่นอาจได้ค่าอื่น หรือโปรแกรมพัง</p>
+
+      <p>บั๊กนี้น่ากลัวเพราะชุดทดสอบเล็กมักผ่าน ถ้าประกาศอาเรย์ <code>[100][101]</code> แต่ตารางในชุดทดสอบเล็ก ช่องที่ล้นไปจะเป็นช่องว่างที่ไม่มีใครใช้ จะไปตกเอาชุดที่ R และ C เต็มขอบเขตพอดี</p>
+
+      <h3 id="in-place">แบบที่ 2 เขียนผลทับตารางเดิม</h3>
+
+      <p>ในโปรแกรม life ถ้าเขียนผลลง <code>cur</code> ตรงๆ เพื่อประหยัดตาราง ตัดส่วนคัดลอกออก แล้วรันกับแท่งแนวนอนสามช่องหนึ่งรอบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="life-bug"><pre><code>#include &lt;stdio.h&gt;
+
+char cur[100][101];
+int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+int main()
+{
+    int rows, cols, rounds;
+    scanf("%d %d %d", &amp;rows, &amp;cols, &amp;rounds);
+    for (int r = 0; r &lt; rows; r++) {
+        scanf("%s", cur[r]);
+    }
+    for (int t = 0; t &lt; rounds; t++) {
+        for (int r = 0; r &lt; rows; r++) {
+            for (int c = 0; c &lt; cols; c++) {
+                int alive = 0;
+                for (int d = 0; d &lt; 8; d++) {
+                    int nr = r + dr[d];
+                    int nc = c + dc[d];
+                    if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; cur[nr][nc] == '#') {
+                        alive++;
+                    }
+                }
+                if (cur[r][c] == '#' &amp;&amp; (alive == 2 || alive == 3)) {
+                    cur[r][c] = '#';
+                } else if (cur[r][c] == '.' &amp;&amp; alive == 3) {
+                    cur[r][c] = '#';
+                } else {
+                    cur[r][c] = '.';
+                }
+            }
+        }
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        printf("%s\n", cur[r]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="life-bug" data-title="ข้อมูลเข้า"><pre><code>5 5 1
+.....
+.....
+.###.
+.....
+.....
+</code></pre></div>
+
+        <div class="code" data-lang="output" data-for="life-bug" data-title="C:\code\life.exe"><pre><code>.....
+..##.
+.#.#.
+.....
+.....
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือแท่งแนวตั้งที่คอลัมน์กลาง แต่ได้รูปแปลกๆ เพราะช่องที่คิดทีหลังเห็นผลของช่องที่คิดไปแล้วในรอบเดียวกัน ช่อง <code>(1, 2)</code> เกิดใหม่ถูกต้อง แต่พอคิดช่อง <code>(1, 3)</code> ต่อ มันนับ <code>(1, 2)</code> ที่เพิ่งเกิดเป็นเพื่อนบ้านไปด้วย ได้ 3 จึงเกิดผิดๆ พอถึงช่องกลาง <code>(2, 2)</code> ก็เห็นเพื่อนบ้าน 4 เซลล์ จึงตายไป ทั้งที่ในรอบที่แล้วมันมีเพื่อนบ้านแค่ 2 และควรอยู่ต่อ คอมไพล์ผ่าน ไม่มีคำเตือน และไม่พัง ทางเดียวที่จะจับได้คือทดสอบกับรูปที่รู้คำตอบอยู่แล้ว</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ช่องข้างเคียง 4 ทิศคือบน ล่าง ซ้าย ขวา 8 ทิศเพิ่มช่องทแยง อ่านโจทย์ให้ดีว่าใช้แบบไหน</li>
+        <li>เก็บทิศไว้ใน <code>dr</code> <code>dc</code> แล้วใช้ลูปเดียว ช่องข้างเคียงคือ <code>(r + dr[d], c + dc[d])</code></li>
+        <li>เช็ก <code>nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols</code> ก่อนแตะช่องเสมอ หรือเว้นขอบหนึ่งชั้นแล้วเริ่มที่ 1</li>
+        <li>ออกนอกขอบไม่พังให้เห็น แต่ไปหยิบช่องของแถวข้างๆ มาแทน</li>
+        <li>จำลองทีละรอบ ให้คิดจากตารางเดิม เขียนผลลงตารางใหม่ แล้วค่อยคัดลอกกลับ</li>
+      </ul>
+    </article>
