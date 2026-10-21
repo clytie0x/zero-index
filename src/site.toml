@@ -148,7 +148,14 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "11"
 title = "บทที่ 11 struct"
 summary = "รวมข้อมูลหลายชนิดเป็นก้อนเดียว และอาเรย์ของ struct"
-# dir = "c/11-structs"
+path = "c/11-structs/index.html"
+pages = [
+  { num = "11.1", title = "struct คืออะไร", path = "c/11-structs/basics.html" },
+  { num = "11.2", title = "อาเรย์ของ struct", path = "c/11-structs/arrays.html" },
+  { num = "11.3", title = "struct ซ้อนกัน ขนาด และ union", path = "c/11-structs/nested.html" },
+  { num = "11.4", title = "struct กับฟังก์ชันและ pointer", path = "c/11-structs/functions.html" },
+  { num = "11.5", title = "แบบฝึกหัด", path = "c/11-structs/exercises.html", exercises = "c/11-structs" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"

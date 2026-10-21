@@ -1,0 +1,400 @@
+<article class="doc">
+      <h1>11.3 struct ซ้อนกัน ขนาด และ union</h1>
+
+      <p>สมาชิกของ struct เป็นชนิดอะไรก็ได้ รวมถึงอาเรย์ และ struct อีกตัว โจทย์เรขาคณิตใช้เรื่องนี้มากที่สุด จุดมีพิกัดสองตัว เส้นตรงมีจุดสองจุด สี่เหลี่ยมมีมุมสองมุม หน้านี้ประกอบชนิดเหล่านี้ขึ้นทีละชั้น แล้วใช้หาพื้นที่ที่สี่เหลี่ยมสองรูปทับกัน จากนั้นดูว่า struct หนึ่งก้อนใช้หน่วยความจำเท่าไรจริงๆ และปิดท้ายด้วย union ซึ่งหน้าตาคล้าย struct แต่ทำงานต่างกันมาก</p>
+
+      <h2 id="nested">จุด เส้นตรง สี่เหลี่ยม</h2>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="shapes"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+typedef struct {
+    Point from;
+    Point to;
+} Segment;
+
+typedef struct { // (1)!
+    Point low;
+    Point high;
+} Rect;
+
+int main()
+{
+    Segment road = {{1, 2}, {4, 6}}; // (2)!
+    Rect park = {{0, 0}, {10, 5}};
+    int dx = road.to.x - road.from.x; // (3)!
+    int dy = road.to.y - road.from.y;
+    printf("road from (%d, %d) to (%d, %d)\n", road.from.x, road.from.y, road.to.x, road.to.y);
+    printf("road length squared = %d\n", dx * dx + dy * dy);
+    Point corner = park.high; // (4)!
+    printf("park top right = (%d, %d)\n", corner.x, corner.y);
+    printf("park area = %d\n", (park.high.x - park.low.x) * (park.high.y - park.low.y));
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สี่เหลี่ยมผืนผ้าที่ด้านขนานกับแกน x และแกน y กำหนดได้ด้วยมุมซ้ายล่าง <code>low</code> กับมุมขวาบน <code>high</code> สองมุมก็พอ อีกสองมุมหาได้จากสองมุมนี้</li>
+        <li>ปีกกาซ้อนปีกกา ชั้นนอกคือ <code>Segment</code> ชั้นในแต่ละคู่คือ <code>Point</code> หนึ่งจุด</li>
+        <li>อ่านจากซ้ายไปขวา <code>road</code> แล้วเอา <code>to</code> แล้วเอา <code>x</code> ซ้อนกี่ชั้นก็ใส่จุดต่อไปเรื่อยๆ</li>
+        <li>สมาชิกที่เป็น struct ก็คัดลอกทั้งก้อนด้วย <code>=</code> ได้เหมือนกัน</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="shapes" data-title="C:\code\shapes.exe"><pre><code>road from (1, 2) to (4, 6)
+road length squared = 25
+park top right = (10, 5)
+park area = 50
+</code></pre></div>
+
+      <p>ถนนยาว 3 หน่วยตามแกน x และ 4 หน่วยตามแกน y กำลังสองของความยาวคือ 9 + 16 = 25 ส่วนสวนกว้าง 10 สูง 5 พื้นที่ 50 การแยก <code>Point</code> ออกมาเป็นชนิดของตัวเองทำให้ทุกที่ที่พูดถึงจุด ใช้ <code>.x</code> กับ <code>.y</code> แบบเดียวกันหมด ไม่ต้องตั้งชื่อ <code>from_x</code> <code>from_y</code> <code>to_x</code> <code>to_y</code> เป็นตัวแปรแยกสี่ตัว</p>
+
+      <h2 id="overlap">พื้นที่ที่สี่เหลี่ยมสองรูปทับกัน</h2>
+
+      <p>โจทย์แนวนี้ออกบ่อย สองพื้นที่ทับกันเท่าไร ห้องสองห้องชนกันไหม กล้องสองตัวเห็นพื้นที่ร่วมกันเท่าไร ถ้านั่งแยกกรณีว่าสี่เหลี่ยม B อยู่ซ้าย ขวา บน ล่าง หรือคร่อม A จะได้ if หลายสิบกรณีและพลาดง่ายมาก มีวิธีที่สั้นกว่านั้น</p>
+
+      <figure>
+        <svg viewBox="0 0 360 290" width="360" style="max-width:100%;height:auto" role="img" aria-label="สี่เหลี่ยม A มุมซ้ายล่าง 1 1 มุมขวาบน 6 5 และสี่เหลี่ยม B มุมซ้ายล่าง 4 3 มุมขวาบน 9 8 ส่วนที่ทับกันมีมุมซ้ายล่าง 4 3 และมุมขวาบน 6 5">
+          <rect x="60" y="120" width="150" height="120" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="150" y="30" width="150" height="150" style="fill:var(--surface);fill-opacity:0.6;stroke:var(--line-strong);stroke-width:2"/>
+          <rect x="150" y="120" width="60" height="60" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:3"/>
+          <g style="font-family:var(--font-code);font-size:13px">
+            <text x="70" y="230" style="fill:var(--ink);font-size:16px">A</text>
+            <text x="282" y="50" style="fill:var(--ink);font-size:16px">B</text>
+            <text x="60" y="258" text-anchor="middle" style="fill:var(--muted)">(1, 1)</text>
+            <text x="210" y="112" text-anchor="start" style="fill:var(--muted)">(6, 5)</text>
+            <text x="146" y="196" text-anchor="end" style="fill:var(--muted)">(4, 3)</text>
+            <text x="300" y="22" text-anchor="middle" style="fill:var(--muted)">(9, 8)</text>
+            <text x="180" y="155" text-anchor="middle" style="fill:var(--accent)">2 x 2</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>มองทีละแกน ส่วนที่ทับกันต้องอยู่ในทั้ง A และ B</p>
+
+      <ul>
+        <li>ขอบซ้ายของส่วนที่ทับ คือขอบซ้ายที่อยู่ <strong>ขวากว่า</strong> ระหว่างสองรูป จึงเป็นค่ามากของ <code>low.x</code> ทั้งสอง ในรูปคือ max(1, 4) = 4</li>
+        <li>ขอบขวาของส่วนที่ทับ คือขอบขวาที่อยู่ <strong>ซ้ายกว่า</strong> จึงเป็นค่าน้อยของ <code>high.x</code> ทั้งสอง คือ min(6, 9) = 6</li>
+        <li>แกน y ทำแบบเดียวกัน ขอบล่างคือ max(1, 3) = 3 ขอบบนคือ min(5, 8) = 5</li>
+      </ul>
+
+      <p>ส่วนที่ทับจึงเป็นสี่เหลี่ยมจาก (4, 3) ถึง (6, 5) กว้าง 2 สูง 2 พื้นที่ 4 และถ้าสองรูปไม่ทับกันเลย ขอบซ้ายที่ได้จะอยู่ขวากว่าหรือตรงกับขอบขวา ความกว้างจึงติดลบหรือเป็นศูนย์ ใช้ข้อนี้ตรวจได้ทันทีว่าทับกันจริงไหม</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="overlap"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+typedef struct {
+    Point low;
+    Point high;
+} Rect;
+
+int max_int(int a, int b)
+{
+    return a &gt; b ? a : b;
+}
+
+int min_int(int a, int b)
+{
+    return a &lt; b ? a : b;
+}
+
+int main()
+{
+    Rect a, b;
+    scanf("%d %d %d %d", &amp;a.low.x, &amp;a.low.y, &amp;a.high.x, &amp;a.high.y);
+    scanf("%d %d %d %d", &amp;b.low.x, &amp;b.low.y, &amp;b.high.x, &amp;b.high.y);
+    Rect common;
+    common.low.x = max_int(a.low.x, b.low.x);
+    common.low.y = max_int(a.low.y, b.low.y);
+    common.high.x = min_int(a.high.x, b.high.x);
+    common.high.y = min_int(a.high.y, b.high.y);
+    int width = common.high.x - common.low.x;
+    int height = common.high.y - common.low.y;
+    if (width &gt; 0 &amp;&amp; height &gt; 0) { // (1)!
+        printf("overlap = %d\n", width * height);
+    } else {
+        printf("overlap = 0\n");
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ต้องตรวจ <strong>ทั้งสองแกน</strong> ถ้าแกนใดแกนหนึ่งไม่ทับกัน สองรูปก็ไม่ทับกัน ใช้ <code>&gt;</code> ไม่ใช่ <code>&gt;=</code> เพราะถ้ากว้างเป็น 0 แปลว่าแค่ขอบแตะกัน พื้นที่ที่ทับคือ 0</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="overlap" data-title="ข้อมูลเข้า"><pre><code>1 1 6 5
+4 3 9 8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="overlap" data-title="C:\code\overlap.exe"><pre><code>overlap = 4
+</code></pre></div>
+      </div>
+
+      <p>ทดสอบให้ครบทุกแบบ ป้อน <code>0 0 2 2</code> กับ <code>2 0 4 2</code> ซึ่งขอบแตะกันพอดี ต้องได้ 0 ป้อน <code>0 0 10 10</code> กับ <code>2 2 3 3</code> ซึ่งรูปหนึ่งอยู่ในอีกรูป ต้องได้ 1 คือพื้นที่ของรูปเล็ก และลองแบบที่อยู่ห่างกันแนวทแยง ซึ่งเป็นกรณีที่คนลืมบ่อยที่สุด ดูในส่วนลองทำให้พัง</p>
+
+      <p>วิธีเดียวกันขยายเป็นสี่เหลี่ยม N รูปได้ ส่วนที่ทุกรูปทับกันมีขอบซ้ายเป็นค่ามากของ <code>low.x</code> ทุกรูป และขอบขวาเป็นค่าน้อยของ <code>high.x</code> ทุกรูป ไล่หาด้วยลูปเดียว</p>
+
+      <h2 id="array-member">อาเรย์ที่อยู่ใน struct</h2>
+
+      <p>นักเรียนหนึ่งคนสอบสามวิชา เก็บคะแนนเป็นอาเรย์ไว้ในตัวนักเรียนเลย ไม่ต้องมีสมาชิก <code>score1</code> <code>score2</code> <code>score3</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="scores"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    char name[21];
+    int scores[3];
+} Student;
+
+Student students[100];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s", students[i].name);
+        for (int j = 0; j &lt; 3; j++) {
+            scanf("%d", &amp;students[i].scores[j]);
+        }
+    }
+    for (int i = 0; i &lt; n; i++) {
+        int total = 0;
+        for (int j = 0; j &lt; 3; j++) {
+            total += students[i].scores[j];
+        }
+        printf("%s %d\n", students[i].name, total);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="scores" data-title="ข้อมูลเข้า"><pre><code>3
+Mali 87 75 90
+Krit 92 68 81
+Ploy 78 88 85
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="scores" data-title="C:\code\scores.exe"><pre><code>Mali 252
+Krit 241
+Ploy 251
+</code></pre></div>
+      </div>
+
+      <p><code>students[i].scores[j]</code> อ่านจากซ้ายไปขวาเหมือนเดิม นักเรียนคนที่ i แล้วเอาอาเรย์คะแนน แล้วเอาวิชาที่ j</p>
+
+      <h2 id="sizeof">struct ใหญ่แค่ไหน</h2>
+
+      <p>ในบทที่ 1 เห็นแล้วว่า <code>int</code> ใช้ 4 byte และ <code>char</code> ใช้ 1 byte ดูขนาดของอะไรก็ได้ด้วย <code>sizeof</code> ถ้าเดา struct ที่มี <code>char</code> <code>int</code> <code>char</code> น่าจะได้ 1 + 4 + 1 = 6 byte ลองรันดูจริง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="size"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+typedef struct {
+    Point low;
+    Point high;
+} Rect;
+
+typedef struct {
+    char grade;
+    int score;
+    char room;
+} Loose;
+
+typedef struct {
+    int score;
+    char grade;
+    char room;
+} Tight;
+
+int main()
+{
+    printf("Point = %d bytes\n", (int)sizeof(Point)); // (1)!
+    printf("Rect = %d bytes\n", (int)sizeof(Rect));
+    printf("Loose = %d bytes\n", (int)sizeof(Loose));
+    printf("Tight = %d bytes\n", (int)sizeof(Tight));
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>sizeof</code> ให้ขนาดเป็นจำนวน byte ชนิดของผลไม่ใช่ <code>int</code> จึงแปลงเป็น <code>int</code> ด้วย cast จากบทที่ 1 ก่อนพิมพ์ด้วย <code>%d</code></li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="size" data-title="C:\code\size.exe"><pre><code>Point = 8 bytes
+Rect = 16 bytes
+Loose = 12 bytes
+Tight = 8 bytes
+</code></pre></div>
+
+      <p><code>Point</code> กับ <code>Rect</code> ตรงตามที่บวกกัน แต่ <code>Loose</code> ได้ 12 ไม่ใช่ 6 และ <code>Tight</code> ซึ่งมีสมาชิกเหมือนกันทุกตัว แค่สลับลำดับ ได้ 8</p>
+
+      <figure>
+        <svg viewBox="0 0 440 150" width="440" style="max-width:100%;height:auto" role="img" aria-label="Loose ใช้ 12 byte คือ grade 1 byte ช่องว่าง 3 byte score 4 byte room 1 byte ช่องว่าง 3 byte ส่วน Tight ใช้ 8 byte คือ score 4 byte grade 1 byte room 1 byte ช่องว่าง 2 byte">
+          <g style="font-family:var(--font-code);font-size:12px">
+            <text x="10" y="42" style="fill:var(--ink);font-size:14px">Loose</text>
+            <rect x="70" y="24" width="30" height="28" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="100" y="24" width="90" height="28" style="fill:var(--surface);stroke:var(--line-strong);stroke-dasharray:4 3"/>
+            <rect x="190" y="24" width="120" height="28" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+            <rect x="310" y="24" width="30" height="28" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="340" y="24" width="90" height="28" style="fill:var(--surface);stroke:var(--line-strong);stroke-dasharray:4 3"/>
+            <text x="85" y="43" text-anchor="middle" style="fill:var(--ink)">g</text>
+            <text x="145" y="43" text-anchor="middle" style="fill:var(--muted)">padding</text>
+            <text x="250" y="43" text-anchor="middle" style="fill:var(--ink)">score</text>
+            <text x="325" y="43" text-anchor="middle" style="fill:var(--ink)">r</text>
+            <text x="385" y="43" text-anchor="middle" style="fill:var(--muted)">padding</text>
+            <text x="10" y="112" style="fill:var(--ink);font-size:14px">Tight</text>
+            <rect x="70" y="94" width="120" height="28" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+            <rect x="190" y="94" width="30" height="28" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="220" y="94" width="30" height="28" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="250" y="94" width="60" height="28" style="fill:var(--surface);stroke:var(--line-strong);stroke-dasharray:4 3"/>
+            <text x="130" y="113" text-anchor="middle" style="fill:var(--ink)">score</text>
+            <text x="205" y="113" text-anchor="middle" style="fill:var(--ink)">g</text>
+            <text x="235" y="113" text-anchor="middle" style="fill:var(--ink)">r</text>
+            <text x="280" y="113" text-anchor="middle" style="fill:var(--muted)">pad</text>
+            <text x="70" y="70" text-anchor="middle" style="fill:var(--muted)">0</text>
+            <text x="190" y="70" text-anchor="middle" style="fill:var(--muted)">4</text>
+            <text x="310" y="70" text-anchor="middle" style="fill:var(--muted)">8</text>
+            <text x="430" y="70" text-anchor="middle" style="fill:var(--muted)">12</text>
+            <text x="70" y="140" text-anchor="middle" style="fill:var(--muted)">0</text>
+            <text x="190" y="140" text-anchor="middle" style="fill:var(--muted)">4</text>
+            <text x="310" y="140" text-anchor="middle" style="fill:var(--muted)">8</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>เหตุผลคือ CPU อ่าน <code>int</code> ได้เร็วที่สุดเมื่อ <code>int</code> ตัวนั้นเริ่มที่ตำแหน่งที่หารด้วย 4 ลงตัว compiler จึงเว้นช่องว่างให้ <code>score</code> ไปเริ่มที่ byte ที่ 4 ช่องว่างที่ไม่ได้เก็บอะไรนี้เรียกว่า <strong>padding</strong> ส่วน padding ท้าย struct มีไว้ให้ก้อนถัดไปในอาเรย์เริ่มที่ตำแหน่งหารด้วย 4 ลงตัวเหมือนกัน ขนาดของ struct จึงปัดขึ้นเป็นพหุคูณของสมาชิกที่ใหญ่ที่สุดเสมอ</p>
+
+      <p>เรื่องนี้ไม่ต้องคำนวณเองให้แม่น เพราะขึ้นกับชนิดของสมาชิกและเครื่อง สิ่งที่ต้องจำมีสามข้อ</p>
+
+      <ul>
+        <li><strong>อย่าบวกขนาดสมาชิกเอง</strong> อยากรู้ขนาดให้ใช้ <code>sizeof</code> เสมอ โดยเฉพาะตอนขอหน่วยความจำด้วย <code>malloc</code> ซึ่งจะเห็นในหน้า 11.4</li>
+        <li>เรียงสมาชิกจากชนิดใหญ่ไปเล็ก เช่น <code>long long</code> ก่อน <code>int</code> ก่อน <code>char</code> มักได้ struct ที่เล็กที่สุด</li>
+        <li>ขนาดสำคัญตอนเก็บเป็นอาเรย์ใหญ่ อาเรย์ <code>Loose</code> หนึ่งล้านช่องใช้ 12 ล้าน byte แต่ <code>Tight</code> ใช้ 8 ล้าน byte ต่างกัน 4 MB ทั้งที่เก็บข้อมูลเท่ากัน คิดเทียบกับหน่วยความจำที่โจทย์ให้ทุกครั้ง</li>
+      </ul>
+
+      <h2 id="union">union แบบสั้นๆ</h2>
+
+      <p><strong>union</strong> เขียนเหมือน struct ทุกอย่าง แค่เปลี่ยนคำว่า <code>struct</code> เป็น <code>union</code> แต่สมาชิกทุกตัว <strong>ใช้หน่วยความจำที่เดียวกัน</strong> ขนาดของ union จึงเท่ากับสมาชิกตัวที่ใหญ่ที่สุด และเก็บค่าที่มีความหมายได้ทีละสมาชิกเท่านั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="union"><pre><code>#include &lt;stdio.h&gt;
+
+typedef union {
+    int whole;
+    double real;
+} Number;
+
+typedef struct {
+    int whole;
+    double real;
+} Both;
+
+int main()
+{
+    printf("union = %d bytes\n", (int)sizeof(Number));
+    printf("struct = %d bytes\n", (int)sizeof(Both));
+    Number n;
+    n.whole = 42;
+    printf("%d\n", n.whole);
+    n.real = 2.75;
+    printf("%f\n", n.real);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="union" data-title="C:\code\union.exe"><pre><code>union = 8 bytes
+struct = 16 bytes
+42
+2.750000
+</code></pre></div>
+
+      <p>union มีขนาด 8 byte เท่ากับ <code>double</code> ส่วน struct ที่มีสมาชิกเหมือนกันใช้ 16 byte คือ <code>int</code> 4 byte padding 4 byte และ <code>double</code> 8 byte ตามเหตุผลในหัวข้อที่แล้ว</p>
+
+      <p>เมื่อเขียน <code>n.real</code> แล้ว ค่า 42 ใน <code>n.whole</code> ก็ถูกเขียนทับไป เพราะเป็นหน่วยความจำก้อนเดียวกัน บนเครื่องที่เขียนเอกสารนี้ ใส่ <code>n.whole = 42;</code> แล้ว <code>n.real = 0.1;</code> จากนั้นพิมพ์ <code>n.whole</code> ได้ <code>-1717986918</code> ซึ่งคือ byte ครึ่งหนึ่งของเลข 0.1 ที่ถูกอ่านเป็น <code>int</code> ไม่ใช่ 42 อีกแล้ว ใครใช้ union ต้องจำเองว่าตอนนี้เก็บสมาชิกตัวไหนอยู่</p>
+
+      <p>union ใช้ในงานที่หน่วยความจำจำกัดมาก เช่นโปรแกรมบนไมโครคอนโทรลเลอร์ หรือเก็บข้อมูลที่เป็นได้หลายแบบแต่ทีละแบบ <strong>การแข่งขันแทบไม่ได้ใช้</strong> เพราะหน่วยความจำที่โจทย์ให้มักพอ และใช้ผิดแล้วได้ค่าขยะแบบที่เห็น ให้รู้จักไว้พออ่านโค้ดคนอื่นออก แล้วใช้ struct ตามปกติ</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="skip-level">แบบที่ 1 ข้ามชั้นของ struct</h3>
+
+      <div class="code" data-lang="c"><pre><code>Rect r = {{1, 2}, {6, 5}};
+printf("%d\n", r.high.x - r.x);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>rect.c:16:32: error: 'Rect' has no member named 'x'
+   16 |     printf("%d\n", r.high.x - r.x);
+      |                                ^
+</code></pre></div>
+
+      <p><code>Rect</code> มีสมาชิกแค่ <code>low</code> กับ <code>high</code> ไม่มี <code>x</code> โดยตรง ต้องบอกให้ครบทุกชั้นว่าเป็น x ของมุมไหน คือ <code>r.low.x</code> ข้อความ <code>has no member named</code> ยังขึ้นเมื่อพิมพ์ชื่อสมาชิกผิดด้วย เช่น <code>r.hight</code></p>
+
+      <h3 id="forget-check">แบบที่ 2 ลืมตรวจว่าทับกันจริงไหม</h3>
+
+      <p>ถ้าตัด <code>if</code> ในโปรแกรม overlap ออก แล้วพิมพ์ <code>width * height</code> เลย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="overlap-bug"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+typedef struct {
+    Point low;
+    Point high;
+} Rect;
+
+int max_int(int a, int b)
+{
+    return a &gt; b ? a : b;
+}
+
+int min_int(int a, int b)
+{
+    return a &lt; b ? a : b;
+}
+
+int main()
+{
+    Rect a, b;
+    scanf("%d %d %d %d", &amp;a.low.x, &amp;a.low.y, &amp;a.high.x, &amp;a.high.y);
+    scanf("%d %d %d %d", &amp;b.low.x, &amp;b.low.y, &amp;b.high.x, &amp;b.high.y);
+    int width = min_int(a.high.x, b.high.x) - max_int(a.low.x, b.low.x);
+    int height = min_int(a.high.y, b.high.y) - max_int(a.low.y, b.low.y);
+    printf("overlap = %d\n", width * height);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="overlap-bug" data-title="ข้อมูลเข้า"><pre><code>0 0 2 2
+5 5 8 8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="overlap-bug" data-title="C:\code\overlap.exe"><pre><code>overlap = 9
+</code></pre></div>
+      </div>
+
+      <p>สองรูปนี้อยู่ห่างกันคนละมุม ไม่ทับกันเลย แต่โปรแกรมตอบ 9 เพราะความกว้างได้ 2 - 5 = -3 และความสูงก็ได้ -3 ลบคูณลบกลายเป็นบวก ถ้าทดสอบแค่กรณีที่ห่างกันแนวนอนอย่างเดียว ความกว้างติดลบแต่ความสูงเป็นบวก จะได้ค่าติดลบ ซึ่งยังพอเห็นว่าผิด แต่กรณีแนวทแยงได้ค่าบวกที่ดูเหมือนถูก ชุดทดสอบของโจทย์แบบนี้มักมีกรณีนี้เสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>สมาชิกของ struct เป็น struct อีกตัวหรืออาเรย์ก็ได้ เข้าถึงด้วยการต่อจุดไปเรื่อยๆ เช่น <code>r.low.x</code> หรือ <code>students[i].scores[j]</code></li>
+        <li>สี่เหลี่ยมด้านขนานแกนเก็บด้วยมุมซ้ายล่างกับมุมขวาบน</li>
+        <li>ส่วนที่ทับกันคือ max ของขอบล่าง และ min ของขอบบน ทีละแกน ต้องตรวจว่ากว้างและสูงเป็นบวกทั้งคู่</li>
+        <li><code>sizeof</code> บอกขนาดจริง ซึ่งอาจใหญ่กว่าผลรวมของสมาชิกเพราะ padding เรียงสมาชิกจากใหญ่ไปเล็กช่วยลดได้</li>
+        <li>union ให้สมาชิกทุกตัวใช้หน่วยความจำร่วมกัน เก็บได้ทีละค่า การแข่งขันแทบไม่ได้ใช้</li>
+      </ul>
+    </article>

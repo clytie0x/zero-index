@@ -1,0 +1,32 @@
+<article class="doc">
+      <h1>บทที่ 11 struct</h1>
+
+      <p>จบบทนี้ น้องจะรวมข้อมูลหลายชนิดที่เป็นของสิ่งเดียวกันไว้เป็นก้อนเดียวได้ เช่น ชื่อ คะแนน และห้องของนักเรียนหนึ่งคน หรือพิกัด x กับ y ของจุดหนึ่งจุด แล้วเก็บก้อนพวกนี้เป็นอาเรย์ คัดลอกทั้งก้อน ส่งเข้าฟังก์ชัน และคืนออกจากฟังก์ชันได้ โจทย์ TOI Zero ช่วงกลางที่ให้ข้อมูลเป็นรายการ เช่น ตารางคะแนนแข่งขัน คลังสินค้า จุดและสี่เหลี่ยมบนระนาบ จะเขียนสั้นลงและผิดยากขึ้นมาก และ struct ยังเป็นฐานของ linked list stack queue ในบทที่ 14 ด้วย</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="basics.html">11.1 struct คืออะไร</a></td><td>ทำไมต้องรวมข้อมูลเป็นก้อน ประกาศ struct ใช้ <code>.</code> กำหนดค่าเริ่มต้น คัดลอกทั้งก้อน และ <code>typedef</code></td></tr>
+            <tr><td><a href="arrays.html">11.2 อาเรย์ของ struct</a></td><td>อ่านข้อมูลนักเรียน N คน หาคนคะแนนสูงสุด ค้นหาด้วยชื่อ และสลับข้อมูลทั้งคนในคำสั่งเดียว</td></tr>
+            <tr><td><a href="nested.html">11.3 struct ซ้อนกัน ขนาด และ union</a></td><td>จุด เส้นตรง สี่เหลี่ยม พื้นที่ที่สี่เหลี่ยมสองรูปทับกัน <code>sizeof</code> กับ padding และ union แบบสั้นๆ</td></tr>
+            <tr><td><a href="functions.html">11.4 struct กับฟังก์ชันและ pointer</a></td><td>ส่งแบบสำเนาและแบบ pointer ตัวดำเนินการ <code>-&gt;</code> คืน struct จากฟังก์ชัน เปรียบเทียบหลายเกณฑ์ และ struct ที่ชี้หาตัวเอง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>ประกาศ struct นักเรียนที่มีชื่อกับคะแนน รับค่าด้วย <code>scanf</code> แล้วพิมพ์ออกมาได้ถูกทั้งสองสมาชิก</span></label></li>
+        <li><label><input type="checkbox"><span>อ่านนักเรียน N คนเข้าอาเรย์ของ struct แล้วพิมพ์ชื่อคนคะแนนสูงสุด ลองให้มีสองคนคะแนนเท่ากัน แล้วได้คนที่มาก่อน</span></label></li>
+        <li><label><input type="checkbox"><span>เขียนโปรแกรมหาพื้นที่ที่สี่เหลี่ยมสองรูปทับกัน แล้วได้ <code>0</code> เมื่อสี่เหลี่ยมอยู่ห่างกันแนวทแยง ไม่ใช่ค่าบวกแปลกๆ</span></label></li>
+        <li><label><input type="checkbox"><span>เขียนฟังก์ชันที่รับ pointer ของ struct แล้วแก้คะแนนผ่าน <code>-&gt;</code> ได้ และอธิบายได้ว่าทำไมฟังก์ชันที่รับแบบสำเนาแก้ไม่ได้</span></label></li>
+        <li><label><input type="checkbox"><span>พิมพ์ <code>sizeof</code> ของ struct ที่มีสมาชิก <code>char</code> <code>int</code> <code>char</code> ได้ 12 แล้วสลับลำดับสมาชิกจนเหลือ 8</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 6 ข้อจาก 8 ข้อ</span></label></li>
+      </ul>
+    </article>

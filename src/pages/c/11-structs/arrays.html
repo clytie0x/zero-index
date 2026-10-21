@@ -1,0 +1,350 @@
+<article class="doc">
+      <h1>11.2 อาเรย์ของ struct</h1>
+
+      <p>struct ตัวเดียวเก็บนักเรียนได้หนึ่งคน แต่โจทย์ให้นักเรียนมาเป็นร้อยเป็นพันคน เหมือนตอนที่ตัวแปร <code>int</code> ตัวเดียวไม่พอ แล้วเราใช้อาเรย์ในบทที่ 5 struct ก็ทำเป็นอาเรย์ได้เหมือนกัน หน้านี้อ่านข้อมูลนักเรียน N คน แล้วทำงานที่เจอในโจทย์บ่อยที่สุด คือหาคนที่ดีที่สุด เลือกคนที่ผ่านเกณฑ์ ค้นหาด้วยชื่อ และย้ายข้อมูลทั้งคน</p>
+
+      <h2 id="declare">ประกาศและอ่านข้อมูล</h2>
+
+      <p><code>Student students[100];</code> คืออาเรย์ 100 ช่อง แต่ละช่องเป็น <code>Student</code> หนึ่งก้อน <code>students[2]</code> คือนักเรียนคนที่สาม และ <code>students[2].score</code> คือคะแนนของคนนั้น อ่านจากซ้ายไปขวา คือ "เลือกช่องที่ 2 ก่อน แล้วค่อยหยิบ score ออกจากช่องนั้น"</p>
+
+      <figure>
+        <svg viewBox="0 0 560 150" width="560" style="max-width:100%;height:auto" role="img" aria-label="อาเรย์ students สามช่อง ช่อง 0 เก็บ Mali 87 ช่อง 1 เก็บ Krit 92 ช่อง 2 เก็บ Ploy 78 แต่ละช่องมีสมาชิก name และ score ลูกศรชี้ไปที่ score ของช่อง 2 เขียนว่า students[2].score">
+          <g style="font-family:var(--font-code)">
+            <text x="95" y="20" text-anchor="middle" style="fill:var(--muted);font-size:13px">students[0]</text>
+            <rect x="10" y="30" width="170" height="70" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="20" y="42" width="90" height="46" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="65" y="71" text-anchor="middle" style="fill:var(--ink);font-size:16px">"Mali"</text>
+            <rect x="118" y="42" width="52" height="46" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="144" y="71" text-anchor="middle" style="fill:var(--ink);font-size:16px">87</text>
+            <text x="280" y="20" text-anchor="middle" style="fill:var(--muted);font-size:13px">students[1]</text>
+            <rect x="195" y="30" width="170" height="70" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="205" y="42" width="90" height="46" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="250" y="71" text-anchor="middle" style="fill:var(--ink);font-size:16px">"Krit"</text>
+            <rect x="303" y="42" width="52" height="46" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="329" y="71" text-anchor="middle" style="fill:var(--ink);font-size:16px">92</text>
+            <text x="465" y="20" text-anchor="middle" style="fill:var(--muted);font-size:13px">students[2]</text>
+            <rect x="380" y="30" width="170" height="70" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="390" y="42" width="90" height="46" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="435" y="71" text-anchor="middle" style="fill:var(--ink);font-size:16px">"Ploy"</text>
+            <rect x="488" y="42" width="52" height="46" rx="5" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/>
+            <text x="514" y="71" text-anchor="middle" style="fill:var(--ink);font-size:16px">78</text>
+            <text x="514" y="138" text-anchor="middle" style="fill:var(--accent);font-size:13px">students[2].score</text>
+            <line x1="514" y1="122" x2="514" y2="104" style="stroke:var(--accent);stroke-width:2"/>
+          </g>
+        </svg>
+      </figure>
+
+      <h2 id="top-student">หาคนคะแนนสูงสุด</h2>
+
+      <p>นักเรียน N คน แต่ละคนมีชื่อกับคะแนน ให้พิมพ์ชื่อและคะแนนของคนที่ได้คะแนนสูงสุด ถ้ามีหลายคนเท่ากัน ให้ตอบคนที่มาก่อน วิธีเหมือนหาตำแหน่งของค่ามากสุดในบทที่ 5 ทุกอย่าง จำ index ของคนที่ดีที่สุดไว้ ต่างกันแค่ตอนเปรียบเทียบต้องบอกว่าเทียบสมาชิกตัวไหน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="top-student"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+} Student;
+
+Student students[100]; // (1)!
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s %d", students[i].name, &amp;students[i].score); // (2)!
+    }
+    int best = 0;
+    for (int i = 1; i &lt; n; i++) {
+        if (students[i].score &gt; students[best].score) { // (3)!
+            best = i;
+        }
+    }
+    printf("top = %s %d\n", students[best].name, students[best].score);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ประกาศนอก <code>main</code> เหมือนอาเรย์ใหญ่ในบทที่ 5 หนึ่งช่องใช้หน่วยความจำเท่ากับ struct หนึ่งก้อน อาเรย์ของ struct จึงใหญ่เร็วกว่าอาเรย์ของ <code>int</code> มาก ขนาดจริงของหนึ่งก้อนดูได้ในหน้า 11.3</li>
+        <li>ชื่อเป็นอาเรย์ของ <code>char</code> อยู่แล้ว ไม่มี <code>&amp;</code> ส่วนคะแนนเป็น <code>int</code> ต้องมี <code>&amp;</code> เหมือนเดิม</li>
+        <li>ใช้ <code>&gt;</code> คนที่คะแนนเท่ากับคนที่ดีที่สุดตอนนี้จะไม่ได้แทนที่ จึงได้คนที่มาก่อน ถ้าโจทย์ให้ตอบคนหลังสุด เปลี่ยนเป็น <code>&gt;=</code></li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="top-student" data-title="ข้อมูลเข้า"><pre><code>5
+Mali 87
+Krit 92
+Ploy 78
+Nat 92
+Beam 65
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="top-student" data-title="C:\code\top.exe"><pre><code>top = Krit 92
+</code></pre></div>
+      </div>
+
+      <p>Krit กับ Nat ได้ 92 เท่ากัน โปรแกรมตอบ Krit เพราะมาก่อน ข้อดีของการเก็บเป็น struct เห็นชัดตรงบรรทัดพิมพ์ ได้ index ตัวเดียว ก็หยิบได้ทั้งชื่อทั้งคะแนน ไม่มีโอกาสหยิบชื่อของคนหนึ่งคู่กับคะแนนของอีกคน</p>
+
+      <h3 id="keep-best">จำทั้งก้อนแทนการจำ index</h3>
+
+      <p>ในหน้า 11.1 เห็นแล้วว่า struct คัดลอกด้วย <code>=</code> ได้ทั้งก้อน จึงจำ "นักเรียนที่ดีที่สุด" ไว้ในตัวแปร <code>Student</code> ตัวเดียวได้เลย และถ้างานมีแค่นี้ ไม่ต้องใช้อาเรย์ด้วยซ้ำ อ่านทีละคนแล้วเทียบทันที</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="top-copy"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+} Student;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    Student best;
+    scanf("%s %d", best.name, &amp;best.score);
+    for (int i = 1; i &lt; n; i++) {
+        Student s;
+        scanf("%s %d", s.name, &amp;s.score);
+        if (s.score &gt; best.score) {
+            best = s;
+        }
+    }
+    printf("top = %s %d\n", best.name, best.score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="top-copy" data-title="ข้อมูลเข้า"><pre><code>5
+Mali 87
+Krit 92
+Ploy 78
+Nat 92
+Beam 65
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="top-copy" data-title="C:\code\top.exe"><pre><code>top = Krit 92
+</code></pre></div>
+      </div>
+
+      <p>คนแรกอ่านเข้า <code>best</code> ตรงๆ เพราะตอนเริ่มยังไม่มีใครให้เทียบ แล้วคนที่เหลือค่อยมาท้าชิง บรรทัด <code>best = s;</code> คัดลอกทั้งชื่อและคะแนนในคำสั่งเดียว ถ้าเก็บแยกเป็น <code>char</code> กับ <code>int</code> ต้องใช้ <code>strcpy</code> สำหรับชื่อ ดูในส่วนลองทำให้พังว่าลืมแล้วเป็นอย่างไร</p>
+
+      <h2 id="two-passes">งานที่ต้องย้อนกลับไปดูข้อมูลซ้ำ</h2>
+
+      <p>บางงานอ่านรอบเดียวไม่พอ เช่น "พิมพ์ชื่อทุกคนที่ได้คะแนนมากกว่าค่าเฉลี่ยของห้อง" ต้องอ่านครบทุกคนก่อนถึงจะรู้ค่าเฉลี่ย แล้วค่อยย้อนกลับไปดูทีละคน งานแบบนี้ต้องเก็บทุกคนไว้ในอาเรย์</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="above-average"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+} Student;
+
+Student students[100];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s %d", students[i].name, &amp;students[i].score);
+        total += students[i].score;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        if (students[i].score * n &gt; total) { // (1)!
+            printf("%s\n", students[i].name);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อยากรู้ว่า score มากกว่า total / n ไหม คูณ n ทั้งสองข้างได้ score × n มากกว่า total ซึ่งเป็นจำนวนเต็มล้วน ไม่ต้องใช้ <code>double</code> และไม่มีปัญหาทศนิยมคลาดเคลื่อน ใช้ได้เพราะ n เป็นบวก ถ้าคูณด้วยค่าติดลบ เครื่องหมายมากกว่าจะกลับด้าน</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="above-average" data-title="ข้อมูลเข้า"><pre><code>5
+Mali 87
+Krit 92
+Ploy 78
+Nat 92
+Beam 65
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="above-average" data-title="C:\code\above.exe"><pre><code>Mali
+Krit
+Nat
+</code></pre></div>
+      </div>
+
+      <p>ผลรวมคือ 414 ค่าเฉลี่ยคือ 82.8 คนที่ได้มากกว่าคือ Mali Krit และ Nat ลองเช็กด้วยวิธีคูณ Mali ได้ 87 × 5 = 435 มากกว่า 414 จึงผ่าน Ploy ได้ 78 × 5 = 390 ไม่ผ่าน</p>
+
+      <h2 id="search">ค้นหาด้วยชื่อ</h2>
+
+      <p>อีกงานที่เจอบ่อยคือถามข้อมูลด้วยชื่อหรือรหัส เช่น "Ploy ได้กี่คะแนน" วิธีตรงไปตรงมาคือไล่ดูทีละช่องจนเจอชื่อที่ตรง เทียบสตริงด้วย <code>strcmp</code> จากบทที่ 6 ซึ่งคืนค่า 0 เมื่อสองข้อความเหมือนกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="search"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+} Student;
+
+Student students[100];
+
+int main()
+{
+    int n, q;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s %d", students[i].name, &amp;students[i].score);
+    }
+    scanf("%d", &amp;q);
+    for (int k = 0; k &lt; q; k++) {
+        char wanted[21];
+        scanf("%s", wanted);
+        int found = -1;
+        for (int i = 0; i &lt; n; i++) {
+            if (strcmp(students[i].name, wanted) == 0) {
+                found = i;
+                break;
+            }
+        }
+        if (found == -1) {
+            printf("%s not found\n", wanted);
+        } else {
+            printf("%s %d\n", students[found].name, students[found].score);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="search" data-title="ข้อมูลเข้า"><pre><code>5
+Mali 87
+Krit 92
+Ploy 78
+Nat 92
+Beam 65
+3
+Ploy
+Somchai
+Beam
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="search" data-title="C:\code\search.exe"><pre><code>Ploy 78
+Somchai not found
+Beam 65
+</code></pre></div>
+      </div>
+
+      <p>ตั้ง <code>found</code> เป็น -1 ไว้ก่อน ซึ่งไม่ใช่ index ที่มีจริง ถ้าไล่จนหมดแล้วยังเป็น -1 แปลว่าไม่เจอ วิธีนี้ถามหนึ่งครั้งต้องไล่ดูได้ถึง N ช่อง ถ้า N กับจำนวนคำถามเป็นหลักร้อยหรือหลักพันยังเร็วพอ ถ้าเป็นแสนทั้งคู่จะช้าเกินไป วิธีค้นหาที่เร็วกว่าจะได้เรียนในบทที่ 19 และบทที่ 20</p>
+
+      <h2 id="swap">สลับข้อมูลทั้งคนในสามบรรทัด</h2>
+
+      <p>ถ้าใช้อาเรย์ขนาน การสลับนักเรียนสองคนต้องสลับชื่อด้วย <code>strcpy</code> สามครั้ง และสลับคะแนนอีกสามบรรทัด ถ้ามีห้องหรืออายุก็ต้องเพิ่มอีก แต่ struct สลับแบบเดียวกับสลับ <code>int</code> สองตัว เพราะ <code>=</code> คัดลอกทั้งก้อน</p>
+
+      <p>ตัวอย่างนี้ย้ายคนที่คะแนนสูงสุดขึ้นมาอยู่หัวแถว แล้วพิมพ์ทั้งแถว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="swap"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+    int room;
+} Student;
+
+Student students[100];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s %d %d", students[i].name, &amp;students[i].score, &amp;students[i].room);
+    }
+    int best = 0;
+    for (int i = 1; i &lt; n; i++) {
+        if (students[i].score &gt; students[best].score) {
+            best = i;
+        }
+    }
+    Student temp = students[0];
+    students[0] = students[best];
+    students[best] = temp;
+    for (int i = 0; i &lt; n; i++) {
+        printf("%s %d %d\n", students[i].name, students[i].score, students[i].room);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="swap" data-title="ข้อมูลเข้า"><pre><code>4
+Mali 87 3
+Krit 92 1
+Ploy 78 3
+Beam 65 2
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="swap" data-title="C:\code\swap.exe"><pre><code>Krit 92 1
+Mali 87 3
+Ploy 78 3
+Beam 65 2
+</code></pre></div>
+      </div>
+
+      <p>Krit กับ Mali สลับที่กันทั้งชื่อ คะแนน และห้อง คนอื่นอยู่ที่เดิม ถ้าทำแบบนี้ซ้ำกับแถวที่เหลือ คือหาคนที่ดีที่สุดในช่องที่ 1 ถึง N - 1 แล้วสลับมาไว้ช่องที่ 1 ไปเรื่อยๆ ก็จะได้ทั้งแถวเรียงจากคะแนนมากไปน้อย วิธีนี้คือการเรียงข้อมูลแบบหนึ่ง ซึ่งจะเรียนเต็มๆ ในบทที่ 13</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="dot-wrong-place">แบบที่ 1 วาง [i] ผิดที่</h3>
+
+      <p>ในโปรแกรมหาคนคะแนนสูงสุด เขียนบรรทัดอ่านข้อมูลเป็น</p>
+
+      <div class="code" data-lang="c"><pre><code>scanf("%s %d", students.name[i], &amp;students.score[i]);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>top.c:15:32: error: '(Student *)&amp;students' is a pointer; did you mean to use '-&gt;'?
+   15 |         scanf("%s %d", students.name[i], &amp;students.score[i]);
+      |                                ^
+      |                                -&gt;
+</code></pre></div>
+
+      <p><code>students</code> เป็นอาเรย์ ไม่ใช่ struct จึงไม่มีสมาชิกชื่อ <code>name</code> ต้องเลือกช่องก่อนแล้วค่อยหยิบสมาชิก คือ <code>students[i].name</code> ระวังว่าคำแนะนำของ compiler ที่ให้ใช้ <code>-&gt;</code> <strong>ไม่ใช่วิธีแก้ที่ถูก</strong> ในกรณีนี้ compiler มองชื่ออาเรย์เป็นที่อยู่ของช่องแรก (เรื่องเดียวกับในบทที่ 10) เลยเดาว่าเราอยากใช้ pointer ถ้าทำตาม จะได้ error ใหม่ว่า <code>subscripted value is neither array nor pointer nor vector</code> แทน คำแนะนำของ compiler ช่วยได้บ่อย แต่ต้องคิดก่อนทำตามเสมอ <code>-&gt;</code> คืออะไรจะได้เรียนในหน้า 11.4</p>
+
+      <h3 id="copy-name">แบบที่ 2 จำชื่อด้วย =</h3>
+
+      <p>ถ้าไม่จำทั้งก้อน แต่จำชื่อกับคะแนนไว้คนละตัวแปร แบบนี้</p>
+
+      <div class="code" data-lang="c"><pre><code>char best_name[21];
+int best_score = -1;
+for (int i = 0; i &lt; n; i++) {
+    if (students[i].score &gt; best_score) {
+        best_score = students[i].score;
+        best_name = students[i].name;
+    }
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>top_name.c:22:23: error: assignment to expression with array type
+   22 |             best_name = students[i].name;
+      |                       ^
+</code></pre></div>
+
+      <p>error เดียวกับที่เจอในบทที่ 6 เพราะ <code>best_name</code> กับ <code>students[i].name</code> เป็นอาเรย์ทั้งคู่ แก้ได้สองทาง ใช้ <code>strcpy(best_name, students[i].name);</code> หรือดีกว่านั้นคือเก็บทั้งก้อนใน <code>Student best;</code> แล้วใช้ <code>best = students[i];</code> แบบที่ทำข้างบน กฎที่ต้องจำคือ <strong>อาเรย์ใช้ = ไม่ได้ แต่ struct ที่มีอาเรย์อยู่ข้างในใช้ได้</strong></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>Student students[100];</code> คืออาเรย์ของ struct ประกาศนอก <code>main</code> เหมือนอาเรย์ใหญ่ทั่วไป</li>
+        <li><code>students[i].score</code> เลือกช่องก่อน แล้วค่อยหยิบสมาชิก</li>
+        <li>หาคนที่ดีที่สุดด้วยการจำ index หรือจำทั้งก้อนด้วย <code>best = s;</code> ก็ได้ เครื่องหมาย <code>&gt;</code> กับ <code>&gt;=</code> ตัดสินว่าได้คนแรกหรือคนหลัง</li>
+        <li>งานที่ต้องย้อนกลับไปดูข้อมูลหลังอ่านครบ เช่นเทียบกับค่าเฉลี่ย ต้องเก็บไว้ในอาเรย์</li>
+        <li>ค้นหาด้วยชื่อใช้ <code>strcmp</code> ไล่ทีละช่อง</li>
+        <li>สลับสอง struct ด้วยตัวแปรพักสามบรรทัด ได้ครบทุกสมาชิก</li>
+      </ul>
+    </article>

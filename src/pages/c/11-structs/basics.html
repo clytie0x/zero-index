@@ -1,0 +1,252 @@
+<article class="doc">
+      <h1>11.1 struct คืออะไร</h1>
+
+      <p>ข้อมูลในโจทย์จริงมักมาเป็นชุด นักเรียนหนึ่งคนมีชื่อ คะแนน และห้อง จุดหนึ่งจุดมีพิกัด x กับ y สินค้าหนึ่งชิ้นมีรหัส จำนวน และราคา ข้อมูลในชุดเดียวกันเป็นคนละชนิดกันได้ ชื่อเป็นสตริง คะแนนเป็น <code>int</code> ราคาอาจเป็น <code>long long</code> หน้านี้รู้จัก <strong>struct</strong> (มาจาก structure แปลว่าโครงสร้าง) ซึ่งรวมข้อมูลหลายตัวที่เป็นของสิ่งเดียวกันไว้ในตัวแปรตัวเดียว</p>
+
+      <h2 id="why">ทำไมต้องรวมเป็นก้อน</h2>
+
+      <p>ถ้าไม่มี struct การเก็บนักเรียน 40 คนต้องใช้อาเรย์แยกกันหลายตัว แบบนี้</p>
+
+      <div class="code" data-lang="c"><pre><code>char names[40][21];
+int scores[40];
+int rooms[40];
+</code></pre></div>
+
+      <p>ข้อมูลของคนที่ i กระจายอยู่สามที่ คือ <code>names[i]</code> <code>scores[i]</code> และ <code>rooms[i]</code> วิธีนี้เรียกว่า <strong>อาเรย์ขนาน (parallel arrays)</strong> ใช้ได้ แต่มีปัญหาเมื่อโปรแกรมใหญ่ขึ้น</p>
+
+      <ul>
+        <li>จะย้ายหรือสลับนักเรียนสองคน ต้องย้ายทั้งสามอาเรย์ ลืมอันเดียว ชื่อกับคะแนนก็สลับคนกันทันที และ compiler ไม่เตือนอะไรเลย</li>
+        <li>จะเพิ่มข้อมูลอีกอย่าง เช่น อายุ ต้องตามแก้ทุกที่ที่ย้ายหรือคัดลอกข้อมูล</li>
+        <li>ส่งนักเรียนหนึ่งคนเข้าฟังก์ชัน ต้องส่งทีละตัวครบทุกอาเรย์</li>
+      </ul>
+
+      <p>struct แก้ทั้งสามข้อ เพราะข้อมูลของคนหนึ่งคนอยู่ในกล่องใหญ่กล่องเดียว ย้ายกล่องเดียวก็ย้ายครบทุกอย่าง</p>
+
+      <figure>
+        <svg viewBox="0 0 460 170" width="460" style="max-width:100%;height:auto" role="img" aria-label="ตัวแปร s ชนิด struct Student เป็นกล่องใหญ่ ข้างในมีกล่องย่อยสามกล่อง name เก็บ Mali score เก็บ 87 และ room เก็บ 3">
+          <g style="font-family:var(--font-code)">
+            <text x="20" y="24" style="fill:var(--ink);font-size:15px">s</text>
+            <text x="40" y="24" style="fill:var(--muted);font-size:13px">(struct Student)</text>
+            <rect x="10" y="36" width="440" height="100" rx="10" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="100" y="62" text-anchor="middle" style="fill:var(--muted);font-size:13px">name</text>
+            <rect x="30" y="70" width="140" height="48" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="100" y="101" text-anchor="middle" style="fill:var(--ink);font-size:20px">"Mali"</text>
+            <text x="250" y="62" text-anchor="middle" style="fill:var(--muted);font-size:13px">score</text>
+            <rect x="190" y="70" width="120" height="48" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="250" y="101" text-anchor="middle" style="fill:var(--ink);font-size:20px">87</text>
+            <text x="380" y="62" text-anchor="middle" style="fill:var(--muted);font-size:13px">room</text>
+            <rect x="330" y="70" width="100" height="48" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="380" y="101" text-anchor="middle" style="fill:var(--ink);font-size:20px">3</text>
+            <text x="230" y="160" text-anchor="middle" style="fill:var(--muted);font-size:13px">s.name    s.score    s.room</text>
+          </g>
+        </svg>
+      </figure>
+
+      <h2 id="declare">ประกาศ struct</h2>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="one-student"><pre><code>#include &lt;stdio.h&gt;
+
+struct Student { // (1)!
+    char name[21];
+    int score;
+    int room;
+}; // (2)!
+
+int main()
+{
+    struct Student s; // (3)!
+    scanf("%s %d %d", s.name, &amp;s.score, &amp;s.room); // (4)!
+    printf("name = %s\n", s.name);
+    printf("score = %d\n", s.score);
+    printf("room = %d\n", s.room);
+    s.score = s.score + 5;
+    printf("after bonus = %d\n", s.score);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สร้าง <strong>ชนิดใหม่</strong> ชื่อ <code>struct Student</code> ข้างในมีสามช่อง แต่ละช่องเรียกว่า <strong>สมาชิก (member)</strong> บรรทัดนี้ยังไม่ได้สร้างตัวแปร เป็นแค่แบบพิมพ์ที่บอกว่ากล่องนักเรียนหน้าตาเป็นอย่างไร</li>
+        <li>ปีกกาปิดของ struct ต้องตามด้วย <code>;</code> ต่างจากปีกกาของ <code>if</code> และฟังก์ชัน ลืมแล้วจะได้ error ที่ชี้ผิดบรรทัด ดูในส่วนลองทำให้พัง</li>
+        <li>สร้างตัวแปร <code>s</code> ชนิด <code>struct Student</code> ได้กล่องใหญ่หนึ่งกล่องที่มีสามช่องข้างใน</li>
+        <li><code>s.name</code> เป็นอาเรย์ของ <code>char</code> จึงไม่ต้องมี <code>&amp;</code> เหมือนในบทที่ 6 ส่วน <code>&amp;s.score</code> คือที่อยู่ของช่อง <code>score</code> เครื่องหมาย <code>.</code> ทำก่อน <code>&amp;</code> จึงไม่ต้องใส่วงเล็บ</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="one-student" data-title="ข้อมูลเข้า"><pre><code>Mali 87 3
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="one-student" data-title="C:\code\student.exe"><pre><code>name = Mali
+score = 87
+room = 3
+after bonus = 92
+</code></pre></div>
+      </div>
+
+      <p>เข้าถึงสมาชิกด้วย <strong>จุด</strong> <code>ตัวแปร.สมาชิก</code> อ่านว่า "score ของ s" แต่ละสมาชิกใช้ได้เหมือนตัวแปรธรรมดาชนิดนั้นทุกอย่าง <code>s.score</code> เป็น <code>int</code> จึงบวก ลบ เปรียบเทียบ ส่งให้ <code>scanf</code> ได้ตามปกติ <code>s.name</code> เป็นสตริง จึงใช้ <code>%s</code> และฟังก์ชันใน <code>string.h</code> ได้ตามปกติ</p>
+
+      <p>ประกาศ struct ไว้นอก <code>main</code> ก่อนฟังก์ชันทุกตัว เพื่อให้ทุกฟังก์ชันในไฟล์รู้จักชนิดนี้ ซึ่งจะได้ใช้ในหน้า 11.4 ชื่อ struct นิยมขึ้นต้นด้วยตัวพิมพ์ใหญ่ เพื่อให้แยกออกจากชื่อตัวแปรได้ง่าย</p>
+
+      <h2 id="initialize">กำหนดค่าตอนประกาศ</h2>
+
+      <p>ใส่ค่าในปีกกาเรียงตามลำดับสมาชิกได้ เหมือนกำหนดค่าเริ่มต้นให้อาเรย์ในบทที่ 5 หรือจะระบุชื่อสมาชิกด้วยจุดนำหน้าก็ได้ แบบนี้ไม่ต้องจำลำดับ สมาชิกที่ไม่ได้ใส่ค่าจะเป็น 0 ทั้งหมด</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="init"><pre><code>#include &lt;stdio.h&gt;
+
+struct Student {
+    char name[21];
+    int score;
+    int room;
+};
+
+int main()
+{
+    struct Student a = {"Mali", 87, 3}; // (1)!
+    struct Student b = {.name = "Krit", .room = 2}; // (2)!
+    struct Student c = {0}; // (3)!
+    printf("%s %d %d\n", a.name, a.score, a.room);
+    printf("%s %d %d\n", b.name, b.score, b.room);
+    printf("[%s] %d %d\n", c.name, c.score, c.room);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เรียงตามลำดับที่ประกาศไว้ใน struct คือ name score room สลับลำดับเมื่อไร ค่าก็ลงผิดช่อง</li>
+        <li>ระบุชื่อสมาชิก ไม่ต้องเรียงตามลำดับ <code>score</code> ไม่ได้ใส่ จึงเป็น 0</li>
+        <li>ทุกสมาชิกเป็น 0 สตริงที่ทุกช่องเป็น 0 คือสตริงว่าง เพราะช่องแรกเป็น <code>'\0'</code> ไปแล้ว</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="init" data-title="C:\code\init.exe"><pre><code>Mali 87 3
+Krit 0 2
+[] 0 0
+</code></pre></div>
+
+      <p>ปีกกาแบบนี้ใช้ได้ <strong>เฉพาะตอนประกาศ</strong> เท่านั้น เหมือนอาเรย์ ถ้าประกาศไปแล้ว จะเขียน <code>a = {"Ploy", 90, 1};</code> ไม่ได้ ต้องกำหนดทีละสมาชิก</p>
+
+      <h2 id="copy">คัดลอกทั้งก้อนด้วย =</h2>
+
+      <p>จำได้ไหมว่าในบทที่ 6 สตริงใช้ <code>=</code> คัดลอกไม่ได้ ต้องใช้ <code>strcpy</code> แต่ struct คัดลอกด้วย <code>=</code> ได้ และคัดลอก <strong>ทุกสมาชิก</strong> รวมถึงอาเรย์ที่อยู่ข้างในด้วย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="copy"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+struct Student {
+    char name[21];
+    int score;
+    int room;
+};
+
+int main()
+{
+    struct Student a = {"Mali", 87, 3};
+    struct Student b;
+    b = a;
+    strcpy(b.name, "Ploy");
+    b.score = 95;
+    printf("a: %s %d %d\n", a.name, a.score, a.room);
+    printf("b: %s %d %d\n", b.name, b.score, b.room);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="copy" data-title="C:\code\copy.exe"><pre><code>a: Mali 87 3
+b: Ploy 95 3
+</code></pre></div>
+
+      <p>บรรทัดที่ 14 ทำให้ <code>b</code> เป็นสำเนาของ <code>a</code> ทั้งก้อน หลังจากนั้นสองตัวนี้เป็นคนละกล่องกัน แก้ <code>b</code> แล้ว <code>a</code> ไม่เปลี่ยน <code>b.room</code> ยังเป็น 3 เพราะติดมาจากตอนคัดลอก สังเกตว่าแก้ชื่อใน <code>b</code> ยังต้องใช้ <code>strcpy</code> เพราะ <code>b.name</code> เป็นอาเรย์ กฎของสตริงยังใช้เหมือนเดิม ที่ <code>=</code> ใช้ได้คือคัดลอกทั้ง struct เท่านั้น</p>
+
+      <p>เรื่องนี้ทำให้งานที่ต้อง "จำข้อมูลของคนที่ดีที่สุดไว้" ง่ายขึ้นมาก เขียน <code>best = s;</code> บรรทัดเดียว ได้ทั้งชื่อ คะแนน และห้อง จะได้ใช้ในหน้าถัดไป</p>
+
+      <h2 id="typedef">typedef ตั้งชื่อชนิดให้สั้นลง</h2>
+
+      <p>พิมพ์ <code>struct Student</code> ทุกครั้งยาวเกินไป <code>typedef</code> ใช้ตั้งชื่อใหม่ให้ชนิดที่มีอยู่แล้ว รูปแบบคือ <code>typedef ชนิดเดิม ชื่อใหม่;</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="typedef"><pre><code>#include &lt;stdio.h&gt;
+
+typedef long long ll; // (1)!
+
+typedef struct { // (2)!
+    int x;
+    int y;
+} Point;
+
+int main()
+{
+    Point home = {3, 4};
+    Point school = {10, -2};
+    ll distance_squared = (ll)(school.x - home.x) * (school.x - home.x)
+                        + (ll)(school.y - home.y) * (school.y - home.y);
+    printf("home = (%d, %d)\n", home.x, home.y);
+    printf("school = (%d, %d)\n", school.x, school.y);
+    printf("distance squared = %lld\n", distance_squared);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตั้งชื่อ <code>ll</code> ให้ชนิด <code>long long</code> โค้ดแข่งขันของคนอื่นใช้บรรทัดนี้บ่อยมาก เห็นแล้วจะได้อ่านออก</li>
+        <li>struct ไม่มีชื่อ แต่ตั้งชื่อชนิดว่า <code>Point</code> ด้วย <code>typedef</code> ทำให้ประกาศตัวแปรด้วย <code>Point home;</code> ได้เลย ไม่ต้องมีคำว่า <code>struct</code> นำหน้า</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="typedef" data-title="C:\code\point.exe"><pre><code>home = (3, 4)
+school = (10, -2)
+distance squared = 85
+</code></pre></div>
+
+      <p>บรรทัดที่ 14 ถึง 15 หากำลังสองของระยะทางตามทฤษฎีบทพีทาโกรัส 7 × 7 + 6 × 6 = 85 ถ้าอยากได้ระยะทางจริงต้องถอดรากที่สอง ซึ่งได้ทศนิยม โจทย์แข่งขันจึงมักให้เทียบหรือตอบเป็นกำลังสองของระยะทาง ซึ่งเป็นจำนวนเต็มเสมอ สังเกต <code>(ll)</code> หน้าผลต่าง ถ้าผลต่างของพิกัดเกินประมาณ 46000 ผลคูณจะเกิน <code>int</code> แบบเดียวกับกับดัก <code>int</code> คูณ <code>int</code> ในบทที่ 1</p>
+
+      <p>ตั้งแต่นี้ไป เอกสารนี้ใช้แบบ <code>typedef struct { ... } ชื่อ;</code> เป็นหลัก มีกรณีเดียวที่ต้องตั้งชื่อ struct ไว้ด้วย คือ struct ที่มี pointer ชี้หาชนิดของตัวเอง ซึ่งจะเห็นในหน้า 11.4</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="missing-semicolon">แบบที่ 1 ลืม <code>;</code> หลังปีกกาปิด</h3>
+
+      <p>ในโปรแกรม student ลบ <code>;</code> หลัง <code>}</code> ของ struct ออก</p>
+
+      <div class="code" data-lang="gcc"><pre><code>student.c:9:1: error: expected ';', identifier or '(' before 'int'
+    9 | int main()
+      | ^~~
+</code></pre></div>
+
+      <p>error ชี้ไปที่บรรทัด <code>int main()</code> ทั้งที่บรรทัดนั้นไม่ผิดอะไร เพราะ compiler อ่านต่อจาก <code>}</code> แล้วยังรอ <code>;</code> อยู่ มารู้ตัวว่าขาดก็ตอนเจอคำว่า <code>int</code> ในบรรทัดถัดไป ถ้า error ชี้บรรทัดที่ดูถูกต้องทุกอย่าง ให้ย้อนดูบรรทัดก่อนหน้าเสมอ</p>
+
+      <h3 id="missing-struct-keyword">แบบที่ 2 ใช้ชื่อ struct โดยไม่มีคำว่า struct</h3>
+
+      <p>ประกาศแบบไม่มี <code>typedef</code> คือ <code>struct Point { int x; int y; };</code> แล้วใน <code>main</code> เขียน</p>
+
+      <div class="code" data-lang="c"><pre><code>Point p = {3, 4};
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>point.c:10:5: error: unknown type name 'Point'; use 'struct' keyword to refer to the type
+   10 |     Point p = {3, 4};
+      |     ^~~~~
+      |     struct
+</code></pre></div>
+
+      <p>ถ้าไม่ได้ใช้ <code>typedef</code> ชื่อของชนิดคือ <code>struct Point</code> ทั้งสองคำ compiler บอกวิธีแก้มาให้แล้วว่าให้เติม <code>struct</code> ข้างหน้า ถัดจากบรรทัดนี้จะมี error อีกหลายอันเรื่อง <code>p.x</code> กับ <code>p.y</code> ซึ่งเกิดตามมาเพราะ <code>p</code> ประกาศไม่สำเร็จ แก้ตัวแรกแล้วหายหมด</p>
+
+      <h3 id="compare-structs">แบบที่ 3 เทียบ struct ด้วย ==</h3>
+
+      <div class="code" data-lang="c"><pre><code>struct Point a = {3, 4};
+struct Point b = {3, 4};
+if (a == b) {
+    printf("same\n");
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>compare.c:12:11: error: invalid operands to binary == (have 'struct Point' and 'struct Point')
+   12 |     if (a == b) {
+      |           ^~
+</code></pre></div>
+
+      <p>struct คัดลอกด้วย <code>=</code> ได้ แต่ <strong>เปรียบเทียบด้วย <code>==</code> ไม่ได้</strong> และใช้ <code>&lt;</code> <code>&gt;</code> ไม่ได้ด้วย ต้องเทียบทีละสมาชิกเอง เช่น <code>a.x == b.x &amp;&amp; a.y == b.y</code> เพราะ compiler ไม่รู้ว่าเราอยากให้สอง struct "เท่ากัน" ในความหมายไหน ถ้าเป็นนักเรียน อาจหมายถึงชื่อเดียวกัน หรือคะแนนเท่ากันก็ได้ ในหน้า 11.4 จะเขียนฟังก์ชันเปรียบเทียบเองตามที่โจทย์กำหนด</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>struct รวมข้อมูลหลายชนิดที่เป็นของสิ่งเดียวกันไว้ในตัวแปรตัวเดียว แทนการใช้อาเรย์ขนานหลายตัว</li>
+        <li>ประกาศ struct นอก <code>main</code> และปีกกาปิดต้องตามด้วย <code>;</code></li>
+        <li>เข้าถึงสมาชิกด้วยจุด <code>s.score</code> แต่ละสมาชิกใช้ได้เหมือนตัวแปรชนิดนั้น</li>
+        <li>กำหนดค่าด้วยปีกกาได้เฉพาะตอนประกาศ <code>{0}</code> ทำให้ทุกสมาชิกเป็น 0</li>
+        <li><code>=</code> คัดลอกทั้งก้อนรวมอาเรย์ข้างใน แต่ <code>==</code> ใช้ไม่ได้ ต้องเทียบทีละสมาชิก</li>
+        <li><code>typedef struct { ... } Point;</code> ทำให้เขียน <code>Point p;</code> ได้โดยไม่ต้องมีคำว่า <code>struct</code></li>
+      </ul>
+    </article>

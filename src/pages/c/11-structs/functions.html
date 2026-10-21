@@ -1,0 +1,392 @@
+<article class="doc">
+      <h1>11.4 struct กับฟังก์ชันและ pointer</h1>
+
+      <p>ในบทที่ 8 ฟังก์ชันรับค่าเป็นสำเนา และคืนค่าได้ทีละค่า ในบทที่ 10 เราส่งที่อยู่ของตัวแปรให้ฟังก์ชันแก้ค่าแทนเราได้ หน้านี้เอาสองเรื่องนั้นมาใช้กับ struct ซึ่งทำให้ได้สองอย่างที่ตัวแปรธรรมดาทำไม่ได้ คือฟังก์ชันคืนหลายค่าพร้อมกันในก้อนเดียว และเขียนฟังก์ชันเปรียบเทียบหลายเกณฑ์ที่ใช้ซ้ำได้ทั้งโปรแกรม ปิดท้ายด้วย struct ที่มี pointer ชี้หาชนิดของตัวเอง ซึ่งเป็นฐานของบทที่ 14</p>
+
+      <h2 id="by-value">ส่งแบบสำเนา</h2>
+
+      <p>ส่ง struct เข้าฟังก์ชันได้เหมือน <code>int</code> และได้ผลแบบเดียวกัน คือฟังก์ชันได้ <strong>สำเนาทั้งก้อน</strong></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="by-value"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+} Student;
+
+void add_bonus(Student s, int bonus)
+{
+    s.score += bonus;
+    printf("inside: %s %d\n", s.name, s.score);
+}
+
+int main()
+{
+    Student a = {"Mali", 87};
+    add_bonus(a, 5);
+    printf("outside: %s %d\n", a.name, a.score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="by-value" data-title="C:\code\bonus.exe"><pre><code>inside: Mali 92
+outside: Mali 87
+</code></pre></div>
+
+      <p>ในฟังก์ชันเห็น 92 แต่กลับมาที่ <code>main</code> ยังเป็น 87 เพราะ <code>s</code> เป็นกล่องใหม่ที่คัดลอกมาจาก <code>a</code> ตอนเรียก แก้ <code>s</code> เท่าไร <code>a</code> ก็ไม่รู้เรื่อง การคัดลอกนี้รวมทั้งอาเรย์ <code>name</code> ที่อยู่ข้างในด้วย ต่างจากการส่งอาเรย์เดี่ยวๆ ซึ่งส่งไปแค่ที่อยู่</p>
+
+      <p>ส่งแบบสำเนาเหมาะกับฟังก์ชันที่แค่อ่านค่า และ struct มีขนาดเล็ก เช่น <code>Point</code> 8 byte ถ้า struct ใหญ่ เช่นมีอาเรย์พันช่องอยู่ข้างใน ทุกครั้งที่เรียกต้องคัดลอกพันช่อง ซึ่งเปลืองเวลาโดยไม่จำเป็น</p>
+
+      <h2 id="return">คืน struct จากฟังก์ชัน</h2>
+
+      <p>ฟังก์ชันคืนค่าได้ทีละค่า แต่ถ้าค่านั้นเป็น struct ก็เท่ากับคืนหลายค่าในก้อนเดียว ตัวอย่างนี้หาว่านักวิ่งใช้เวลาเท่าไร จากเวลาออกตัวและเวลาเข้าเส้นในรูปชั่วโมง นาที วินาที วิธีที่ง่ายที่สุดคือแปลงเป็นวินาทีล้วนก่อน ลบกัน แล้วแปลงกลับ ใช้การหารกับเศษแบบในบทที่ 1</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="split-time"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    int hours;
+    int minutes;
+    int seconds;
+} Time;
+
+int to_seconds(Time t)
+{
+    return t.hours * 3600 + t.minutes * 60 + t.seconds;
+}
+
+Time from_seconds(int total) // (1)!
+{
+    Time t;
+    t.hours = total / 3600;
+    t.minutes = total % 3600 / 60;
+    t.seconds = total % 60;
+    return t;
+}
+
+int main()
+{
+    Time start, finish;
+    scanf("%d %d %d", &amp;start.hours, &amp;start.minutes, &amp;start.seconds);
+    scanf("%d %d %d", &amp;finish.hours, &amp;finish.minutes, &amp;finish.seconds);
+    Time used = from_seconds(to_seconds(finish) - to_seconds(start)); // (2)!
+    printf("%d %d %d\n", used.hours, used.minutes, used.seconds);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ชนิดที่คืนคือ <code>Time</code> ฟังก์ชันสร้าง struct ในตัวเอง ใส่ค่าครบทุกสมาชิก แล้ว <code>return</code> ทั้งก้อน ผู้เรียกได้สำเนาของก้อนนั้นไป</li>
+        <li>รับผลด้วย <code>=</code> ได้ทันที เพราะ struct คัดลอกทั้งก้อนได้</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="split-time" data-title="ข้อมูลเข้า"><pre><code>9 45 30
+11 20 10
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="split-time" data-title="C:\code\race.exe"><pre><code>1 34 40
+</code></pre></div>
+      </div>
+
+      <p>เข้าเส้นตอน 11 ชั่วโมง 20 นาที 10 วินาที คิดเป็น 40810 วินาที ออกตัวตอน 9 ชั่วโมง 45 นาที 30 วินาที คิดเป็น 35130 วินาที ต่างกัน 5680 วินาที เท่ากับ 1 ชั่วโมง 34 นาที 40 วินาที ถ้าลบทีละหลักตรงๆ จะต้องจัดการเรื่องยืมเอง เพราะ 10 วินาทีลบ 30 วินาทีติดลบ การแปลงเป็นหน่วยเดียวก่อนตัดปัญหานี้ทิ้งทั้งหมด</p>
+
+      <p>ถ้าไม่มี struct ฟังก์ชัน <code>from_seconds</code> ต้องรับ pointer สามตัวมาเขียนผลแทน แบบในบทที่ 10 ซึ่งเรียกยากกว่าและอ่านยากกว่ามาก</p>
+
+      <h2 id="by-pointer">ส่ง pointer และตัวดำเนินการ <code>-&gt;</code></h2>
+
+      <p>ถ้าอยากให้ฟังก์ชันแก้ struct ของผู้เรียกจริงๆ ต้องส่งที่อยู่ไป เหมือนตัวแปรทุกชนิดในบทที่ 10 และการส่งที่อยู่ส่งแค่ขนาดของ pointer ซึ่งบนเครื่อง 64 bit คือ 8 byte ไม่ว่า struct จะใหญ่แค่ไหน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="by-pointer"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+} Student;
+
+void read_student(Student *s)
+{
+    scanf("%s %d", s-&gt;name, &amp;s-&gt;score); // (1)!
+}
+
+void add_bonus(Student *s, int bonus)
+{
+    (*s).score += bonus; // (2)!
+    s-&gt;score += bonus; // (3)!
+}
+
+int main()
+{
+    Student a;
+    read_student(&amp;a);
+    add_bonus(&amp;a, 5);
+    printf("%s %d\n", a.name, a.score);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>-&gt;</code> ทำก่อน <code>&amp;</code> <code>&amp;s-&gt;score</code> จึงเป็นที่อยู่ของช่อง score ในกล่องที่ <code>s</code> ชี้อยู่ ซึ่งคือที่ที่ <code>scanf</code> ต้องการพอดี</li>
+        <li><code>*s</code> คือกล่องที่ <code>s</code> ชี้อยู่ ซึ่งก็คือ <code>a</code> ใน <code>main</code> แล้วค่อย <code>.score</code> ต้องมีวงเล็บ เพราะจุดทำก่อนดอกจัน</li>
+        <li>ความหมายเหมือนบรรทัดบนทุกอย่าง <code>s-&gt;score</code> เป็นตัวย่อของ <code>(*s).score</code> อ่านว่า "score ของกล่องที่ s ชี้"</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="by-pointer" data-title="ข้อมูลเข้า"><pre><code>Mali 87
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="by-pointer" data-title="C:\code\bonus.exe"><pre><code>Mali 97
+</code></pre></div>
+      </div>
+
+      <p>บวกโบนัสสองครั้ง ครั้งละ 5 คะแนน ได้ 97 และคราวนี้ <code>a</code> ใน <code>main</code> เปลี่ยนจริง เพราะทั้งสองฟังก์ชันทำงานกับกล่องของ <code>a</code> โดยตรงผ่านที่อยู่</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">จุด หรือ ลูกศร</p>
+        <p>ดูชนิดของสิ่งที่อยู่ทางซ้าย ถ้าเป็นตัว struct เอง เช่น <code>a</code> หรือ <code>students[i]</code> ใช้ <code>.</code> ถ้าเป็น pointer ที่ชี้ไปหา struct เช่น <code>s</code> ที่ประกาศเป็น <code>Student *s</code> ใช้ <code>-&gt;</code></p>
+      </div>
+
+      <h2 id="compare">ฟังก์ชันเปรียบเทียบหลายเกณฑ์</h2>
+
+      <p>หน้า 11.1 เห็นแล้วว่า struct ใช้ <code>&gt;</code> หรือ <code>==</code> ตรงๆ ไม่ได้ เราต้องเขียนเองว่าก้อนไหน "ดีกว่า" และโจทย์จริงมักมีหลายเกณฑ์ เช่น คะแนนมากกว่าชนะ ถ้าคะแนนเท่ากันให้ชื่อที่มาก่อนตามลำดับตัวอักษรชนะ รวมเกณฑ์ทั้งหมดไว้ในฟังก์ชันเดียว แล้วที่อื่นในโปรแกรมแค่เรียกใช้</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="better"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+} Student;
+
+Student students[100];
+
+int better(const Student *a, const Student *b) // (1)!
+{
+    if (a-&gt;score != b-&gt;score) { // (2)!
+        return a-&gt;score &gt; b-&gt;score;
+    }
+    return strcmp(a-&gt;name, b-&gt;name) &lt; 0; // (3)!
+}
+
+int find_best(const Student list[], int n) // (4)!
+{
+    int best = 0;
+    for (int i = 1; i &lt; n; i++) {
+        if (better(&amp;list[i], &amp;list[best])) {
+            best = i;
+        }
+    }
+    return best;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s %d", students[i].name, &amp;students[i].score);
+    }
+    int best = find_best(students, n);
+    printf("best = %s %d\n", students[best].name, students[best].score);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>คืน 1 ถ้า <code>a</code> ดีกว่า <code>b</code> คืน 0 ถ้าไม่ <code>const</code> หน้าชนิดคือสัญญาว่าฟังก์ชันนี้จะอ่านอย่างเดียว ไม่แก้กล่องที่ชี้อยู่ ถ้าเผลอแก้ compiler จะฟ้อง ได้ทั้งความเร็วของการส่ง pointer และความปลอดภัยของการส่งสำเนา</li>
+        <li>เกณฑ์แรกต่างกัน ตัดสินด้วยเกณฑ์แรกเลย <code>a-&gt;score &gt; b-&gt;score</code> ได้ 1 หรือ 0 ตามบทที่ 3 พอดี</li>
+        <li>มาถึงบรรทัดนี้ได้แปลว่าคะแนนเท่ากัน จึงดูเกณฑ์ถัดไป ชื่อที่ <code>strcmp</code> ให้ค่าติดลบคือชื่อที่มาก่อนในพจนานุกรม ถ้ามีเกณฑ์ที่สามก็ใส่ <code>if</code> แบบเดียวกันต่อไปเรื่อยๆ</li>
+        <li>อาเรย์ที่ส่งเข้าฟังก์ชันเป็นที่อยู่ของช่องแรกเสมอ ตามบทที่ 10 ฟังก์ชันจึงแก้ข้อมูลของผู้เรียกได้ ใส่ <code>const</code> เพื่อบอกว่าฟังก์ชันนี้แค่หา ไม่แก้ <code>list[i]</code> เป็นตัว struct จึงใช้จุด และ <code>&amp;list[i]</code> คือที่อยู่ของช่องนั้นที่ส่งให้ <code>better</code></li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="better" data-title="ข้อมูลเข้า"><pre><code>5
+Nat 92
+Mali 87
+Krit 92
+Ploy 78
+Beam 92
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="better" data-title="C:\code\better.exe"><pre><code>best = Beam 92
+</code></pre></div>
+      </div>
+
+      <p>มีสามคนได้ 92 เท่ากัน คือ Nat Krit และ Beam เกณฑ์ที่สองเลือก Beam เพราะ B มาก่อน K และ N ข้อดีของการแยกเป็นฟังก์ชันคือ ถ้าโจทย์เปลี่ยนเกณฑ์ แก้ที่ <code>better</code> ที่เดียว และฟังก์ชันหน้าตาแบบนี้จะได้ใช้อีกมากตอนเรียงข้อมูลในบทที่ 13 และบทที่ 16</p>
+
+      <p>ถ้าเผลอแก้ข้อมูลในฟังก์ชันที่ประกาศ <code>const</code> ไว้ เช่นเขียน <code>list[i].score += 5;</code> ในฟังก์ชันที่รับ <code>const Student list[]</code> จะได้</p>
+
+      <div class="code" data-lang="gcc"><pre><code>total.c:12:23: error: assignment of member 'score' in read-only object
+   12 |         list[i].score += 5;
+      |                       ^~
+</code></pre></div>
+
+      <p><code>read-only</code> แปลว่าอ่านได้อย่างเดียว นี่คือประโยชน์ของ <code>const</code> ความผิดพลาดที่ปกติต้องนั่งหาจากผลลัพธ์ผิดๆ กลายเป็น error ที่บอกตำแหน่งให้เลย</p>
+
+      <h2 id="malloc">ขอหน่วยความจำให้อาเรย์ของ struct</h2>
+
+      <p>ถ้าไม่อยากประกาศอาเรย์ขนาดตายตัวไว้ก่อน ใช้ <code>malloc</code> จากบทที่ 10 ได้เหมือนอาเรย์ชนิดอื่น สิ่งสำคัญคือขนาดต้องใช้ <code>sizeof(Student)</code> ห้ามบวกขนาดสมาชิกเอง เพราะ padding ในหน้า 11.3</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="malloc"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef struct {
+    char name[21];
+    int score;
+} Student;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    Student *list = malloc(n * sizeof(Student));
+    if (list == NULL) {
+        return 1;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s %d", list[i].name, &amp;list[i].score);
+    }
+    int total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        total += list[i].score;
+    }
+    printf("%d students, total %d\n", n, total);
+    printf("one student = %d bytes\n", (int)sizeof(Student));
+    free(list);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="malloc" data-title="ข้อมูลเข้า"><pre><code>3
+Mali 87
+Krit 92
+Ploy 78
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="malloc" data-title="C:\code\list.exe"><pre><code>3 students, total 257
+one student = 28 bytes
+</code></pre></div>
+      </div>
+
+      <p>ชื่อ 21 byte บวกคะแนน 4 byte ได้ 25 แต่ <code>sizeof</code> บอก 28 เพราะ compiler เติม padding 3 byte ให้ <code>score</code> เริ่มที่ตำแหน่งหารด้วย 4 ลงตัว ถ้าขอ <code>n * 25</code> byte เอง ช่องท้ายๆ จะเขียนเลยพื้นที่ที่ขอไว้ <code>list[i]</code> ใช้จุดเพราะเป็นตัว struct ส่วน <code>list</code> เองเป็น pointer</p>
+
+      <h2 id="self-reference">struct ที่ชี้หาชนิดของตัวเอง</h2>
+
+      <p>struct มีสมาชิกเป็น struct ชนิดเดียวกับตัวเองไม่ได้ เพราะกล่องจะต้องมีกล่องแบบเดียวกันอยู่ข้างใน ซ้อนกันไม่รู้จบ แต่มี <strong>pointer</strong> ที่ชี้ไปหา struct ชนิดเดียวกันได้ เพราะ pointer มีขนาดคงที่ บนเครื่อง 64 bit ที่ใช้กันทุกวันนี้คือ 8 byte ไม่ว่าจะชี้ไปหาอะไร</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="node"><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct Node { // (1)!
+    int value;
+    struct Node *next; // (2)!
+} Node;
+
+int main()
+{
+    Node second = {20, NULL};
+    Node first = {10, &amp;second};
+    printf("%d\n", first.value);
+    printf("%d\n", first.next-&gt;value); // (3)!
+    printf("one node = %d bytes\n", (int)sizeof(Node));
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>กรณีนี้ต้องตั้งชื่อ struct ไว้หลังคำว่า <code>struct</code> ด้วย ไม่ใช่แค่ชื่อจาก <code>typedef</code> ท้ายปีกกา</li>
+        <li>ตอนที่ compiler อ่านมาถึงบรรทัดนี้ ชื่อ <code>Node</code> จาก <code>typedef</code> ยังไม่เกิด เพราะอยู่หลังปีกกาปิด จึงต้องเรียกด้วยชื่อเต็ม <code>struct Node</code></li>
+        <li><code>first.next</code> เป็น pointer ที่ชี้ไปหา <code>second</code> จึงใช้ <code>-&gt;</code> หยิบ <code>value</code> ของกล่องที่ชี้อยู่</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="node" data-title="C:\code\node.exe"><pre><code>10
+20
+one node = 16 bytes
+</code></pre></div>
+
+      <p>กล่องแต่ละกล่องรู้ว่ากล่องถัดไปอยู่ที่ไหน ถ้าต่อกันไปเรื่อยๆ ก็ได้ข้อมูลเป็นสายยาวแค่ไหนก็ได้ โดยเพิ่มหรือตัดกล่องตรงกลางได้โดยไม่ต้องเลื่อนข้อมูลทั้งแถวแบบอาเรย์ นี่คือ <strong>linked list</strong> ซึ่งจะสร้างจริงด้วย <code>malloc</code> ในบทที่ 14 พร้อมกับ stack และ queue ตอนนี้ขอให้จำแค่วิธีประกาศ struct แบบนี้ให้ได้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="dot-on-pointer">แบบที่ 1 ใช้จุดกับ pointer</h3>
+
+      <div class="code" data-lang="c"><pre><code>void move_right(Point *p, int steps)
+{
+    p.x = p.x + steps;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>move.c:10:6: error: 'p' is a pointer; did you mean to use '-&gt;'?
+   10 |     p.x = p.x + steps;
+      |      ^
+      |      -&gt;
+move.c:10:12: error: 'p' is a pointer; did you mean to use '-&gt;'?
+   10 |     p.x = p.x + steps;
+      |            ^
+      |            -&gt;
+</code></pre></div>
+
+      <p><code>p</code> เป็น pointer ไม่ใช่ตัว struct คราวนี้คำแนะนำของ compiler ถูก แก้เป็น <code>p-&gt;x</code> ถ้าเขียน <code>*p.x</code> โดยไม่มีวงเล็บ จะได้ error ข้อความเดียวกันนี้ เพราะจุดทำก่อนดอกจัน compiler จึงพยายามหา <code>p.x</code> ก่อน ต้องเขียน <code>(*p).x</code> หรือ <code>p-&gt;x</code></p>
+
+      <h3 id="local-address">แบบที่ 2 คืนที่อยู่ของ struct ที่สร้างในฟังก์ชัน</h3>
+
+      <p>เห็นว่าส่ง pointer ประหยัดกว่า เลยลองให้ฟังก์ชันคืน pointer แทนคืนทั้งก้อน</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+Point *make_point(int x, int y)
+{
+    Point p = {x, y};
+    return &amp;p;
+}
+
+int main()
+{
+    Point *a = make_point(1, 2);
+    printf("%d %d\n", a-&gt;x, a-&gt;y);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>local.c:11:12: warning: function returns address of local variable [-Wreturn-local-addr]
+   11 |     return &amp;p;
+      |            ^~
+</code></pre></div>
+
+      <p>เป็นแค่ warning จึงรันได้ แต่ไม่พิมพ์อะไรออกมาเลย และ Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p><code>p</code> เป็นตัวแปรของ <code>make_point</code> พอฟังก์ชันจบ กล่องของ <code>p</code> ก็ถูกคืนไป ที่อยู่ที่ส่งกลับมาจึงชี้ไปที่ที่ไม่มีกล่องแล้ว <code>0xC0000005</code> คือรหัสของ Windows ที่แปลว่าเข้าถึงหน่วยความจำที่ไม่มีสิทธิ์ ถ้าส่งให้ grader จะได้ runtime error วิธีแก้คือคืนทั้งก้อนแบบ <code>from_seconds</code> ข้างบน หรือให้ผู้เรียกส่ง pointer ของกล่องตัวเองเข้ามาให้เขียน หรือใช้ <code>malloc</code> ซึ่งกล่องจะอยู่จนกว่าจะ <code>free</code></p>
+
+      <h3 id="typedef-too-early">แบบที่ 3 ใช้ชื่อจาก typedef ก่อนที่มันจะเกิด</h3>
+
+      <div class="code" data-lang="c"><pre><code>typedef struct {
+    int value;
+    Node *next;
+} Node;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>node.c:5:5: error: unknown type name 'Node'
+    5 |     Node *next;
+      |     ^~~~
+</code></pre></div>
+
+      <p>ชื่อ <code>Node</code> เกิดตอนถึงบรรทัด <code>} Node;</code> ท้ายสุด บรรทัดข้างในปีกกายังไม่รู้จัก แก้ด้วยการตั้งชื่อ struct แล้วใช้ชื่อเต็ม <code>struct Node *next;</code> แบบในตัวอย่าง node</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ส่ง struct แบบสำเนา ฟังก์ชันได้กล่องใหม่ทั้งก้อน แก้แล้วผู้เรียกไม่เปลี่ยน</li>
+        <li>ฟังก์ชันคืน struct ได้ ใช้คืนหลายค่าพร้อมกัน</li>
+        <li>ส่ง pointer เพื่อให้ฟังก์ชันแก้ของจริง หรือเพื่อไม่ต้องคัดลอก struct ใหญ่ ใส่ <code>const</code> ถ้าแค่อ่าน</li>
+        <li><code>p-&gt;x</code> คือ <code>(*p).x</code> ตัว struct ใช้จุด pointer ใช้ลูกศร</li>
+        <li>ฟังก์ชันเปรียบเทียบหลายเกณฑ์ ดูเกณฑ์แรกก่อน เท่ากันค่อยดูเกณฑ์ถัดไป</li>
+        <li><code>malloc(n * sizeof(Student))</code> ใช้ <code>sizeof</code> เสมอ ห้ามบวกขนาดเอง</li>
+        <li>ห้ามคืนที่อยู่ของตัวแปรที่สร้างในฟังก์ชัน</li>
+        <li>struct มี pointer ชี้ชนิดของตัวเองได้ ต้องใช้ชื่อเต็ม <code>struct Node</code> ข้างใน และจะใช้สร้าง linked list ในบทที่ 14</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>
