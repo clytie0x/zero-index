@@ -3,7 +3,7 @@
 
       <p>โปรแกรมแรกของคนเรียนเขียนโปรแกรมแทบทุกคนบนโลก คือสั่งให้คอมพิวเตอร์พิมพ์คำว่า Hello, World! ออกมา ถ้าทำหน้านี้ได้ แปลว่าเครื่องพร้อม และน้องพร้อมเริ่มเรียนจริงแล้ว</p>
 
-      <h2 id="step-1">ขั้นที่ 1 สร้างไฟล์</h2>
+      <h2 id="step-1" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>1</span> สร้างไฟล์</h2>
 
       <ol>
         <li>เปิด Code::Blocks</li>
@@ -16,7 +16,7 @@
         <p>ถ้ายังไม่บันทึก Code::Blocks ไม่รู้ว่าไฟล์นี้เป็นภาษาอะไร ตัวหนังสือจะไม่มีสี และกดรันไม่ได้ พอบันทึกเป็น <code>.c</code> แล้ว ลองพิมพ์อะไรสักอย่าง จะเห็นคำสำคัญเปลี่ยนสี</p>
       </div>
 
-      <h2 id="step-2">ขั้นที่ 2 พิมพ์โค้ด</h2>
+      <h2 id="step-2" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>2</span> พิมพ์โค้ด</h2>
 
       <p>พิมพ์เองทีละตัว อย่าก๊อปวาง</p>
 
@@ -29,13 +29,13 @@ int main()
 }
 </code></pre></div>
 
-      <h2 id="step-3">ขั้นที่ 3 รัน</h2>
+      <h2 id="step-3" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>3</span> รัน</h2>
 
       <p>กด <span class="keys"><kbd>F9</kbd></span> (หรือเมนู <strong>Build &gt; Build and run</strong>)</p>
 
       <p>Code::Blocks จะแปลโค้ดด้วย gcc ได้ไฟล์ <code>hello.exe</code> แล้วเปิดหน้าต่างสีดำขึ้นมารันให้</p>
 
-      <div class="code" data-lang="text"><pre><code>Hello, World!
+      <div class="code" data-lang="output" data-title="C:\code\hello.exe"><pre><code>Hello, World!
 
 Process returned 0 (0x0)   execution time : 0.012 s
 Press any key to continue.
@@ -93,7 +93,7 @@ int main() // (2)!
 
       <p>ลบ <code>;</code> หลัง <code>printf(...)</code> แล้วกด <span class="keys"><kbd>F9</kbd></span></p>
 
-      <div class="code" data-lang="text"><pre><code>hello.c:5:30: error: expected ';' before 'return'
+      <div class="code" data-lang="gcc"><pre><code>hello.c:5:30: error: expected ';' before 'return'
     5 |     printf("Hello, World!\n")
       |                              ^
       |                              ;
@@ -112,7 +112,7 @@ int main() // (2)!
 
       <p>ลบบรรทัดแรกทิ้ง แล้วกด <span class="keys"><kbd>F9</kbd></span></p>
 
-      <div class="code" data-lang="text"><pre><code>hello.c:4:5: error: implicit declaration of function 'printf'
+      <div class="code" data-lang="gcc"><pre><code>hello.c:4:5: error: implicit declaration of function 'printf'
 note: include '&lt;stdio.h&gt;' or provide a declaration of 'printf'
 </code></pre></div>
 
@@ -127,7 +127,7 @@ note: include '&lt;stdio.h&gt;' or provide a declaration of 'printf'
 
       <p>กด <span class="keys"><kbd>F9</kbd></span> ให้หน้าต่างดำขึ้น <strong>อย่าเพิ่งปิด</strong> แล้วกลับไปที่ Code::Blocks กด <span class="keys"><kbd>F9</kbd></span> อีกครั้ง</p>
 
-      <div class="code" data-lang="text"><pre><code>ld.exe: cannot open output file hello.exe: Permission denied
+      <div class="code" data-lang="gcc"><pre><code>ld.exe: cannot open output file hello.exe: Permission denied
 </code></pre></div>
 
       <p><code>hello.exe</code> ตัวเก่ายังรันอยู่ Windows เลยไม่ยอมให้เขียนทับ แก้ด้วยการปิดหน้าต่างดำก่อนแล้วค่อยรันใหม่ error นี้เจอบ่อยมาก จำไว้ว่าไม่ได้แปลว่าโค้ดผิด</p>

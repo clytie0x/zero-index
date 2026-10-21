@@ -125,6 +125,25 @@
     return { html: head + r.html, anno: r.anno };
   }
 
+  /* ---------- สีข้อความจาก gcc ---------- */
+
+  /* บรรทัดที่มีเลขหน้า | คือโค้ดของเรา บรรทัด | ที่ไม่มีเลขคือ ^ ชี้จุดผิด หรือคำแนะนำให้แก้ */
+  function hlGcc(line) {
+    var m = line.match(/^((?:\S.*?:(?:\d+:\d+:)?)?)(\s*)(error|warning|note)(:)(.*)$/);
+    if (m) return (m[1] ? tk("loc", m[1]) : "") + esc(m[2]) + tk("sev-" + m[3], m[3] + m[4]) + esc(m[5]);
+    m = line.match(/^(\s*(?:\d+|\+\+\+)?\s*)\|(.*)$/);
+    if (m) {
+      var gutter = tk("gutter", m[1] + "|");
+      if (/\d/.test(m[1])) return gutter + esc(m[2]);
+      if (/^\s*[\^~]+\s*$/.test(m[2])) return gutter + tk("caret", m[2]);
+      if (/\S/.test(m[2])) return gutter + tk("fix", m[2]);
+      return gutter + esc(m[2]);
+    }
+    m = line.match(/^(\S+?\.exe:)(.*)$/);
+    if (m) return tk("loc", m[1]) + esc(m[2]);
+    return esc(line);
+  }
+
   var ICON_COPY = '<svg class="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>';
   var ICON_CHECK = '<svg class="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
@@ -155,7 +174,10 @@
 
       var html = lines.map(function (line) {
         var inner;
-        if (lang === "c") {
+        if (lang === "gcc") {
+          inner = hlGcc(line);
+          cleanLines.push(line);
+        } else if (lang === "c") {
           var r = hlLineC(line);
           inner = r.html;
           if (r.anno) {
@@ -172,6 +194,9 @@
       }).join("\n");
 
       codeEl.innerHTML = html;
+
+      /* ผลลัพธ์จากโปรแกรมไม่มีอะไรให้คัดลอกไปใช้ */
+      if (lang === "output") return;
 
       var copyBtn = document.createElement("button");
       copyBtn.type = "button";

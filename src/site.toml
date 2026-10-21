@@ -11,12 +11,89 @@ author = "clytie0x"
 path = "index.html"
 title = "หน้าแรก"
 
+# บทที่ยังไม่มี path คือบทที่วางแผนไว้ จะขึ้นในแผนที่หน้าแรกเป็นสีจาง แต่ไม่อยู่ในเมนูซ้าย
+# พอเขียนบทนั้นแล้ว ให้ใส่ path กับ pages ตามบทที่ 0
+
 [[chapters]]
+track = "ภาษา C"
 num = "0"
 title = "บทที่ 0 เริ่มต้น"
+summary = "ติดตั้งเครื่องมือ และเขียนโปรแกรมแรกให้รันได้"
 path = "c/00-start/index.html"
 pages = [
   { num = "0.1", title = "คอมพิวเตอร์อ่านโค้ดเรายังไง", path = "c/00-start/why.html" },
   { num = "0.2", title = "ติดตั้ง Code::Blocks", path = "c/00-start/install.html" },
   { num = "0.3", title = "โปรแกรมแรก Hello World", path = "c/00-start/hello.html" },
 ]
+
+[[chapters]]
+track = "ภาษา C"
+num = "1"
+title = "บทที่ 1 ตัวแปรและชนิดข้อมูล"
+summary = "int long long double char และตัวเลขที่ใหญ่เกินจะเก็บได้"
+
+[[chapters]]
+track = "ภาษา C"
+num = "2"
+title = "บทที่ 2 รับและแสดงผล"
+summary = "scanf printf การจัดทศนิยม และรับข้อมูลแบบ grader"
+
+[[chapters]]
+track = "ภาษา C"
+num = "3"
+title = "บทที่ 3 เงื่อนไข"
+summary = "if else switch และการเปรียบเทียบ"
+
+[[chapters]]
+track = "ภาษา C"
+num = "4"
+title = "บทที่ 4 วนซ้ำ"
+summary = "for while ลูปซ้อน และวาดรูปด้วยดาว"
+
+[[chapters]]
+track = "ภาษา C"
+num = "5"
+title = "บทที่ 5 อาเรย์"
+summary = "เก็บข้อมูลหลายตัว หาค่ามากสุด นับความถี่ ผลรวมสะสม"
+
+[[chapters]]
+track = "ภาษา C"
+num = "6"
+title = "บทที่ 6 สตริง"
+summary = "ข้อความ นับตัวอักษร กลับคำ palindrome"
+
+[[chapters]]
+track = "ภาษา C"
+num = "7"
+title = "บทที่ 7 อาเรย์สองมิติ"
+summary = "ตาราง เมทริกซ์ และการเดินในกริด"
+
+[[chapters]]
+track = "ภาษา C"
+num = "8"
+title = "บทที่ 8 ฟังก์ชัน"
+summary = "แบ่งโค้ดเป็นส่วน และ recursion เบื้องต้น"
+
+[[chapters]]
+track = "ภาษา C"
+num = "9"
+title = "บทที่ 9 คณิตศาสตร์ที่ออกบ่อย"
+summary = "mod ห.ร.ม. ค.ร.น. จำนวนเฉพาะ แยกหลักตัวเลข"
+
+[[chapters]]
+track = "ภาษา C"
+num = "10"
+title = "บทที่ 10 เรียงลำดับ"
+summary = "bubble sort ให้เข้าใจหลักการ แล้วใช้ qsort"
+
+[[chapters]]
+track = "ภาษา C"
+num = "11"
+title = "บทที่ 11 จำลองสถานการณ์"
+summary = "ทำตามกติกาในโจทย์ทีละขั้น แนวที่ TOI Zero ชอบออก"
+
+[[chapters]]
+track = "ภาษา C++"
+num = "12"
+title = "บทที่ 12 ขึ้น C++"
+summary = "เครื่องมือของ C++ ที่ใช้บ่อยในการแข่ง ต่อยอดจาก C ที่รู้แล้ว"

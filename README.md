@@ -46,6 +46,10 @@ build จะหยุดพร้อมบอกสาเหตุถ้าเ�
 | ต้องการ | เขียนแบบนี้ |
 |---|---|
 | โค้ด C มีสีและเลขบรรทัด | `<div class="code" data-lang="c" data-linenums><pre><code>...</code></pre></div>` |
+| ผลลัพธ์ที่โปรแกรมพิมพ์ออกจอ | `<div class="code" data-lang="output" data-title="C:\code\hello.exe"><pre><code>...</code></pre></div>` ขึ้นเป็นหน้าต่างสีดำ |
+| ข้อความ error จาก compiler | `<div class="code" data-lang="gcc"><pre><code>...</code></pre></div>` ระบายสีคำว่า error note และ `^` ให้เอง |
+| หัวข้อขั้นตอน | `<h2 id="step-1" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>1</span> ชื่อขั้น</h2>` |
+| แผนที่คอร์สในหน้าแรก | `<!-- course-map -->` build สร้างจากบททั้งหมดใน `site.toml` |
 | คำอธิบายโค้ดแบบกดวงกลม | ใส่ `// (1)!` ท้ายบรรทัด เพิ่ม `data-annotate` แล้วตามด้วย `<ol class="anno-list">` |
 | กล่องเตือน | `<div class="adm adm-warning" role="note"><p class="adm-title">หัวข้อ</p><p>...</p></div>` ใช้ `adm-note` `adm-tip` `adm-info` `adm-success` ได้ด้วย |
 | ปุ่มคีย์บอร์ด | `<span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>S</kbd></span>` |

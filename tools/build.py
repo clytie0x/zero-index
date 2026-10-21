@@ -54,6 +54,8 @@ def load_site() -> tuple[dict, list[Page], list[tuple[Page, list[Page]]]]:
     order = [home]
     tree = []
     for ch in site.get("chapters", []):
+        if "path" not in ch:
+            continue  # บทที่วางแผนไว้ ยังไม่มีหน้า
         chapter = Page(ch["path"], "chapter", ch["title"], ch["num"])
         children = [Page(p["path"], "page", p["title"], p["num"], chapter) for p in ch.get("pages", [])]
         order += [chapter, *children]
@@ -105,7 +107,36 @@ def render_pager(current: Page, prev: Page | None, nxt: Page | None) -> str:
     return "\n".join(lines)
 
 
+def render_course_map(site: dict, current: Page) -> str:
+    """แผนที่คอร์สในหน้าแรก แต่ละบทเป็นช่องหนึ่งช่องเหมือนช่องในอาเรย์"""
+    tracks: dict[str, list[dict]] = {}
+    for ch in site.get("chapters", []):
+        tracks.setdefault(ch["track"], []).append(ch)
+
+    lines = ['<div class="course-map">']
+    for track, chapters in tracks.items():
+        lines.append(f'        <p class="track-title">{esc(track)}</p>')
+        lines.append('        <ol class="cells">')
+        for ch in chapters:
+            short = re.sub(r"^บทที่\s*\S+\s*", "", ch["title"])
+            body = (f'<span class="cell-index">[{esc(ch["num"])}]</span>'
+                    f'<span class="cell-title">{esc(short)}</span>'
+                    f'<span class="cell-sum">{esc(ch.get("summary", ""))}</span>')
+            if "path" in ch:
+                meta = f'{len(ch.get("pages", []))} หน้า'
+                lines.append(f'          <li class="cell is-ready"><a href="{rel(ch["path"], current)}">{body}'
+                             f'<span class="cell-meta">{meta}</span></a></li>')
+            else:
+                lines.append(f'          <li class="cell is-planned"><div>{body}'
+                             f'<span class="cell-meta">กำลังเขียน</span></div></li>')
+        lines.append("        </ol>")
+    lines.append("      </div>")
+    return "\n".join(lines)
+
+
 def render(site: dict, layout: str, page: Page, home: Page, tree, prev, nxt, article: str) -> str:
+    if "<!-- course-map -->" in article:
+        article = article.replace("<!-- course-map -->", render_course_map(site, page))
     crumbs = ""
     if page.kind == "page":
         crumbs = (f'    <nav class="crumbs" aria-label="ตำแหน่ง"><a href="{rel(page.chapter.path, page)}">'
