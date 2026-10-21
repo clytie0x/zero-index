@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import html
 import posixpath
 import re
@@ -107,6 +108,10 @@ def render_pager(current: Page, prev: Page | None, nxt: Page | None) -> str:
     return "\n".join(lines)
 
 
+def asset_version(name: str) -> str:
+    return hashlib.sha256((SRC / "assets" / name).read_bytes()).hexdigest()[:10]
+
+
 def render_course_map(site: dict, current: Page) -> str:
     """แผนที่คอร์สในหน้าแรก แต่ละบทเป็นช่องหนึ่งช่องเหมือนช่องในอาเรย์"""
     tracks: dict[str, list[dict]] = {}
@@ -154,6 +159,9 @@ def render(site: dict, layout: str, page: Page, home: Page, tree, prev, nxt, art
         "crumbs": crumbs,
         "article": article.rstrip("\n"),
         "pager": render_pager(page, prev, nxt),
+        # เปลี่ยนตามเนื้อไฟล์ เบราว์เซอร์จะได้ไม่ใช้ CSS JS ตัวเก่าที่เก็บไว้
+        "v_css": asset_version("site.css"),
+        "v_js": asset_version("site.js"),
     }
     return re.sub(r"\{\{(\w+)\}\}", lambda m: values[m.group(1)], layout)
 
@@ -205,6 +213,7 @@ def check(order: list[Page]) -> list[str]:
             if re.match(r"^[a-z]+:", link) or link.startswith("//"):
                 continue
             target, _, frag = link.partition("#")
+            target = target.partition("?")[0]
             target_path = posixpath.normpath(posixpath.join(posixpath.dirname(page.path), target)) if target else page.path
             if not (DIST / target_path).is_file():
                 errors.append(f"{page.path}: ลิงก์ {link} ชี้ไปไฟล์ที่ไม่มี")
