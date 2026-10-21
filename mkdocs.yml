@@ -1,0 +1,66 @@
+site_name: zero-index
+site_url: https://clytie0x.github.io/zero-index/
+repo_url: https://github.com/clytie0x/zero-index
+site_description: เอกสารเตรียมตัวเขียนโปรแกรม C และ C++ ตั้งแต่ศูนย์ สำหรับสายแข่งขัน
+docs_dir: docs
+
+theme:
+  name: material
+  language: th
+  font:
+    text: Noto Sans Thai
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: เปลี่ยนเป็นโหมดมืด
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: เปลี่ยนเป็นโหมดสว่าง
+  features:
+    - navigation.sections
+    - navigation.footer
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+
+extra_css:
+  - assets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.keys
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - หน้าแรก: index.md
+  - "บทที่ 0 เริ่มต้น":
+      - c/00-start/index.md
+      - "0.1 คอมพิวเตอร์อ่านโค้ดเรายังไง": c/00-start/why.md
+      - "0.2 ติดตั้ง Code::Blocks": c/00-start/install.md
+      - "0.3 โปรแกรมแรก Hello World": c/00-start/hello.md
