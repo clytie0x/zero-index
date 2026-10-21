@@ -33,7 +33,14 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "1"
 title = "บทที่ 1 ตัวแปรและการคำนวณ"
 summary = "int long long double char ตัวดำเนินการ และตัวเลขที่ใหญ่เกินจะเก็บได้"
-# dir = "c/01-variables"
+path = "c/01-variables/index.html"
+pages = [
+  { num = "1.1", title = "ตัวแปร", path = "c/01-variables/variables.html" },
+  { num = "1.2", title = "ตัวดำเนินการและการคำนวณ", path = "c/01-variables/operators.html" },
+  { num = "1.3", title = "จำนวนเต็มใหญ่แค่ไหน", path = "c/01-variables/integers.html" },
+  { num = "1.4", title = "ทศนิยมและตัวอักษร", path = "c/01-variables/double-char.html" },
+  { num = "1.5", title = "แบบฝึกหัด", path = "c/01-variables/exercises.html", exercises = "c/01-variables" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"

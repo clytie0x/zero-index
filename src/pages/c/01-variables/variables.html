@@ -1,0 +1,273 @@
+<article class="doc">
+      <h1>1.1 ตัวแปร</h1>
+
+      <p>โปรแกรม Hello World พิมพ์ข้อความเดิมทุกครั้งที่รัน แต่โจทย์จริงแทบทุกข้อให้ตัวเลขมา แล้วให้เราคำนวณต่อ เช่น รับคะแนนสอบมาแล้วหาผลรวม รับความกว้างกับความยาวมาแล้วหาพื้นที่ โปรแกรมจึงต้องมีที่จำตัวเลขไว้ใช้ ที่จำนั้นเรียกว่า <strong>ตัวแปร (variable)</strong></p>
+
+      <h2 id="what-is-a-variable">ตัวแปรคือกล่องที่มีชื่อ</h2>
+
+      <p>ให้นึกถึงกล่องในหน่วยความจำของคอมพิวเตอร์ แต่ละกล่องมีสามอย่าง</p>
+
+      <ul>
+        <li><strong>ชื่อ</strong> ใช้เรียกกล่องนั้น เช่น <code>score</code></li>
+        <li><strong>ค่า</strong> ของที่เก็บอยู่ในกล่อง เก็บได้ทีละหนึ่งค่า ใส่ค่าใหม่เมื่อไร ค่าเก่าหายทันที</li>
+        <li><strong>ชนิด (type)</strong> บอกว่ากล่องนี้เก็บของแบบไหน เช่น <code>int</code> เก็บจำนวนเต็ม</li>
+      </ul>
+
+      <figure>
+        <svg viewBox="0 0 400 130" width="400" style="max-width:100%;height:auto" role="img" aria-label="กล่องชื่อ score เก็บค่า 85 และกล่องชื่อ age เก็บค่า 16 ทั้งสองกล่องเป็นชนิด int">
+          <g style="font-family:var(--font-code)">
+            <text x="100" y="22" text-anchor="middle" style="fill:var(--ink);font-size:16px">score</text>
+            <rect x="40" y="34" width="120" height="58" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="100" y="71" text-anchor="middle" style="fill:var(--ink);font-size:24px">85</text>
+            <text x="100" y="118" text-anchor="middle" style="fill:var(--muted);font-size:14px">int</text>
+            <text x="300" y="22" text-anchor="middle" style="fill:var(--ink);font-size:16px">age</text>
+            <rect x="240" y="34" width="120" height="58" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="300" y="71" text-anchor="middle" style="fill:var(--ink);font-size:24px">16</text>
+            <text x="300" y="118" text-anchor="middle" style="fill:var(--muted);font-size:14px">int</text>
+          </g>
+        </svg>
+      </figure>
+
+      <h2 id="first-variable">ตัวแปรตัวแรก</h2>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="score"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score; // (1)!
+    score = 85; // (2)!
+    printf("score = %d\n", score); // (3)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><strong>ประกาศ (declare)</strong> ตัวแปร บอก compiler ว่าขอกล่องชนิด <code>int</code> ชื่อ <code>score</code> หนึ่งกล่อง <code>int</code> ย่อมาจาก integer แปลว่าจำนวนเต็ม</li>
+        <li><strong>กำหนดค่า (assign)</strong> เอา 85 ใส่ลงกล่อง <code>score</code></li>
+        <li><code>%d</code> คือช่องว่างที่รอตัวเลข <code>printf</code> จะเอาค่าของ <code>score</code> มาแทนที่ตรงนั้น</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="score" data-title="C:\code\score.exe"><pre><code>score = 85
+</code></pre></div>
+
+      <p>ข้อความ <code>score = </code> ในเครื่องหมายคำพูดพิมพ์ออกมาตรงตัว ส่วน <code>%d</code> ถูกแทนด้วย 85 ตัว d มาจาก decimal คือเลขฐานสิบ</p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">ไม่แสดงบรรทัด Process returned แล้ว</p>
+        <p>ตั้งแต่บทนี้ไป กล่องผลลัพธ์จะแสดงเฉพาะสิ่งที่โปรแกรมพิมพ์ ส่วนสองบรรทัดท้ายที่ Code::Blocks เติมให้ น้องจะยังเห็นในเครื่องตัวเองเหมือนเดิม</p>
+      </div>
+
+      <h2 id="initialize">ประกาศพร้อมกำหนดค่า</h2>
+
+      <p>ประกาศแล้วกำหนดค่าในบรรทัดเดียวได้ เขียนสั้นกว่า และกันลืมใส่ค่า</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="two-scores"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int math = 78;
+    int science = 91;
+    printf("math = %d, science = %d\n", math, science);
+    printf("total = %d\n", math + science);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="two-scores" data-title="C:\code\two_scores.exe"><pre><code>math = 78, science = 91
+total = 169
+</code></pre></div>
+
+      <ul>
+        <li><code>printf</code> หนึ่งครั้งมี <code>%d</code> กี่ตัวก็ได้ ค่าที่อยู่หลังข้อความจะถูกเติมลงไป <strong>ตามลำดับ</strong> ตัวแรกเติม <code>%d</code> ตัวแรก ตัวที่สองเติมตัวที่สอง</li>
+        <li>ค่าที่เติมไม่จำเป็นต้องเป็นตัวแปรเดี่ยวๆ จะเป็นผลคำนวณอย่าง <code>math + science</code> ก็ได้</li>
+      </ul>
+
+      <p>ตัวแปรชนิดเดียวกันประกาศในบรรทัดเดียว คั่นด้วยจุลภาคได้ แบบนี้</p>
+
+      <div class="code" data-lang="c"><pre><code>int math = 78, science = 91;
+</code></pre></div>
+
+      <h2 id="change-value">เปลี่ยนค่าตัวแปร</h2>
+
+      <p>ชื่อว่าตัวแปรเพราะค่าเปลี่ยนได้ โปรแกรมทำงานจากบนลงล่างทีละบรรทัด ตอนที่ <code>printf</code> ทำงาน ตัวแปรมีค่าอะไร ก็พิมพ์ค่านั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="change"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 85;
+    printf("first = %d\n", score);
+    score = 92;
+    printf("second = %d\n", score);
+    score = score + 5;
+    printf("with bonus = %d\n", score);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="change" data-title="C:\code\change.exe"><pre><code>first = 85
+second = 92
+with bonus = 97
+</code></pre></div>
+
+      <p>บรรทัดที่ 9 <code>score = score + 5;</code> ดูแปลกถ้าคิดแบบคณิตศาสตร์ เพราะไม่มีเลขไหนเท่ากับตัวมันเองบวก 5 แต่ในภาษา C เครื่องหมาย <code>=</code> <strong>ไม่ได้แปลว่าเท่ากับ</strong> แปลว่า "เอาค่าทางขวาไปใส่ในกล่องทางซ้าย" คอมพิวเตอร์ทำสองจังหวะ</p>
+
+      <ol>
+        <li>คำนวณด้านขวาก่อน ตอนนี้ <code>score</code> เป็น 92 ได้ 92 + 5 = 97</li>
+        <li>เอา 97 ใส่ลงกล่อง <code>score</code> ทับค่าเดิม</li>
+      </ol>
+
+      <p>รูปแบบนี้จะเจออีกบ่อยมาก เช่น บวกคะแนนสะสม นับจำนวนครั้ง ตอนเรียนเรื่องวนซ้ำในบทที่ 4</p>
+
+      <h2 id="names">ตั้งชื่อตัวแปร</h2>
+
+      <p>กฎที่ compiler บังคับ</p>
+
+      <ul>
+        <li>ใช้ได้แค่ตัวอักษรภาษาอังกฤษ ตัวเลข และขีดล่าง <code>_</code> ห้ามมีช่องว่าง</li>
+        <li>ห้ามขึ้นต้นด้วยตัวเลข</li>
+        <li>ห้ามซ้ำกับคำสงวนของภาษา C เช่น <code>int</code> <code>return</code> <code>double</code></li>
+        <li>ตัวพิมพ์เล็กกับพิมพ์ใหญ่ถือว่าต่างกัน <code>score</code> กับ <code>Score</code> เป็นคนละตัว</li>
+      </ul>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ชื่อ</th><th>ใช้ได้ไหม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>score</code></td><td>ได้</td></tr>
+            <tr><td><code>total_score</code></td><td>ได้ คั่นคำด้วยขีดล่าง อ่านง่าย</td></tr>
+            <tr><td><code>score2</code></td><td>ได้ ตัวเลขอยู่หลังได้</td></tr>
+            <tr><td><code>2nd_score</code></td><td>ไม่ได้ ขึ้นต้นด้วยตัวเลข</td></tr>
+            <tr><td><code>total score</code></td><td>ไม่ได้ มีช่องว่าง</td></tr>
+            <tr><td><code>return</code></td><td>ไม่ได้ เป็นคำสงวน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>นอกจากกฎของ compiler ให้ตั้งชื่อที่บอกว่าเก็บอะไร <code>width</code> กับ <code>height</code> อ่านแล้วรู้เรื่องทันที แต่ <code>a</code> กับ <code>b</code> ต้องย้อนไปดูว่าคืออะไร เอกสารนี้ใช้ภาษาอังกฤษตัวเล็ก คั่นคำด้วยขีดล่าง</p>
+
+      <h2 id="scanf">รับค่าจากผู้ใช้ด้วย scanf</h2>
+
+      <p>ถ้าค่าตัวแปรเขียนตายตัวในโค้ด โปรแกรมก็ตอบได้คำตอบเดียว โจทย์ในการแข่งขันจะส่ง <strong>ข้อมูลเข้า (input)</strong> มาให้ แล้วให้โปรแกรมคำนวณ คำสั่งที่รับตัวเลขเข้ามาใส่ตัวแปรคือ <code>scanf</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="age"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int age;
+    scanf("%d", &amp;age);
+    printf("next year you will be %d\n", age + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="age" data-title="ข้อมูลเข้า"><pre><code>15
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="age" data-title="C:\code\age.exe"><pre><code>next year you will be 16
+</code></pre></div>
+
+      <p>กด <span class="keys"><kbd>F9</kbd></span> แล้วหน้าต่างดำจะว่างอยู่ เพราะโปรแกรมรอให้พิมพ์ พิมพ์ <code>15</code> แล้วกด <span class="keys"><kbd>Enter</kbd></span> โปรแกรมถึงจะทำงานต่อ ในหน้าต่างจริงจะเห็นเลขที่เราพิมพ์อยู่บรรทัดบน ส่วนในเอกสารนี้แยกข้อมูลเข้ากับผลลัพธ์ไว้คนละกล่อง</p>
+
+      <ul>
+        <li><code>"%d"</code> บอก <code>scanf</code> ว่าจะอ่านจำนวนเต็มหนึ่งตัว</li>
+        <li><code>&amp;age</code> คือ <strong>ที่อยู่</strong> ของกล่อง <code>age</code> ในหน่วยความจำ <code>scanf</code> ต้องรู้ว่ากล่องอยู่ที่ไหนถึงจะเอาค่าไปใส่ได้ ตอนนี้จำไว้ว่า <strong>ตัวแปรใน scanf ต้องมี <code>&amp;</code> นำหน้า</strong> ส่วน <code>printf</code> ไม่ต้องมี เรื่องที่อยู่จะอธิบายเต็มๆ ในบทที่ 10</li>
+      </ul>
+
+      <p>รับหลายค่าพร้อมกันก็ได้ ใส่ <code>%d</code> ให้ครบตามจำนวนตัวแปร</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="area"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int width, height;
+    scanf("%d %d", &amp;width, &amp;height);
+    printf("area = %d\n", width * height);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="area" data-title="ข้อมูลเข้า"><pre><code>12 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="area" data-title="C:\code\area.exe"><pre><code>area = 84
+</code></pre></div>
+
+      <p>เครื่องหมาย <code>*</code> คือคูณ หน้าถัดไปจะดูเครื่องหมายคำนวณทั้งหมด ข้อมูลเข้าสองตัวจะคั่นด้วยช่องว่างหรือขึ้นบรรทัดใหม่ก็ได้ <code>scanf</code> อ่านได้ทั้งสองแบบ รายละเอียดอื่นของ <code>scanf</code> อยู่ในบทที่ 2</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <p>ทำทีละแบบ อ่านข้อความที่ได้ แล้วแก้กลับให้ถูกก่อนลองแบบถัดไป</p>
+
+      <h3 id="typo">แบบที่ 1 พิมพ์ชื่อตัวแปรผิด</h3>
+
+      <p>ในโปรแกรม score แก้บรรทัด <code>printf</code> ให้ใช้ <code>scroe</code> แทน <code>score</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>score.c:7:28: error: 'scroe' undeclared (first use in this function); did you mean 'score'?
+    7 |     printf("score = %d\n", scroe);
+      |                            ^~~~~
+      |                            score
+</code></pre></div>
+
+      <p><code>undeclared</code> แปลว่ายังไม่ได้ประกาศ compiler ไม่รู้จักชื่อ <code>scroe</code> เพราะกล่องที่เราขอไว้ชื่อ <code>score</code> และมันเดาให้ด้วยว่าน่าจะหมายถึง <code>score</code> ถ้าลืมประกาศตัวแปรก่อนใช้ ก็ได้ error แบบเดียวกันนี้</p>
+
+      <h3 id="digit-first">แบบที่ 2 ตั้งชื่อขึ้นต้นด้วยตัวเลข</h3>
+
+      <p>ในโปรแกรม score เปลี่ยนบรรทัด <code>int score;</code> เป็น</p>
+
+      <div class="code" data-lang="c"><pre><code>int 2nd_score = 90;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>score.c:5:9: error: invalid suffix "nd_score" on integer constant
+    5 |     int 2nd_score = 90;
+      |         ^~~~~~~~~
+score.c:5:9: error: expected identifier or '(' before numeric constant
+score.c:6:5: error: 'score' undeclared (first use in this function)
+    6 |     score = 85;
+      |     ^~~~~
+</code></pre></div>
+
+      <p>compiler เห็นเลข 2 แล้วคิดว่าเป็นตัวเลข ตามด้วยตัวอักษรแปลกๆ <code>nd_score</code> ข้อความไม่ได้บอกตรงๆ ว่าตั้งชื่อผิดกฎ แต่ชี้ตำแหน่งให้ ถ้าเจอ error ที่อ่านไม่เข้าใจ ให้ดูตำแหน่งที่ <code>^</code> ชี้ก่อนเสมอ</p>
+
+      <p>error บรรทัดที่สามเกิดตามมา เพราะประกาศพังไปแล้ว <code>score</code> จึงไม่มีอยู่จริง error ที่ต่อกันเป็นพรวนแบบนี้เจอบ่อย ให้แก้ตัวแรกก่อน แล้วคอมไพล์ใหม่ ตัวที่ตามมามักหายไปเอง</p>
+
+      <h3 id="uninitialized">แบบที่ 3 ใช้ตัวแปรที่ยังไม่ได้ใส่ค่า</h3>
+
+      <p>ลบบรรทัด <code>score = 85;</code> ออก เหลือแค่ประกาศแล้วพิมพ์เลย</p>
+
+      <div class="code" data-lang="gcc"><pre><code>score.c:6:5: warning: 'score' is used uninitialized [-Wuninitialized]
+    6 |     printf("score = %d\n", score);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+score.c:5:9: note: 'score' was declared here
+    5 |     int score;
+      |         ^~~~~
+</code></pre></div>
+
+      <p>คราวนี้เป็น <strong>warning</strong> (คำเตือน) ไม่ใช่ error โปรแกรมยังรันได้ แต่ค่าที่พิมพ์ออกมาคือของที่ค้างอยู่ในหน่วยความจำตรงนั้น เรียกว่า <strong>ค่าขยะ</strong> รันคนละเครื่องหรือคนละครั้งอาจได้ไม่เหมือนกัน คำเตือนนี้ขึ้นเพราะเราเปิด <code>-Wall</code> ไว้ตอนติดตั้ง ถ้าเห็น warning ให้แก้เหมือนเป็น error</p>
+
+      <h3 id="missing-ampersand">แบบที่ 4 ลืม <code>&amp;</code> ใน scanf</h3>
+
+      <p>ในโปรแกรม age เขียน <code>scanf("%d", age);</code> โดยไม่มี <code>&amp;</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>age.c:6:13: warning: format '%d' expects argument of type 'int *', but argument 2 has type 'int' [-Wformat=]
+    6 |     scanf("%d", age);
+      |            ~^   ~~~
+      |             |   |
+      |             |   int
+      |             int *
+age.c:6:5: warning: 'age' is used uninitialized [-Wuninitialized]
+</code></pre></div>
+
+      <p>ยังเป็นแค่ warning จึงรันได้ แต่ <code>scanf</code> ไม่รู้ว่ากล่อง <code>age</code> อยู่ไหน เลขที่พิมพ์เข้าไปจึงไม่ถึงตัวแปร บนเครื่องที่เขียนเอกสารนี้ พิมพ์ 20 แล้วได้ <code>next year you will be 1</code> ซึ่งไม่เกี่ยวกับ 20 เลย ส่วน <code>int *</code> ในข้อความคือชนิดของที่อยู่ จะได้เรียนในบทที่ 10</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ตัวแปรคือกล่องที่มีชื่อ ชนิด และค่า ต้องประกาศก่อนใช้ เช่น <code>int score;</code></li>
+        <li><code>=</code> คือเอาค่าทางขวาใส่กล่องทางซ้าย ไม่ใช่เท่ากับ</li>
+        <li><code>printf("%d", x)</code> พิมพ์ค่าจำนวนเต็ม <code>scanf("%d", &amp;x)</code> รับค่าจำนวนเต็ม อย่าลืม <code>&amp;</code></li>
+        <li>ชื่อตัวแปรใช้ตัวอักษร ตัวเลข ขีดล่าง ห้ามขึ้นต้นด้วยตัวเลข และควรบอกว่าเก็บอะไร</li>
+        <li>warning ไม่หยุดการคอมไพล์ แต่มักแปลว่าโปรแกรมจะได้ค่าผิด</li>
+      </ul>
+    </article>

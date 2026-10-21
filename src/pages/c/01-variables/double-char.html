@@ -1,0 +1,260 @@
+<article class="doc">
+      <h1>1.4 ทศนิยมและตัวอักษร</h1>
+
+      <p>ส่วนสูง ค่าเฉลี่ย ระยะทางเป็นกิโลเมตร พวกนี้มีทศนิยม เก็บใน <code>int</code> ไม่ได้ หน้านี้รู้จักชนิด <code>double</code> สำหรับทศนิยม เรื่องที่ต้องระวังเวลาหารเลขผสมกันระหว่างจำนวนเต็มกับทศนิยม และปิดท้ายด้วย <code>char</code> ชนิดที่เก็บตัวอักษรหนึ่งตัว</p>
+
+      <h2 id="double">double เก็บทศนิยม</h2>
+
+      <p>หาค่า BMI จากน้ำหนัก (กิโลกรัม) หารด้วยส่วนสูง (เมตร) ยกกำลังสอง ส่วนสูงมีทศนิยม จึงใช้ <code>double</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="bmi"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    double weight, height;
+    scanf("%lf %lf", &amp;weight, &amp;height);
+    double bmi = weight / (height * height);
+    printf("%f\n", bmi);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="bmi" data-title="ข้อมูลเข้า"><pre><code>60 1.70
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bmi" data-title="C:\code\bmi.exe"><pre><code>20.761246
+</code></pre></div>
+
+      <ul>
+        <li><code>scanf</code> รับ <code>double</code> ด้วย <code>%lf</code> (long float)</li>
+        <li><code>printf</code> พิมพ์ <code>double</code> ด้วย <code>%f</code> จะได้ทศนิยม 6 ตำแหน่งเสมอ ถ้าอยากได้กี่ตำแหน่งก็ได้ตามต้องการ จะเรียนในบทที่ 2</li>
+        <li>ป้อน <code>60</code> ที่ไม่มีจุดก็ได้ <code>scanf</code> แปลงเป็น 60.0 ให้เอง</li>
+      </ul>
+
+      <h2 id="division">หารแบบไหนได้ทศนิยม</h2>
+
+      <p>ในหน้า 1.2 เห็นแล้วว่า <code>17 / 5</code> ได้ 3 กฎจริงคือ <strong>ถ้าทั้งสองข้างเป็นจำนวนเต็ม ผลเป็นจำนวนเต็ม ถ้ามีข้างใดข้างหนึ่งเป็นทศนิยม ผลเป็นทศนิยม</strong> ในโค้ด เลขที่มีจุดอย่าง <code>2.0</code> ถือเป็น <code>double</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="divide"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("%d\n", 7 / 2);
+    printf("%f\n", 7.0 / 2);
+    printf("%f\n", 7 / 2.0);
+    printf("%f\n", 7.0 / 2.0);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="divide" data-title="C:\code\divide.exe"><pre><code>3
+3.500000
+3.500000
+3.500000
+</code></pre></div>
+
+      <p>บรรทัดแรกต้องพิมพ์ด้วย <code>%d</code> เพราะ <code>7 / 2</code> เป็น <code>int</code> ส่วนสามบรรทัดหลังเป็น <code>double</code> จึงใช้ <code>%f</code> ใช้ผิดตัวจะได้ค่าแปลกๆ ดูได้ในส่วนลองทำให้พัง</p>
+
+      <h2 id="cast">แปลงชนิดด้วย cast</h2>
+
+      <p>ถ้าตัวเลขอยู่ในตัวแปร <code>int</code> จะเติม <code>.0</code> ไม่ได้ ใช้การ <strong>แปลงชนิด (cast)</strong> แทน เขียนชื่อชนิดในวงเล็บไว้หน้าค่า เช่น <code>(double)total</code> คือเอาค่าของ <code>total</code> มาใช้เป็น <code>double</code> ตัวแปร <code>total</code> เองยังเป็น <code>int</code> เหมือนเดิม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="cast"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int total = 245;
+    printf("%f\n", (double)total / 3);
+    printf("%f\n", (double)(total / 3));
+    printf("%d\n", (int)3.99);
+    printf("%d\n", (int)-3.99);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="cast" data-title="C:\code\cast.exe"><pre><code>81.666667
+81.000000
+3
+-3
+</code></pre></div>
+
+      <ul>
+        <li>บรรทัดที่ 6 แปลง <code>total</code> เป็น <code>double</code> ก่อน แล้วค่อยหาร จึงได้ทศนิยม</li>
+        <li>บรรทัดที่ 7 วงเล็บทำให้ <code>total / 3</code> ทำก่อน ได้ 81 แบบจำนวนเต็มไปแล้ว ค่อยแปลงเป็น 81.0 <strong>สายเกินไป</strong> ทศนิยมหายไปตั้งแต่ตอนหาร</li>
+        <li>แปลง <code>double</code> เป็น <code>int</code> คือตัดทศนิยมทิ้งไปทาง 0 ไม่ใช่ปัดเศษ 3.99 ได้ 3 และ -3.99 ได้ -3</li>
+      </ul>
+
+      <p>จำกับดัก <code>int</code> คูณ <code>int</code> ในหน้า 1.3 ได้ไหม cast แก้ได้ด้วยวิธีเดียวกัน <code>(long long)width * length</code> แปลง <code>width</code> เป็น <code>long long</code> ก่อนคูณ ผลคูณจึงเป็น <code>long long</code> และไม่ล้น</p>
+
+      <h2 id="precision">ทศนิยมไม่ได้แม่นทุกหลัก</h2>
+
+      <p>คอมพิวเตอร์เก็บทศนิยมเป็นเลขฐานสอง เลขอย่าง 0.1 เขียนเป็นฐานสองแบบลงตัวไม่ได้ เหมือน 1/3 ที่เขียนเป็นฐานสิบได้แค่ 0.3333 ไม่รู้จบ จึงเก็บได้แค่ค่าที่ใกล้มากๆ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="precision"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("%f\n", 0.1 + 0.2);
+    printf("%.17f\n", 0.1 + 0.2);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="precision" data-title="C:\code\precision.exe"><pre><code>0.300000
+0.30000000000000004
+</code></pre></div>
+
+      <p><code>%.17f</code> คือสั่งให้พิมพ์ทศนิยม 17 ตำแหน่ง (วิธีนี้จะเรียนละเอียดในบทที่ 2) พอดูละเอียดจะเห็นว่า 0.1 + 0.2 ไม่ได้เป็น 0.3 พอดี คลาดไปนิดเดียว ปกติไม่มีผลกับคำตอบ แต่มีผลเมื่อ</p>
+
+      <ul>
+        <li>เปรียบเทียบว่าทศนิยมสองค่าเท่ากันไหม ซึ่งจะเจอในบทที่ 3</li>
+        <li>เก็บจำนวนเต็มที่ใหญ่มากใน <code>double</code> ซึ่งแม่นได้แค่ราว 15 ถึง 16 หลัก</li>
+      </ul>
+
+      <div class="code" data-lang="c" data-linenums data-test="big-double"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    long long exact = 100000000000000001;
+    double rough = exact;
+    printf("%lld\n", exact);
+    printf("%f\n", rough);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="big-double" data-title="C:\code\big.exe"><pre><code>100000000000000001
+100000000000000000.000000
+</code></pre></div>
+
+      <p>เลข 1 ตัวท้ายหายไปเฉยๆ จึงมีกฎว่า <strong>งานที่เป็นจำนวนเต็มให้ใช้ <code>int</code> หรือ <code>long long</code> อย่าใช้ <code>double</code></strong> แม้ <code>double</code> จะเก็บเลขได้ใหญ่กว่าก็ตาม ใช้ <code>double</code> เฉพาะงานที่คำตอบเป็นทศนิยมจริงๆ</p>
+
+      <h2 id="char">char เก็บตัวอักษร</h2>
+
+      <p><code>char</code> (มาจาก character) เก็บตัวอักษรหนึ่งตัว ใช้ 1 byte เขียนตัวอักษรในเครื่องหมายคำพูดเดี่ยว <code>'A'</code> และพิมพ์ด้วย <code>%c</code></p>
+
+      <p>ข้างในคอมพิวเตอร์ไม่มีตัวอักษร มีแต่ตัวเลข ตัวอักษรแต่ละตัวจึงมีรหัสตัวเลขประจำตัวตามตาราง <strong>ASCII</strong> พิมพ์ <code>char</code> ด้วย <code>%d</code> จะเห็นรหัสนั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="grade"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char grade = 'B';
+    printf("%c\n", grade);
+    printf("%d\n", grade);
+    printf("%c\n", grade + 1);
+    printf("%d\n", '7' - '0');
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="grade" data-title="C:\code\grade.exe"><pre><code>B
+66
+C
+7
+</code></pre></div>
+
+      <ul>
+        <li><code>'B'</code> มีรหัส 66 บวก 1 ได้ 67 ซึ่งคือ <code>'C'</code> ตัวอักษรเรียงกันมีรหัสเรียงกัน</li>
+        <li><code>'7' - '0'</code> ได้ 7 เพราะตัวเลข <code>'0'</code> ถึง <code>'9'</code> มีรหัสเรียงกันเหมือนกัน วิธีนี้ใช้แปลงตัวอักษรตัวเลขเป็นค่าจริง</li>
+      </ul>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวอักษร</th><th>รหัส ASCII</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>'0'</code> ถึง <code>'9'</code></td><td>48 ถึง 57</td></tr>
+            <tr><td><code>'A'</code> ถึง <code>'Z'</code></td><td>65 ถึง 90</td></tr>
+            <tr><td><code>'a'</code> ถึง <code>'z'</code></td><td>97 ถึง 122</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ไม่ต้องท่องตาราง ในโค้ดเขียน <code>'A'</code> แทน 65 ได้เสมอ อ่านง่ายกว่าด้วย เรื่องตัวอักษรและข้อความจะลงลึกในบทที่ 6</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="average-int">แบบที่ 1 หารเสร็จแล้วค่อยเก็บใน double</h3>
+
+      <p>หาค่าเฉลี่ยคะแนนสามวิชา 70 85 90 ผลรวมคือ 245 ค่าเฉลี่ยที่ถูกคือ 81.666667</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="average-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int math, science, english;
+    scanf("%d %d %d", &amp;math, &amp;science, &amp;english);
+    double average = (math + science + english) / 3;
+    printf("%f\n", average);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="average-bug" data-title="ข้อมูลเข้า"><pre><code>70 85 90
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="average-bug" data-title="C:\code\average.exe"><pre><code>81.000000
+</code></pre></div>
+
+      <p>ได้ทศนิยมหกตำแหน่งก็จริง แต่เป็นศูนย์หมด เพราะ <code>245 / 3</code> เป็น <code>int</code> หาร <code>int</code> ได้ 81 ไปแล้ว ค่อยเก็บลงกล่อง <code>double</code> ทีหลัง เป็นกับดักแบบเดียวกับ <code>int</code> คูณ <code>int</code> ในหน้า 1.3 แก้เป็น <code>/ 3.0</code> หรือ <code>(double)(math + science + english) / 3</code> จะได้ 81.666667</p>
+
+      <h3 id="wrong-format">แบบที่ 2 พิมพ์ double ด้วย %d</h3>
+
+      <div class="code" data-lang="c"><pre><code>double height = 1.75;
+printf("%d\n", height);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>height.c:6:14: warning: format '%d' expects argument of type 'int', but argument 2 has type 'double' [-Wformat=]
+    6 |     printf("%d\n", height);
+      |             ~^     ~~~~~~
+      |              |     |
+      |              int   double
+      |             %f
+</code></pre></div>
+
+      <p><code>printf</code> ไม่แปลง 1.75 เป็น 1 ให้ แต่หยิบข้อมูลผิดที่ไปเลย บนเครื่องที่ทดลองพิมพ์ออกมาเป็น <code>0</code> compiler แนะนำ <code>%f</code> มาให้แล้ว ทำตามนั้น</p>
+
+      <h3 id="double-quotes">แบบที่ 3 ใช้เครื่องหมายคำพูดคู่กับ char</h3>
+
+      <div class="code" data-lang="c"><pre><code>char grade = "A";
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>grade.c:5:18: error: initialization of 'char' from 'char *' makes integer from pointer without a cast [-Wint-conversion]
+    5 |     char grade = "A";
+      |                  ^~~
+</code></pre></div>
+
+      <p><code>'A'</code> คือตัวอักษรหนึ่งตัว ส่วน <code>"A"</code> คือข้อความ (string) ที่บังเอิญยาวหนึ่งตัว สองอย่างนี้เป็นคนละชนิดกัน ข้อความเก็บใน <code>char</code> ไม่ได้ ข้อความ error ยาวและมีคำว่า pointer ที่ยังไม่ได้เรียน ให้จำแค่ว่า <code>char</code> ใช้เครื่องหมายคำพูดเดี่ยว ข้อความใช้เครื่องหมายคำพูดคู่</p>
+
+      <h3 id="assign-double">แบบที่ 4 ใส่ทศนิยมลง int</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="price"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int price = 3.99;
+    printf("%d\n", price);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="price" data-title="C:\code\price.exe"><pre><code>3
+</code></pre></div>
+
+      <p>ไม่มีคำเตือนจาก <code>-Wall</code> ทศนิยมถูกตัดทิ้งเงียบๆ ราคาหายไป 99 สตางค์ ถ้าค่าใดมีทศนิยมได้ ต้องประกาศเป็น <code>double</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>double</code> เก็บทศนิยม รับด้วย <code>%lf</code> พิมพ์ด้วย <code>%f</code></li>
+        <li><code>int / int</code> ได้ <code>int</code> มีข้างใดเป็น <code>double</code> ถึงได้ทศนิยม</li>
+        <li>cast เช่น <code>(double)x</code> ต้องทำก่อนหาร ไม่ใช่หลังหาร</li>
+        <li>แปลงทศนิยมเป็นจำนวนเต็มคือตัดทิ้งไปทาง 0 ไม่ใช่ปัดเศษ</li>
+        <li>ทศนิยมคลาดได้เล็กน้อย งานจำนวนเต็มใช้ <code>int</code> หรือ <code>long long</code> เสมอ</li>
+        <li><code>char</code> เก็บตัวอักษรหนึ่งตัวในเครื่องหมาย <code>' '</code> ซึ่งก็คือตัวเลขรหัส ASCII</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

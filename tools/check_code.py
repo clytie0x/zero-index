@@ -1,12 +1,14 @@
 """คอมไพล์และรันโค้ดในเอกสาร เพื่อยืนยันว่าทุกตัวอย่างใช้ได้จริง
 
-    python tools/check_code.py
+    python tools/check_code.py                 ตรวจทั้งเว็บ
+    python tools/check_code.py c/01-variables  ตรวจเฉพาะบท (ส่วนต้นของ path)
 
 ตรวจสองส่วน
 1. ตัวอย่างในหน้าเนื้อหา บล็อกโค้ดที่มี data-test="ชื่อ" จะถูกคอมไพล์
    ถ้ามีบล็อก data-lang="input" data-for="ชื่อ" จะใช้เป็น input
    ถ้ามีบล็อก data-lang="output" data-for="ชื่อ" ผลที่รันได้ต้องตรงกัน
    ใส่ data-allow-warnings ถ้าตั้งใจให้ตัวอย่างนั้นมีคำเตือน
+   ทุกตัวอย่างรันสองแบบ แบบตัวตรวจ และแบบที่ Code::Blocks ใช้จริง ต้องได้ผลตรงทั้งคู่
 2. แบบฝึกหัดใน src/exercises เฉลยทุกไฟล์ (solution*) ต้องผ่านชุดทดสอบทุกชุด
    วิธีช้า (naive*) ต้องผ่านทุกชุดที่ชื่อไม่มีคำว่า big
 
@@ -23,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -33,6 +36,7 @@ GCC = os.environ.get("ZI_GCC", "gcc")
 GXX = os.environ.get("ZI_GXX", "g++")
 C_FLAGS = ["-std=c17", "-O2", "-Wall", "-Wextra"]
 CPP_FLAGS = ["-std=gnu++17", "-O2", "-Wall", "-Wextra"]
+CB_FLAGS = ["-Wall"]  # ค่าที่น้องตั้งใน Code::Blocks ตามบทที่ 0
 RUN_TIMEOUT = 10
 
 BLOCK = re.compile(r'<div class="code"([^>]*)><pre><code>(.*?)</code></pre></div>', re.S)
@@ -47,12 +51,14 @@ def normalize(text: str) -> str:
     return "\n".join(lines).strip("\n")
 
 
-def compile_source(src: str, lang: str, workdir: Path, name: str, allow_warnings: bool) -> tuple[Path | None, str]:
+def compile_source(src: str, lang: str, workdir: Path, name: str, allow_warnings: bool,
+                   flags: list[str] | None = None) -> tuple[Path | None, str]:
     ext = ".cpp" if lang == "cpp" else ".c"
     source = workdir / f"{name}{ext}"
     source.write_text(src, encoding="utf-8")
     exe = workdir / f"{name}.exe"
-    flags = CPP_FLAGS if lang == "cpp" else C_FLAGS
+    if flags is None:
+        flags = CPP_FLAGS if lang == "cpp" else C_FLAGS
     if not allow_warnings:
         flags = flags + ["-Werror"]
     cmd = [GXX if lang == "cpp" else GCC, *flags, str(source), "-o", str(exe), "-lm"]
@@ -79,42 +85,76 @@ def blocks_in(path: Path) -> list[tuple[dict, str]]:
     return out
 
 
-def check_pages(workdir: Path) -> tuple[int, list[str]]:
-    count, errors = 0, []
+def check_example(workdir: Path, rel: str, name: str, attrs: dict, text: str,
+                  stdin: str, expected: str | None) -> list[str]:
+    lang = attrs.get("data-lang", "c")
+    src = ANNO.sub("", text)
+    allow = "data-allow-warnings" in attrs
+    # รันสองแบบ แบบตัวตรวจ และแบบที่ Code::Blocks ใช้จริง (-Wall อย่างเดียว ไม่มี -O2)
+    # ตัวอย่างเรื่อง overflow หรือค่าขยะอาจได้ผลต่างกันตามแฟล็ก
+    for label, flags, suffix in (("", None, ""), (" แบบ Code::Blocks", CB_FLAGS, "_cb")):
+        exe, err = compile_source(src, lang, workdir, re.sub(r"\W", "_", f"{rel}_{name}{suffix}"), allow, flags)
+        if exe is None:
+            return [f"{rel} [{name}]{label} คอมไพล์ไม่ผ่าน\n{err}"]
+        code, got = run(exe, stdin)
+        if code is None:
+            return [f"{rel} [{name}]{label} รันเกิน {RUN_TIMEOUT} วินาที"]
+        if expected is not None:
+            want = normalize(CB_FOOTER.sub("", expected))
+            if normalize(got) != want:
+                return [f"{rel} [{name}]{label} ผลลัพธ์ไม่ตรงกับในหน้า\n--- ในหน้า\n{want}\n--- รันได้\n{normalize(got)}"]
+    return []
+
+
+def page_jobs(workdir: Path, only: str) -> list:
+    jobs = []
     for page in sorted(PAGES.rglob("*.html")):
         rel = page.relative_to(PAGES).as_posix()
+        if not rel.startswith(only):
+            continue
         blocks = blocks_in(page)
         inputs = {a["data-for"]: t for a, t in blocks if a.get("data-lang") == "input" and "data-for" in a}
         outputs = {a["data-for"]: t for a, t in blocks if a.get("data-lang") == "output" and "data-for" in a}
         for attrs, text in blocks:
             name = attrs.get("data-test")
-            if not name:
-                continue
-            count += 1
-            lang = attrs.get("data-lang", "c")
-            src = ANNO.sub("", text)
-            exe, err = compile_source(src, lang, workdir, re.sub(r"\W", "_", f"{rel}_{name}"), "data-allow-warnings" in attrs)
-            if exe is None:
-                errors.append(f"{rel} [{name}] คอมไพล์ไม่ผ่าน\n{err}")
-                continue
-            code, got = run(exe, inputs.get(name, ""))
-            if code is None:
-                errors.append(f"{rel} [{name}] รันเกิน {RUN_TIMEOUT} วินาที")
-                continue
-            if name in outputs:
-                want = normalize(CB_FOOTER.sub("", outputs[name]))
-                if normalize(got) != want:
-                    errors.append(f"{rel} [{name}] ผลลัพธ์ไม่ตรงกับในหน้า\n--- ในหน้า\n{want}\n--- รันได้\n{normalize(got)}")
-    return count, errors
+            if name:
+                jobs.append(lambda rel=rel, name=name, attrs=attrs, text=text, inputs=inputs, outputs=outputs:
+                            check_example(workdir, rel, name, attrs, text, inputs.get(name, ""), outputs.get(name)))
+    return jobs
 
 
-def check_exercises(workdir: Path) -> tuple[int, list[str]]:
-    count, errors = 0, []
+def check_solution(workdir: Path, rel: str, sol: Path, tests: list[Path]) -> list[str]:
+    errors = []
+    lang = "cpp" if sol.suffix == ".cpp" else "c"
+    exe, err = compile_source(sol.read_text(encoding="utf-8"), lang, workdir,
+                              re.sub(r"\W", "_", f"ex_{rel}_{sol.stem}"), False)
+    if exe is None:
+        return [f"แบบฝึกหัด {rel}/{sol.name} คอมไพล์ไม่ผ่าน\n{err}"]
+    for t in tests:
+        # วิธีช้าตรวจเฉพาะชุดเล็ก ชุดที่ชื่อมีคำว่า big ตั้งใจให้วิธีช้าไม่ทัน
+        if sol.stem.startswith("naive") and "big" in t.stem:
+            continue
+        ans = t.with_suffix(".out")
+        if not ans.exists():
+            errors.append(f"แบบฝึกหัด {rel} ไม่มี {ans.name}")
+            continue
+        code, got = run(exe, t.read_text(encoding="utf-8"))
+        if code is None:
+            errors.append(f"แบบฝึกหัด {rel}/{sol.name} ชุด {t.stem} รันเกิน {RUN_TIMEOUT} วินาที")
+        elif normalize(got) != normalize(ans.read_text(encoding="utf-8")):
+            errors.append(f"แบบฝึกหัด {rel}/{sol.name} ชุด {t.stem} ได้คำตอบไม่ตรง")
+    return errors
+
+
+def exercise_jobs(workdir: Path, only: str) -> tuple[list, list[str]]:
+    jobs, errors = [], []
     if not EXERCISES.exists():
-        return 0, []
+        return jobs, errors
     for task in sorted(EXERCISES.rglob("task.toml")):
         d = task.parent
         rel = d.relative_to(EXERCISES).as_posix()
+        if not rel.startswith(only):
+            continue
         tomllib.loads(task.read_text(encoding="utf-8"))  # ให้ไฟล์ toml ที่พังโผล่ตรงนี้
         tests = sorted((d / "tests").glob("*.in"))
         if not tests:
@@ -126,38 +166,22 @@ def check_exercises(workdir: Path) -> tuple[int, list[str]]:
             errors.append(f"แบบฝึกหัด {rel} ไม่มีเฉลย")
             continue
         for sol in solutions:
-            count += 1
-            lang = "cpp" if sol.suffix == ".cpp" else "c"
-            exe, err = compile_source(sol.read_text(encoding="utf-8"), lang, workdir,
-                                      re.sub(r"\W", "_", f"ex_{rel}_{sol.stem}"), False)
-            if exe is None:
-                errors.append(f"แบบฝึกหัด {rel}/{sol.name} คอมไพล์ไม่ผ่าน\n{err}")
-                continue
-            for t in tests:
-                # วิธีช้าตรวจเฉพาะชุดเล็ก ชุดที่ชื่อมีคำว่า big ตั้งใจให้วิธีช้าไม่ทัน
-                if sol.stem.startswith("naive") and "big" in t.stem:
-                    continue
-                ans = t.with_suffix(".out")
-                if not ans.exists():
-                    errors.append(f"แบบฝึกหัด {rel} ไม่มี {ans.name}")
-                    continue
-                code, got = run(exe, t.read_text(encoding="utf-8"))
-                if code is None:
-                    errors.append(f"แบบฝึกหัด {rel}/{sol.name} ชุด {t.stem} รันเกิน {RUN_TIMEOUT} วินาที")
-                elif normalize(got) != normalize(ans.read_text(encoding="utf-8")):
-                    errors.append(f"แบบฝึกหัด {rel}/{sol.name} ชุด {t.stem} ได้คำตอบไม่ตรง")
-    return count, errors
+            jobs.append(lambda rel=rel, sol=sol, tests=tests: check_solution(workdir, rel, sol, tests))
+    return jobs, errors
 
 
 def main() -> int:
+    only = sys.argv[1] if len(sys.argv) > 1 else ""
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
-        n_pages, e_pages = check_pages(work)
-        n_ex, e_ex = check_exercises(work)
-    errors = e_pages + e_ex
+        p_jobs = page_jobs(work, only)
+        e_jobs, errors = exercise_jobs(work, only)
+        with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
+            for result in pool.map(lambda job: job(), p_jobs + e_jobs):
+                errors += result
     for e in errors:
         print(e, end="\n\n", file=sys.stderr)
-    print(f"ตัวอย่างในหน้า {n_pages} ชิ้น เฉลยแบบฝึกหัด {n_ex} ไฟล์ พบปัญหา {len(errors)} จุด")
+    print(f"ตัวอย่างในหน้า {len(p_jobs)} ชิ้น เฉลยแบบฝึกหัด {len(e_jobs)} ไฟล์ พบปัญหา {len(errors)} จุด")
     return 1 if errors else 0
 
 

@@ -1,0 +1,300 @@
+<article class="doc">
+      <h1>1.2 ตัวดำเนินการและการคำนวณ</h1>
+
+      <p>มีตัวแปรแล้ว ต่อไปคือคำนวณ เครื่องหมายบวก ลบ คูณ หาร เรียกรวมว่า <strong>ตัวดำเนินการ (operator)</strong> ส่วนข้อความที่เอาตัวแปร ตัวเลข และตัวดำเนินการมาต่อกัน เช่น <code>width * height</code> เรียกว่า <strong>นิพจน์ (expression)</strong> หน้านี้มีสองเรื่องที่ต่างจากคณิตศาสตร์ในห้องเรียน คือการหารจำนวนเต็ม และเครื่องหมาย <code>%</code> สองเรื่องนี้ใช้ในโจทย์แข่งขันบ่อยมาก</p>
+
+      <h2 id="arithmetic">ห้าตัวดำเนินการพื้นฐาน</h2>
+
+      <div class="code" data-lang="c" data-linenums data-test="arith"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a = 17, b = 5;
+    printf("%d + %d = %d\n", a, b, a + b);
+    printf("%d - %d = %d\n", a, b, a - b);
+    printf("%d * %d = %d\n", a, b, a * b);
+    printf("%d / %d = %d\n", a, b, a / b);
+    printf("%d %% %d = %d\n", a, b, a % b);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="arith" data-title="C:\code\arith.exe"><pre><code>17 + 5 = 22
+17 - 5 = 12
+17 * 5 = 85
+17 / 5 = 3
+17 % 5 = 2
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวดำเนินการ</th><th>ความหมาย</th><th>17 กับ 5</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>+</code></td><td>บวก</td><td>22</td></tr>
+            <tr><td><code>-</code></td><td>ลบ</td><td>12</td></tr>
+            <tr><td><code>*</code></td><td>คูณ ใช้ดอกจัน ไม่ใช่ตัว x</td><td>85</td></tr>
+            <tr><td><code>/</code></td><td>หาร ถ้าทั้งสองข้างเป็นจำนวนเต็ม จะได้แค่ส่วนที่เป็นจำนวนเต็ม</td><td>3</td></tr>
+            <tr><td><code>%</code></td><td>เศษจากการหาร อ่านว่า mod</td><td>2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>สังเกตบรรทัดที่ 10 ใน <code>printf</code> เครื่องหมาย <code>%</code> มีหน้าที่พิเศษอยู่แล้ว (เช่น <code>%d</code>) ถ้าอยากให้พิมพ์ <code>%</code> ออกมาเฉยๆ ต้องเขียนสองตัวเป็น <code>%%</code></p>
+
+      <h2 id="integer-division">หารจำนวนเต็ม กับเศษ</h2>
+
+      <p>17 หารด้วย 5 ในชีวิตจริงได้ 3.4 แต่ในภาษา C ถ้าทั้งสองข้างเป็น <code>int</code> ผลก็เป็น <code>int</code> ส่วนทศนิยมจะถูก <strong>ตัดทิ้ง</strong> ไม่ปัดขึ้น ได้ 3 ส่วนที่หายไปหาคืนได้ด้วย <code>%</code></p>
+
+      <div class="code" data-lang="text"><pre><code>17 = 5 * 3 + 2
+17 / 5 = 3    (ได้กี่รอบ)
+17 % 5 = 2    (เหลือเศษเท่าไร)
+</code></pre></div>
+
+      <p>ถ้านึกไม่ออก ให้นึกถึงลูกอม 17 เม็ดแบ่งให้เพื่อน 5 คน ได้คนละ 3 เม็ด เหลือ 2 เม็ด <code>/</code> คือได้คนละเท่าไร <code>%</code> คือเหลือเท่าไร</p>
+
+      <p>สองตัวนี้ใช้คู่กันบ่อยมาก ตัวอย่างที่จะเจอซ้ำๆ</p>
+
+      <ul>
+        <li><code>n % 2</code> ได้ 0 ถ้า n เป็นเลขคู่ ได้ 1 ถ้าเป็นเลขคี่</li>
+        <li><code>n % 10</code> คือหลักหน่วยของ n</li>
+        <li><code>n / 10</code> คือ n ที่ตัดหลักหน่วยทิ้ง</li>
+        <li><code>n / 60</code> กับ <code>n % 60</code> แปลงนาทีเป็นชั่วโมงกับนาที</li>
+      </ul>
+
+      <h3 id="negative">ถ้าเป็นเลขติดลบ</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="negative"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a = -17, b = 5;
+    printf("%d %d\n", a / b, a % b);
+    printf("%d %d\n", 17 / -5, 17 % -5);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="negative" data-title="C:\code\negative.exe"><pre><code>-3 -2
+-3 2
+</code></pre></div>
+
+      <p>ภาษา C ตัดทศนิยมทิ้งไปทาง 0 เสมอ -3.4 จึงกลายเป็น -3 ไม่ใช่ -4 และเศษจาก <code>%</code> มีเครื่องหมายตามตัวตั้ง ตอนนี้ยังไม่ต้องจำ แค่รู้ไว้ว่าเลขติดลบกับ <code>%</code> ต้องระวัง เมื่อไรเจอโจทย์ที่มีเลขติดลบ ให้ลองรันดูก่อนเชื่อ</p>
+
+      <h2 id="precedence">ลำดับการคำนวณ</h2>
+
+      <p>เหมือนคณิตศาสตร์ คูณหารทำก่อนบวกลบ</p>
+
+      <ul>
+        <li><code>*</code> <code>/</code> <code>%</code> ทำก่อน</li>
+        <li><code>+</code> <code>-</code> ทำทีหลัง</li>
+        <li>ถ้าลำดับเท่ากัน ทำจากซ้ายไปขวา</li>
+        <li>อยากให้อะไรทำก่อน ใส่วงเล็บ</li>
+      </ul>
+
+      <div class="code" data-lang="c" data-linenums data-test="precedence"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("%d\n", 2 + 3 * 4);
+    printf("%d\n", (2 + 3) * 4);
+    printf("%d\n", 20 / 2 * 5);
+    printf("%d\n", 20 / (2 * 5));
+    printf("%d\n", 7 + 10 % 4);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="precedence" data-title="C:\code\precedence.exe"><pre><code>14
+20
+50
+2
+9
+</code></pre></div>
+
+      <p>บรรทัดที่ 7 ทำ <code>20 / 2</code> ได้ 10 ก่อน แล้วค่อยคูณ 5 เพราะลำดับเท่ากันเลยทำจากซ้ายไปขวา บรรทัดที่ 9 <code>%</code> อยู่ระดับเดียวกับคูณหาร จึงทำ <code>10 % 4</code> ได้ 2 ก่อนบวก 7</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">ไม่แน่ใจ ใส่วงเล็บ</p>
+        <p>วงเล็บเกินไม่ทำให้โปรแกรมช้าลง และทำให้คนอ่านไม่ต้องนั่งนึกลำดับ <code>(a * b) + c</code> อ่านง่ายกว่าให้คนอ่านไปจำกฎเอง</p>
+      </div>
+
+      <h2 id="shortcuts">ตัวย่อ += และ ++</h2>
+
+      <p>การเอาค่าเดิมของตัวแปรมาคำนวณแล้วเก็บกลับที่เดิม อย่าง <code>coins = coins + 5;</code> เกิดบ่อยจนภาษา C มีตัวย่อให้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เขียนย่อ</th><th>เหมือนกับ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>x += 5;</code></td><td><code>x = x + 5;</code></td></tr>
+            <tr><td><code>x -= 5;</code></td><td><code>x = x - 5;</code></td></tr>
+            <tr><td><code>x *= 5;</code></td><td><code>x = x * 5;</code></td></tr>
+            <tr><td><code>x /= 5;</code></td><td><code>x = x / 5;</code></td></tr>
+            <tr><td><code>x %= 5;</code></td><td><code>x = x % 5;</code></td></tr>
+            <tr><td><code>x++;</code></td><td><code>x = x + 1;</code></td></tr>
+            <tr><td><code>x--;</code></td><td><code>x = x - 1;</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-test="coins"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int coins = 10;
+    coins += 5;
+    printf("%d\n", coins);
+    coins -= 3;
+    printf("%d\n", coins);
+    coins *= 2;
+    printf("%d\n", coins);
+    coins++;
+    printf("%d\n", coins);
+    coins--;
+    printf("%d\n", coins);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="coins" data-title="C:\code\coins.exe"><pre><code>15
+12
+24
+25
+24
+</code></pre></div>
+
+      <p><code>++</code> กับ <code>--</code> จะได้ใช้เยอะมากตอนเรียนวนซ้ำในบทที่ 4 ตอนนี้ให้ใช้เป็นคำสั่งเดี่ยวๆ ในบรรทัดของมันเองแบบในตัวอย่าง อย่าเอาไปผสมในนิพจน์อื่น เหตุผลอยู่ในส่วนลองทำให้พังท้ายหน้า</p>
+
+      <h2 id="time">แปลงนาทีเป็นชั่วโมง</h2>
+
+      <p>หนังเรื่องหนึ่งยาว 135 นาที คิดเป็นกี่ชั่วโมงกี่นาที หนึ่งชั่วโมงมี 60 นาที จำนวนชั่วโมงคือ 135 หารด้วย 60 แบบตัดเศษ ส่วนนาทีที่เหลือคือเศษ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="movie"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int total_minutes;
+    scanf("%d", &amp;total_minutes);
+    int hours = total_minutes / 60;
+    int minutes = total_minutes % 60;
+    printf("%d hours %d minutes\n", hours, minutes);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="movie" data-title="ข้อมูลเข้า"><pre><code>135
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="movie" data-title="C:\code\movie.exe"><pre><code>2 hours 15 minutes
+</code></pre></div>
+
+      <p>ประกาศตัวแปรตรงกลางโปรแกรมได้ ไม่จำเป็นต้องอยู่บรรทัดแรกของ <code>main</code> ประกาศตรงที่เริ่มใช้จะอ่านง่ายกว่า</p>
+
+      <p>วิธีเดียวกันใช้กับหน่วยอื่นได้ทุกแบบ เช่น วินาทีเป็นนาที เซนติเมตรเป็นเมตร วันเป็นสัปดาห์ ลองเปลี่ยนโปรแกรมนี้ให้แปลงวันเป็นกี่สัปดาห์กี่วันดู</p>
+
+      <h2 id="digits">แยกหลักของตัวเลข</h2>
+
+      <p>โจทย์แนว "หาผลรวมของเลขโดด" หรือ "กลับหลักตัวเลข" ต้องแยกตัวเลขออกเป็นหลักๆ ก่อน ใช้ <code>/</code> กับ <code>%</code> ด้วย 10 ตามตารางนี้ ถ้า n คือ 472</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>นิพจน์</th><th>ได้</th><th>ความหมาย</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>n % 10</code></td><td>2</td><td>หลักหน่วย</td></tr>
+            <tr><td><code>n / 10</code></td><td>47</td><td>ตัดหลักหน่วยทิ้ง</td></tr>
+            <tr><td><code>n / 10 % 10</code></td><td>7</td><td>หลักสิบ ตัดหลักหน่วยทิ้งก่อน แล้วเอาหลักขวาสุด</td></tr>
+            <tr><td><code>n / 100</code></td><td>4</td><td>หลักร้อย</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-test="digits"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int hundreds = n / 100;
+    int tens = n / 10 % 10;
+    int ones = n % 10;
+    printf("%d %d %d\n", hundreds, tens, ones);
+    printf("sum = %d\n", hundreds + tens + ones);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-for="digits" data-title="ข้อมูลเข้า"><pre><code>472
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="digits" data-title="C:\code\digits.exe"><pre><code>4 7 2
+sum = 13
+</code></pre></div>
+
+      <p>จำหลักไว้สองข้อ <code>% 10</code> หยิบหลักขวาสุด <code>/ 10</code> ตัดหลักขวาสุดทิ้ง ตอนนี้โปรแกรมทำได้แค่เลขที่รู้จำนวนหลักล่วงหน้า พอเรียนวนซ้ำในบทที่ 4 จะใช้สองข้อนี้ซ้ำไปเรื่อยๆ จนแยกเลขกี่หลักก็ได้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="missing-parens">แบบที่ 1 ลืมวงเล็บ</h3>
+
+      <p>หาค่าเฉลี่ยของคะแนนสองวิชา 80 กับ 90 คำตอบที่ถูกคือ 85</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="average-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int math = 80, science = 90;
+    printf("%d\n", math + science / 2);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="average-bug" data-title="C:\code\average.exe"><pre><code>125
+</code></pre></div>
+
+      <p>compiler ไม่เตือนอะไรเลย เพราะโค้ดถูกไวยากรณ์ทุกอย่าง แค่ไม่ใช่สิ่งที่เราตั้งใจ หารทำก่อนบวก จึงได้ 80 + 45 = 125 แก้เป็น <code>(math + science) / 2</code> จะได้ 85 ความผิดพลาดแบบนี้อันตรายกว่า error เพราะไม่มีอะไรบอก ต้องลองคิดคำตอบด้วยมือแล้วเทียบเอง</p>
+
+      <h3 id="divide-by-zero">แบบที่ 2 หารด้วยศูนย์</h3>
+
+      <p>โปรแกรมแบ่งลูกอม รับจำนวนลูกอมกับจำนวนคน แล้วพิมพ์ว่าได้คนละกี่เม็ด ส่วนสำคัญคือสองบรรทัดนี้</p>
+
+      <div class="code" data-lang="c"><pre><code>scanf("%d %d", &amp;total, &amp;people);
+printf("%d\n", total / people);
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือน เพราะตอนคอมไพล์ยังไม่รู้ว่า <code>people</code> จะเป็น 0 แต่พอรันแล้วป้อน <code>10 0</code> โปรแกรมปิดตัวทันทีโดยไม่พิมพ์อะไร Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741676 (0xC0000094)
+</code></pre></div>
+
+      <p>ปกติเลขหลัง Process returned คือ 0 ถ้าเห็นเลขติดลบแปลกๆ แปลว่าโปรแกรมพังกลางทาง <code>0xC0000094</code> คือรหัสของ Windows ที่แปลว่าหารจำนวนเต็มด้วยศูนย์ ถ้าส่งโปรแกรมแบบนี้ให้ grader ข้อนั้นจะได้ผลว่า runtime error ใช้ <code>%</code> ด้วย 0 ก็พังแบบเดียวกัน</p>
+
+      <h3 id="increment-twice">แบบที่ 3 ใช้ ++ กับตัวแปรเดียวกันซ้ำ</h3>
+
+      <div class="code" data-lang="c"><pre><code>int count = 5;
+count = count++;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>count.c:6:11: warning: operation on 'count' may be undefined [-Wsequence-point]
+    6 |     count = count++;
+      |     ~~~~~~^~~~~~~~~
+</code></pre></div>
+
+      <p>บรรทัดนี้ทั้งกำหนดค่าให้ <code>count</code> และเพิ่มค่า <code>count</code> ในคำสั่งเดียว มาตรฐานภาษา C ไม่ได้กำหนดว่าอะไรต้องเกิดก่อน (<code>undefined</code> แปลว่าไม่ได้กำหนด) compiler แต่ละตัวจึงให้ผลต่างกันได้ บนเครื่องที่ทดลองพิมพ์ <code>count</code> ออกมาได้ 5 ไม่ใช่ 6 อย่างที่หลายคนคาด ถ้าต้องการเพิ่มค่าหนึ่ง เขียน <code>count++;</code> อย่างเดียวพอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>+ - * / %</code> คือบวก ลบ คูณ หาร เศษ</li>
+        <li><code>int / int</code> ตัดทศนิยมทิ้ง <code>%</code> ให้เศษที่ถูกตัด</li>
+        <li><code>% 10</code> หยิบหลักขวาสุด <code>/ 10</code> ตัดหลักขวาสุดทิ้ง</li>
+        <li>คูณหารก่อนบวกลบ ลำดับเท่ากันทำจากซ้ายไปขวา ไม่แน่ใจใส่วงเล็บ</li>
+        <li><code>x += 5</code> คือ <code>x = x + 5</code> และ <code>x++</code> คือเพิ่มหนึ่ง ใช้เป็นคำสั่งเดี่ยวๆ</li>
+        <li>หารหรือ mod ด้วย 0 ทำให้โปรแกรมพังตอนรัน</li>
+      </ul>
+    </article>

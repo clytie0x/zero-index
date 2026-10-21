@@ -1,0 +1,3 @@
+title = "ลูกอมในกล่อง"
+level = 2
+hint = '''<p>N กับ M มากได้ถึง 10<sup>9</sup> ผลคูณจึงถึง 10<sup>18</sup> เกิน <code>int</code> ไปมาก ใช้ <code>long long</code> ทุกตัว และรับกับพิมพ์ด้วย <code>%lld</code> ระวังกับดัก <code>int</code> คูณ <code>int</code> ในหน้า 1.3</p>'''

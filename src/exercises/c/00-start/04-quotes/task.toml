@@ -1,3 +1,3 @@
 title = "เครื่องหมายคำพูด"
 level = 3
-hint = '''<p>ถ้าพิมพ์ <code>"</code> ตรงๆ ใน <code>printf</code> compiler จะคิดว่าข้อความจบแล้ว ให้เขียนเป็น <code>\"</code> แทน ส่วนเครื่องหมาย <code>\</code> หนึ่งตัวต้องเขียนเป็น <code>\</code></p>'''
+hint = '''<p>ถ้าพิมพ์ <code>"</code> ตรงๆ ใน <code>printf</code> compiler จะคิดว่าข้อความจบแล้ว ให้เขียนเป็น <code>\"</code> แทน ส่วนเครื่องหมาย <code>\</code> หนึ่งตัวต้องเขียนเป็น <code>\\</code></p>'''
