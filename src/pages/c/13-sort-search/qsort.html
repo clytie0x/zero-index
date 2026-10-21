@@ -1,0 +1,479 @@
+<article class="doc">
+      <h1>13.4 เรียงด้วย qsort</h1>
+
+      <p>ภาษา C มีฟังก์ชันเรียงข้อมูลมาให้ใน <code>stdlib.h</code> ชื่อ <code>qsort</code> เรียงแสนตัวได้ในเวลาไม่ถึงหนึ่งในร้อยวินาที และเรียงอะไรก็ได้ ทั้งตัวเลข ข้อความ และอาเรย์ของ struct ตามเงื่อนไขที่เรากำหนดเอง เช่น คะแนนมากก่อน ถ้าคะแนนเท่ากันใครใช้เวลาน้อยกว่าก่อน หน้านี้คือวิธีใช้ และกับดักหนึ่งข้อที่ทำให้คนเสียคะแนนกันมาก คือการลบกันในฟังก์ชันเปรียบเทียบ</p>
+
+      <h2 id="call">qsort ต้องรู้อะไรบ้าง</h2>
+
+      <p><code>qsort</code> ไม่รู้ว่าอาเรย์ของเราเก็บอะไร มันจึงต้องการข้อมูลสี่อย่าง</p>
+
+      <div class="code" data-lang="c"><pre><code>qsort(score, n, sizeof(int), compare_int);
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ช่องที่</th><th>ใส่อะไร</th><th>ในตัวอย่าง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>อาเรย์ที่จะเรียง (ที่อยู่ของช่องแรก)</td><td><code>score</code></td></tr>
+            <tr><td>2</td><td>จำนวนช่องที่จะเรียง</td><td><code>n</code></td></tr>
+            <tr><td>3</td><td>ขนาดของหนึ่งช่องเป็น byte</td><td><code>sizeof(int)</code> คือ 4</td></tr>
+            <tr><td>4</td><td>ฟังก์ชันที่บอกว่าสองช่องไหนควรมาก่อน</td><td><code>compare_int</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ช่องที่ 3 จำเป็นเพราะ <code>qsort</code> เห็นอาเรย์เป็นแค่ byte เรียงกันยาวๆ ต้องบอกว่าทุกกี่ byte คือหนึ่งช่อง <code>sizeof</code> บอกขนาดของชนิดหรือตัวแปรเป็น byte ส่วนช่องที่ 4 ใส่ชื่อฟังก์ชัน<strong>โดยไม่มีวงเล็บ</strong> เพราะเราไม่ได้เรียกฟังก์ชันนั้นเอง แต่ส่งตัวฟังก์ชันไปให้ <code>qsort</code> เรียกเมื่อต้องการเทียบสองช่อง</p>
+
+      <h2 id="compare">ฟังก์ชันเปรียบเทียบ</h2>
+
+      <p>ฟังก์ชันเปรียบเทียบ (comparison function) รับที่อยู่ของสองช่อง แล้วตอบเป็นตัวเลขแบบเดียวกับ <code>strcmp</code> ในหน้า 6.4</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คืนค่า</th><th>แปลว่า</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>น้อยกว่า 0</td><td>ช่องแรกต้องมาก่อน</td></tr>
+            <tr><td>0</td><td>เท่ากัน อันไหนมาก่อนก็ได้</td></tr>
+            <tr><td>มากกว่า 0</td><td>ช่องแรกต้องมาทีหลัง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="qsort-basic"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt; // (1)!
+
+int score[100000];
+
+int compare_int(const void *p, const void *q) // (2)!
+{
+    int x = *(const int *)p; // (3)!
+    int y = *(const int *)q;
+    if (x &lt; y) {
+        return -1;
+    }
+    if (x &gt; y) {
+        return 1;
+    }
+    return 0;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;score[i]);
+    }
+    qsort(score, n, sizeof(int), compare_int);
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", score[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>qsort</code> อยู่ใน <code>stdlib.h</code> ลืมบรรทัดนี้แล้วจะคอมไพล์ไม่ผ่าน ดูในส่วนลองทำให้พัง</li>
+        <li>หัวฟังก์ชันต้องเป็นแบบนี้ทุกตัวอักษร คืน <code>int</code> รับ <code>const void *</code> สองตัว ตั้งชื่อฟังก์ชันกับชื่อพารามิเตอร์เองได้</li>
+        <li>แปลง <code>p</code> เป็น pointer ไปยัง <code>int</code> ก่อน แล้วใช้ <code>*</code> หยิบค่าที่ชี้อยู่ออกมา</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="qsort-basic" data-title="ข้อมูลเข้า"><pre><code>8
+72 85 64 85 90 58 100 64
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="qsort-basic" data-title="C:\code\scores.exe"><pre><code>58 64 64 72 85 85 90 100
+</code></pre></div>
+      </div>
+
+      <p>มีคำใหม่สองคำในหัวฟังก์ชัน</p>
+
+      <ul>
+        <li><strong><code>void *</code></strong> คือ pointer ที่ไม่บอกว่าชี้ไปยังข้อมูลชนิดไหน <code>qsort</code> ต้องใช้ชนิดนี้เพราะมันเรียงได้ทุกชนิด จึงบอกเราไม่ได้ว่าเป็น <code>int</code> หน้าที่ของเราคือแปลงกลับเป็นชนิดที่ถูกด้วย <code>(const int *)</code> แบบเดียวกับการแปลงชนิดด้วย <code>(double)</code> ในหน้า 1.4 แล้วค่อยใช้ <code>*</code> หยิบค่า ใช้ <code>*p</code> ตรงๆ ไม่ได้ เพราะ compiler ไม่รู้ว่าต้องหยิบกี่ byte</li>
+        <li><strong><code>const</code></strong> คือสัญญาว่าจะไม่แก้ค่าที่ชี้อยู่ ฟังก์ชันเปรียบเทียบมีหน้าที่ดูอย่างเดียว ถ้าเผลอเขียนค่าใส่ compiler จะฟ้อง</li>
+      </ul>
+
+      <p>ฟังก์ชันเปรียบเทียบต้อง<strong>ตอบตรงกันทุกครั้ง</strong> ถ้าบอกว่า a มาก่อน b ก็ต้องบอกว่า b มาทีหลัง a และถ้า a มาก่อน b และ b มาก่อน c ก็ต้องบอกว่า a มาก่อน c ฟังก์ชันที่ตอบขัดกันเองจะทำให้ <code>qsort</code> ให้ผลที่ไม่เรียง</p>
+
+      <h2 id="speed">เร็วแค่ไหน</h2>
+
+      <p>ใช้โปรแกรมจับเวลาแบบหน้า 13.3 แต่เปลี่ยนการเรียงเป็น <code>qsort</code> ข้อมูลชุดเดิมที่สร้างจาก <code>srand(2569)</code></p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+
+int a[100000];
+
+int compare_int(const void *p, const void *q)
+{
+    int x = *(const int *)p;
+    int y = *(const int *)q;
+    if (x &lt; y) {
+        return -1;
+    }
+    if (x &gt; y) {
+        return 1;
+    }
+    return 0;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    srand(2569);
+    for (int i = 0; i &lt; n; i++) {
+        a[i] = rand();
+    }
+    clock_t start = clock();
+    qsort(a, n, sizeof(int), compare_int);
+    clock_t end = clock();
+    printf("n = %d, time = %.3f seconds\n", n, (double)(end - start) / CLOCKS_PER_SEC);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>100000
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\qsort_time.exe"><pre><code>n = 100000, time = 0.009 seconds
+</code></pre></div>
+      </div>
+
+      <p>วัดบนเครื่องและวิธีเดียวกับหน้า 13.3 ค่ากลางของ 5 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>qsort</td><td>10,000</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>qsort</td><td>100,000</td><td>0.009 วินาที</td><td>0.008 วินาที</td></tr>
+            <tr><td>insertion sort</td><td>100,000</td><td>2.438 วินาที</td><td>0.600 วินาที</td></tr>
+            <tr><td>bubble sort</td><td>100,000</td><td>18.589 วินาที</td><td>19.515 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แสนตัวเร็วกว่า bubble sort ราวสองพันเท่า <code>qsort</code> ไม่ได้ใช้ลูปซ้อนเทียบเกือบทุกคู่ แต่แบ่งข้อมูลเป็นส่วนๆ แล้วจัดทีละส่วน จำนวนครั้งที่เทียบจึงโตช้ากว่า n<sup>2</sup> มาก วิธีคิดแบบแบ่งครึ่งนี้จะเรียนในบทที่ 22 ตอนนี้จำแค่ว่า <strong>n ถึงแสนหรือล้าน ใช้ qsort</strong></p>
+
+      <h2 id="descending">เรียงจากมากไปน้อย</h2>
+
+      <p>ไม่ต้องแก้ <code>qsort</code> แค่กลับคำตอบของฟังก์ชันเปรียบเทียบ ตัวที่มากกว่าให้มาก่อน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="qsort-desc"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int score[100000];
+
+int compare_desc(const void *p, const void *q)
+{
+    int x = *(const int *)p;
+    int y = *(const int *)q;
+    if (x &gt; y) {
+        return -1;
+    }
+    if (x &lt; y) {
+        return 1;
+    }
+    return 0;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;score[i]);
+    }
+    qsort(score, n, sizeof(int), compare_desc);
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", score[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="qsort-desc" data-title="ข้อมูลเข้า"><pre><code>8
+72 85 64 85 90 58 100 64
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="qsort-desc" data-title="C:\code\scores.exe"><pre><code>100 90 85 85 72 64 64 58
+</code></pre></div>
+      </div>
+
+      <p>อาเรย์ของ <code>long long</code> ก็ใช้แบบเดียวกัน แต่ต้องเปลี่ยนสามจุดให้ตรงกัน คือ <code>sizeof(long long)</code> ในการเรียก <code>qsort</code> การแปลงเป็น <code>(const long long *)</code> และตัวแปร <code>x</code> <code>y</code> ในฟังก์ชันเปรียบเทียบ ถ้าลืมจุดใดจุดหนึ่ง <code>qsort</code> จะหั่นข้อมูลผิดขนาดและได้ผลมั่ว</p>
+
+      <h2 id="minus-trap">กับดัก return x - y</h2>
+
+      <p>ในเว็บและหนังสือหลายเล่ม จะเห็นฟังก์ชันเปรียบเทียบที่สั้นกว่าของเราแบบนี้</p>
+
+      <div class="code" data-lang="c"><pre><code>int compare_int(const void *p, const void *q)
+{
+    return *(const int *)p - *(const int *)q;
+}
+</code></pre></div>
+
+      <p>ดูถูกต้อง ถ้าตัวแรกน้อยกว่า ผลลบก็ติดลบ ถ้ามากกว่าก็เป็นบวก และกับตัวเลขเล็กๆ ก็ทำงานได้จริง แต่ลองใช้ฟังก์ชันนี้แทนของเดิมในโปรแกรม scores แล้วป้อนเลขที่ใหญ่ใกล้ขอบของ <code>int</code> ซึ่งโจทย์ที่ให้ค่าถึง ±10<sup>9</sup> หรือ ±2 × 10<sup>9</sup> ก็มีบ่อย</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>5
+2000000000 -2000000000 7 -7 1500000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\scores.exe"><pre><code>2000000000 -2000000000 -7 7 1500000000
+</code></pre></div>
+      </div>
+
+      <p>นี่คือผลบนเครื่องที่เขียนเอกสารนี้ ไม่เรียงเลย 2000000000 มาอยู่หน้า -2000000000 เพราะเมื่อ <code>qsort</code> ถามว่า 2000000000 กับ -2000000000 ตัวไหนมาก่อน ฟังก์ชันคำนวณ 2000000000 - (-2000000000) = 4000000000 ซึ่งเกิน <code>int</code> แล้วล้นวนไปเป็น -294967296 แบบที่เห็นในหน้า 1.3 ผลติดลบจึงบอกว่า 2000000000 ต้องมาก่อน ฟังก์ชันตอบขัดกับความจริง และขัดกับคำตอบของคู่อื่น <code>qsort</code> จึงเรียงผิด</p>
+
+      <p>ลองโปรแกรมเดียวกันบน Linux ได้ <code>-7 7 1500000000 2000000000 -2000000000</code> ซึ่งก็ผิด แต่ผิดคนละแบบ เพราะ <code>qsort</code> ของแต่ละระบบเทียบคู่ในลำดับต่างกัน แปลว่าโปรแกรมอาจผ่านในเครื่องเรา แต่ตกบน grader และการล้นของ <code>int</code> เป็น undefined behavior ตามหน้า 1.3 อยู่แล้ว ไม่มีอะไรรับประกันผลเลย</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">ใช้ if เทียบเสมอ</p>
+        <p>เขียนฟังก์ชันเปรียบเทียบด้วย <code>if (x &lt; y) return -1;</code> และ <code>if (x &gt; y) return 1;</code> แบบในหน้านี้ทุกครั้ง ไม่มีการลบ จึงไม่มีทางล้น ใช้ได้กับ <code>long long</code> และ <code>double</code> ด้วย ส่วนการลบปลอดภัยเฉพาะเมื่อมั่นใจว่าผลต่างไม่เกิน <code>int</code> เช่น คะแนน 0 ถึง 100 แต่การจำว่าเมื่อไรปลอดภัยเสี่ยงกว่าการเขียนแบบที่ปลอดภัยเสมอ</p>
+      </div>
+
+      <h2 id="strings">เรียงข้อความ</h2>
+
+      <p>รายชื่อหลายชื่อเก็บในอาเรย์สองมิติของ <code>char</code> แบบในบทที่ 7 แถวละหนึ่งชื่อ แต่ละแถวคือหนึ่งช่องที่ <code>qsort</code> จะสลับไปมา ขนาดหนึ่งช่องจึงเป็นขนาดของทั้งแถว คือ <code>sizeof(name[0])</code> ซึ่งเท่ากับ 21 byte ไม่ใช่ <code>sizeof(char)</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="qsort-strings"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+char name[1000][21];
+
+int compare_name(const void *p, const void *q)
+{
+    return strcmp((const char *)p, (const char *)q); // (1)!
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s", name[i]);
+    }
+    qsort(name, n, sizeof(name[0]), compare_name); // (2)!
+    for (int i = 0; i &lt; n; i++) {
+        printf("%s\n", name[i]);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>p</code> ชี้ไปที่ตัวอักษรตัวแรกของแถว ซึ่งก็คือสตริงหนึ่งสตริง ส่งให้ <code>strcmp</code> ได้เลย <code>strcmp</code> ไม่ได้ลบตัวเลขใหญ่ จึงไม่มีปัญหาล้น</li>
+        <li>หนึ่งช่องคือหนึ่งแถว 21 byte ถ้าใส่ <code>sizeof(char)</code> <code>qsort</code> จะสลับตัวอักษรทีละตัวปนกันทุกชื่อ</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="qsort-strings" data-title="ข้อมูลเข้า"><pre><code>6
+songkhla
+nan
+phuket
+chiangmai
+nakhonpathom
+nakhonnayok
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="qsort-strings" data-title="C:\code\names.exe"><pre><code>chiangmai
+nakhonnayok
+nakhonpathom
+nan
+phuket
+songkhla
+</code></pre></div>
+      </div>
+
+      <p>เรียงแบบพจนานุกรม <code>nakhonnayok</code> มาก่อน <code>nakhonpathom</code> เพราะหกตัวแรกเหมือนกัน ตัวที่เจ็ด n มาก่อน p และทั้งสองมาก่อน <code>nan</code> เพราะตัวที่สาม k มาก่อน n อย่าลืมว่า <code>strcmp</code> เทียบรหัส ASCII ตัวพิมพ์ใหญ่ทุกตัวจึงมาก่อนตัวพิมพ์เล็กทุกตัว ตามที่เห็นในหน้า 6.4</p>
+
+      <h2 id="structs">เรียงอาเรย์ของ struct หลายเงื่อนไข</h2>
+
+      <p>โจทย์จัดอันดับมักมีหลายเงื่อนไข เช่น แข่งตอบคำถาม เรียงตามคะแนนจากมากไปน้อย ถ้าคะแนนเท่ากันใครใช้เวลาน้อยกว่าได้อันดับดีกว่า ถ้าเท่ากันอีกให้เรียงตามชื่อ ฟังก์ชันเปรียบเทียบไล่ดูทีละเงื่อนไข เงื่อนไขแรกที่สองคนต่างกันคือตัวตัดสิน เงื่อนไขหลังจากนั้นไม่ต้องดู</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="qsort-struct"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+struct contestant {
+    char name[21];
+    int score;
+    int minutes;
+};
+
+struct contestant list[1000];
+
+int compare_rank(const void *p, const void *q)
+{
+    const struct contestant *a = p; // (1)!
+    const struct contestant *b = q;
+    if (a-&gt;score != b-&gt;score) { // (2)!
+        return a-&gt;score &gt; b-&gt;score ? -1 : 1;
+    }
+    if (a-&gt;minutes != b-&gt;minutes) { // (3)!
+        return a-&gt;minutes &lt; b-&gt;minutes ? -1 : 1;
+    }
+    return strcmp(a-&gt;name, b-&gt;name); // (4)!
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s %d %d", list[i].name, &amp;list[i].score, &amp;list[i].minutes);
+    }
+    qsort(list, n, sizeof(list[0]), compare_rank);
+    for (int i = 0; i &lt; n; i++) {
+        printf("%d. %s %d %d\n", i + 1, list[i].name, list[i].score, list[i].minutes);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ภาษา C แปลง <code>const void *</code> เป็น pointer ชนิดอื่นให้เองเมื่อกำหนดค่า จึงไม่ต้องเขียน <code>(const struct contestant *)</code> แต่จะเขียนก็ได้ <code>a-&gt;score</code> คือ <code>(*a).score</code> ค่า <code>score</code> ของ struct ที่ <code>a</code> ชี้อยู่</li>
+        <li>เงื่อนไขแรก คะแนนมากมาก่อน ใช้ <code>? :</code> จากหน้า 3.4 ตอบ -1 ถ้า a คะแนนมากกว่า ไม่อย่างนั้นตอบ 1 บรรทัดนี้ทำงานเฉพาะเมื่อคะแนนไม่เท่ากัน จึงไม่ต้องตอบ 0</li>
+        <li>คะแนนเท่ากัน ดูเวลา เวลาน้อยมาก่อน</li>
+        <li>เท่ากันทั้งสองอย่าง เรียงตามชื่อ ชื่อไม่ซ้ำกัน ลำดับจึงตายตัวเสมอ</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="qsort-struct" data-title="ข้อมูลเข้า"><pre><code>6
+somchai 85 40
+malee 92 55
+anan 85 35
+kanya 92 55
+preeda 70 20
+boonmee 85 40
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="qsort-struct" data-title="C:\code\ranking.exe"><pre><code>1. kanya 92 55
+2. malee 92 55
+3. anan 85 35
+4. boonmee 85 40
+5. somchai 85 40
+6. preeda 70 20
+</code></pre></div>
+      </div>
+
+      <p><code>sizeof(list[0])</code> คือขนาดของ struct หนึ่งตัว ซึ่งรวมชื่อ 21 byte กับ <code>int</code> อีกสองตัว ใช้ <code>sizeof(list[0])</code> ดีกว่าเขียนขนาดเอง เพราะถ้าเพิ่มช่องใน struct ทีหลัง ขนาดจะถูกเสมอ</p>
+
+      <h2 id="stability">ค่าที่เท่ากันอาจสลับที่</h2>
+
+      <p>ถ้าฟังก์ชันเปรียบเทียบตอบ 0 แปลว่าเราบอก <code>qsort</code> ว่าอันไหนมาก่อนก็ได้ และมันก็จะเลือกเองจริงๆ ตัวอย่างนี้เรียงนักเรียนเลขที่ 1 ถึง 8 ตามคะแนนจากมากไปน้อยอย่างเดียว แล้วพิมพ์เป็น <code>เลขที่:คะแนน</code></p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+struct student {
+    int id;
+    int score;
+};
+
+struct student list[1000];
+
+int compare_score(const void *p, const void *q)
+{
+    const struct student *a = p;
+    const struct student *b = q;
+    if (a-&gt;score != b-&gt;score) {
+        return a-&gt;score &gt; b-&gt;score ? -1 : 1;
+    }
+    return 0;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        list[i].id = i + 1;
+        scanf("%d", &amp;list[i].score);
+    }
+    qsort(list, n, sizeof(list[0]), compare_score);
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d:%d", list[i].id, list[i].score);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>8
+5 7 5 7 5 7 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\stable.exe"><pre><code>2:7 6:7 4:7 8:7 5:5 7:5 3:5 1:5
+</code></pre></div>
+      </div>
+
+      <p>นี่คือผลบนเครื่องที่เขียนเอกสารนี้ ตัวอย่างนี้จึงไม่มีการตรวจผลอัตโนมัติเหมือนตัวอย่างอื่น</p>
+
+      <p>คะแนนเรียงถูก แต่คนที่ได้ 7 ไม่ได้อยู่ตามลำดับเลขที่ ส่วนโปรแกรมเดียวกันบน Linux ได้ <code>2:7 4:7 6:7 8:7 1:5 3:5 5:5 7:5</code> วิธีเรียงที่รักษาลำดับเดิมของค่าที่เท่ากันเรียกว่า <strong>stable</strong> มาตรฐานภาษา C ไม่ได้สัญญาว่า <code>qsort</code> เป็น stable ถ้าโจทย์บอกว่า "ถ้าคะแนนเท่ากัน ให้เรียงตามลำดับที่รับเข้ามา" ให้เก็บลำดับที่รับเข้ามาไว้ใน struct ด้วย แล้วใช้เป็นเงื่อนไขสุดท้าย</p>
+
+      <div class="code" data-lang="c"><pre><code>if (a-&gt;score != b-&gt;score) {
+    return a-&gt;score &gt; b-&gt;score ? -1 : 1;
+}
+return a-&gt;id &lt; b-&gt;id ? -1 : 1;
+</code></pre></div>
+
+      <p>ส่วน bubble sort และ insertion sort ที่เราเขียนเองเป็น stable เพราะสลับหรือเลื่อนเฉพาะเมื่อมากกว่ากันจริงๆ ค่าที่เท่ากันจึงไม่เคยข้ามกัน selection sort ไม่ใช่ เพราะการสลับระยะไกลพาค่าข้ามตัวที่เท่ากันได้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="wrong-signature">แบบที่ 1 หัวฟังก์ชันเปรียบเทียบไม่ตรงแบบ</h3>
+
+      <p>ในโปรแกรม scores ถ้าคิดว่ารับเป็น <code>int *</code> ไปเลยจะได้ไม่ต้องแปลงชนิด แล้วเขียนหัวฟังก์ชันเป็น <code>int compare_int(int *p, int *q)</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>scores.c:26:34: error: passing argument 4 of 'qsort' from incompatible pointer type [-Wincompatible-pointer-types]
+   26 |     qsort(score, n, sizeof(int), compare_int);
+      |                                  ^~~~~~~~~~~
+      |                                  |
+      |                                  int (*)(int *, int *)
+In file included from scores.c:2:
+C:/Program Files/CodeBlocks/MinGW/x86_64-w64-mingw32/include/stdlib.h:441:93: note: expected 'int (*)(const void *, const void *)' but argument is of type 'int (*)(int *, int *)'
+  441 |   void __cdecl qsort(void *_Base,size_t _NumOfElements,size_t _SizeOfElements,int (__cdecl *_PtFuncCompare)(const void *,const void *));
+      |                                                                               ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p>GCC 14 ถือว่าเป็น error ข้อความบอกว่าช่องที่ 4 ของ <code>qsort</code> ได้ฟังก์ชันชนิด <code>int (*)(int *, int *)</code> แต่ <code>qsort</code> ต้องการ <code>int (*)(const void *, const void *)</code> ส่วน <code>note</code> ชี้ไปที่บรรทัดใน <code>stdlib.h</code> ที่ประกาศ <code>qsort</code> ไว้ ให้แก้หัวฟังก์ชันกลับเป็น <code>const void *</code> แล้วแปลงชนิดข้างใน</p>
+
+      <h3 id="no-stdlib">แบบที่ 2 ลืม include stdlib.h</h3>
+
+      <div class="code" data-lang="gcc"><pre><code>scores.c:25:5: error: implicit declaration of function 'qsort' [-Wimplicit-function-declaration]
+   25 |     qsort(score, n, sizeof(int), compare_int);
+      |     ^~~~~
+</code></pre></div>
+
+      <p><code>implicit declaration</code> แปลว่าเรียกฟังก์ชันที่ compiler ยังไม่รู้จัก <code>printf</code> กับ <code>scanf</code> อยู่ใน <code>stdio.h</code> แต่ <code>qsort</code> อยู่ใน <code>stdlib.h</code> เจอข้อความนี้กับฟังก์ชันของไลบรารีเมื่อไร ให้หาว่ามันอยู่ในไฟล์ไหนแล้ว include ให้ครบ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>qsort(อาเรย์, จำนวน, ขนาดหนึ่งช่อง, ฟังก์ชันเปรียบเทียบ)</code> อยู่ใน <code>stdlib.h</code> เรียงแสนตัวในเวลาราวหนึ่งในร้อยวินาที</li>
+        <li>ฟังก์ชันเปรียบเทียบมีหัวเป็น <code>int f(const void *p, const void *q)</code> แปลงชนิดก่อนใช้ คืนค่าลบถ้าตัวแรกมาก่อน บวกถ้ามาทีหลัง 0 ถ้าเท่ากัน</li>
+        <li>เปรียบเทียบด้วย <code>if</code> อย่าใช้ <code>return x - y</code> เพราะล้นเมื่อค่าใหญ่ และผลผิดต่างกันไปในแต่ละเครื่อง</li>
+        <li>เรียงข้อความใช้ <code>strcmp</code> ขนาดหนึ่งช่องคือ <code>sizeof(name[0])</code> เรียง struct ใช้ <code>sizeof(list[0])</code></li>
+        <li>หลายเงื่อนไข ไล่ดูทีละเงื่อนไข เงื่อนไขแรกที่ต่างกันเป็นตัวตัดสิน</li>
+        <li><code>qsort</code> ไม่รับประกันลำดับของค่าที่เท่ากัน ถ้าโจทย์สนใจ ให้เพิ่มลำดับที่รับเข้ามาเป็นเงื่อนไขสุดท้าย</li>
+      </ul>
+    </article>

@@ -1,0 +1,322 @@
+<article class="doc">
+      <h1>5.3 นับความถี่ด้วยอาเรย์นับ</h1>
+
+      <p>ครูตรวจข้อสอบย่อยคะแนนเต็ม 10 เสร็จ อยากรู้ว่าคะแนนแต่ละค่ามีกี่คน ได้ 10 กี่คน ได้ 9 กี่คน ไล่ลงไปถึง 0 คำถามแบบ "แต่ละค่าเกิดขึ้นกี่ครั้ง" เรียกว่าหา <strong>ความถี่ (frequency)</strong> เป็นโจทย์ที่เจอบ่อยมาก และมีวิธีที่เร็วมากถ้าค่าที่ต้องนับเป็นจำนวนเต็มช่วงไม่กว้าง หน้านี้คือวิธีนั้น</p>
+
+      <h2 id="idea">ให้ค่าเป็นเลขช่อง</h2>
+
+      <p>ในหน้าก่อน เราใช้ index บอกว่า "คนที่เท่าไร" แล้วเก็บคะแนนไว้ในช่อง ครั้งนี้กลับด้าน ให้ <strong>คะแนนเป็น index</strong> แล้วเก็บ <strong>จำนวนคน</strong> ไว้ในช่อง</p>
+
+      <ul>
+        <li>มีอาเรย์ <code>count</code> ที่ช่อง <code>count[s]</code> เก็บว่ามีกี่คนที่ได้คะแนน <code>s</code> เริ่มต้นทุกช่องเป็น 0</li>
+        <li>อ่านคะแนนมาทีละคน ได้ <code>score</code> เท่าไร ก็ไปเพิ่มช่องนั้นหนึ่ง <code>count[score]++</code></li>
+      </ul>
+
+      <p>อาเรย์ที่ใช้นับแบบนี้เรียกว่า <strong>อาเรย์นับ (counting array)</strong> คะแนนมีได้ 0 ถึง 10 รวม 11 ค่า จึงต้องมี 11 ช่อง</p>
+
+      <figure>
+        <svg viewBox="0 0 600 200" width="600" style="max-width:100%;height:auto" role="img" aria-label="อ่านคะแนน 7 8 7 10 9 7 3 8 แล้วเพิ่มค่าในช่องตามคะแนน อาเรย์ count 11 ช่อง index 0 ถึง 10 ช่อง 3 มี 1 ช่อง 7 มี 3 ช่อง 8 มี 2 ช่อง 9 และ 10 มีอย่างละ 1 ช่องอื่นเป็น 0">
+          <g style="font-family:var(--font-code)">
+            <text x="10" y="30" style="fill:var(--muted);font-size:14px">input: 7 8 7 10 9 7 3 8</text>
+            <text x="415" y="30" text-anchor="middle" style="fill:var(--brand-text);font-size:14px">score = 7</text>
+            <line x1="415" y1="38" x2="415" y2="74" style="stroke:var(--brand);stroke-width:2"/>
+            <polygon points="409,72 421,72 415,82" style="fill:var(--brand)"/>
+            <text x="440" y="62" style="fill:var(--brand-text);font-size:14px">count[7]++</text>
+            <text x="10" y="114" style="fill:var(--ink);font-size:15px">count</text>
+            <rect x="70" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="116" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="162" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="208" y="86" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="254" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="300" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="346" y="86" width="46" height="46" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="392" y="86" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="438" y="86" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="484" y="86" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="530" y="86" width="46" height="46" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="93" y="116" text-anchor="middle" style="fill:var(--muted);font-size:18px">0</text>
+            <text x="139" y="116" text-anchor="middle" style="fill:var(--muted);font-size:18px">0</text>
+            <text x="185" y="116" text-anchor="middle" style="fill:var(--muted);font-size:18px">0</text>
+            <text x="231" y="116" text-anchor="middle" style="fill:var(--ink);font-size:18px">1</text>
+            <text x="277" y="116" text-anchor="middle" style="fill:var(--muted);font-size:18px">0</text>
+            <text x="323" y="116" text-anchor="middle" style="fill:var(--muted);font-size:18px">0</text>
+            <text x="369" y="116" text-anchor="middle" style="fill:var(--muted);font-size:18px">0</text>
+            <text x="415" y="116" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <text x="461" y="116" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <text x="507" y="116" text-anchor="middle" style="fill:var(--ink);font-size:18px">1</text>
+            <text x="553" y="116" text-anchor="middle" style="fill:var(--ink);font-size:18px">1</text>
+            <text x="10" y="156" style="fill:var(--muted);font-size:13px">score</text>
+            <text x="93" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">0</text>
+            <text x="139" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">1</text>
+            <text x="185" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">2</text>
+            <text x="231" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">3</text>
+            <text x="277" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">4</text>
+            <text x="323" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">5</text>
+            <text x="369" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">6</text>
+            <text x="415" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">7</text>
+            <text x="461" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">8</text>
+            <text x="507" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">9</text>
+            <text x="553" y="156" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">10</text>
+            <text x="323" y="188" text-anchor="middle" style="fill:var(--muted);font-size:14px">11 cells for scores 0 to 10</text>
+          </g>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="quiz"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int count[11] = {0}; // (1)!
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        count[score]++; // (2)!
+    }
+    for (int s = 0; s &lt;= 10; s++) { // (3)!
+        printf("%d: %d\n", s, count[s]);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>11 ช่องสำหรับคะแนน 0 ถึง 10 และ <code>= {0}</code> ให้ทุกช่องเริ่มที่ 0 ห้ามลืม</li>
+        <li><code>count[score]</code> เป็นตัวแปร <code>int</code> ธรรมดาตัวหนึ่ง <code>++</code> จึงใช้ได้เหมือนเพิ่มค่าตัวนับในบทที่ 4</li>
+        <li>วนตามค่าคะแนน ไม่ใช่ตามจำนวนคน ช่องสุดท้ายคือ 10 จึงใช้ <code>&lt;=</code> ได้ เพราะอาเรย์มี 11 ช่อง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="quiz" data-title="ข้อมูลเข้า"><pre><code>8
+7 8 7 10 9 7 3 8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="quiz" data-title="C:\code\quiz.exe"><pre><code>0: 0
+1: 0
+2: 0
+3: 1
+4: 0
+5: 0
+6: 0
+7: 3
+8: 2
+9: 1
+10: 1
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรมนี้ไม่ได้เก็บคะแนนของแต่ละคนเลย อ่านแล้วเพิ่มช่องที่ตรงกันทันที ข้อมูลที่ต้องจำมีแค่ 11 ตัวนับ จะมีนักเรียนกี่คนก็ใช้หน่วยความจำเท่าเดิม และอ่านข้อมูลแค่รอบเดียว</p>
+
+      <h2 id="mode">คะแนนที่มีคนได้มากที่สุด</h2>
+
+      <p>พอมีอาเรย์นับแล้ว คำถามอื่นตอบได้ด้วยเครื่องมือจากหน้า 5.2 เช่น คะแนนไหนมีคนได้มากที่สุด ก็คือหา index ของช่องที่มีค่ามากสุดในอาเรย์ <code>count</code> ตัวอย่างนี้คะแนนเต็ม 100 จึงต้องมี 101 ช่อง และพิมพ์เฉพาะคะแนนที่มีคนได้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="mode"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int count[101] = {0};
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        count[score]++;
+    }
+    for (int s = 0; s &lt;= 100; s++) {
+        if (count[s] &gt; 0) {
+            printf("%d %d\n", s, count[s]);
+        }
+    }
+    int mode = 0;
+    for (int s = 1; s &lt;= 100; s++) {
+        if (count[s] &gt; count[mode]) {
+            mode = s;
+        }
+    }
+    printf("most common = %d (%d students)\n", mode, count[mode]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="mode" data-title="ข้อมูลเข้า"><pre><code>10
+72 85 64 85 90 72 85 58 72 100
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="mode" data-title="C:\code\mode.exe"><pre><code>58 1
+64 1
+72 3
+85 3
+90 1
+100 1
+most common = 72 (3 students)
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>ผลออกมาเรียงจากคะแนนน้อยไปมากเอง เพราะเราวน index จาก 0 ขึ้นไป ทั้งที่ข้อมูลเข้าไม่ได้เรียง</li>
+        <li>72 กับ 85 มีคนได้ 3 คนเท่ากัน ใช้ <code>&gt;</code> จึงได้คะแนนที่น้อยกว่า ถ้าโจทย์อยากได้คะแนนที่มากกว่าให้ใช้ <code>&gt;=</code> เหมือนหน้า 5.2</li>
+      </ul>
+
+      <h2 id="seen">เช็กว่าเคยเห็นหรือยัง</h2>
+
+      <p>บางโจทย์ไม่ได้ต้องการจำนวนครั้ง แค่อยากรู้ว่ามีหรือไม่มี เช่น ห้องหนึ่งมีนักเรียน N คน เลขที่ 1 ถึง N ครูเก็บรายชื่อการส่งการบ้านไว้ M ครั้ง บางคนส่งซ้ำ ครูอยากรู้ว่ามีกี่คนที่ส่งแล้ว และเลขที่ไหนยังไม่ส่ง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="homework"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int sent[41] = {0}; // (1)!
+    int n, m;
+    scanf("%d %d", &amp;n, &amp;m);
+    for (int i = 0; i &lt; m; i++) {
+        int number;
+        scanf("%d", &amp;number);
+        sent[number] = 1; // (2)!
+    }
+    int done = 0;
+    for (int number = 1; number &lt;= n; number++) {
+        if (sent[number] == 1) {
+            done++;
+        }
+    }
+    printf("sent = %d\n", done);
+    printf("missing:");
+    for (int number = 1; number &lt;= n; number++) {
+        if (sent[number] == 0) {
+            printf(" %d", number);
+        }
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เลขที่มีได้ 1 ถึง 40 ขอ 41 ช่อง แล้วไม่ใช้ช่อง 0 ยอมเสียหนึ่งช่อง แลกกับการที่เลขที่ตรงกับ index พอดี ไม่ต้องลบหนึ่งทุกครั้ง</li>
+        <li>ใส่ 1 แทน <code>++</code> ส่งกี่ครั้งก็ยังเป็น 1 จึงนับคนที่ส่งซ้ำแค่ครั้งเดียว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="homework" data-title="ข้อมูลเข้า"><pre><code>8 9
+3 1 5 3 8 2 5 3 6
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="homework" data-title="C:\code\homework.exe"><pre><code>sent = 6
+missing: 4 7
+</code></pre></div>
+      </div>
+
+      <p>อาเรย์แบบนี้มักตั้งชื่อว่า <code>seen</code> หรือ <code>visited</code> แปลว่าเคยเห็นแล้ว จะได้เจออีกหลายครั้งจนถึงบทกราฟ</p>
+
+      <h2 id="offset">ค่าที่ติดลบ</h2>
+
+      <p>index ติดลบไม่ได้ ถ้าค่าที่จะนับมีติดลบ ให้ <strong>เลื่อนทุกค่าด้วยค่าคงที่</strong> ก่อนใช้เป็น index เช่น อุณหภูมิต่ำสุดของแต่ละวันบนยอดดอยอยู่ระหว่าง -10 ถึง 30 องศา รวม 41 ค่า บวก 10 เข้าไปทุกค่า -10 จะกลายเป็นช่อง 0 และ 30 กลายเป็นช่อง 40 ตอนพิมพ์ก็ลบ 10 กลับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="offset"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int count[41] = {0};
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        int temp;
+        scanf("%d", &amp;temp);
+        count[temp + 10]++;
+    }
+    for (int k = 0; k &lt;= 40; k++) {
+        if (count[k] &gt; 0) {
+            printf("%d degrees: %d days\n", k - 10, count[k]);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="offset" data-title="ข้อมูลเข้า"><pre><code>7
+2 -1 0 2 -3 5 -1
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="offset" data-title="C:\code\offset.exe"><pre><code>-3 degrees: 1 days
+-1 degrees: 2 days
+0 degrees: 1 days
+2 degrees: 2 days
+5 degrees: 1 days
+</code></pre></div>
+      </div>
+
+      <h2 id="when">ใช้ได้เมื่อไร</h2>
+
+      <p>ลองนึกถึงวิธีที่ไม่ใช้อาเรย์นับ ถ้าจะหาว่าคะแนนแต่ละค่ามีกี่คน ต้องวนคะแนนทุกค่า 0 ถึง 100 แล้วในแต่ละค่าวนดูนักเรียนทุกคน นักเรียนแสนคนก็ต้องเทียบ 101 × 100000 ประมาณสิบล้านครั้ง ส่วนอาเรย์นับดูนักเรียนแต่ละคนครั้งเดียว แค่แสนครั้ง ยิ่งช่วงของค่ากว้าง ความต่างก็ยิ่งมาก</p>
+
+      <p>เงื่อนไขของวิธีนี้คือ</p>
+
+      <ul>
+        <li>ค่าที่นับต้องเป็นจำนวนเต็ม เพราะต้องใช้เป็น index</li>
+        <li>ช่วงของค่าต้องไม่กว้างเกินจำนวนช่องที่ประกาศได้ ค่าถึง 10<sup>6</sup> ยังพอไหว แต่ต้องประกาศอาเรย์นอก <code>main</code> ซึ่งอธิบายใน<a href="insert-delete.html#big-arrays">หน้า 5.5</a> ถ้าค่าถึง 10<sup>9</sup> ใช้วิธีนี้ไม่ได้ ต้องเรียงข้อมูลก่อน ซึ่งอยู่ในบทที่ 13</li>
+      </ul>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forgot-zero">แบบที่ 1 ลืม = {0}</h3>
+
+      <p>ในโปรแกรม quiz ลบ <code>= {0}</code> ออก เหลือ <code>int count[11];</code> คอมไพล์ด้วย <code>-Wall</code> แล้วไม่มีคำเตือนเลย บนเครื่องที่ทดลอง ป้อนข้อมูลเดิมแล้วได้แบบนี้</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\quiz.exe"><pre><code>0: 0
+1: 0
+2: 0
+3: 2
+4: -1361052432
+5: 63
+6: 36313160
+7: 32762
+8: 223994994
+9: 380
+10: 1
+</code></pre></div>
+
+      <p>ช่องที่ไม่ได้ใส่ค่าเริ่มต้นมีค่าขยะค้างอยู่ <code>++</code> จึงไปบวกต่อจากค่าขยะ ที่น่ากลัวคือบางช่องดูเหมือนถูก ช่อง 0 ถึง 2 เป็น 0 และช่อง 3 ได้ 2 ทั้งที่มีคนได้ 3 คะแนนแค่คนเดียว รันซ้ำสามครั้ง ช่อง 4 5 8 9 เปลี่ยนไปทุกครั้ง ส่วนช่องอื่นได้เท่าเดิม ถ้าเห็นตัวนับมีค่าแปลกๆ ให้สงสัยเรื่องค่าเริ่มต้นก่อน</p>
+
+      <h3 id="one-short">แบบที่ 2 ขอช่องขาดไปหนึ่ง</h3>
+
+      <p>คะแนนเต็ม 100 แต่ประกาศ <code>int count[100] = {0};</code> ช่องมีแค่ 0 ถึง 99 ไม่มีช่อง 100</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int count[100] = {0};
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        count[score]++;
+    }
+    printf("score 100: %d students\n", count[100]);
+    printf("score 99: %d students\n", count[99]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>4
+100 99 100 100
+</code></pre></div>
+
+      <p>ใน Code::Blocks คอมไพล์ผ่านโดยไม่มีคำเตือน บนเครื่องที่ทดลอง รันสี่ครั้งได้บรรทัดแรกเป็น <code>score 100: 2068505747 students</code> <code>1900800483</code> <code>1275980067</code> และ <code>1071769603</code> ไม่ซ้ำกันเลย ส่วนบรรทัดของคะแนน 99 ได้ 1 ถูกทุกครั้ง ผิดเฉพาะคนที่ได้เต็ม ซึ่งเป็นชุดทดสอบที่ grader ชอบใส่</p>
+
+      <p>กฎคือ ค่าตั้งแต่ 0 ถึง K ต้องมี <strong>K + 1 ช่อง</strong> ทำไมช่องที่ไม่มีอยู่จริงถึงให้ค่าแปลกแบบนี้ และอาการอื่นที่หนักกว่านี้ อยู่ใน<a href="insert-delete.html#out-of-bounds">หน้า 5.5</a></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>อาเรย์นับใช้ค่าเป็น index แล้วเก็บจำนวนครั้งไว้ในช่อง <code>count[x]++</code></li>
+        <li>ต้องเริ่มทุกช่องที่ 0 ด้วย <code>= {0}</code> ลืมแล้วได้ค่าขยะโดยไม่มีคำเตือน</li>
+        <li>ค่า 0 ถึง K ต้องมี K + 1 ช่อง</li>
+        <li>วน index จากน้อยไปมาก ผลจะเรียงตามค่าให้เอง</li>
+        <li>อยากรู้แค่มีหรือไม่มี ใช้อาเรย์ <code>seen</code> ใส่ 1</li>
+        <li>ค่าติดลบให้บวกค่าคงที่ก่อนใช้เป็น index ค่าที่ช่วงกว้างมากใช้วิธีนี้ไม่ได้</li>
+      </ul>
+    </article>

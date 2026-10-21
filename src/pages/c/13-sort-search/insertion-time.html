@@ -1,0 +1,445 @@
+<article class="doc">
+      <h1>13.3 insertion sort และเวลาที่ใช้</h1>
+
+      <p>วิธีที่สามคือวิธีที่คนเล่นไพ่ใช้โดยไม่รู้ตัว หยิบไพ่ขึ้นมาทีละใบ แล้วเสียบเข้าไปในมือตรงตำแหน่งที่ถูก ไพ่ในมือจึงเรียงอยู่ตลอดเวลา หน้านี้เขียน insertion sort จากความคิดนี้ แล้วเอาทั้งสามวิธีมาวัดกันจริงๆ ว่าเมื่อข้อมูลเพิ่มจากพันเป็นแสนตัว เวลาที่ใช้เพิ่มขึ้นแบบไหน คำตอบจะบอกว่าโจทย์ขนาดเท่าไรที่ยังใช้สามวิธีนี้ได้</p>
+
+      <h2 id="insertion-idea">insertion sort แทรกเข้าที่ทีละตัว</h2>
+
+      <p>แบ่งอาเรย์เป็นสองส่วน ส่วนซ้ายคือไพ่ในมือซึ่งเรียงแล้ว ตอนเริ่มมีแค่ช่อง 0 ช่องเดียว ส่วนขวาคือไพ่ที่ยังไม่ได้หยิบ แต่ละรอบ</p>
+
+      <ol>
+        <li>หยิบ <code>a[i]</code> ตัวแรกของส่วนขวาออกมาเก็บไว้ในตัวแปร <code>key</code></li>
+        <li>ไล่จากท้ายส่วนซ้ายมาทางซ้าย ตัวไหนมากกว่า <code>key</code> ให้เลื่อนไปทางขวาหนึ่งช่อง</li>
+        <li>เจอตัวที่ไม่มากกว่า <code>key</code> หรือเลยช่อง 0 ไปแล้ว ให้วาง <code>key</code> ลงในช่องว่างที่เหลือ</li>
+      </ol>
+
+      <p>ขั้นที่ 2 กับ 3 คือการแทรกสมาชิกในหน้า 5.5 ที่ต้องเลื่อนจากทางขวาก่อนเพื่อไม่ให้ค่าถูกทับ รูปนี้ใช้ข้อมูล <code>6 3 8 2 5</code> ชุดเดิม ส่วนสีน้ำเงินคือส่วนซ้ายที่เรียงแล้ว ช่องสีส้มคือตำแหน่งที่ <code>key</code> ถูกวางลงในรอบนั้น</p>
+
+      <figure>
+        <svg viewBox="0 0 560 310" width="560" style="max-width:100%;height:auto" role="img" aria-label="insertion sort ของ 6 3 8 2 5 รอบ i = 1 หยิบ 3 แทรกหน้า 6 ได้ 3 6 8 2 5 รอบ i = 2 หยิบ 8 ไม่ต้องเลื่อน รอบ i = 3 หยิบ 2 เลื่อนสามตัวแล้วแทรกหน้าสุด ได้ 2 3 6 8 5 รอบ i = 4 หยิบ 5 เลื่อนสองตัว ได้ 2 3 5 6 8 ส่วนซ้ายที่ระบายสีคือส่วนที่เรียงแล้ว">
+          <g style="font-family:var(--font-code)">
+            <text x="8" y="44" style="fill:var(--muted);font-size:14px">start</text>
+            <rect x="96" y="16" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="118" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="140" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="272" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="8" y="102" style="fill:var(--muted);font-size:14px">i = 1</text>
+            <rect x="96" y="74" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="118" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="140" y="74" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="162" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="184" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="272" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="334" y="102" style="fill:var(--muted);font-size:14px">key 3, shift 1</text>
+            <text x="8" y="160" style="fill:var(--muted);font-size:14px">i = 2</text>
+            <rect x="96" y="132" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="118" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="140" y="132" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="162" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="184" y="132" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="206" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="272" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="334" y="160" style="fill:var(--muted);font-size:14px">key 8, shift 0</text>
+            <text x="8" y="218" style="fill:var(--muted);font-size:14px">i = 3</text>
+            <rect x="96" y="190" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="118" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="190" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="162" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="190" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="206" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="228" y="190" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="250" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="272" y="190" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="334" y="218" style="fill:var(--muted);font-size:14px">key 2, shift 3</text>
+            <text x="8" y="276" style="fill:var(--muted);font-size:14px">i = 4</text>
+            <rect x="96" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="118" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="162" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="248" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="206" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="228" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="250" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="294" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <text x="334" y="276" style="fill:var(--muted);font-size:14px">key 5, shift 2</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>รอบ <code>i = 2</code> หยิบ 8 มา ตัวสุดท้ายของส่วนซ้ายคือ 6 ไม่มากกว่า 8 จึงวางที่เดิมโดยไม่ต้องเลื่อนอะไร ส่วนรอบ <code>i = 3</code> หยิบ 2 ซึ่งน้อยกว่าทุกตัวในมือ ต้องเลื่อนทั้งสามตัวแล้ววางที่ช่อง 0</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="insertion-trace"><pre><code>#include &lt;stdio.h&gt;
+
+void print_array(int a[], int n)
+{
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", a[i]);
+    }
+    printf("\n");
+}
+
+int main()
+{
+    int a[5] = {6, 3, 8, 2, 5};
+    int n = 5;
+    for (int i = 1; i &lt; n; i++) { // (1)!
+        int key = a[i]; // (2)!
+        int j = i - 1;
+        while (j &gt;= 0 &amp;&amp; a[j] &gt; key) { // (3)!
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = key; // (4)!
+        printf("i = %d, key = %d: ", i, key);
+        print_array(a, n);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เริ่มที่ <code>i = 1</code> เพราะช่อง 0 ตัวเดียวถือว่าเรียงแล้ว</li>
+        <li>ต้องเก็บ <code>a[i]</code> ไว้ก่อน เพราะการเลื่อนครั้งแรกจะเขียนทับช่อง <code>i</code> ดูผลของการลืมเก็บในส่วนลองทำให้พัง</li>
+        <li>ลำดับของสองเงื่อนไขสำคัญ ต้องเช็ก <code>j &gt;= 0</code> ก่อน <code>&amp;&amp;</code> หยุดตรวจทันทีที่ข้างซ้ายเป็นเท็จ จึงไม่แตะ <code>a[-1]</code></li>
+        <li>ลูปจบตอนที่ <code>a[j]</code> ไม่มากกว่า <code>key</code> หรือ <code>j</code> เป็น -1 ช่องว่างจึงอยู่ที่ <code>j + 1</code> ทั้งสองกรณี</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="insertion-trace" data-title="C:\code\insertion_trace.exe"><pre><code>i = 1, key = 3: 3 6 8 2 5
+i = 2, key = 8: 3 6 8 2 5
+i = 3, key = 2: 2 3 6 8 5
+i = 4, key = 5: 2 3 5 6 8
+</code></pre></div>
+
+      <p>เก็บเป็นฟังก์ชัน</p>
+
+      <div class="code" data-lang="c"><pre><code>void insertion_sort(int a[], int n)
+{
+    for (int i = 1; i &lt; n; i++) {
+        int key = a[i];
+        int j = i - 1;
+        while (j &gt;= 0 &amp;&amp; a[j] &gt; key) {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = key;
+    }
+}
+</code></pre></div>
+
+      <p>insertion sort ไม่ได้ใช้ swap แต่เลื่อนทีละช่อง การเลื่อนหนึ่งครั้งเขียนค่าแค่ช่องเดียว ส่วน swap เขียนสองช่องและใช้ตัวแปรพักอีกตัว จึงเบากว่า และจำนวนครั้งที่เลื่อนเท่ากับจำนวนคู่ที่ผิดลำดับพอดี เหมือนจำนวนครั้งที่ bubble sort สลับ เพราะการเลื่อนแต่ละครั้งคือการเอา <code>key</code> ข้ามตัวที่มากกว่าไปทีละตัว</p>
+
+      <h2 id="count">เทียบสามวิธีกับข้อมูลสามแบบ</h2>
+
+      <p>โปรแกรมนี้นับสองอย่างในทั้งสามวิธี คือจำนวนครั้งที่<strong>เทียบ</strong>ค่าในอาเรย์ และจำนวนครั้งที่<strong>ย้าย</strong>ค่า (สลับของ bubble กับ selection หรือเลื่อนของ insertion) ข้อมูล n = 1000 ตัวมีสามแบบ</p>
+
+      <ul>
+        <li><code>ascending</code> เรียงจากน้อยไปมากอยู่แล้ว คือ 0 1 2 ... 999</li>
+        <li><code>descending</code> เรียงกลับด้าน คือ 999 998 ... 0</li>
+        <li><code>mixed</code> ปนกัน ใช้สูตร <code>i * 7919 % n</code> ซึ่งได้เลข 0 ถึง 999 ครบทุกตัวแต่สลับลำดับกัน ใช้สูตรแทนการสุ่มเพื่อให้ทุกเครื่องได้ข้อมูลชุดเดียวกัน</li>
+      </ul>
+
+      <p>ตัวนับเป็นตัวแปรนอกฟังก์ชัน (global) ทุกฟังก์ชันจึงเพิ่มค่าได้ และใช้ <code>long long</code> เผื่อลองกับ n ที่ใหญ่ขึ้น ใน insertion sort แยกการเทียบออกมาเป็น <code>if</code> ข้างในลูปเพื่อให้นับได้ แต่ทำงานเหมือนเดิมทุกอย่าง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="count"><pre><code>#include &lt;stdio.h&gt;
+
+int original[100000], a[100000];
+long long comparisons, moves;
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void bubble_sort(int a[], int n)
+{
+    for (int i = 0; i &lt; n - 1; i++) {
+        for (int j = 0; j &lt; n - 1 - i; j++) {
+            comparisons++;
+            if (a[j] &gt; a[j + 1]) {
+                swap(&amp;a[j], &amp;a[j + 1]);
+                moves++;
+            }
+        }
+    }
+}
+
+void selection_sort(int a[], int n)
+{
+    for (int i = 0; i &lt; n - 1; i++) {
+        int min_index = i;
+        for (int j = i + 1; j &lt; n; j++) {
+            comparisons++;
+            if (a[j] &lt; a[min_index]) {
+                min_index = j;
+            }
+        }
+        if (min_index != i) {
+            swap(&amp;a[i], &amp;a[min_index]);
+            moves++;
+        }
+    }
+}
+
+void insertion_sort(int a[], int n)
+{
+    for (int i = 1; i &lt; n; i++) {
+        int key = a[i];
+        int j = i - 1;
+        while (j &gt;= 0) {
+            comparisons++;
+            if (a[j] &lt;= key) {
+                break;
+            }
+            a[j + 1] = a[j];
+            moves++;
+            j--;
+        }
+        a[j + 1] = key;
+    }
+}
+
+void prepare(int n)
+{
+    for (int i = 0; i &lt; n; i++) {
+        a[i] = original[i];
+    }
+    comparisons = 0;
+    moves = 0;
+}
+
+void report(const char *data, const char *method)
+{
+    printf("%-10s %-9s compare %6lld  move %6lld\n", data, method, comparisons, moves);
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    const char *names[3] = {"ascending", "descending", "mixed"};
+    for (int kind = 0; kind &lt; 3; kind++) {
+        for (int i = 0; i &lt; n; i++) {
+            if (kind == 0) {
+                original[i] = i;
+            } else if (kind == 1) {
+                original[i] = n - 1 - i;
+            } else {
+                original[i] = i * 7919 % n;
+            }
+        }
+        prepare(n);
+        bubble_sort(a, n);
+        report(names[kind], "bubble");
+        prepare(n);
+        selection_sort(a, n);
+        report(names[kind], "selection");
+        prepare(n);
+        insertion_sort(a, n);
+        report(names[kind], "insertion");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="count" data-title="ข้อมูลเข้า"><pre><code>1000
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="count" data-title="C:\code\count.exe"><pre><code>ascending  bubble    compare 499500  move      0
+ascending  selection compare 499500  move      0
+ascending  insertion compare    999  move      0
+descending bubble    compare 499500  move 499500
+descending selection compare 499500  move    500
+descending insertion compare 499500  move 499500
+mixed      bubble    compare 499500  move 250101
+mixed      selection compare 499500  move    947
+mixed      insertion compare 251100  move 250101
+</code></pre></div>
+      </div>
+
+      <p><code>const char *names[3]</code> คืออาเรย์ของข้อความสามข้อความ แต่ละช่องเก็บที่อยู่ของข้อความหนึ่งข้อความ ส่วน <code>%-10s</code> คือพิมพ์ข้อความชิดซ้ายกว้าง 10 ช่อง แบบเดียวกับ <code>%-5d</code> ในหน้า 2.2 ตารางจึงตรงกัน อ่านผลได้ดังนี้</p>
+
+      <ul>
+        <li><strong>bubble กับ selection เทียบ 499500 ครั้งเสมอ</strong> ไม่ว่าข้อมูลจะเป็นแบบไหน ซึ่งคือ 1000 × 999 / 2 ข้อมูลที่เรียงอยู่แล้วก็ยังต้องเทียบครบ (bubble sort ในตัวอย่างนี้ไม่ได้ใส่การหยุดก่อนจากหน้า 13.2)</li>
+        <li><strong>insertion sort ขึ้นกับข้อมูล</strong> ถ้าเรียงอยู่แล้ว แต่ละรอบเทียบครั้งเดียวก็เจอว่าไม่ต้องเลื่อน รวม 999 ครั้ง เร็วมาก แต่ถ้าเรียงกลับด้าน ทุกตัวต้องเลื่อนไปจนสุด เทียบเท่ากับอีกสองวิธี</li>
+        <li><strong>จำนวนครั้งที่ย้ายของ bubble กับ insertion เท่ากันทุกแถว</strong> เพราะทั้งคู่เท่ากับจำนวนคู่ที่ผิดลำดับ ข้อมูลที่ปนกันมี 250101 คู่ ใกล้กับ n<sup>2</sup> / 4 = 250000 ซึ่งเป็นค่าที่ได้โดยเฉลี่ยเมื่อข้อมูลสุ่ม ส่วน selection ย้ายไม่เกิน 999 ครั้ง</li>
+      </ul>
+
+      <p>ในกรณีแย่ที่สุด ทั้งสามวิธีเทียบประมาณ n<sup>2</sup> / 2 ครั้ง ต่อไปจะดูว่าตัวเลขนี้แปลเป็นเวลาเท่าไร</p>
+
+      <h2 id="measure">จับเวลาจริง</h2>
+
+      <p>ใช้ <code>clock()</code> แบบหน้า 4.5 จับเฉพาะช่วงที่เรียง ข้อมูลสร้างด้วย <code>rand()</code> จาก <code>stdlib.h</code> ซึ่งคืนเลขสุ่มที่ไม่ติดลบ ส่วน <code>srand(2569)</code> กำหนดจุดเริ่มของการสุ่ม รันกี่ครั้งก็ได้ชุดเดิมบนเครื่องเดิม ตอนนี้ใช้ตามแบบไปก่อน อาเรย์ 100000 ช่องต้องอยู่นอก <code>main</code> ตามหน้า 5.5</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+
+int a[100000];
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void bubble_sort(int a[], int n)
+{
+    for (int i = 0; i &lt; n - 1; i++) {
+        for (int j = 0; j &lt; n - 1 - i; j++) {
+            if (a[j] &gt; a[j + 1]) {
+                swap(&amp;a[j], &amp;a[j + 1]);
+            }
+        }
+    }
+}
+
+void selection_sort(int a[], int n)
+{
+    for (int i = 0; i &lt; n - 1; i++) {
+        int min_index = i;
+        for (int j = i + 1; j &lt; n; j++) {
+            if (a[j] &lt; a[min_index]) {
+                min_index = j;
+            }
+        }
+        swap(&amp;a[i], &amp;a[min_index]);
+    }
+}
+
+void insertion_sort(int a[], int n)
+{
+    for (int i = 1; i &lt; n; i++) {
+        int key = a[i];
+        int j = i - 1;
+        while (j &gt;= 0 &amp;&amp; a[j] &gt; key) {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = key;
+    }
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    srand(2569);
+    for (int i = 0; i &lt; n; i++) {
+        a[i] = rand();
+    }
+    clock_t start = clock();
+    bubble_sort(a, n); // (1)!
+    clock_t end = clock();
+    printf("n = %d, time = %.3f seconds\n", n, (double)(end - start) / CLOCKS_PER_SEC);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เปลี่ยนบรรทัดนี้เป็น <code>selection_sort(a, n);</code> หรือ <code>insertion_sort(a, n);</code> เพื่อวัดวิธีอื่น</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>10000
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\sort_time.exe"><pre><code>n = 10000, time = 0.074 seconds
+</code></pre></div>
+      </div>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 4.5 คือโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 เสียบสายชาร์จ โหมดพลังงาน Balanced คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks ทั้งแบบ Code::Blocks (<code>-Wall</code> อย่างเดียว) และแบบ <code>-O2</code> รันแต่ละช่อง 5 ครั้ง ตารางเป็นค่ากลางของ 5 ครั้งนั้น</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>bubble sort</td><td>1,000</td><td>0.000 วินาที</td><td>0.001 วินาที</td></tr>
+            <tr><td>bubble sort</td><td>10,000</td><td>0.080 วินาที</td><td>0.111 วินาที</td></tr>
+            <tr><td>bubble sort</td><td>100,000</td><td>18.589 วินาที</td><td>19.515 วินาที</td></tr>
+            <tr><td>selection sort</td><td>1,000</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>selection sort</td><td>10,000</td><td>0.031 วินาที</td><td>0.012 วินาที</td></tr>
+            <tr><td>selection sort</td><td>100,000</td><td>3.584 วินาที</td><td>1.314 วินาที</td></tr>
+            <tr><td>insertion sort</td><td>1,000</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>insertion sort</td><td>10,000</td><td>0.022 วินาที</td><td>0.006 วินาที</td></tr>
+            <tr><td>insertion sort</td><td>100,000</td><td>2.438 วินาที</td><td>0.600 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>0.000 ไม่ได้แปลว่าไม่ใช้เวลาเลย แต่น้อยกว่าที่ <code>clock()</code> วัดได้ อ่านตารางได้สามเรื่อง</p>
+
+      <ol>
+        <li><strong>n เพิ่ม 10 เท่า เวลาเพิ่มราว 100 เท่า</strong> selection sort แบบ Code::Blocks จาก 0.031 เป็น 3.584 วินาที insertion sort จาก 0.022 เป็น 2.438 วินาที ตรงกับจำนวนครั้งที่เทียบ n<sup>2</sup> / 2 ซึ่งเพิ่ม 10 × 10 = 100 เท่า การโตแบบนี้เรียกว่าโตตาม <strong>n กำลังสอง</strong> ส่วน bubble sort เพิ่มถึงราว 230 เท่า ส่วนที่เกิน 100 เท่ามาจากรายละเอียดของการทำงานในซีพียู ซึ่งไม่อยู่ในบทนี้ จำนวนครั้งที่เทียบเพิ่มแค่ 100 เท่าเท่ากับอีกสองวิธี</li>
+        <li><strong>วิธีที่เทียบเท่ากันไม่ได้ใช้เวลาเท่ากัน</strong> bubble sort ช้าที่สุดเพราะสลับบ่อยมาก ราวหนึ่งในสี่ของ n<sup>2</sup> ครั้งกับข้อมูลสุ่ม insertion sort เร็วที่สุดเพราะเลื่อนถูกกว่าสลับ และหยุดเทียบทันทีที่เจอที่วาง</li>
+        <li><strong>-O2 ไม่ได้ช่วยทุกวิธี</strong> insertion sort เร็วขึ้นราว 4 เท่า แต่ bubble sort กลับช้าลงเล็กน้อย เวลาที่หายไปจากการเปลี่ยนวิธีมีมากกว่าการเปลี่ยนตัวเลือกของ compiler หลายเท่า</li>
+      </ol>
+
+      <p>ถ้า n เป็นล้าน เวลาจะเพิ่มอีกราว 100 เท่า bubble sort จะใช้ราวครึ่งชั่วโมง ตัวเลขนี้ประมาณจากตาราง ไม่ได้วัดจริง</p>
+
+      <h2 id="when-to-use">ใช้สามวิธีนี้ได้เมื่อไร</h2>
+
+      <p>หลักจากหน้า 4.5 คือ 1 วินาทีทำงานง่ายๆ ได้ราว 10<sup>8</sup> รอบ เอาไปเทียบกับ n<sup>2</sup> / 2</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ขอบเขต n ในโจทย์</th><th>n<sup>2</sup> / 2</th><th>ใช้สามวิธีนี้ได้ไหม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1,000</td><td>5 × 10<sup>5</sup></td><td>สบาย</td></tr>
+            <tr><td>10,000</td><td>5 × 10<sup>7</sup></td><td>ได้ ตามตารางใช้ไม่ถึงหนึ่งในสิบวินาที</td></tr>
+            <tr><td>100,000</td><td>5 × 10<sup>9</sup></td><td>ไม่ทันในเวลา 1 วินาที แม้แต่ insertion sort แบบ -O2</td></tr>
+            <tr><td>1,000,000</td><td>5 × 10<sup>11</sup></td><td>ไม่มีทาง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>โจทย์ TOI Zero และโจทย์ค่าย 1 จำนวนมากให้ n ถึงแสน จึงต้องมีวิธีที่เร็วกว่านี้ หน้าถัดไปจะใช้ฟังก์ชัน <code>qsort</code> ที่มากับภาษา C ซึ่งเรียงแสนตัวได้ในเสี้ยววินาที ส่วนวิธีเรียงเร็วที่เขียนเองได้ คือ merge sort กับ quick sort จะเรียนในบทที่ 22 และการวิเคราะห์ว่าวิธีไหนโตเร็วแค่ไหนแบบเป็นระบบ ที่เรียกว่า Big O อยู่ในบทที่ 18</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">แล้วเรียนสามวิธีนี้ไปทำไม</p>
+        <p>หนึ่ง ความคิดของแต่ละวิธีถูกนำไปใช้ต่อ เช่น การแทรกเข้าที่ในอาเรย์ที่เรียงอยู่แล้ว การหาค่าน้อยสุดทีละรอบ สอง ข้อสอบค่ายมักถามให้ไล่ทีละรอบด้วยมือ หรือให้นับจำนวนครั้งที่สลับ ซึ่งก็คือจำนวนคู่ที่ผิดลำดับในหน้านี้ และสาม เมื่อ n ไม่เกินหลักพัน เขียนเองใช้เวลาไม่ถึงนาทีและไม่ต้องจำวิธีใช้ฟังก์ชันใดๆ</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forget-key">ลืมเก็บ key</h3>
+
+      <p>ถ้าคิดว่าตัวแปร <code>key</code> ไม่จำเป็น เพราะค่าก็อยู่ใน <code>a[i]</code> อยู่แล้ว แล้วเขียนแบบนี้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="forget-key"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a[5] = {6, 3, 8, 2, 5};
+    int n = 5;
+    for (int i = 1; i &lt; n; i++) {
+        int j = i - 1;
+        while (j &gt;= 0 &amp;&amp; a[j] &gt; a[i]) {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = a[i];
+    }
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", a[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="forget-key" data-title="C:\code\insertion.exe"><pre><code>6 6 8 8 8
+</code></pre></div>
+
+      <p>เหลือแค่ 6 กับ 8 ตัวเลขอื่นหายหมด รอบ <code>i = 1</code> การเลื่อนครั้งแรกคือ <code>a[1] = a[0]</code> ซึ่งเขียน 6 ทับ 3 ใน <code>a[i]</code> ไปแล้ว ตั้งแต่นั้นเงื่อนไขในลูปและบรรทัดที่วางค่ากลับก็ใช้ 6 แทน 3 ค่าที่จะถูกเขียนทับต้องเก็บไว้ก่อนเสมอ เหมือนแก้วเปล่าในการสลับ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>insertion sort หยิบ <code>a[i]</code> มาเก็บใน <code>key</code> เลื่อนตัวที่มากกว่าไปทางขวา แล้ววาง <code>key</code> ที่ <code>a[j + 1]</code> ต้องเช็ก <code>j &gt;= 0</code> ก่อน <code>a[j] &gt; key</code></li>
+        <li>insertion sort เร็วมากกับข้อมูลที่เกือบเรียง แต่กรณีแย่ที่สุดเทียบ n<sup>2</sup> / 2 ครั้งเท่ากับอีกสองวิธี</li>
+        <li>จำนวนครั้งที่ bubble sort สลับ เท่ากับจำนวนครั้งที่ insertion sort เลื่อน เท่ากับจำนวนคู่ที่ผิดลำดับ</li>
+        <li>ทั้งสามวิธีโตตาม n กำลังสอง n เพิ่ม 10 เท่า เวลาเพิ่มราว 100 เท่า บนเครื่องที่เขียนเอกสารนี้ n = 100,000 ใช้ 0.6 ถึง 20 วินาที</li>
+        <li>n ไม่เกินหลักหมื่นเขียนเองได้ n ถึงแสนให้ใช้ <code>qsort</code> ในหน้าถัดไป วิธีเร็วที่เขียนเองอยู่ในบทที่ 22</li>
+      </ul>
+    </article>

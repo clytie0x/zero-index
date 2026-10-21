@@ -1,0 +1,307 @@
+<article class="doc">
+      <h1>5.4 ผลรวมสะสม</h1>
+
+      <p>นาฬิกาข้อมือนับก้าวเดินเก็บจำนวนก้าวของแต่ละวันไว้ N วัน แล้วมีคำถาม Q ข้อ แต่ละข้อถามว่า ตั้งแต่วันที่ l ถึงวันที่ r เดินรวมกี่ก้าว โจทย์ที่ถาม "ผลรวมของช่วง" ซ้ำๆ หลายครั้งแบบนี้พบบ่อยมาก ถ้าบวกใหม่ทุกครั้ง โปรแกรมจะช้าจนไม่ทันเวลาเมื่อข้อมูลใหญ่ หน้านี้รู้จัก <strong>ผลรวมสะสม (prefix sum)</strong> ที่ตอบแต่ละคำถามด้วยการลบเลขแค่ครั้งเดียว</p>
+
+      <h2 id="naive">วิธีตรงไปตรงมา</h2>
+
+      <p>แต่ละคำถาม วนบวกตั้งแต่วัน l ถึงวัน r วันที่ 1 อยู่ช่อง 0 วันที่ <code>day</code> จึงอยู่ช่อง <code>day - 1</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="steps-naive"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int steps[100000];
+    int n, q;
+    scanf("%d %d", &amp;n, &amp;q);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;steps[i]);
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int l, r;
+        scanf("%d %d", &amp;l, &amp;r);
+        long long total = 0;
+        for (int day = l; day &lt;= r; day++) {
+            total += steps[day - 1];
+        }
+        printf("%lld\n", total);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="steps-naive" data-title="ข้อมูลเข้า"><pre><code>7 3
+8000 12000 5000 9000 15000 7000 10000
+1 7
+2 4
+5 5
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="steps-naive" data-title="C:\code\steps_naive.exe"><pre><code>66000
+26000
+15000
+</code></pre></div>
+      </div>
+
+      <p>ถูกต้อง แต่ลองนับงาน แต่ละคำถามบวกได้ถึง N ครั้ง Q คำถามจึงบวกได้ถึง N × Q ครั้ง ถ้าโจทย์ให้ N และ Q ถึง 100000 ก็ถึง 10<sup>10</sup> ครั้ง ซึ่งช้าเกินไปมาก วิธีนับงานแบบนี้อย่างเป็นระบบจะเรียนในบทที่ 18</p>
+
+      <h2 id="prefix">ผลรวมของ i วันแรก</h2>
+
+      <p>ความคิดหลักคือ คำนวณล่วงหน้าเก็บไว้ในอาเรย์อีกตัวหนึ่ง ให้</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">นิยาม</p>
+        <p><code>prefix[i]</code> คือผลรวมของ <strong>i วันแรก</strong> ดังนั้น <code>prefix[0]</code> คือผลรวมของศูนย์วัน ซึ่งเป็น 0</p>
+      </div>
+
+      <p>อาเรย์ <code>prefix</code> จึงมี N + 1 ช่อง ตั้งแต่ 0 ถึง N และสร้างได้ในลูปเดียว เพราะผลรวมของ i วันแรก คือผลรวมของ i - 1 วันแรก บวกวันที่ i ซึ่งอยู่ช่อง <code>i - 1</code> ของ <code>steps</code></p>
+
+      <div class="code" data-lang="c"><pre><code>prefix[0] = 0;
+for (int i = 1; i &lt;= n; i++) {
+    prefix[i] = prefix[i - 1] + steps[i - 1];
+}
+</code></pre></div>
+
+      <p>คราวนี้ผลรวมตั้งแต่วัน l ถึงวัน r คือ "ผลรวมของ r วันแรก" ตัดส่วน "l - 1 วันแรก" ทิ้ง</p>
+
+      <div class="code" data-lang="text"><pre><code>ผลรวมวัน l ถึง r = prefix[r] - prefix[l - 1]
+</code></pre></div>
+
+      <figure>
+        <svg viewBox="0 0 640 260" width="640" style="max-width:100%;height:auto" role="img" aria-label="อาเรย์ steps 7 ช่อง คือ 8000 12000 5000 9000 15000 7000 10000 และอาเรย์ prefix 8 ช่อง คือ 0 8000 20000 25000 34000 49000 56000 66000 วันที่ 2 ถึง 4 ถูกเน้น ผลรวมเท่ากับ prefix[4] ลบ prefix[1] คือ 34000 ลบ 8000 ได้ 26000">
+          <g style="font-family:var(--font-code)">
+            <text x="131" y="28" text-anchor="middle" style="fill:var(--muted);font-size:12px">day 1</text>
+            <text x="193" y="28" text-anchor="middle" style="fill:var(--muted);font-size:12px">day 2</text>
+            <text x="255" y="28" text-anchor="middle" style="fill:var(--muted);font-size:12px">day 3</text>
+            <text x="317" y="28" text-anchor="middle" style="fill:var(--muted);font-size:12px">day 4</text>
+            <text x="379" y="28" text-anchor="middle" style="fill:var(--muted);font-size:12px">day 5</text>
+            <text x="441" y="28" text-anchor="middle" style="fill:var(--muted);font-size:12px">day 6</text>
+            <text x="503" y="28" text-anchor="middle" style="fill:var(--muted);font-size:12px">day 7</text>
+            <text x="6" y="68" style="fill:var(--ink);font-size:15px">steps</text>
+            <rect x="100" y="40" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="162" y="40" width="62" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="224" y="40" width="62" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="286" y="40" width="62" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="348" y="40" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="410" y="40" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="472" y="40" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="131" y="67" text-anchor="middle" style="fill:var(--ink);font-size:14px">8000</text>
+            <text x="193" y="67" text-anchor="middle" style="fill:var(--ink);font-size:14px">12000</text>
+            <text x="255" y="67" text-anchor="middle" style="fill:var(--ink);font-size:14px">5000</text>
+            <text x="317" y="67" text-anchor="middle" style="fill:var(--ink);font-size:14px">9000</text>
+            <text x="379" y="67" text-anchor="middle" style="fill:var(--ink);font-size:14px">15000</text>
+            <text x="441" y="67" text-anchor="middle" style="fill:var(--ink);font-size:14px">7000</text>
+            <text x="503" y="67" text-anchor="middle" style="fill:var(--ink);font-size:14px">10000</text>
+            <text x="131" y="102" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">0</text>
+            <text x="193" y="102" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">1</text>
+            <text x="255" y="102" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">2</text>
+            <text x="317" y="102" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">3</text>
+            <text x="379" y="102" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">4</text>
+            <text x="441" y="102" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">5</text>
+            <text x="503" y="102" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">6</text>
+            <text x="6" y="168" style="fill:var(--ink);font-size:15px">prefix</text>
+            <rect x="69" y="140" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="131" y="140" width="62" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:3"/>
+            <rect x="193" y="140" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="255" y="140" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="317" y="140" width="62" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:3"/>
+            <rect x="379" y="140" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="441" y="140" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="503" y="140" width="62" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="100" y="167" text-anchor="middle" style="fill:var(--ink);font-size:14px">0</text>
+            <text x="162" y="167" text-anchor="middle" style="fill:var(--ink);font-size:14px">8000</text>
+            <text x="224" y="167" text-anchor="middle" style="fill:var(--ink);font-size:14px">20000</text>
+            <text x="286" y="167" text-anchor="middle" style="fill:var(--ink);font-size:14px">25000</text>
+            <text x="348" y="167" text-anchor="middle" style="fill:var(--ink);font-size:14px">34000</text>
+            <text x="410" y="167" text-anchor="middle" style="fill:var(--ink);font-size:14px">49000</text>
+            <text x="472" y="167" text-anchor="middle" style="fill:var(--ink);font-size:14px">56000</text>
+            <text x="534" y="167" text-anchor="middle" style="fill:var(--ink);font-size:14px">66000</text>
+            <text x="100" y="202" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">0</text>
+            <text x="162" y="202" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">1</text>
+            <text x="224" y="202" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">2</text>
+            <text x="286" y="202" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">3</text>
+            <text x="348" y="202" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">4</text>
+            <text x="410" y="202" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">5</text>
+            <text x="472" y="202" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">6</text>
+            <text x="534" y="202" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">7</text>
+            <line x1="162" y1="92" x2="162" y2="136" style="stroke:var(--brand);stroke-width:1.5;stroke-dasharray:4 3"/>
+            <line x1="348" y1="92" x2="348" y2="136" style="stroke:var(--brand);stroke-width:1.5;stroke-dasharray:4 3"/>
+            <text x="320" y="240" text-anchor="middle" style="fill:var(--brand-text);font-size:14px">day 2..4 = prefix[4] - prefix[1] = 34000 - 8000 = 26000</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ในภาพ ช่อง <code>prefix[i]</code> วางไว้ตรงรอยต่อหลังวันที่ i เพราะมันคือผลรวมของทุกวันทางซ้ายของรอยต่อนั้น ช่วงวันที่ 2 ถึง 4 อยู่ระหว่างรอยต่อ <code>prefix[1]</code> กับ <code>prefix[4]</code> พอดี</p>
+
+      <p>ทำไมต้องมี <code>prefix[0]</code> ลองถามช่วงที่เริ่มจากวันแรก <code>l = 1</code> สูตรต้องใช้ <code>prefix[0]</code> ถ้าเริ่มอาเรย์ <code>prefix</code> ที่วันแรกเลยโดยไม่มีช่องนี้ ช่วงที่เริ่มวันแรกจะต้องเขียนกรณีพิเศษแยก ช่องที่เป็น 0 ช่องเดียวทำให้สูตรเดียวใช้ได้ทุกช่วง</p>
+
+      <h2 id="program">โปรแกรมเต็ม</h2>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="steps-prefix"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int steps[100000];
+    long long prefix[100001]; // (1)!
+    int n, q;
+    scanf("%d %d", &amp;n, &amp;q);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;steps[i]);
+    }
+    prefix[0] = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        prefix[i] = prefix[i - 1] + steps[i - 1];
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int l, r;
+        scanf("%d %d", &amp;l, &amp;r);
+        printf("%lld\n", prefix[r] - prefix[l - 1]); // (2)!
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>N + 1 ช่อง และเป็น <code>long long</code> เพราะก้าวต่อวันถึง 30000 ร้อยวันก็สามล้าน แสนวันถึงสามพันล้าน เกิน <code>int</code></li>
+        <li>แต่ละคำถามทำงานแค่ลบหนึ่งครั้ง ไม่มีลูปข้างใน</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="steps-prefix" data-title="ข้อมูลเข้า"><pre><code>7 3
+8000 12000 5000 9000 15000 7000 10000
+1 7
+2 4
+5 5
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="steps-prefix" data-title="C:\code\steps_prefix.exe"><pre><code>66000
+26000
+15000
+</code></pre></div>
+      </div>
+
+      <p>ผลตรงกับวิธีตรงไปตรงมาทุกบรรทัด งานทั้งหมดคือสร้าง <code>prefix</code> N ครั้ง กับตอบคำถาม Q ครั้ง รวมแค่ N + Q แทนที่จะเป็น N × Q</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>ทดลองบนโน้ตบุ๊ก AMD Ryzen AI 9 HX 370 แรม 32 GB ใช้ข้อมูลเข้าที่ N = Q = 100000 จำนวนก้าวสุ่ม 0 ถึง 30000 และช่วงคำถามสุ่ม ช่วงทั้งหมดยาวรวมกันประมาณ 2.5 × 10<sup>9</sup> วัน วิธีตรงไปตรงมาจึงต้องบวกประมาณสองพันห้าร้อยล้านครั้ง รันแต่ละแบบหลายรอบ รอบแรกของแต่ละไฟล์ช้ากว่ารอบอื่นเสมอ ตารางจึงใช้เวลาของรอบหลังๆ ซึ่งได้ใกล้เคียงกันทุกรอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>คอมไพล์แบบ Code::Blocks</th><th>คอมไพล์ด้วย <code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>บวกใหม่ทุกคำถาม</td><td>ประมาณ 1.1 วินาที</td><td>ประมาณ 0.57 วินาที</td></tr>
+            <tr><td>ผลรวมสะสม</td><td>ประมาณ 0.04 วินาที</td><td>ประมาณ 0.04 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>โจทย์ที่จำกัดเวลา 1 วินาที วิธีแรกเฉียดขอบหรือไม่ผ่านเลยแล้วแต่เครื่องของ grader และถ้า N กับ Q ใหญ่ขึ้นอีกเท่าตัว งานก็มากขึ้นสี่เท่า ส่วนผลรวมสะสมใช้เวลาเกือบทั้งหมดไปกับการอ่านข้อมูลเข้า การคำนวณแทบไม่กินเวลาเลย</p>
+
+      <p>เรื่องผลรวมสะสมยังมีต่อ เช่น ใช้กับตารางสองมิติ หรือใช้คู่กับการค้นหาแบบแบ่งครึ่ง ซึ่งอยู่ในบทที่ 19 หน้านี้เป็นแค่จุดเริ่ม</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="off-by-one">แบบที่ 1 ลืมลบหนึ่ง</h3>
+
+      <p>เขียนสูตรเป็น <code>prefix[r] - prefix[l]</code> เพราะดูสมมาตรกว่า</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="steps-off"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int steps[100000];
+    long long prefix[100001];
+    int n, q;
+    scanf("%d %d", &amp;n, &amp;q);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;steps[i]);
+    }
+    prefix[0] = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        prefix[i] = prefix[i - 1] + steps[i - 1];
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int l, r;
+        scanf("%d %d", &amp;l, &amp;r);
+        printf("%lld\n", prefix[r] - prefix[l]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="steps-off" data-title="ข้อมูลเข้า"><pre><code>7 3
+8000 12000 5000 9000 15000 7000 10000
+1 7
+2 4
+5 5
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="steps-off" data-title="C:\code\steps_off.exe"><pre><code>58000
+14000
+0
+</code></pre></div>
+      </div>
+
+      <p>ทุกคำตอบขาดวัน l ไปหนึ่งวัน เพราะ <code>prefix[l]</code> รวมวันที่ l ไว้แล้ว ลบออกไปเลยหายไปด้วย คำถามที่ <code>l</code> เท่ากับ <code>r</code> ได้ 0 เสมอ ถ้าเจอแบบนี้ ให้ทดสอบกับช่วงยาวหนึ่งวัน คำตอบต้องเท่ากับค่าของวันนั้นพอดี</p>
+
+      <h3 id="int-prefix">แบบที่ 2 ใช้ int เก็บผลรวมสะสม</h3>
+
+      <p>คลิปวิดีโอคลิปหนึ่งมียอดวิวรายวันไม่เกิน 10<sup>9</sup> ต่อวัน ถามยอดวิวรวมของช่วงวัน ถ้าประกาศ <code>prefix</code> เป็น <code>int</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="views-int"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int views[100000];
+    int prefix[100001];
+    int n, q;
+    scanf("%d %d", &amp;n, &amp;q);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;views[i]);
+    }
+    prefix[0] = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        prefix[i] = prefix[i - 1] + views[i - 1];
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int l, r;
+        scanf("%d %d", &amp;l, &amp;r);
+        printf("%d\n", prefix[r] - prefix[l - 1]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="views-int" data-title="ข้อมูลเข้า"><pre><code>4 4
+900000000 800000000 700000000 600000000
+1 2
+3 4
+1 4
+2 4
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="views-int" data-title="C:\code\views.exe"><pre><code>1700000000
+1300000000
+-1294967296
+2100000000
+</code></pre></div>
+      </div>
+
+      <p>ยอดรวมทั้งสี่วันคือ 3000000000 แต่ได้ค่าติดลบ เพราะ <code>prefix[3]</code> กับ <code>prefix[4]</code> ล้นไปตั้งแต่ตอนสร้าง ที่แปลกคือคำตอบบรรทัดที่ 2 กับ 4 ถูก ทั้งที่ใช้ <code>prefix[4]</code> ที่ล้นไปแล้ว เพราะบนเครื่องที่ทดลอง ค่าที่ล้นตอนบวกไปวนกลับมาตอนลบพอดี หน้า 1.3 บอกไว้แล้วว่ามาตรฐานภาษา C ไม่รับประกันเรื่องนี้ อย่าพึ่งโชคแบบนี้ ผลรวมสะสมโตได้ถึง N คูณค่ามากสุดเสมอ ให้คิดขนาดจากตรงนั้น ข้อนี้ได้ถึง 10<sup>5</sup> × 10<sup>9</sup> = 10<sup>14</sup> ต้องเป็น <code>long long</code> ทั้งอาเรย์และ <code>%lld</code> ตอนพิมพ์</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ถามผลรวมช่วงซ้ำหลายครั้ง อย่าบวกใหม่ทุกครั้ง สร้างผลรวมสะสมครั้งเดียว</li>
+        <li><code>prefix[i]</code> คือผลรวมของ i ตัวแรก มี N + 1 ช่อง และ <code>prefix[0] = 0</code></li>
+        <li>สร้างด้วย <code>prefix[i] = prefix[i - 1] + a[i - 1]</code></li>
+        <li>ผลรวมตัวที่ l ถึง r (นับจาก 1) คือ <code>prefix[r] - prefix[l - 1]</code></li>
+        <li>ผลรวมสะสมโตเร็ว ใช้ <code>long long</code> เป็นค่าเริ่มต้น</li>
+        <li>ทดสอบด้วยช่วงยาวหนึ่งตัว และช่วงที่เริ่มตัวแรก จะจับการนับเกินหรือขาดหนึ่งได้</li>
+      </ul>
+    </article>

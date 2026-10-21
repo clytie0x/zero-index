@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 13 เรียงข้อมูลและค้นหา</h1>
+
+      <p>จบบทนี้ น้องจะเรียงข้อมูลได้ทั้งแบบเขียนเองและแบบใช้ <code>qsort</code> ของภาษา C รู้ว่าวิธีที่เขียนเองใช้ได้กับข้อมูลขนาดไหน และเรียงอาเรย์ของ struct ตามหลายเงื่อนไข เช่น คะแนนมากก่อน ถ้าเท่ากันใครใช้เวลาน้อยกว่าก่อน ซึ่งเป็นโจทย์จัดอันดับที่ออกสอบบ่อยมาก นอกจากนั้นยังได้เครื่องมือค้นหา ทั้งค้นหาตัวเลขในอาเรย์ ค้นหาชื่อ และค้นหาคำในประโยค โจทย์ TOI Zero ระดับ A2 ถึง A3 และข้อสอบค่าย 1 จำนวนมากง่ายลงทันทีเมื่อเรียงข้อมูลก่อน เช่น หาค่ากลาง หาคนที่ k นับค่าที่ไม่ซ้ำ หรือหาคู่ที่ใกล้กันที่สุด</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="why-sort.html">13.1 ทำไมต้องเรียงข้อมูล</a></td><td>ค่ากลาง คนที่ k ค่าซ้ำที่อยู่ติดกัน ตรวจว่าเรียงแล้วหรือยัง และฟังก์ชัน swap</td></tr>
+            <tr><td><a href="bubble-selection.html">13.2 bubble sort และ selection sort</a></td><td>เขียนเองพร้อมแผนภาพทีละรอบ หยุดก่อนเมื่อไม่มีการสลับ และนับจำนวนครั้งที่สลับ</td></tr>
+            <tr><td><a href="insertion-time.html">13.3 insertion sort และเวลาที่ใช้</a></td><td>แทรกเข้าที่ทีละตัว เทียบสามวิธีกับข้อมูลสามแบบ และจับเวลาจริงให้เห็นการโตตาม n กำลังสอง</td></tr>
+            <tr><td><a href="qsort.html">13.4 เรียงด้วย qsort</a></td><td>ฟังก์ชันเปรียบเทียบ เรียงมากไปน้อย เรียงข้อความ เรียง struct หลายเงื่อนไข และกับดัก return x - y</td></tr>
+            <tr><td><a href="counting-search.html">13.5 counting sort และการค้นหา</a></td><td>เรียงด้วยการนับ ค้นหาแบบไล่ ค้นหาชื่อใน struct และหาคำในประโยคแบบซ้อนและไม่ซ้อน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>เขียน bubble sort selection sort และ insertion sort เองโดยไม่เปิดดู แล้วพิมพ์ผลทุกรอบของ <code>6 3 8 2 5</code> ได้ตรงกับแผนภาพในหน้า 13.2 และ 13.3</span></label></li>
+        <li><label><input type="checkbox"><span>นับได้ว่า bubble sort สลับ <code>8 7 6 5 4 3 2 1</code> ทั้งหมด 28 ครั้ง และบอกได้ว่าทำไมเท่ากับจำนวนคู่ที่ผิดลำดับ</span></label></li>
+        <li><label><input type="checkbox"><span>จับเวลา insertion sort ที่ n = 10000 กับ n = 100000 บนเครื่องตัวเอง แล้วเห็นว่าเวลาเพิ่มราว 100 เท่า</span></label></li>
+        <li><label><input type="checkbox"><span>เรียงอาเรย์ของ struct ด้วย <code>qsort</code> ตามคะแนนจากมากไปน้อย ถ้าเท่ากันเรียงตามชื่อ โดยฟังก์ชันเปรียบเทียบไม่มีการลบตัวเลข</span></label></li>
+        <li><label><input type="checkbox"><span>นับ <code>ana</code> ใน <code>banana</code> ได้ 2 แบบซ้อนกัน และ 1 แบบไม่ซ้อน</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ รวมข้อที่ n ถึงแสนอย่างน้อยสองข้อ</span></label></li>
+      </ul>
+    </article>

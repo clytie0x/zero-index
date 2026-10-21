@@ -1,0 +1,608 @@
+<article class="doc">
+      <h1>13.5 counting sort และการค้นหา</h1>
+
+      <p>หน้านี้มีสองเรื่อง เรื่องแรกคือวิธีเรียงที่เร็วกว่า <code>qsort</code> อีก แต่ใช้ได้เฉพาะเมื่อค่าอยู่ในช่วงแคบ เช่น คะแนน 0 ถึง 100 ซึ่งน้องเกือบเขียนเป็นแล้วตั้งแต่หน้า 5.3 เรื่องที่สองคือการค้นหา ทั้งค้นหาตัวเลขในอาเรย์ ค้นหาชื่อในอาเรย์ของ struct และค้นหาคำในประโยค ซึ่งเป็นโจทย์ที่เจอทั้งใน TOI Zero และในข้อสอบค่าย</p>
+
+      <h2 id="counting-sort">counting sort เรียงด้วยการนับ</h2>
+
+      <p>ในหน้า 5.3 เรานับว่าคะแนนแต่ละค่ามีกี่คนด้วยอาเรย์นับ แล้ววนตามค่าคะแนนจาก 0 ถึง 100 เพื่อพิมพ์ผล ถ้าตอนพิมพ์ เราพิมพ์คะแนน <code>s</code> ซ้ำ <code>count[s]</code> ครั้ง ก็จะได้คะแนนทุกคนเรียงจากน้อยไปมาก โดยไม่ได้เทียบค่าสองค่าเลยสักครั้ง วิธีนี้เรียกว่า <strong>counting sort</strong></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="counting-sort"><pre><code>#include &lt;stdio.h&gt;
+
+int count[101];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        count[score]++; // (1)!
+    }
+    int printed = 0;
+    for (int value = 0; value &lt;= 100; value++) { // (2)!
+        for (int c = 0; c &lt; count[value]; c++) {
+            if (printed &gt; 0) {
+                printf(" ");
+            }
+            printf("%d", value);
+            printed++;
+        }
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>รอบแรกอ่านแล้วนับ ไม่ต้องเก็บคะแนนของแต่ละคนไว้เลย</li>
+        <li>รอบสองวนตามค่า จากน้อยไปมาก พิมพ์ค่านั้นซ้ำตามจำนวนที่นับได้ ถ้าอยากได้จากมากไปน้อย ให้วน <code>value</code> จาก 100 ลงมาถึง 0</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="counting-sort" data-title="ข้อมูลเข้า"><pre><code>10
+72 85 64 85 90 72 85 58 72 100
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="counting-sort" data-title="C:\code\counting.exe"><pre><code>58 64 72 72 72 85 85 85 90 100
+</code></pre></div>
+      </div>
+
+      <p>งานทั้งหมดคืออ่าน n ตัวหนึ่งรอบ บวกวนค่าอีก 101 รอบ ซึ่งรวมกันแล้วพิมพ์ออกมา n ตัว ไม่มีลูปซ้อนที่โตตาม n<sup>2</sup> ลองวัดด้วยโปรแกรมจับเวลาแบบหน้า 13.3 โดยใช้ข้อมูล <code>rand() % 101</code> หนึ่งล้านตัว (อาเรย์ขยายเป็นล้านช่อง) จับเฉพาะช่วงที่เรียง บนเครื่องเดิม ค่ากลางของ 5 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>counting sort</td><td>1,000,000</td><td>0.002 วินาที</td><td>0.001 วินาที</td></tr>
+            <tr><td>qsort</td><td>1,000,000</td><td>0.038 วินาที</td><td>0.030 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เร็วกว่า <code>qsort</code> อีกราว 20 ถึง 30 เท่า แต่ทั้งสองแบบเร็วพอสำหรับโจทย์ 1 วินาทีอยู่แล้ว ข้อดีที่สำคัญกว่าในการแข่งขันคือ counting sort เขียนสั้น และไม่มีฟังก์ชันเปรียบเทียบให้เขียนผิด</p>
+
+      <h2 id="counting-when">counting sort ใช้ได้เมื่อไร</h2>
+
+      <ul>
+        <li><strong>ค่าเป็นจำนวนเต็มและช่วงแคบ</strong> อาเรย์นับต้องมีหนึ่งช่องต่อหนึ่งค่าที่เป็นไปได้ คะแนน 0 ถึง 100 ใช้ 101 ช่อง อายุ 0 ถึง 150 ใช้ 151 ช่อง แต่ถ้าค่าไปถึง 10<sup>9</sup> ต้องใช้พันล้านช่อง ทั้งประกาศไม่ได้และวนไม่ทัน ให้ใช้ <code>qsort</code></li>
+        <li><strong>ค่าติดลบก็ได้ ถ้าเลื่อนก่อน</strong> แบบหน้า 5.3 เช่น อุณหภูมิ -50 ถึง 50 องศา ใช้ช่อง <code>t + 50</code> ตอนพิมพ์ค่อยลบ 50 กลับ</li>
+        <li><strong>เรียงแค่ตัวเลข</strong> ถ้าต้องเรียงข้อมูลที่มีอย่างอื่นติดมาด้วย เช่น ชื่อกับคะแนน counting sort แบบนี้ทำไม่ได้ เพราะเหลือแค่จำนวน ไม่รู้ว่าใครได้คะแนนนั้น ใช้ <code>qsort</code> กับอาเรย์ของ struct แทน</li>
+      </ul>
+
+      <div class="code" data-lang="c" data-linenums data-test="temperature"><pre><code>#include &lt;stdio.h&gt;
+
+int count[101];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        int t;
+        scanf("%d", &amp;t);
+        count[t + 50]++;
+    }
+    int printed = 0;
+    for (int index = 0; index &lt;= 100; index++) {
+        for (int c = 0; c &lt; count[index]; c++) {
+            if (printed &gt; 0) {
+                printf(" ");
+            }
+            printf("%d", index - 50);
+            printed++;
+        }
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="temperature" data-title="ข้อมูลเข้า"><pre><code>7
+12 -5 30 -50 0 -5 50
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="temperature" data-title="C:\code\temperature.exe"><pre><code>-50 -5 -5 0 12 30 50
+</code></pre></div>
+      </div>
+
+      <h2 id="linear-search">ค้นหาแบบไล่</h2>
+
+      <p>ลานจอดรถจดเลขบัตรจอดของรถทุกคันไว้ตามลำดับที่เข้ามา เจ้าของรถยื่นบัตรมา อยากรู้ว่ารถคันนั้นอยู่ในรายการไหม วิธีที่ตรงที่สุดคือไล่ดูทีละช่องตั้งแต่ช่องแรก เจอเมื่อไรก็ตอบเลย ไล่จนสุดแล้วไม่เจอก็คือไม่มี วิธีนี้เรียกว่า <strong>ค้นหาแบบไล่ (linear search)</strong> ใช้ได้กับข้อมูลที่ไม่ได้เรียง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="linear-search"><pre><code>#include &lt;stdio.h&gt;
+
+int ticket[1000];
+
+int linear_search(int a[], int n, int target)
+{
+    for (int i = 0; i &lt; n; i++) {
+        if (a[i] == target) {
+            return i; // (1)!
+        }
+    }
+    return -1; // (2)!
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;ticket[i]);
+    }
+    int target;
+    while (scanf("%d", &amp;target) == 1) {
+        int index = linear_search(ticket, n, target);
+        if (index == -1) {
+            printf("%d not found\n", target);
+        } else {
+            printf("%d found at index %d\n", target, index);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เจอแล้ว <code>return</code> ออกจากฟังก์ชันทันที ช่องที่เหลือไม่ต้องดู จึงได้ตำแหน่งแรกที่เจอเสมอ</li>
+        <li>มาถึงบรรทัดนี้ได้แปลว่าไล่ครบทุกช่องแล้วไม่เจอ คืน -1 เพราะไม่มีช่องไหนที่ index ติดลบ คนเรียกจึงแยกออกว่าไม่เจอ</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="linear-search" data-title="ข้อมูลเข้า"><pre><code>6
+1024 5531 870 4410 870 9902
+870
+9902
+1234
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="linear-search" data-title="C:\code\parking.exe"><pre><code>870 found at index 2
+9902 found at index 5
+1234 not found
+</code></pre></div>
+      </div>
+
+      <p>870 มีสองช่อง คือ index 2 กับ 4 ฟังก์ชันตอบ 2 เพราะเจอก่อน ถ้าโจทย์ถามอย่างอื่น ก็แค่เปลี่ยนสิ่งที่ทำตอนเจอ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="search-all"><pre><code>#include &lt;stdio.h&gt;
+
+int ticket[1000];
+
+int main()
+{
+    int n, target;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;ticket[i]);
+    }
+    scanf("%d", &amp;target);
+    int count = 0;
+    int last = -1;
+    printf("indexes:");
+    for (int i = 0; i &lt; n; i++) {
+        if (ticket[i] == target) {
+            printf(" %d", i);
+            count++;
+            last = i;
+        }
+    }
+    printf("\n");
+    printf("count = %d, last = %d\n", count, last);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="search-all" data-title="ข้อมูลเข้า"><pre><code>6
+1024 5531 870 4410 870 9902
+870
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="search-all" data-title="C:\code\search_all.exe"><pre><code>indexes: 2 4
+count = 2, last = 4
+</code></pre></div>
+      </div>
+
+      <p>หาทุกตำแหน่ง นับจำนวน หรือหาตำแหน่งสุดท้าย ต้องไล่จนครบทุกช่อง ห้ามหยุดที่ตัวแรก ส่วนตำแหน่งสุดท้ายจะไล่จากท้ายแถวมาแล้วหยุดที่ตัวแรกที่เจอก็ได้</p>
+
+      <h2 id="search-struct">ค้นหาชื่อในอาเรย์ของ struct</h2>
+
+      <p>ค้นหาด้วยข้อความก็ไล่แบบเดียวกัน แค่เทียบด้วย <code>strcmp</code> แทน <code>==</code> ตัวอย่างนี้คือเมนูของโรงอาหาร ค้นหาราคาจากชื่อเมนู</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="menu"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+struct dish {
+    char name[21];
+    int price;
+};
+
+struct dish menu[100];
+
+int find_dish(struct dish list[], int n, const char *name)
+{
+    for (int i = 0; i &lt; n; i++) {
+        if (strcmp(list[i].name, name) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%s %d", menu[i].name, &amp;menu[i].price);
+    }
+    char order[21];
+    while (scanf("%s", order) == 1) {
+        int index = find_dish(menu, n, order);
+        if (index == -1) {
+            printf("%s: no such dish\n", order);
+        } else {
+            printf("%s: %d baht\n", order, menu[index].price);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="menu" data-title="ข้อมูลเข้า"><pre><code>4
+padthai 50
+somtam 40
+khaomankai 45
+kaprao 50
+somtam
+pizza
+kaprao
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="menu" data-title="C:\code\menu.exe"><pre><code>somtam: 40 baht
+pizza: no such dish
+kaprao: 50 baht
+</code></pre></div>
+      </div>
+
+      <h2 id="search-cost">ค้นหาแบบไล่ใช้เวลาเท่าไร</h2>
+
+      <p>หนึ่งคำถาม ไล่ไม่เกิน n ช่อง ถ้า n เป็นแสนก็ยังเร็วมาก ปัญหาอยู่ที่โจทย์ที่มีหลายคำถาม เช่น รายการ n = 100,000 ตัว และคำถาม Q = 100,000 ข้อ กรณีที่แย่ที่สุดคือทุกคำถามไม่เจอ ต้องไล่ครบทุกครั้ง รวม n × Q = 10<sup>10</sup> ครั้ง ตามหลักในหน้า 4.5 ไม่มีทางทัน 1 วินาที ทางออกมีสองแบบ</p>
+
+      <ul>
+        <li>ถ้าค่าเป็นจำนวนเต็มช่วงแคบ ใช้อาเรย์ <code>seen</code> หรืออาเรย์นับแบบหน้า 5.3 ตอบแต่ละคำถามได้ทันทีโดยไม่ต้องไล่</li>
+        <li>ถ้าค่าใหญ่ เรียงข้อมูลด้วย <code>qsort</code> ก่อนครั้งเดียว แล้วใช้ <strong>binary search</strong> ซึ่งค้นในข้อมูลที่เรียงแล้วโดยตัดครึ่งไปทีละรอบ ข้อมูลแสนตัวใช้ไม่เกิน 17 รอบต่อคำถาม จะเรียนในบทที่ 19 นี่คืออีกเหตุผลหนึ่งที่ต้องเรียง</li>
+      </ul>
+
+      <h2 id="string-search">ค้นหาคำในประโยค</h2>
+
+      <p>อยากรู้ว่าคำว่า <code>the</code> อยู่ตรงไหนบ้างในประโยค ให้ลองวางคำไว้ใต้ประโยคที่ตำแหน่งเริ่ม <code>i = 0</code> เทียบทีละตัวอักษร ถ้าตรงครบทุกตัวก็คือเจอ แล้วเลื่อนคำไปทางขวาหนึ่งช่อง ทำซ้ำจนคำเลยท้ายประโยค ประโยคยาว n ตัว คำยาว m ตัว ตำแหน่งเริ่มสุดท้ายที่เป็นไปได้คือ n - m</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="find-word"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char text[1005], word[105];
+
+void strip_newline(char s[])
+{
+    for (int i = 0; s[i] != '\0'; i++) {
+        if (s[i] == '\n' || s[i] == '\r') {
+            s[i] = '\0';
+        }
+    }
+}
+
+int main()
+{
+    fgets(text, sizeof text, stdin);
+    fgets(word, sizeof word, stdin);
+    strip_newline(text); // (1)!
+    strip_newline(word);
+    int n = strlen(text);
+    int m = strlen(word);
+    int count = 0;
+    for (int i = 0; i + m &lt;= n; i++) { // (2)!
+        int j = 0;
+        while (j &lt; m &amp;&amp; text[i + j] == word[j]) { // (3)!
+            j++;
+        }
+        if (j == m) {
+            printf("found at %d\n", i);
+            count++;
+        }
+    }
+    printf("count = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตัด <code>'\n'</code> กับ <code>'\r'</code> ที่ <code>fgets</code> ติดมาด้วยแบบหน้า 6.3 ทั้งประโยคและคำ ลืมตัดของคำแล้วจะไม่เจออะไรเลย ดูในส่วนลองทำให้พัง</li>
+        <li>เริ่มได้ถึง <code>i = n - m</code> เขียนเป็น <code>i + m &lt;= n</code> จะเห็นชัดว่าคำทั้งคำยังอยู่ในประโยค ความยาวเก็บไว้ในตัวแปรก่อน ไม่เรียก <code>strlen</code> ในเงื่อนไขลูปตามหน้า 6.4</li>
+        <li>เทียบไปเรื่อยๆ จนกว่าจะเจอตัวที่ไม่ตรง ถ้าหลุดลูปตอน <code>j == m</code> แปลว่าตรงครบทุกตัว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="find-word" data-title="ข้อมูลเข้า"><pre><code>the cat sat on the mat with the other cat
+the
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="find-word" data-title="C:\code\find_word.exe"><pre><code>found at 0
+found at 15
+found at 28
+found at 33
+count = 4
+</code></pre></div>
+      </div>
+
+      <p>เจอสี่ครั้ง ไม่ใช่สาม ครั้งที่ 4 คือ <code>the</code> ที่อยู่ข้างในคำว่า <code>other</code> โปรแกรมนี้หาข้อความ ไม่ได้หาคำ ถ้าโจทย์ต้องการเฉพาะคำที่อยู่เดี่ยวๆ ให้เช็กเพิ่มว่าตัวก่อนหน้าและตัวถัดไปเป็นช่องว่างหรือเป็นขอบของประโยค</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="whole-word"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char text[1005], word[105];
+
+void strip_newline(char s[])
+{
+    for (int i = 0; s[i] != '\0'; i++) {
+        if (s[i] == '\n' || s[i] == '\r') {
+            s[i] = '\0';
+        }
+    }
+}
+
+int main()
+{
+    fgets(text, sizeof text, stdin);
+    fgets(word, sizeof word, stdin);
+    strip_newline(text);
+    strip_newline(word);
+    int n = strlen(text);
+    int m = strlen(word);
+    int count = 0;
+    for (int i = 0; i + m &lt;= n; i++) {
+        int j = 0;
+        while (j &lt; m &amp;&amp; text[i + j] == word[j]) {
+            j++;
+        }
+        int left_ok = (i == 0 || text[i - 1] == ' ');
+        int right_ok = (i + m == n || text[i + m] == ' ');
+        if (j == m &amp;&amp; left_ok &amp;&amp; right_ok) {
+            printf("found at %d\n", i);
+            count++;
+        }
+    }
+    printf("count = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="whole-word" data-title="ข้อมูลเข้า"><pre><code>the cat sat on the mat with the other cat
+the
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="whole-word" data-title="C:\code\whole_word.exe"><pre><code>found at 0
+found at 15
+found at 28
+count = 3
+</code></pre></div>
+      </div>
+
+      <p>เงื่อนไข <code>i == 0</code> ต้องอยู่หน้า <code>text[i - 1]</code> เพื่อไม่ให้แตะ <code>text[-1]</code> ส่วน <code>text[i + m]</code> เมื่อ <code>i + m == n</code> คือ <code>'\0'</code> ซึ่งอยู่ในอาเรย์จริง แต่เช็กให้ชัดก็อ่านง่ายกว่า</p>
+
+      <h2 id="overlap">นับซ้อนกันหรือไม่ซ้อน</h2>
+
+      <p>หา <code>ana</code> ใน <code>banana</code> เจอที่ตำแหน่ง 1 และ 3 สองครั้งนี้ใช้ตัว a ตรงกลางร่วมกัน ถ้าโจทย์บอกว่า "นับโดยไม่ให้ซ้อนกัน" เช่น ตัดคำออกจากแถบกระดาษ ตัดแล้วตัวอักษรนั้นหายไป พอเจอแล้วต้องกระโดดข้ามไปทั้งคำ คือเพิ่ม <code>i</code> อีก m แทน 1</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="overlap"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char text[1005], word[105];
+
+int matches_at(int i, int m)
+{
+    for (int j = 0; j &lt; m; j++) {
+        if (text[i + j] != word[j]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int main()
+{
+    while (scanf("%s %s", text, word) == 2) {
+        int n = strlen(text);
+        int m = strlen(word);
+        int overlapping = 0;
+        for (int i = 0; i + m &lt;= n; i++) {
+            if (matches_at(i, m)) {
+                overlapping++;
+            }
+        }
+        int separate = 0;
+        int i = 0;
+        while (i + m &lt;= n) {
+            if (matches_at(i, m)) {
+                separate++;
+                i += m; // (1)!
+            } else {
+                i++;
+            }
+        }
+        printf("%s in %s: overlapping %d, separate %d\n", word, text, overlapping, separate);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เจอแล้วข้ามทั้งคำ ไม่เจอเลื่อนทีละช่อง การนับแบบไม่ซ้อนจึงต้องใช้ <code>while</code> ที่เลือกได้ว่าจะเพิ่ม <code>i</code> เท่าไร</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="overlap" data-title="ข้อมูลเข้า"><pre><code>banana ana
+aaaaa aa
+mississippi issi
+abcabc abc
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="overlap" data-title="C:\code\overlap.exe"><pre><code>ana in banana: overlapping 2, separate 1
+aa in aaaaa: overlapping 4, separate 2
+issi in mississippi: overlapping 2, separate 1
+abc in abcabc: overlapping 2, separate 2
+</code></pre></div>
+      </div>
+
+      <p>ตัวอย่างนี้อ่านด้วย <code>%s</code> ทีละคู่จนหมดข้อมูล เพราะแต่ละบรรทัดไม่มีช่องว่างในข้อความ อ่านโจทย์ให้ดีว่าต้องการนับแบบไหน สองแบบได้คำตอบต่างกันเฉพาะเมื่อคำซ้อนทับตัวเองได้ อย่าง <code>aa</code> หรือ <code>issi</code></p>
+
+      <h2 id="strstr">strstr ใน string.h</h2>
+
+      <p><code>string.h</code> มีฟังก์ชันหาข้อความให้ชื่อ <code>strstr(text, word)</code> คืนที่อยู่ของตำแหน่งแรกที่เจอ หรือ <code>NULL</code> ถ้าไม่เจอ เอาที่อยู่ที่ได้ลบกับที่อยู่ของช่องแรก ก็ได้เป็นตำแหน่ง แบบการลบ pointer ในบทที่ 10 ถ้าจะหาต่อ ให้เริ่มหาใหม่จากตำแหน่งถัดไป</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="strstr"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char text[1005], word[105];
+
+int main()
+{
+    scanf("%s %s", text, word);
+    int count = 0;
+    char *found = strstr(text, word);
+    while (found != NULL) {
+        printf("found at %d\n", (int)(found - text));
+        count++;
+        found = strstr(found + 1, word);
+    }
+    printf("count = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="strstr" data-title="ข้อมูลเข้า"><pre><code>banana ana
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="strstr" data-title="C:\code\strstr.exe"><pre><code>found at 1
+found at 3
+count = 2
+</code></pre></div>
+      </div>
+
+      <p>หาต่อจาก <code>found + 1</code> จึงนับแบบซ้อนกัน ถ้าต้องการแบบไม่ซ้อนให้หาต่อจาก <code>found + m</code> แต่ให้เขียนเองให้เป็นก่อน เพราะโจทย์ค่ายหลายข้อให้ปรับการเทียบ เช่น ไม่สนตัวพิมพ์ใหญ่เล็ก หรือให้ผิดได้หนึ่งตัว ซึ่ง <code>strstr</code> ทำไม่ได้</p>
+
+      <p>การหาแบบนี้เทียบได้ถึงราว n × m ตัวอักษร เช่น ประโยคเป็น <code>a</code> แสนตัว และคำเป็น <code>a</code> 999 ตัวตามด้วย <code>b</code> ทุกตำแหน่งเริ่มต้องเทียบเกือบครบทั้งคำ รวมราว 10<sup>8</sup> ครั้ง ยังพอไหว แต่ถ้าทั้งคู่ยาวเป็นแสนก็ไม่ทัน วิธีค้นหาข้อความที่เร็วกว่านี้อยู่ในบทที่ 30</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="not-found-in-loop">แบบที่ 1 พิมพ์ไม่เจอไว้ในลูป</h3>
+
+      <p>ความผิดพลาดที่เจอบ่อยที่สุดของการค้นหาแบบไล่ คือตัดสินว่าไม่เจอทั้งที่ยังดูไม่ครบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="not-found-in-loop"><pre><code>#include &lt;stdio.h&gt;
+
+int ticket[1000];
+
+int main()
+{
+    int n, target;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;ticket[i]);
+    }
+    scanf("%d", &amp;target);
+    for (int i = 0; i &lt; n; i++) {
+        if (ticket[i] == target) {
+            printf("found at index %d\n", i);
+        } else {
+            printf("not found\n");
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="not-found-in-loop" data-title="ข้อมูลเข้า"><pre><code>6
+1024 5531 870 4410 870 9902
+870
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="not-found-in-loop" data-title="C:\code\parking.exe"><pre><code>not found
+not found
+found at index 2
+not found
+found at index 4
+not found
+</code></pre></div>
+      </div>
+
+      <p>ทุกช่องที่ไม่ใช่ 870 พิมพ์ <code>not found</code> หนึ่งบรรทัด ช่องที่ไม่ตรงหนึ่งช่องบอกได้แค่ว่าช่องนั้นไม่ใช่ จะสรุปว่าไม่เจอได้ก็ต่อเมื่อดูครบทุกช่องแล้ว คือหลังลูปจบ ใช้ฟังก์ชันที่คืน -1 แบบตัวอย่างแรก หรือใช้ตัวแปรนับที่เช็กหลังลูป</p>
+
+      <h3 id="forget-strip">แบบที่ 2 ลืมตัด '\n' ของคำ</h3>
+
+      <p>ในโปรแกรม find_word ลบบรรทัด <code>strip_newline(word);</code> ออก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="forget-strip"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char text[1005], word[105];
+
+void strip_newline(char s[])
+{
+    for (int i = 0; s[i] != '\0'; i++) {
+        if (s[i] == '\n' || s[i] == '\r') {
+            s[i] = '\0';
+        }
+    }
+}
+
+int main()
+{
+    fgets(text, sizeof text, stdin);
+    fgets(word, sizeof word, stdin);
+    strip_newline(text);
+    int n = strlen(text);
+    int m = strlen(word);
+    int count = 0;
+    for (int i = 0; i + m &lt;= n; i++) {
+        int j = 0;
+        while (j &lt; m &amp;&amp; text[i + j] == word[j]) {
+            j++;
+        }
+        if (j == m) {
+            printf("found at %d\n", i);
+            count++;
+        }
+    }
+    printf("count = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="forget-strip" data-title="ข้อมูลเข้า"><pre><code>the cat sat on the mat with the other cat
+the
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="forget-strip" data-title="C:\code\find_word.exe"><pre><code>count = 0
+</code></pre></div>
+      </div>
+
+      <p>ไม่เจอเลยสักครั้ง เพราะ <code>word</code> คือ <code>the</code> ตามด้วย <code>'\n'</code> ยาว 4 ตัว ตำแหน่งที่มี <code>the</code> ตรงสามตัวแรก แต่ตัวที่สี่ในประโยคเป็นช่องว่างหรือตัวอักษร ไม่ใช่ <code>'\n'</code> ไม่มีอะไรเตือน ยังดีที่ตัวอย่างในโจทย์จะผิดให้เห็นทันที ถ้าได้ 0 ทั้งที่เห็นกับตาว่ามี ให้สงสัย <code>'\n'</code> ก่อน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>counting sort นับด้วยอาเรย์นับแล้วพิมพ์ตามค่า ไม่ต้องเทียบ เร็วมาก ใช้ได้เมื่อค่าเป็นจำนวนเต็มในช่วงแคบ ค่าติดลบให้เลื่อนก่อน</li>
+        <li>ค้นหาแบบไล่ดูทีละช่อง เจอแล้วคืนตำแหน่ง ไม่เจอคืน -1 ใช้กับข้อมูลที่ไม่เรียงได้ สรุปว่าไม่เจอได้หลังลูปจบเท่านั้น</li>
+        <li>ค้นหาข้อความในอาเรย์ของ struct ใช้ <code>strcmp(...) == 0</code></li>
+        <li>คำถามเป็นแสนกับข้อมูลเป็นแสน ไล่ไม่ทัน ใช้อาเรย์นับเมื่อค่าเล็ก หรือเรียงแล้วใช้ binary search ในบทที่ 19</li>
+        <li>หาคำในประโยค ลองทุกตำแหน่งเริ่ม <code>i + m &lt;= n</code> เทียบทีละตัว ระวังคำที่ซ่อนอยู่ในคำอื่น และอ่านโจทย์ว่านับแบบซ้อนหรือไม่ซ้อน</li>
+        <li>ข้อความที่อ่านด้วย <code>fgets</code> ต้องตัด <code>'\n'</code> ทุกครั้ง ทั้งประโยคและคำที่จะหา</li>
+      </ul>
+    </article>

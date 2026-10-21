@@ -1,0 +1,303 @@
+<article class="doc">
+      <h1>13.1 ทำไมต้องเรียงข้อมูล</h1>
+
+      <p>ครูประกาศคะแนนสอบโดยเรียงจากมากไปน้อย น้องหาได้ทันทีว่าใครได้ที่ 1 ที่ 3 หรือคนที่อยู่ตรงกลางห้องได้เท่าไร ถ้าคะแนนเดียวกันอยู่ติดกัน ก็นับได้ง่ายว่ามีกี่คนที่ได้เท่ากัน แต่ถ้าครูประกาศตามเลขที่ ต้องไล่ดูทั้งรายชื่อทุกครั้งที่ถาม การจัดข้อมูลให้เป็นลำดับแบบนี้เรียกว่า <strong>การเรียง (sorting)</strong> หน้านี้ยังไม่เรียงเอง แต่จะดูก่อนว่าข้อมูลที่เรียงแล้วทำให้โจทย์แบบไหนง่ายลง แล้วเตรียมเครื่องมือชิ้นแรกที่ทุกวิธีเรียงต้องใช้ คือการสลับค่าสองช่อง</p>
+
+      <h2 id="order">เรียงจากน้อยไปมาก และมากไปน้อย</h2>
+
+      <ul>
+        <li><strong>เรียงจากน้อยไปมาก (ascending)</strong> ทุกช่องมีค่าไม่มากกว่าช่องถัดไป <code>a[0] ≤ a[1] ≤ ... ≤ a[n - 1]</code> เช่น <code>2 3 3 5 8</code></li>
+        <li><strong>เรียงจากมากไปน้อย (descending)</strong> กลับกัน เช่น <code>8 5 3 3 2</code></li>
+      </ul>
+
+      <p>ใช้ ≤ ไม่ใช่ &lt; เพราะค่าซ้ำกันได้ ถ้าโจทย์บอกแค่ว่า "เรียง" ไม่บอกทิศ ส่วนใหญ่หมายถึงจากน้อยไปมาก</p>
+
+      <h2 id="median">ค่ากลาง</h2>
+
+      <p>น้องจดเวลาเดินทางมาโรงเรียนเจ็ดวัน เป็นนาที วันหนึ่งฝนตกรถติดหนัก ใช้ไป 95 นาที ถ้าอยากรู้ว่าปกติใช้เวลาเท่าไร ค่าเฉลี่ยจะถูกวันนั้นดึงให้สูงเกินจริง ตัวเลขที่บอกว่า "ปกติ" ได้ดีกว่าคือ <strong>ค่ากลาง (median)</strong> คือค่าที่อยู่ตรงกลางเมื่อเรียงแล้ว มีครึ่งหนึ่งน้อยกว่าหรือเท่า อีกครึ่งมากกว่าหรือเท่า</p>
+
+      <p>ถ้าข้อมูลเรียงจากน้อยไปมากแล้ว และมี n ตัวเป็นเลขคี่ ค่ากลางอยู่ที่ช่อง <code>n / 2</code> พอดี เช่น n = 7 ช่องกลางคือ <code>a[3]</code> มีสามช่องอยู่ทางซ้ายและสามช่องอยู่ทางขวา ตัวอย่างนี้สมมติว่าข้อมูลเข้าเรียงมาให้แล้ว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="median"><pre><code>#include &lt;stdio.h&gt;
+
+int minutes[1000];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;minutes[i]);
+        total += minutes[i];
+    }
+    printf("average = %.2f\n", (double)total / n);
+    printf("median = %d\n", minutes[n / 2]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="median" data-title="ข้อมูลเข้า"><pre><code>7
+25 27 28 30 31 33 95
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="median" data-title="C:\code\median.exe"><pre><code>average = 38.43
+median = 30
+</code></pre></div>
+      </div>
+
+      <p>ค่าเฉลี่ยบอกว่าใช้ราว 38 นาที ทั้งที่หกวันจากเจ็ดวันใช้ไม่เกิน 33 นาที ส่วนค่ากลางได้ 30 ซึ่งใกล้ความจริงกว่า ต่อให้วันนั้นรถติดถึง 200 นาที ค่ากลางก็ยังเป็น 30 เท่าเดิม</p>
+
+      <p>ถ้า n เป็นเลขคู่ จะมีสองช่องตรงกลาง คือ <code>a[n / 2 - 1]</code> กับ <code>a[n / 2]</code> ค่ากลางนิยามเป็นค่าเฉลี่ยของสองช่องนั้น โจทย์จะบอกเองว่าต้องการแบบไหน อ่านให้ดีก่อนเขียน</p>
+
+      <h2 id="kth">คนที่ k</h2>
+
+      <p>เมื่อเรียงจากน้อยไปมากแล้ว ตัวที่น้อยเป็นอันดับ k อยู่ที่ <code>a[k - 1]</code> ทันที ลบหนึ่งเพราะช่องแรกคือช่องที่ 0 ส่วนตัวที่มากเป็นอันดับ k นับจากท้ายมา อยู่ที่ <code>a[n - k]</code> ตัวอย่างนี้ใช้เวลาวิ่ง 100 เมตรของนักกีฬา 8 คน หน่วยเป็นร้อยละวินาที เช่น 1185 คือ 11.85 วินาที เก็บเป็นจำนวนเต็มจะไม่ต้องกังวลเรื่องการปัดทศนิยม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="kth"><pre><code>#include &lt;stdio.h&gt;
+
+int times[1000];
+
+int main()
+{
+    int n, k;
+    scanf("%d %d", &amp;n, &amp;k);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;times[i]);
+    }
+    printf("fastest #%d: %d\n", k, times[k - 1]);
+    printf("slowest #%d: %d\n", k, times[n - k]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="kth" data-title="ข้อมูลเข้า"><pre><code>8 3
+1185 1192 1201 1201 1230 1244 1260 1302
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="kth" data-title="C:\code\kth.exe"><pre><code>fastest #3: 1201
+slowest #3: 1244
+</code></pre></div>
+      </div>
+
+      <p>ลองนับด้วยมือ คนที่เร็วเป็นอันดับ 3 ได้ 1201 และคนที่ช้าเป็นอันดับ 3 คือ 1244 ตรงกับที่โปรแกรมพิมพ์ ข้อมูลที่ยังไม่เรียงต้องหาค่าน้อยสุดแบบหน้า 5.2 แล้วตัดทิ้ง ทำซ้ำ k รอบ ซึ่งยุ่งกว่ามาก</p>
+
+      <h2 id="duplicates">ค่าซ้ำอยู่ติดกัน</h2>
+
+      <p>ร้านขนมจดราคาของที่ขายได้วันนี้ อยากรู้ว่ามีราคาที่ต่างกันกี่แบบ และแต่ละราคาขายได้กี่ชิ้น ในหน้า 5.3 เราใช้อาเรย์นับ ซึ่งต้องมีช่องเท่ากับช่วงของค่า ถ้าราคาสูงได้ถึง 10<sup>9</sup> บาท อาเรย์พันล้านช่องใหญ่เกินกว่าที่จะประกาศได้</p>
+
+      <p>ถ้าข้อมูลเรียงแล้ว ค่าที่เท่ากันจะอยู่ติดกันเป็นกลุ่ม แค่เทียบแต่ละช่องกับช่องก่อนหน้า ถ้าไม่เท่ากันแปลว่าเริ่มกลุ่มใหม่</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="groups"><pre><code>#include &lt;stdio.h&gt;
+
+int price[1000];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;price[i]);
+    }
+    int distinct = 0;
+    int start = 0; // (1)!
+    for (int i = 1; i &lt;= n; i++) {
+        if (i == n || price[i] != price[i - 1]) { // (2)!
+            printf("%d x%d\n", price[start], i - start);
+            distinct++;
+            start = i;
+        }
+    }
+    printf("distinct = %d\n", distinct);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>start</code> คือช่องแรกของกลุ่มที่กำลังนับ กลุ่มแรกเริ่มที่ช่อง 0 เสมอ</li>
+        <li>กลุ่มจบเมื่อเจอค่าที่ต่างจากช่องก่อนหน้า หรือเมื่อเลยช่องสุดท้ายไปแล้ว ต้องเช็ก <code>i == n</code> ก่อน เพราะ <code>||</code> หยุดตรวจทันทีที่ข้างซ้ายจริง จึงไม่แตะ <code>price[n]</code> ที่ไม่ใช่ข้อมูลของเรา ลูปนี้วนถึง <code>i &lt;= n</code> ก็เพื่อปิดกลุ่มสุดท้ายนี่เอง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="groups" data-title="ข้อมูลเข้า"><pre><code>8
+15 15 20 20 20 35 50 50
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="groups" data-title="C:\code\groups.exe"><pre><code>15 x2
+20 x3
+35 x1
+50 x2
+distinct = 4
+</code></pre></div>
+      </div>
+
+      <p>ลูปเดียว ไม่ต้องใช้อาเรย์นับ ค่าจะใหญ่แค่ไหนก็ได้ เทียบกับข้อมูลที่ยังไม่เรียง ซึ่งต้องเทียบทุกคู่แบบลูปซ้อนในหน้า 4.4 ราว n<sup>2</sup> / 2 ครั้ง ถ้า n เป็นแสนก็ห้าพันล้านครั้ง ไม่ทันเวลา</p>
+
+      <h2 id="is-sorted">ตรวจว่าเรียงแล้วหรือยัง</h2>
+
+      <p>ก่อนจะเชื่อว่าข้อมูลเรียงแล้ว ควรตรวจได้ ข้อมูลเรียงจากน้อยไปมากเมื่อไม่มีช่องไหนมากกว่าช่องถัดไปเลย ฟังก์ชันนี้คืนค่า -1 ถ้าเรียงแล้ว หรือคืนตำแหน่งแรกที่ผิดลำดับ ซึ่งช่วยตอนหาที่ผิดในโปรแกรมของตัวเองได้ดี</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="is-sorted"><pre><code>#include &lt;stdio.h&gt;
+
+int a[1000];
+
+int first_unsorted(int a[], int n)
+{
+    for (int i = 0; i + 1 &lt; n; i++) {
+        if (a[i] &gt; a[i + 1]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int main()
+{
+    int n;
+    while (scanf("%d", &amp;n) == 1) {
+        for (int i = 0; i &lt; n; i++) {
+            scanf("%d", &amp;a[i]);
+        }
+        int position = first_unsorted(a, n);
+        if (position == -1) {
+            printf("sorted\n");
+        } else {
+            printf("not sorted: a[%d] = %d &gt; a[%d] = %d\n", position, a[position], position + 1, a[position + 1]);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="is-sorted" data-title="ข้อมูลเข้า"><pre><code>5
+2 3 3 5 8
+5
+2 3 5 3 8
+1
+42
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="is-sorted" data-title="C:\code\is_sorted.exe"><pre><code>sorted
+not sorted: a[2] = 5 &gt; a[3] = 3
+sorted
+</code></pre></div>
+      </div>
+
+      <p>อาเรย์ที่มีตัวเดียวถือว่าเรียงแล้ว ลูปไม่ทำงานเลยเพราะ <code>0 + 1 &lt; 1</code> เป็นเท็จ ตัวอย่างนี้อ่านหลายชุดจนหมดข้อมูลด้วย <code>while (scanf(...) == 1)</code> แบบหน้า 4.3 ข้อดีของการเขียน <code>i + 1 &lt; n</code> แทน <code>i &lt; n - 1</code> คือดูออกทันทีว่า <code>a[i + 1]</code> ยังอยู่ในอาเรย์</p>
+
+      <h2 id="swap">สลับค่าสองช่อง</h2>
+
+      <p>วิธีเรียงทุกวิธีในหน้าถัดไปทำงานด้วยการสลับค่าสองช่องซ้ำไปเรื่อยๆ จึงควรเขียนให้ถูกตั้งแต่ตอนนี้ นึกถึงแก้วน้ำส้มกับแก้วนม ถ้าอยากสลับ ต้องมีแก้วเปล่าใบที่สามมาพักไว้ก่อน ในโค้ดแก้วเปล่าคือตัวแปร <code>temp</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="swap"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y) // (1)!
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+int main()
+{
+    int a[5] = {6, 3, 8, 2, 5};
+    swap(&amp;a[0], &amp;a[3]); // (2)!
+    for (int i = 0; i &lt; 5; i++) {
+        printf("%d ", a[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>รับที่อยู่ของสองช่อง เพราะฟังก์ชันต้องแก้ค่าของตัวแปรที่อยู่ข้างนอก ถ้ารับเป็น <code>int x, int y</code> จะได้แค่สำเนา สลับแล้วของจริงไม่เปลี่ยน เป็นเรื่องที่เรียนแล้วในบทที่ 10</li>
+        <li><code>&amp;a[0]</code> คือที่อยู่ของช่อง 0 สลับช่อง 0 กับช่อง 3</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="swap" data-title="C:\code\swap.exe"><pre><code>2 3 8 6 5 
+</code></pre></div>
+
+      <p>บรรทัด <code>printf("%d ", a[i])</code> พิมพ์ช่องว่างตามหลังทุกตัว รวมตัวสุดท้ายด้วย ตัวตรวจของเว็บนี้ตัดช่องว่างท้ายบรรทัดทิ้งก่อนเทียบ แต่ grader บางระบบเทียบทุกตัวอักษร ในโปรแกรมที่จะส่งจริง ให้พิมพ์ช่องว่างเฉพาะระหว่างตัวเลข ตัวอย่างในหน้าถัดๆ ไปจะใช้แบบนี้</p>
+
+      <div class="code" data-lang="c"><pre><code>for (int i = 0; i &lt; n; i++) {
+    if (i &gt; 0) {
+        printf(" ");
+    }
+    printf("%d", a[i]);
+}
+printf("\n");
+</code></pre></div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="swap-without-temp">แบบที่ 1 สลับโดยไม่มีแก้วเปล่า</h3>
+
+      <p>หลายคนลองเขียนสลับให้สั้นลง แบบนี้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="bad-swap"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a[5] = {6, 3, 8, 2, 5};
+    a[0] = a[3];
+    a[3] = a[0];
+    for (int i = 0; i &lt; 5; i++) {
+        printf("%d ", a[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bad-swap" data-title="C:\code\bad_swap.exe"><pre><code>2 3 8 2 5 
+</code></pre></div>
+
+      <p>ได้ 2 สองตัว และ 6 หายไปเลย บรรทัดที่ 6 เทน้ำส้มทับนมไปแล้ว นมหายตั้งแต่ตรงนั้น บรรทัดที่ 7 จึงได้แค่ค่าที่เพิ่งใส่กลับไปที่เดิม ไม่มี error ไม่มี warning ถ้าอยู่ในวิธีเรียง จะเห็นแค่ว่าผลมีตัวเลขซ้ำแปลกๆ และบางตัวหายไป เจออาการนี้ให้ดูที่การสลับก่อน</p>
+
+      <h3 id="unsorted-median">แบบที่ 2 หาค่ากลางทั้งที่ยังไม่เรียง</h3>
+
+      <p>ใช้โปรแกรม median ตัวเดิม แต่ป้อนเวลาเจ็ดวันตามลำดับวันจริง ซึ่งยังไม่เรียง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="median-unsorted"><pre><code>#include &lt;stdio.h&gt;
+
+int minutes[1000];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;minutes[i]);
+        total += minutes[i];
+    }
+    printf("average = %.2f\n", (double)total / n);
+    printf("median = %d\n", minutes[n / 2]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="median-unsorted" data-title="ข้อมูลเข้า"><pre><code>7
+30 28 95 33 25 31 27
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="median-unsorted" data-title="C:\code\median.exe"><pre><code>average = 38.43
+median = 33
+</code></pre></div>
+      </div>
+
+      <p>ค่าเฉลี่ยยังถูก เพราะผลรวมไม่ขึ้นกับลำดับ แต่ค่ากลางกลายเป็น 33 ซึ่งแค่บังเอิญอยู่ช่องที่ 3 ของวันที่ป้อน คำตอบผิดแบบนี้ไม่มีอะไรเตือน ผ่านตัวอย่างในโจทย์ได้ด้วยถ้าตัวอย่างบังเอิญเรียงมา สูตร <code>a[n / 2]</code> <code>a[k - 1]</code> และการเทียบกับช่องก่อนหน้า ใช้ได้กับข้อมูลที่เรียงแล้วเท่านั้น</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เรียงจากน้อยไปมาก (ascending) คือ <code>a[i] ≤ a[i + 1]</code> ทุกช่อง มากไปน้อย (descending) คือกลับกัน</li>
+        <li>ข้อมูลที่เรียงแล้ว ค่ากลางอยู่ที่ <code>a[n / 2]</code> ตัวที่น้อยอันดับ k อยู่ที่ <code>a[k - 1]</code> ตัวที่มากอันดับ k อยู่ที่ <code>a[n - k]</code></li>
+        <li>ค่าที่เท่ากันอยู่ติดกัน นับจำนวนค่าที่ต่างกันได้ด้วยการเทียบกับช่องก่อนหน้า ไม่ต้องใช้อาเรย์นับ</li>
+        <li>สลับค่าต้องมีตัวแปรพัก <code>temp</code> และฟังก์ชัน swap ต้องรับที่อยู่ <code>int *</code></li>
+        <li>สูตรเหล่านี้ใช้กับข้อมูลที่ยังไม่เรียงไม่ได้ และจะได้คำตอบผิดเงียบๆ</li>
+      </ul>
+    </article>

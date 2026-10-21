@@ -1,0 +1,375 @@
+<article class="doc">
+      <h1>12.3 เลขฐานและตัวดำเนินการระดับบิต</h1>
+
+      <p>คอมพิวเตอร์เก็บทุกอย่างเป็นเลขฐานสอง สีบนเว็บเขียนเป็นฐานสิบหกอย่าง <code>#FF8800</code> และโจทย์แข่งขันชอบถามให้แปลงเลขระหว่างฐาน หน้านี้แปลงฐานสิบไปฐานใดๆ และแปลงกลับด้วยลูปที่ใช้ <code>/</code> กับ <code>%</code> ที่คุ้นเคย จากนั้นรู้จักตัวดำเนินการที่ทำงานกับ bit ทีละตัวโดยตรง ซึ่งใช้เก็บสถานะเปิดปิดหลายอย่างในตัวแปรเดียว และทำให้ยกกำลังแบบเร็วเขียนเป็นลูปสั้นๆ ได้</p>
+
+      <h2 id="place-value">ค่าประจำหลัก</h2>
+
+      <p>เลขฐานสิบ 2026 แปลว่า 2 × 1000 + 0 × 100 + 2 × 10 + 6 × 1 แต่ละหลักมีค่าเป็นสิบเท่าของหลักทางขวา และใช้เลขโดด 0 ถึง 9 เลขฐาน b ก็ทำแบบเดียวกัน แต่ละหลักมีค่าเป็น b เท่าของหลักทางขวา และใช้เลขโดด 0 ถึง b - 1</p>
+
+      <ul>
+        <li><strong>ฐานสอง</strong> มีเลขโดดแค่ 0 กับ 1 ค่าประจำหลักจากขวาไปซ้ายคือ 1 2 4 8 16 ... 11111101010<sub>2</sub> = 1024 + 512 + 256 + 128 + 64 + 32 + 8 + 2 = 2026</li>
+        <li><strong>ฐานแปด</strong> มีเลขโดด 0 ถึง 7 ค่าประจำหลักคือ 1 8 64 512 ... 3752<sub>8</sub> = 3 × 512 + 7 × 64 + 5 × 8 + 2 = 2026</li>
+        <li><strong>ฐานสิบหก</strong> ต้องมีเลขโดด 16 ตัว จึงใช้ A ถึง F แทน 10 ถึง 15 ค่าประจำหลักคือ 1 16 256 ... 7EA<sub>16</sub> = 7 × 256 + 14 × 16 + 10 = 2026</li>
+      </ul>
+
+      <p>ฐานที่ใหญ่กว่า 16 ก็ใช้ตัวอักษรต่อไปเรื่อยๆ ฐาน 36 ใช้ 0 ถึง 9 และ A ถึง Z ครบพอดี</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ฐานสิบ</th><th>ฐานสอง</th><th>ฐานสิบหก</th><th>ฐานสิบ</th><th>ฐานสอง</th><th>ฐานสิบหก</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>0000</td><td>0</td><td>8</td><td>1000</td><td>8</td></tr>
+            <tr><td>1</td><td>0001</td><td>1</td><td>9</td><td>1001</td><td>9</td></tr>
+            <tr><td>2</td><td>0010</td><td>2</td><td>10</td><td>1010</td><td>A</td></tr>
+            <tr><td>3</td><td>0011</td><td>3</td><td>11</td><td>1011</td><td>B</td></tr>
+            <tr><td>4</td><td>0100</td><td>4</td><td>12</td><td>1100</td><td>C</td></tr>
+            <tr><td>5</td><td>0101</td><td>5</td><td>13</td><td>1101</td><td>D</td></tr>
+            <tr><td>6</td><td>0110</td><td>6</td><td>14</td><td>1110</td><td>E</td></tr>
+            <tr><td>7</td><td>0111</td><td>7</td><td>15</td><td>1111</td><td>F</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เลขโดดฐานสิบหกหนึ่งตัวแทนเลขฐานสองสี่หลักพอดี คนเขียนโปรแกรมจึงชอบเขียนฐานสองยาวๆ เป็นฐานสิบหกให้สั้นลง</p>
+
+      <h2 id="to-base">แปลงฐานสิบเป็นฐาน b</h2>
+
+      <p><code>n % b</code> คือหลักขวาสุดของ n ในฐาน b และ <code>n / b</code> คือ n ที่ตัดหลักขวาสุดทิ้ง เหมือนที่ <code>% 10</code> กับ <code>/ 10</code> ทำกับฐานสิบในหน้า <a href="../04-loops/numbers-time.html#digits">4.5</a> ทำซ้ำจน n เป็น 0 ก็ได้ครบทุกหลัก แปลง 2026 เป็นฐานสิบหก</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>n</th><th>n % 16</th><th>เลขโดด</th><th>n / 16</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2026</td><td>10</td><td>A</td><td>126</td></tr>
+            <tr><td>126</td><td>14</td><td>E</td><td>7</td></tr>
+            <tr><td>7</td><td>7</td><td>7</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>หลักออกมาจากขวาไปซ้าย อ่านจากล่างขึ้นบนได้ 7EA จึงต้องเก็บหลักไว้ในอาเรย์ก่อน แล้วพิมพ์ย้อนกลับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="to-base"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char symbols[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // (1)!
+    long long n;
+    int base;
+    scanf("%lld %d", &amp;n, &amp;base);
+    char digits[70]; // (2)!
+    int length = 0;
+    do { // (3)!
+        digits[length] = symbols[n % base];
+        length++;
+        n /= base;
+    } while (n &gt; 0);
+    for (int i = length - 1; i &gt;= 0; i--) {
+        printf("%c", digits[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>symbols[10]</code> คือ <code>'A'</code> <code>symbols[35]</code> คือ <code>'Z'</code> ใช้เศษเป็น index แล้วได้เลขโดดทันที ไม่ต้องเขียน if แยกกรณี</li>
+        <li>เลขไม่เกิน 10<sup>18</sup> ในฐานสองยาวไม่เกิน 60 หลัก ฐานอื่นสั้นกว่านั้น 70 ช่องจึงพอ</li>
+        <li><code>do while</code> ทำให้เลข 0 ได้หลักเดียวคือ <code>0</code> แบบเดียวกับการนับหลักในหน้า <a href="../04-loops/numbers-time.html#zero">4.5</a></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="to-base" data-title="ข้อมูลเข้า"><pre><code>2026 2
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="to-base" data-title="C:\code\to_base.exe"><pre><code>11111101010
+</code></pre></div>
+      </div>
+
+      <p>ป้อน <code>2026 16</code> ได้ <code>7EA</code> ป้อน <code>2026 8</code> ได้ <code>3752</code> และป้อน <code>0 2</code> ได้ <code>0</code></p>
+
+      <h2 id="from-base">แปลงฐาน b เป็นฐานสิบ</h2>
+
+      <p>อ่านเลขเป็นข้อความทีละตัวจากซ้ายไปขวา ทุกครั้งที่ได้หลักใหม่ เลื่อนค่าเดิมไปทางซ้ายหนึ่งหลักด้วยการคูณ b แล้วบวกหลักใหม่ เป็นวิธีเดียวกับกลับเลขในหน้า 4.5 ที่คูณ 10 แล้วบวก ไล่ <code>7EA</code> ฐานสิบหก</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวอักษร</th><th>ค่าหลัก</th><th>value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td></td><td></td><td>0</td></tr>
+            <tr><td>7</td><td>7</td><td>0 × 16 + 7 = 7</td></tr>
+            <tr><td>E</td><td>14</td><td>7 × 16 + 14 = 126</td></tr>
+            <tr><td>A</td><td>10</td><td>126 × 16 + 10 = 2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-test="from-base"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char text[70];
+    int base;
+    scanf("%s %d", text, &amp;base);
+    long long value = 0;
+    for (int i = 0; text[i] != '\0'; i++) {
+        int digit;
+        if (text[i] &gt;= '0' &amp;&amp; text[i] &lt;= '9') {
+            digit = text[i] - '0';
+        } else {
+            digit = text[i] - 'A' + 10;
+        }
+        value = value * base + digit;
+    }
+    printf("%lld\n", value);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="from-base" data-title="ข้อมูลเข้า"><pre><code>7EA 16
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="from-base" data-title="C:\code\from_base.exe"><pre><code>2026
+</code></pre></div>
+      </div>
+
+      <p>การแปลงตัวอักษรเป็นค่าใช้วิธีจากหน้า <a href="../06-strings/chars.html#digits">6.1</a> ตัวเลขลบด้วย <code>'0'</code> ตัวอักษรลบด้วย <code>'A'</code> แล้วบวก 10 ถ้าต้องแปลงจากฐาน a ไปฐาน b ที่ไม่ใช่ฐานสิบทั้งคู่ ให้แปลงเป็นค่าตัวเลขด้วยโปรแกรมนี้ก่อน แล้วส่งค่านั้นต่อให้โปรแกรม to_base</p>
+
+      <h2 id="printf-bases">printf กับฐานแปดและฐานสิบหก</h2>
+
+      <p>ฐานแปดและฐานสิบหกมีตัวกำหนดรูปแบบสำเร็จรูป ไม่ต้องเขียนลูปเอง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="formats"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int year = 2026;
+    printf("%d %o %x %X\n", year, year, year, year);
+    int color;
+    scanf("%x", &amp;color);
+    printf("%d\n", color);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="formats" data-title="ข้อมูลเข้า"><pre><code>FF8800
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="formats" data-title="C:\code\formats.exe"><pre><code>2026 3752 7ea 7EA
+16746496
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>%o</code> พิมพ์ฐานแปด <code>%x</code> พิมพ์ฐานสิบหกตัวพิมพ์เล็ก <code>%X</code> ตัวพิมพ์ใหญ่ ถ้าเป็น <code>long long</code> ใช้ <code>%llx</code> แบบเดียวกับ <code>%lld</code></li>
+        <li><code>scanf("%x", ...)</code> รับเลขฐานสิบหกได้ทั้งตัวพิมพ์เล็กและใหญ่</li>
+        <li>ฐานสองกับฐานอื่นนอกจากนี้ไม่มีตัวกำหนดรูปแบบในภาษา C ที่เราใช้ (C17) ต้องเขียนลูปเองแบบข้างบน</li>
+      </ul>
+
+      <h2 id="bitwise">ตัวดำเนินการระดับบิต</h2>
+
+      <p>ตัวดำเนินการกลุ่มนี้มองตัวเลขเป็นแถวของ bit แล้วทำงานทีละหลักของฐานสอง ใช้ a = 12 (1100<sub>2</sub>) และ b = 10 (1010<sub>2</sub>)</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="bits"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int a = 12, b = 10;
+    printf("a &amp; b  = %d\n", a &amp; b);
+    printf("a | b  = %d\n", a | b);
+    printf("a ^ b  = %d\n", a ^ b);
+    printf("a &lt;&lt; 1 = %d\n", a &lt;&lt; 1);
+    printf("a &lt;&lt; 3 = %d\n", a &lt;&lt; 3);
+    printf("a &gt;&gt; 1 = %d\n", a &gt;&gt; 1);
+    printf("a &gt;&gt; 2 = %d\n", a &gt;&gt; 2);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bits" data-title="C:\code\bits.exe"><pre><code>a &amp; b  = 8
+a | b  = 14
+a ^ b  = 6
+a &lt;&lt; 1 = 24
+a &lt;&lt; 3 = 96
+a &gt;&gt; 1 = 6
+a &gt;&gt; 2 = 3
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวดำเนินการ</th><th>ชื่อ</th><th>หลักที่ได้ 1 เมื่อ</th><th>12 กับ 10</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>&amp;</code></td><td>AND</td><td>ทั้งสองข้างเป็น 1</td><td>1100 &amp; 1010 = 1000 = 8</td></tr>
+            <tr><td><code>|</code></td><td>OR</td><td>อย่างน้อยข้างหนึ่งเป็น 1</td><td>1100 | 1010 = 1110 = 14</td></tr>
+            <tr><td><code>^</code></td><td>XOR</td><td>สองข้างไม่เหมือนกัน</td><td>1100 ^ 1010 = 0110 = 6</td></tr>
+            <tr><td><code>&lt;&lt; k</code></td><td>เลื่อนซ้าย</td><td>เลื่อนทุกหลักไปซ้าย k หลัก เติม 0 ทางขวา</td><td>1100 &lt;&lt; 1 = 11000 = 24</td></tr>
+            <tr><td><code>&gt;&gt; k</code></td><td>เลื่อนขวา</td><td>เลื่อนทุกหลักไปขวา k หลัก หลักขวาสุดหายไป</td><td>1100 &gt;&gt; 2 = 11 = 3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เลื่อนซ้าย k หลักคือคูณ 2<sup>k</sup> เหมือนเติม 0 ท้ายเลขฐานสิบคือคูณ 10 ส่วนเลื่อนขวา k หลักคือหาร 2<sup>k</sup> แบบตัดเศษ (สำหรับเลขที่ไม่ติดลบ) อย่าสับสน <code>&amp;</code> กับ <code>&amp;&amp;</code> ในบทที่ 3 <code>&amp;&amp;</code> ตอบแค่จริงหรือเท็จ ส่วน <code>&amp;</code> ทำทุก bit แล้วได้ตัวเลขใหม่ และ <code>^</code> ในภาษา C ไม่ใช่ยกกำลัง</p>
+
+      <h3 id="bit-uses">ใช้ bit เป็นสวิตช์</h3>
+
+      <p>ห้องเรียนมีไฟ 8 ดวง หมายเลข 0 ถึง 7 เก็บสถานะทั้งหมดในตัวเลขตัวเดียว bit ที่ k เป็น 1 แปลว่าไฟดวงที่ k เปิดอยู่ เช่น 37 = 100101<sub>2</sub> คือดวงที่ 0 2 และ 5 เปิด</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="lamps"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int state;
+    scanf("%d", &amp;state);
+    int on = 0;
+    for (int k = 0; k &lt; 8; k++) {
+        if ((state &gt;&gt; k) &amp; 1) {
+            printf("lamp %d is on\n", k);
+            on++;
+        }
+    }
+    printf("total on = %d\n", on);
+    state = state | (1 &lt;&lt; 6);
+    printf("after turning on lamp 6 = %d\n", state);
+    state = state ^ (1 &lt;&lt; 0);
+    printf("after flipping lamp 0 = %d\n", state);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lamps" data-title="ข้อมูลเข้า"><pre><code>37
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lamps" data-title="C:\code\lamps.exe"><pre><code>lamp 0 is on
+lamp 2 is on
+lamp 5 is on
+total on = 3
+after turning on lamp 6 = 101
+after flipping lamp 0 = 100
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>อยากทำ</th><th>เขียน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ดูว่า bit ที่ k เป็น 1 ไหม</td><td><code>(x &gt;&gt; k) &amp; 1</code></td></tr>
+            <tr><td>ทำให้ bit ที่ k เป็น 1</td><td><code>x | (1 &lt;&lt; k)</code></td></tr>
+            <tr><td>สลับ bit ที่ k จาก 0 เป็น 1 หรือ 1 เป็น 0</td><td><code>x ^ (1 &lt;&lt; k)</code></td></tr>
+            <tr><td>ดูว่าเลขไม่ติดลบเป็นเลขคี่ไหม</td><td><code>x &amp; 1</code> คือ bit ขวาสุด</td></tr>
+            <tr><td>2<sup>k</sup> เมื่อ k ไม่เกิน 62</td><td><code>1LL &lt;&lt; k</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>XOR มีสมบัติที่ใช้บ่อยในโจทย์ <code>x ^ x</code> ได้ 0 เสมอ <code>x ^ 0</code> ได้ x และสลับลำดับได้ เช่น <code>5 ^ 3 ^ 5</code> เท่ากับ <code>5 ^ 5 ^ 3</code> ซึ่งก็คือ <code>0 ^ 3</code> ได้ 3 พูดง่ายๆ คือเลขที่ XOR เข้าไปสองครั้งจะหักล้างกันหายไป</p>
+
+      <h2 id="power-bits">ยกกำลังแบบเร็วด้วยลูป</h2>
+
+      <p>ยกกำลังแบบเร็วในหน้า <a href="mod.html#fast-power">12.1</a> เขียนเป็นลูปได้ ถ้ามองเลขชี้กำลังเป็นฐานสอง เช่น 13 = 1101<sub>2</sub> = 8 + 4 + 1 จึงได้ 3<sup>13</sup> = 3<sup>8</sup> × 3<sup>4</sup> × 3<sup>1</sup> ไล่ bit ของ 13 จากขวาไปซ้าย พร้อมกับยกกำลังสองฐานไปเรื่อยๆ ให้ได้ 3<sup>1</sup> 3<sup>2</sup> 3<sup>4</sup> 3<sup>8</sup> bit ไหนเป็น 1 ก็คูณค่านั้นเข้าคำตอบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="power-bits"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+int main()
+{
+    long long base, exp;
+    scanf("%lld %lld", &amp;base, &amp;exp);
+    base %= MOD;
+    long long result = 1;
+    while (exp &gt; 0) {
+        if (exp &amp; 1) {
+            result = result * base % MOD;
+        }
+        base = base * base % MOD;
+        exp &gt;&gt;= 1;
+    }
+    printf("%lld\n", result);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="power-bits" data-title="ข้อมูลเข้า"><pre><code>3 13
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="power-bits" data-title="C:\code\power_bits.exe"><pre><code>1594323
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>รอบ</th><th>exp (ฐานสอง)</th><th>bit ขวาสุด</th><th>base ตอนเริ่มรอบ</th><th>result หลังรอบ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>1101</td><td>1</td><td>3</td><td>3</td></tr>
+            <tr><td>2</td><td>110</td><td>0</td><td>9</td><td>3</td></tr>
+            <tr><td>3</td><td>11</td><td>1</td><td>81</td><td>243</td></tr>
+            <tr><td>4</td><td>1</td><td>1</td><td>6561</td><td>1594323</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><code>exp &gt;&gt;= 1</code> คือ <code>exp = exp &gt;&gt; 1</code> ตัดหลักขวาสุดของฐานสองทิ้ง เหมือน <code>exp /= 2</code> ลูปวนเท่ากับจำนวนหลักฐานสองของ exp ซึ่งสำหรับ 10<sup>18</sup> คือ 60 รอบ ได้ผลเท่ากับแบบ recursion ทุกค่า เลือกเขียนแบบที่ตัวเองจำได้แม่นกว่า</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="precedence">แบบที่ 1 ไม่ใส่วงเล็บรอบ &amp;</h3>
+
+      <div class="code" data-lang="c"><pre><code>if (x &amp; 1 == 0) {
+    printf("even\n");
+} else {
+    printf("odd\n");
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>even.c:7:11: warning: suggest parentheses around comparison in operand of '&amp;' [-Wparentheses]
+    7 |     if (x &amp; 1 == 0) {
+      |           ^
+</code></pre></div>
+
+      <p>ป้อน 4 ได้ <code>odd</code> <code>==</code> มีลำดับสูงกว่า <code>&amp;</code> โปรแกรมจึงทำ <code>1 == 0</code> ได้ 0 ก่อน แล้ว <code>x &amp; 0</code> ได้ 0 เสมอ ทุกเลขจึงตกไปที่ else compiler เตือนให้ใส่วงเล็บ ทำตามนั้นเป็น <code>(x &amp; 1) == 0</code> ใช้ <code>&amp;</code> <code>|</code> <code>^</code> ร่วมกับตัวดำเนินการอื่นเมื่อไร ใส่วงเล็บทุกครั้ง</p>
+
+      <h3 id="shift-int">แบบที่ 2 เลื่อน 1 เกินขนาดของ int</h3>
+
+      <div class="code" data-lang="c"><pre><code>long long big = 1 &lt;&lt; 40;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>shift.c:5:23: warning: left shift count &gt;= width of type [-Wshift-count-overflow]
+    5 |     long long big = 1 &lt;&lt; 40;
+      |                       ^~
+</code></pre></div>
+
+      <p>เลข <code>1</code> เป็น <code>int</code> มีแค่ 32 bit เลื่อนไป 40 หลักก็หลุดออกนอกกล่อง บนเครื่องที่เขียนเอกสารนี้พิมพ์ออกมาเป็น 0 กับดักเดียวกับ <code>int</code> คูณ <code>int</code> ในหน้า 1.3 คือชนิดของผลมาจากตัวที่คำนวณ ไม่ใช่กล่องที่รับ แก้เป็น <code>1LL &lt;&lt; 40</code> ซึ่งเป็น <code>long long</code> ตั้งแต่ต้น</p>
+
+      <h3 id="lowercase">แบบที่ 3 ป้อนเลขฐานสิบหกเป็นตัวพิมพ์เล็ก</h3>
+
+      <p>ป้อน <code>7ea 16</code> ให้โปรแกรม from_base</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>7ea 16
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\from_base.exe"><pre><code>2570
+</code></pre></div>
+      </div>
+
+      <p>ได้ 2570 แทน 2026 <code>'e' - 'A' + 10</code> ได้ 46 ไม่ใช่ 14 เพราะตัวพิมพ์เล็กมีรหัส ASCII ห่างจากตัวพิมพ์ใหญ่ 32 โปรแกรมไม่รู้ตัวว่าได้เลขโดดที่เกินฐาน คำนวณต่อไปเฉยๆ ถ้าโจทย์ไม่ได้รับประกันว่าเป็นตัวพิมพ์ใหญ่ ให้เพิ่มกรณี <code>text[i] &gt;= 'a' &amp;&amp; text[i] &lt;= 'z'</code> ที่ลบด้วย <code>'a'</code> แทน อ่านโจทย์ให้ชัดว่าตัวอักษรในข้อมูลเข้าเป็นแบบไหน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เลขฐาน b แต่ละหลักมีค่าเป็น b เท่าของหลักทางขวา ใช้เลขโดด 0 ถึง b - 1 เกิน 9 ใช้ A B C ...</li>
+        <li>ฐานสิบไปฐาน b ใช้ <code>% b</code> กับ <code>/ b</code> ซ้ำ เก็บหลักไว้แล้วพิมพ์ย้อนกลับ ฐาน b ไปฐานสิบใช้ <code>value * b + digit</code></li>
+        <li><code>%o</code> <code>%x</code> <code>%X</code> พิมพ์ฐานแปดและสิบหก ฐานสองต้องเขียนเอง</li>
+        <li><code>&amp;</code> <code>|</code> <code>^</code> ทำทีละ bit <code>&lt;&lt; k</code> คูณ 2<sup>k</sup> <code>&gt;&gt; k</code> หาร 2<sup>k</sup> ใส่วงเล็บทุกครั้งที่ใช้คู่กับตัวดำเนินการอื่น และใช้ <code>1LL</code> เมื่อเลื่อนตั้งแต่ 31 หลักขึ้นไป</li>
+        <li>ยกกำลังแบบเร็วเขียนเป็นลูปได้ ด้วยการไล่ bit ของเลขชี้กำลัง</li>
+      </ul>
+    </article>

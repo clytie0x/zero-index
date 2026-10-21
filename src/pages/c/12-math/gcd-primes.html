@@ -1,0 +1,305 @@
+<article class="doc">
+      <h1>12.2 ห.ร.ม. ค.ร.น. และจำนวนเฉพาะ</h1>
+
+      <p>ห.ร.ม. กับ ค.ร.น. ใช้กับโจทย์แบ่งของให้ลงตัว และโจทย์หาเวลาที่หลายเหตุการณ์มาตรงกัน ส่วนจำนวนเฉพาะเป็นฐานของโจทย์ตัวเลขแทบทุกแบบ หน้านี้ใช้ ห.ร.ม. แบบยุคลิดที่น้องเขียนเป็นแล้วในบทที่ 9 มาหา ค.ร.น. ที่ไม่ล้น แล้วต่อจากการตรวจจำนวนเฉพาะในหน้า <a href="../04-loops/numbers-time.html#sqrt">4.5</a> ไปสู่ตะแกรงที่หาจำนวนเฉพาะทั้งหมดถึงสิบล้านได้ในเวลาไม่ถึงหนึ่งในสามสิบวินาที ปิดด้วยการแยกตัวประกอบ</p>
+
+      <h2 id="gcd">ห.ร.ม. แบบยุคลิด</h2>
+
+      <p>ทบทวนจากบทที่ 9 ห.ร.ม. (ตัวหารร่วมมาก ภาษาอังกฤษเรียกว่า greatest common divisor หรือ gcd) ของ a กับ b เท่ากับ ห.ร.ม. ของ b กับ <code>a % b</code> และ ห.ร.ม. ของ a กับ 0 คือ a</p>
+
+      <div class="code" data-lang="c"><pre><code>long long gcd(long long a, long long b)
+{
+    if (b == 0) {
+        return a;
+    }
+    return gcd(b, a % b);
+}
+</code></pre></div>
+
+      <p>ไล่ <code>gcd(1071, 462)</code> ดู</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>a</th><th>b</th><th>a % b</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1071</td><td>462</td><td>147</td></tr>
+            <tr><td>462</td><td>147</td><td>21</td></tr>
+            <tr><td>147</td><td>21</td><td>0</td></tr>
+            <tr><td>21</td><td>0</td><td>ตอบ 21</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วิธีนี้เร็วมาก เศษลดลงเร็วจนทุกสองรอบ ตัวเลขเหลือไม่ถึงครึ่ง เลขขนาด 10<sup>18</sup> ใช้ไม่ถึงร้อยรอบ เทียบกับการไล่ลองหารทุกเลขตั้งแต่ 1 ที่ต้องวนเท่ากับตัวเลขเอง</p>
+
+      <p>ถ้ามีหลายตัว ให้หา ห.ร.ม. ทีละคู่ไปเรื่อยๆ <code>g = gcd(g, x)</code> เพราะ ห.ร.ม. ของสามตัวเท่ากับ ห.ร.ม. ของ (ห.ร.ม. ของสองตัวแรก) กับตัวที่สาม</p>
+
+      <h2 id="lcm">ค.ร.น. ต้องหารก่อนคูณ</h2>
+
+      <p>ไฟสองดวงเปิดพร้อมกันที่วินาทีที่ 0 ดวงแรกกะพริบทุก a วินาที ดวงที่สองทุก b วินาที จะกะพริบพร้อมกันอีกครั้งตอนไหน คำตอบคือ ค.ร.น. (ตัวคูณร่วมน้อย least common multiple หรือ lcm) ของ a กับ b</p>
+
+      <p>มีความจริงข้อหนึ่งว่า <strong>ห.ร.ม. × ค.ร.น. = a × b</strong> เช่น 12 กับ 18 มี ห.ร.ม. 6 และ ค.ร.น. 36 ซึ่ง 6 × 36 = 216 = 12 × 18 ค.ร.น. จึงเท่ากับ a × b / ห.ร.ม. แต่ในโปรแกรมให้เขียนเป็น <code>a / g * b</code> คือ<strong>หารก่อนแล้วค่อยคูณ</strong> เหตุผลอยู่ในส่วนลองทำให้พัง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="lights"><pre><code>#include &lt;stdio.h&gt;
+
+long long gcd(long long a, long long b)
+{
+    if (b == 0) {
+        return a;
+    }
+    return gcd(b, a % b);
+}
+
+int main()
+{
+    long long a, b;
+    scanf("%lld %lld", &amp;a, &amp;b);
+    long long g = gcd(a, b);
+    printf("gcd = %lld\n", g);
+    printf("lcm = %lld\n", a / g * b);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lights" data-title="ข้อมูลเข้า"><pre><code>1000000000 999999999
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lights" data-title="C:\code\lights.exe"><pre><code>gcd = 1
+lcm = 999999999000000000
+</code></pre></div>
+      </div>
+
+      <p><code>a / g</code> หารลงตัวเสมอ เพราะ g เป็นตัวหารของ a ไม่มีเศษหายไป และ ค.ร.น. ของเลขไม่เกิน 10<sup>9</sup> สองตัวใหญ่ได้ถึงราว 10<sup>18</sup> อย่างตัวอย่างนี้ จึงต้องใช้ <code>long long</code></p>
+
+      <h2 id="primes">ถ้าต้องรู้ว่าทุกเลขเป็นจำนวนเฉพาะไหม</h2>
+
+      <p>หน้า 4.5 ตรวจเลขตัวเดียวด้วยการลองหาร 2 ถึง √n ตัวละไม่เกิน √n รอบ ถ้าโจทย์ถามว่าเลขตั้งแต่ 1 ถึง 10<sup>7</sup> มีจำนวนเฉพาะกี่ตัว หรือถามหลายแสนคำถามว่าเลขนั้นเลขนี้เป็นจำนวนเฉพาะไหม การตรวจทีละตัวต้องทำซ้ำเป็นสิบล้านครั้ง ข้างล่างจะวัดให้เห็นว่าช้าแค่ไหน ทางออกคือ<strong>ตะแกรงเอราทอสเทนีส (sieve of Eratosthenes)</strong> ซึ่งหาคำตอบของทุกเลขพร้อมกันในรอบเดียว</p>
+
+      <h3 id="sieve-idea">แนวคิดของตะแกรง</h3>
+
+      <p>แทนที่จะถามเลขแต่ละตัวว่ามีอะไรหารลงตัวไหม ให้กลับด้าน เอาจำนวนเฉพาะแต่ละตัวไปขีดฆ่าพหุคูณของมันทิ้ง เลขที่รอดจากการขีดฆ่าคือจำนวนเฉพาะ ลองกับเลข 2 ถึง 30</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>i</th><th>ยังไม่ถูกขีด</th><th>ขีดฆ่า i × i, i × i + i, ... จนถึง 30</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2</td><td>ใช่ 2 เป็นจำนวนเฉพาะ</td><td>4 6 8 10 12 14 16 18 20 22 24 26 28 30</td></tr>
+            <tr><td>3</td><td>ใช่ 3 เป็นจำนวนเฉพาะ</td><td>9 12 15 18 21 24 27 30</td></tr>
+            <tr><td>4</td><td>ไม่ ถูก 2 ขีดไปแล้ว</td><td>ข้าม</td></tr>
+            <tr><td>5</td><td>ใช่ 5 เป็นจำนวนเฉพาะ</td><td>25 30</td></tr>
+            <tr><td>6</td><td colspan="2">6 × 6 = 36 เกิน 30 หยุดได้</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เลขที่เหลือคือ 2 3 5 7 11 13 17 19 23 29 รวม 10 ตัว มีสองจุดที่ทำให้ตะแกรงทำงานน้อยลง</p>
+
+      <ul>
+        <li><strong>เริ่มขีดที่ i × i</strong> พหุคูณที่เล็กกว่านั้น เช่น 3 × 2 = 6 ถูกจำนวนเฉพาะที่เล็กกว่าขีดไปแล้ว</li>
+        <li><strong>หยุดเมื่อ i × i เกิน n</strong> เพราะจุดเริ่มขีดเกิน n แล้ว ไม่มีอะไรให้ขีด เหตุผลเดียวกับการลองหารถึง √n</li>
+      </ul>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="sieve"><pre><code>#include &lt;stdio.h&gt;
+
+char is_composite[10000001]; // (1)!
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 2; i * i &lt;= n; i++) {
+        if (!is_composite[i]) { // (2)!
+            for (int j = i * i; j &lt;= n; j += i) {
+                is_composite[j] = 1;
+            }
+        }
+    }
+    int count = 0;
+    for (int i = 2; i &lt;= n; i++) {
+        if (!is_composite[i]) {
+            count++;
+        }
+    }
+    printf("%d\n", count);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ช่องที่ i เป็น 1 แปลว่า i ถูกขีดฆ่าแล้ว คือเป็นจำนวนประกอบ (composite) อาเรย์อยู่นอก <code>main</code> ตามหน้า <a href="../05-arrays/insert-delete.html#big-arrays">5.5</a> จึงเริ่มต้นเป็น 0 ทุกช่อง ใช้ <code>char</code> เพราะเก็บแค่ 0 กับ 1 ช่องละ 1 byte สิบล้านช่องใช้ราว 10 MB ถ้าเป็น <code>int</code> จะใช้ 40 MB</li>
+        <li>ขีดเฉพาะพหุคูณของเลขที่ยังรอดอยู่ ถ้า i ถูกขีดไปแล้ว พหุคูณของ i ก็ถูกตัวประกอบของ i ขีดไปหมดแล้วเหมือนกัน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sieve" data-title="ข้อมูลเข้า"><pre><code>10000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sieve" data-title="C:\code\sieve.exe"><pre><code>664579
+</code></pre></div>
+      </div>
+
+      <p>พอสร้างตะแกรงเสร็จ จะถามว่าเลข x ใดๆ ที่ไม่เกิน n เป็นจำนวนเฉพาะไหม ก็ดูแค่ <code>is_composite[x]</code> ช่องเดียว ตอบได้ทันทีกี่คำถามก็ได้ อย่าลืมว่า 0 กับ 1 ก็เป็น 0 ในอาเรย์ แต่ไม่ใช่จำนวนเฉพาะ ต้องเช็ก <code>x &gt;= 2</code> เอง</p>
+
+      <h3 id="sieve-timing">วัดเวลาเทียบกับไล่หาร</h3>
+
+      <p>นับจำนวนเฉพาะไม่เกิน n สองวิธี วิธีไล่หารคือเอาโปรแกรมตรวจจำนวนเฉพาะของหน้า 4.5 ที่ลองหารถึง <code>i * i &lt;= x</code> มาครอบด้วยลูป x ตั้งแต่ 2 ถึง n วัดด้วย <code>clock()</code> บนเครื่องเดียวกับหน้า <a href="mod.html#timing">12.1</a> รันแบบละ 5 ครั้ง ใช้ค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ไล่หารถึง √x ทุกตัว</td><td>10<sup>6</sup></td><td>0.096 วินาที</td><td>0.092 วินาที</td></tr>
+            <tr><td>ไล่หารถึง √x ทุกตัว</td><td>10<sup>7</sup></td><td>2.450 วินาที</td><td>2.329 วินาที</td></tr>
+            <tr><td>ตะแกรง</td><td>10<sup>6</sup></td><td>0.002 วินาที</td><td>0.001 วินาที</td></tr>
+            <tr><td>ตะแกรง</td><td>10<sup>7</sup></td><td>0.027 วินาที</td><td>0.012 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสองวิธีได้ 664579 ตรงกัน แต่ที่ n = 10<sup>7</sup> ตะแกรงเร็วกว่าราว 90 เท่าแบบ Code::Blocks ส่วนวิธีไล่หารเกินเวลา 1 วินาทีไปไกล สังเกตด้วยว่า n เพิ่ม 10 เท่า วิธีไล่หารช้าลงราว 25 เท่า แต่ตะแกรงช้าลงราว 13 เท่า ยิ่ง n ใหญ่ ยิ่งห่างกัน เหตุผลเชิงคณิตศาสตร์ว่าทำไมเป็นแบบนี้จะเรียนในบทที่ 18</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">เลือกวิธีไหนดี</p>
+        <p>ตรวจเลขไม่กี่ตัว หรือเลขใหญ่เกินกว่าจะสร้างอาเรย์ เช่น 10<sup>12</sup> ใช้ไล่หารถึง √n ตรวจเลขจำนวนมากที่ไม่เกินราว 10<sup>7</sup> สร้างตะแกรงครั้งเดียวแล้วตอบทุกคำถามจากอาเรย์</p>
+      </div>
+
+      <h2 id="factorize">แยกตัวประกอบ</h2>
+
+      <p>ทุกจำนวนเต็มที่มากกว่า 1 เขียนเป็นผลคูณของจำนวนเฉพาะได้แบบเดียว เช่น 360 = 2<sup>3</sup> × 3<sup>2</sup> × 5 วิธีแยกคือลองหารด้วย p = 2, 3, 4, ... ตัวไหนหารลงตัวก็หารซ้ำจนหารไม่ลง แล้วนับว่าหารไปกี่ครั้ง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="factorize"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    long long n;
+    scanf("%lld", &amp;n);
+    for (long long p = 2; p * p &lt;= n; p++) {
+        if (n % p == 0) {
+            int power = 0;
+            while (n % p == 0) {
+                n /= p;
+                power++;
+            }
+            printf("%lld^%d\n", p, power);
+        }
+    }
+    if (n &gt; 1) {
+        printf("%lld^1\n", n);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="factorize" data-title="ข้อมูลเข้า"><pre><code>360
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="factorize" data-title="C:\code\factorize.exe"><pre><code>2^3
+3^2
+5^1
+</code></pre></div>
+      </div>
+
+      <p>คำถามที่น้องน่าจะสงสัยมีสามข้อ</p>
+
+      <ol>
+        <li><strong>p = 4 หรือ 6 ไม่ใช่จำนวนเฉพาะ จะพิมพ์ออกมาไหม</strong> ไม่ เพราะตอนถึง p = 4 ตัวประกอบ 2 ถูกหารออกจาก n หมดแล้ว 4 จึงหาร n ไม่ลงตัว ตัวที่หารลงตัวได้จึงเป็นจำนวนเฉพาะเสมอ</li>
+        <li><strong>เงื่อนไข <code>p * p &lt;= n</code> ใช้ n ที่เล็กลงเรื่อยๆ ได้หรือ</strong> ได้ และยิ่งดี n ที่เหลือไม่มีตัวประกอบที่เล็กกว่า p แล้ว ถ้ามันยังมีตัวประกอบสองตัวขึ้นไป ตัวที่เล็กสุดต้องไม่เกิน √n ลูปจึงหยุดเร็วขึ้นเมื่อ n ลดลง</li>
+        <li><strong>บรรทัดที่ 17 มีไว้ทำไม</strong> พอลูปจบ ถ้า n ยังเหลือมากกว่า 1 ที่เหลือคือจำนวนเฉพาะตัวใหญ่ที่เกิน √ ของ n ตั้งต้น มีได้อย่างมากตัวเดียว เช่น 2000006 = 2 × 1000003 ลูปหาร 2 ออกแล้วเหลือ 1000003 ซึ่ง 1001 × 1001 เกินแล้ว ลูปจึงจบโดยไม่เจอมัน</li>
+      </ol>
+
+      <p>เลข 10<sup>12</sup> วนไม่เกิน 10<sup>6</sup> รอบ เสร็จทันที ลองป้อน 999999999989 ซึ่งเป็นจำนวนเฉพาะ ลูปจะวนจนสุดทาง ได้ <code>999999999989^1</code> และป้อน 1000000000000 ได้ <code>2^12</code> กับ <code>5^12</code></p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="lcm-overflow">แบบที่ 1 คูณก่อนหารใน ค.ร.น.</h3>
+
+      <p>เขียนโปรแกรมไฟกะพริบด้วย <code>int</code> เพราะโจทย์บอกว่า a กับ b ไม่เกิน 10<sup>5</sup> และคำตอบรับประกันว่าไม่เกิน <code>int</code> แล้วคำนวณ ค.ร.น. ทั้งสองแบบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="lcm-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int gcd(int a, int b)
+{
+    if (b == 0) {
+        return a;
+    }
+    return gcd(b, a % b);
+}
+
+int main()
+{
+    int a, b;
+    scanf("%d %d", &amp;a, &amp;b);
+    int g = gcd(a, b);
+    printf("gcd = %d\n", g);
+    printf("multiply first = %d\n", a * b / g);
+    printf("divide first   = %d\n", a / g * b);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lcm-bug" data-title="ข้อมูลเข้า"><pre><code>100000 100000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lcm-bug" data-title="C:\code\lcm.exe"><pre><code>gcd = 100000
+multiply first = 14100
+divide first   = 100000
+</code></pre></div>
+      </div>
+
+      <p>ไฟสองดวงที่กะพริบทุก 100000 วินาทีเท่ากัน ย่อมกะพริบพร้อมกันทุก 100000 วินาที คำตอบเล็กนิดเดียว แต่ <code>a * b</code> คือ 10<sup>10</sup> ล้น <code>int</code> ไปก่อนจะได้หาร แบบหารก่อนค่าระหว่างทางไม่เคยเกินคำตอบ จึงไม่ล้น เรื่องเดียวกันเกิดกับ <code>long long</code> เมื่อหา ค.ร.น. ของหลายตัว ค.ร.น. ที่สะสมมาใหญ่ระดับ 10<sup>17</sup> คูณกับเลขถัดไปก็ล้นได้ แม้ ค.ร.น. ใหม่จะไม่เปลี่ยนเลย</p>
+
+      <h3 id="sieve-overflow">แบบที่ 2 ปล่อยลูปนอกของตะแกรงวิ่งถึง n</h3>
+
+      <p>ในโปรแกรม sieve เปลี่ยนบรรทัดที่ 9 เป็น <code>for (int i = 2; i &lt;= n; i++) {</code> คิดว่าวนเกินไปก็แค่เสียเวลานิดหน่อย คอมไพล์ผ่านโดยไม่มีคำเตือน แต่ป้อน <code>100000</code> แล้วโปรแกรมปิดตัวไปโดยไม่พิมพ์อะไรเลย บนเครื่องที่เขียนเอกสารนี้ Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p>พอ i เกิน 46340 ค่า <code>i * i</code> เกิน 2147483647 และล้น <code>int</code> กลายเป็นเลขติดลบ <code>j</code> จึงเริ่มที่ช่องติดลบซึ่งไม่มีอยู่จริง เงื่อนไข <code>j &lt;= n</code> ก็ยังเป็นจริง โปรแกรมจึงเขียนลงหน่วยความจำที่ไม่ใช่ของตัวเอง <code>0xC0000005</code> คือรหัสของ Windows ที่แปลว่าเข้าถึงหน่วยความจำที่ไม่มีสิทธิ์ เหมือนอาการที่ 3 ในหน้า <a href="../05-arrays/insert-delete.html#crash">5.5</a> เงื่อนไข <code>i * i &lt;= n</code> จึงไม่ได้มีไว้ให้เร็วอย่างเดียว แต่กันไม่ให้ <code>i * i</code> ล้นด้วย</p>
+
+      <h3 id="leftover">แบบที่ 3 ลืมตัวประกอบที่เหลือ</h3>
+
+      <p>ตัดสามบรรทัด <code>if (n &gt; 1)</code> ท้ายโปรแกรม factorize ออก แล้วป้อน 2000006</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="factorize-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    long long n;
+    scanf("%lld", &amp;n);
+    for (long long p = 2; p * p &lt;= n; p++) {
+        if (n % p == 0) {
+            int power = 0;
+            while (n % p == 0) {
+                n /= p;
+                power++;
+            }
+            printf("%lld^%d\n", p, power);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="factorize-bug" data-title="ข้อมูลเข้า"><pre><code>2000006
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="factorize-bug" data-title="C:\code\factorize.exe"><pre><code>2^1
+</code></pre></div>
+      </div>
+
+      <p>1000003 หายไปเงียบๆ ทดสอบกับ 360 หรือ 1000000000000 จะไม่เห็นปัญหานี้เลย เพราะตัวประกอบทุกตัวเล็ก ชุดทดสอบที่ดีต้องมีเลขที่เป็นจำนวนเฉพาะตัวใหญ่เอง และเลขที่เป็นจำนวนเฉพาะเล็กคูณจำนวนเฉพาะใหญ่</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ห.ร.ม. ใช้ <code>gcd(b, a % b)</code> เร็วมากแม้เลขใหญ่ระดับ 10<sup>18</sup> หลายตัวก็ทำทีละคู่</li>
+        <li>ค.ร.น. คือ <code>a / gcd(a, b) * b</code> หารก่อนคูณเสมอ ค.ร.น. ของเลข 10<sup>9</sup> สองตัวต้องใช้ <code>long long</code></li>
+        <li>ตะแกรงเอราทอสเทนีสขีดพหุคูณตั้งแต่ <code>i * i</code> และหยุดเมื่อ <code>i * i &gt; n</code> นับจำนวนเฉพาะถึง 10<sup>7</sup> ได้ใน 0.027 วินาทีบนเครื่องที่เขียนเอกสารนี้ ส่วนไล่หารใช้ 2.45 วินาที</li>
+        <li>แยกตัวประกอบด้วยการหารซ้ำตั้งแต่ 2 จนถึง √n และอย่าลืมจำนวนเฉพาะตัวใหญ่ที่เหลืออยู่ตอนจบ</li>
+      </ul>
+    </article>

@@ -1,0 +1,272 @@
+<article class="doc">
+      <h1>5.2 ผลรวม มากสุด น้อยสุด</h1>
+
+      <p>พอเก็บข้อมูลไว้ในอาเรย์ได้ งานแรกที่โจทย์ถามแทบทุกครั้งคือสรุปข้อมูลทั้งแถว รวมเป็นเท่าไร ใครมากสุด ใครน้อยสุด และอยู่ตำแหน่งไหน หน้านี้เป็นรูปแบบพื้นฐานที่จะเอาไปต่อยอดในโจทย์ทุกข้อของบท</p>
+
+      <h2 id="sum">ผลรวมและค่าเฉลี่ย</h2>
+
+      <p>หาผลรวมทำแบบเดียวกับบทที่ 4 คือมีตัวแปรสะสมที่เริ่มจาก 0 แล้วบวกทีละตัว ต่างกันตรงที่คราวนี้เก็บทุกค่าไว้ในอาเรย์ด้วย จึงย้อนกลับมาตอบคำถามที่ต้องรู้ค่าเฉลี่ยก่อนได้ เช่น มีกี่คนที่ได้คะแนนไม่ต่ำกว่าค่าเฉลี่ย</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="average"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score[1000];
+    int n;
+    scanf("%d", &amp;n);
+    int total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;score[i]);
+        total += score[i]; // (1)!
+    }
+    double average = (double)total / n;
+    int count = 0;
+    for (int i = 0; i &lt; n; i++) { // (2)!
+        if (score[i] &gt;= average) {
+            count++;
+        }
+    }
+    printf("average = %f\n", average);
+    printf("count = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อ่านไปบวกไปในลูปเดียวกันได้ ไม่ต้องแยกลูป</li>
+        <li>ลูปรอบที่สอง ย้อนกลับไปดูทุกช่องอีกครั้ง หลังจากรู้ค่าเฉลี่ยแล้ว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="average" data-title="ข้อมูลเข้า"><pre><code>6
+70 85 90 65 80 58
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="average" data-title="C:\code\average.exe"><pre><code>average = 74.666667
+count = 3
+</code></pre></div>
+      </div>
+
+      <p>อย่าลืมเรื่องขนาดจากหน้า 1.3 คะแนนไม่เกิน 100 จำนวนคนไม่เกิน 1000 ผลรวมไม่เกินแสน <code>int</code> พอ แต่ถ้าโจทย์ให้ N ถึง 100000 และแต่ละค่าถึง 10<sup>9</sup> ผลรวมถึง 10<sup>14</sup> ต้องใช้ <code>long long</code> สำหรับตัวแปรสะสม</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">เลี่ยงทศนิยมได้ก็เลี่ยง</p>
+        <p><code>score[i] &gt;= total / n</code> ในทางคณิตศาสตร์เท่ากับ <code>score[i] * n &gt;= total</code> แบบหลังเป็นจำนวนเต็มล้วน ไม่มีการหารที่ตัดเศษทิ้ง และไม่มีทศนิยมคลาดเคลื่อนแบบหน้า 1.4 โจทย์ที่เทียบกับค่าเฉลี่ยมักใช้วิธีนี้ แต่ต้องเช็กว่า <code>score[i] * n</code> ไม่ล้น <code>int</code></p>
+      </div>
+
+      <h2 id="max">ค่ามากสุด</h2>
+
+      <p>นึกถึงการหาคนที่สูงที่สุดในแถว เดินจากหัวแถวไปท้ายแถว จำไว้ในหัวแค่คนเดียวคือคนที่สูงที่สุดเท่าที่เห็นมา เจอใครสูงกว่าก็เปลี่ยนไปจำคนนั้นแทน ถึงท้ายแถวแล้ว คนที่จำไว้คือคำตอบ</p>
+
+      <p>เรื่องเดียวที่ต้องคิดคือ ก่อนเริ่มเดิน จะจำใครไว้ คำตอบที่ปลอดภัยที่สุดคือ <strong>คนแรกในแถว</strong> แล้วเริ่มเทียบจากคนที่สอง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="max-temp"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int temp[100];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;temp[i]);
+    }
+    int max_temp = temp[0];
+    for (int i = 1; i &lt; n; i++) {
+        if (temp[i] &gt; max_temp) {
+            max_temp = temp[i];
+        }
+    }
+    printf("%d\n", max_temp);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="max-temp" data-title="ข้อมูลเข้า"><pre><code>7
+33 35 34 36 32 36 35
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="max-temp" data-title="C:\code\max_temp.exe"><pre><code>36
+</code></pre></div>
+      </div>
+
+      <p>ข้อมูลเข้าคืออุณหภูมิสูงสุดของ 7 วันในหนึ่งสัปดาห์ บรรทัดที่ 11 เริ่มจากค่าในช่อง 0 ลูปจึงเริ่มที่ <code>i = 1</code> เพราะไม่ต้องเทียบช่อง 0 กับตัวมันเอง ค่าน้อยสุดก็เขียนแบบเดียวกัน แค่กลับเครื่องหมายเป็น <code>&lt;</code></p>
+
+      <h2 id="position">ตำแหน่งของค่ามากสุด</h2>
+
+      <p>โจทย์มักถามว่า "วันไหน" ร้อนที่สุด ไม่ใช่แค่ร้อนเท่าไร วิธีที่ง่ายที่สุดคือ <strong>จำ index แทนค่า</strong> ถ้ารู้ index ก็หยิบค่าจากอาเรย์ได้เสมอ</p>
+
+      <p>สังเกตข้อมูลข้างบน 36 องศามีสองวัน คือวันที่ 4 กับวันที่ 6 โจทย์ต้องบอกว่าถ้าเท่ากันให้ตอบวันไหน และเครื่องหมายเปรียบเทียบตัวเดียวเป็นตัวตัดสิน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="hottest-day"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int temp[100];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;temp[i]);
+    }
+    int first = 0;
+    int last = 0;
+    for (int i = 1; i &lt; n; i++) {
+        if (temp[i] &gt; temp[first]) { // (1)!
+            first = i;
+        }
+        if (temp[i] &gt;= temp[last]) { // (2)!
+            last = i;
+        }
+    }
+    printf("first hottest day = %d\n", first + 1); // (3)!
+    printf("last hottest day = %d\n", last + 1);
+    printf("temperature = %d\n", temp[first]);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>&gt;</code> เปลี่ยนเฉพาะเมื่อเจอค่าที่มากกว่าจริงๆ เจอค่าเท่ากันจะไม่เปลี่ยน จึงได้ตำแหน่ง <strong>แรก</strong></li>
+        <li><code>&gt;=</code> เจอค่าเท่ากันก็เปลี่ยน จึงได้ตำแหน่ง <strong>สุดท้าย</strong></li>
+        <li><code>first</code> เป็น index ซึ่งเริ่มที่ 0 แต่คนนับวันเริ่มที่ 1 จึงบวกหนึ่งตอนพิมพ์</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="hottest-day" data-title="ข้อมูลเข้า"><pre><code>7
+33 35 34 36 32 36 35
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="hottest-day" data-title="C:\code\hottest_day.exe"><pre><code>first hottest day = 4
+last hottest day = 6
+temperature = 36
+</code></pre></div>
+      </div>
+
+      <p>ลองนับเอง 36 องศาตัวแรกอยู่ช่อง 3 ซึ่งคือวันที่ 4 ตัวที่สองอยู่ช่อง 5 ซึ่งคือวันที่ 6 อ่านโจทย์ให้ดีว่าขอตำแหน่งนับจาก 0 หรือจาก 1 และถ้าเท่ากันให้ตอบตัวไหน สองเรื่องนี้ทำคนเสียคะแนนบ่อยกว่าตัววิธีคิดเสียอีก</p>
+
+      <h2 id="min-max">มากสุดและน้อยสุดในลูปเดียว</h2>
+
+      <p>หามากสุดกับน้อยสุดในลูปเดียวกันได้ เช่น โจทย์ถามว่าอุณหภูมิในสัปดาห์นี้แกว่งมากที่สุดกี่องศา คำตอบคือค่ามากสุดลบค่าน้อยสุด</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="min-max"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int temp[100];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;temp[i]);
+    }
+    int max_temp = temp[0];
+    int min_temp = temp[0];
+    for (int i = 1; i &lt; n; i++) {
+        if (temp[i] &gt; max_temp) {
+            max_temp = temp[i];
+        }
+        if (temp[i] &lt; min_temp) {
+            min_temp = temp[i];
+        }
+    }
+    printf("max = %d\n", max_temp);
+    printf("min = %d\n", min_temp);
+    printf("range = %d\n", max_temp - min_temp);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="min-max" data-title="ข้อมูลเข้า"><pre><code>7
+33 35 34 36 32 36 35
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="min-max" data-title="C:\code\min_max.exe"><pre><code>max = 36
+min = 32
+range = 4
+</code></pre></div>
+      </div>
+
+      <p>ทั้งสองค่าเริ่มจาก <code>temp[0]</code> เหมือนกัน แล้วต่างคนต่างเปลี่ยน จึงเขียนเป็น <code>if</code> สองตัวแยกกัน ใช้ <code>else if</code> ก็ได้ผลเท่ากัน เพราะค่าที่มากกว่าค่ามากสุดย่อมไม่น้อยกว่าค่าน้อยสุด แต่แบบแยกอ่านง่ายกว่า และไม่ต้องหยุดคิดว่าเป็นไปได้ไหม</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="start-at-zero">แบบที่ 1 เริ่มค่ามากสุดที่ 0</h3>
+
+      <p>หลายคนเริ่มค่ามากสุดด้วย 0 เพราะคุ้นกับตัวแปรสะสมที่เริ่มจาก 0 ลองกับอุณหภูมิในช่องแช่แข็งของตู้เย็น ที่วัดทุกชั่วโมงเป็นเวลา 5 ชั่วโมง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="freezer"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int temp[100];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;temp[i]);
+    }
+    int max_temp = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if (temp[i] &gt; max_temp) {
+            max_temp = temp[i];
+        }
+    }
+    printf("%d\n", max_temp);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="freezer" data-title="ข้อมูลเข้า"><pre><code>5
+-18 -20 -16 -19 -18
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="freezer" data-title="C:\code\freezer.exe"><pre><code>0
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ -16 แต่ได้ 0 ซึ่งไม่มีในข้อมูลเลย ไม่มีค่าไหนมากกว่า 0 ค่าเริ่มต้นจึงไม่เคยถูกเปลี่ยน กับคะแนนสอบที่ไม่ติดลบ โปรแกรมนี้ตอบถูกทุกครั้ง เลยไม่รู้ตัวจนเจอชุดทดสอบที่มีแต่ค่าติดลบ แก้ด้วยการเริ่มจาก <code>temp[0]</code> แบบโปรแกรมก่อนหน้า วิธีนี้ใช้ได้กับข้อมูลทุกแบบ</p>
+
+      <h3 id="index-or-value">แบบที่ 2 สับสนระหว่าง index กับค่า</h3>
+
+      <p>ในโปรแกรม hottest-day ถ้าเปลี่ยนการเปรียบเทียบเป็น <code>if (temp[i] &gt; first)</code> คือเอาค่าไปเทียบกับ index</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="mixed-up"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int temp[100];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;temp[i]);
+    }
+    int first = 0;
+    for (int i = 1; i &lt; n; i++) {
+        if (temp[i] &gt; first) {
+            first = i;
+        }
+    }
+    printf("first hottest day = %d\n", first + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="mixed-up" data-title="ข้อมูลเข้า"><pre><code>7
+33 35 34 36 32 36 35
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="mixed-up" data-title="C:\code\mixed_up.exe"><pre><code>first hottest day = 7
+</code></pre></div>
+      </div>
+
+      <p>compiler ไม่เตือน เพราะทั้งคู่เป็น <code>int</code> เหมือนกัน แต่ความหมายต่างกันคนละเรื่อง อุณหภูมิทุกวันมากกว่าเลข index เสมอ <code>first</code> จึงเปลี่ยนทุกรอบจนได้วันสุดท้าย ตั้งชื่อตัวแปรที่เก็บ index ให้บอกว่าเป็นตำแหน่ง แล้วเวลาเทียบ ให้เทียบค่ากับค่า คือ <code>temp[i]</code> กับ <code>temp[first]</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ผลรวมใช้ตัวแปรสะสมเริ่มที่ 0 ระวังล้น <code>int</code> ตามขอบเขตในโจทย์</li>
+        <li>เก็บข้อมูลในอาเรย์ทำให้วนรอบสองได้ เช่น นับคนที่ไม่ต่ำกว่าค่าเฉลี่ย</li>
+        <li>ค่ามากสุดและน้อยสุดเริ่มจากช่อง 0 เสมอ อย่าเริ่มจาก 0</li>
+        <li>อยากรู้ตำแหน่ง ให้จำ index แล้วหยิบค่าด้วย <code>a[index]</code></li>
+        <li><code>&gt;</code> ได้ตำแหน่งแรก <code>&gt;=</code> ได้ตำแหน่งสุดท้าย index บวกหนึ่งคือลำดับที่คนนับ</li>
+      </ul>
+    </article>

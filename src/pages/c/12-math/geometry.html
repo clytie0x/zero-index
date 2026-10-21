@@ -1,0 +1,253 @@
+<article class="doc">
+      <h1>12.5 เรขาคณิตบนพิกัด</h1>
+
+      <p>โจทย์ที่ให้ตำแหน่งเป็นพิกัด (x, y) เช่น บ้านของนักเรียน ร้านค้าบนแผนที่ หรือหมุดเขตที่ดิน มักถามระยะห่าง ใครอยู่ใกล้สุด หรือพื้นที่ของรูปที่ล้อมด้วยหมุด หน้านี้ใช้สูตรจากวิชาคณิตศาสตร์ แต่เขียนให้คำนวณด้วยจำนวนเต็มให้มากที่สุด เพราะทศนิยมคลาดได้ตามที่เห็นในหน้า <a href="../01-variables/double-char.html#precision">1.4</a> และในโจทย์เรขาคณิต ค่าที่คลาดนิดเดียวทำให้ตอบผิดทั้งข้อได้</p>
+
+      <h2 id="distance">ระยะห่างระหว่างสองจุด</h2>
+
+      <p>จุด (x1, y1) กับ (x2, y2) ห่างกันในแนวนอน dx = x2 - x1 และแนวตั้ง dy = y2 - y1 ตามทฤษฎีบทพีทาโกรัส ระยะห่างคือ √(dx<sup>2</sup> + dy<sup>2</sup>) ฟังก์ชันหารากที่สองชื่อ <code>sqrt</code> อยู่ในไลบรารี <code>math.h</code> รับ <code>double</code> และส่งกลับ <code>double</code> ใน Code::Blocks ใส่ <code>#include &lt;math.h&gt;</code> แล้วใช้ได้เลย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="distance"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+
+int main()
+{
+    long long x1, y1, x2, y2;
+    scanf("%lld %lld %lld %lld", &amp;x1, &amp;y1, &amp;x2, &amp;y2);
+    long long dx = x2 - x1;
+    long long dy = y2 - y1;
+    long long squared = dx * dx + dy * dy;
+    printf("squared = %lld\n", squared);
+    printf("distance = %.2f\n", sqrt(squared));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="distance" data-title="ข้อมูลเข้า"><pre><code>-2 -1 3 2
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="distance" data-title="C:\code\distance.exe"><pre><code>squared = 34
+distance = 5.83
+</code></pre></div>
+      </div>
+
+      <p>dx = 5 และ dy = 3 ระยะห่างคือ √34 ไม่เป็นจำนวนเต็ม จึงต้องพิมพ์เป็นทศนิยม แต่ <code>squared</code> คำนวณเป็นจำนวนเต็มจนวินาทีสุดท้าย แปลงเป็น <code>double</code> ตอนส่งให้ <code>sqrt</code> เท่านั้น ถ้าพิกัดใหญ่ถึง 10<sup>9</sup> ค่า dx ใหญ่ถึง 2 × 10<sup>9</sup> และ dx × dx ถึง 4 × 10<sup>18</sup> จึงต้องเป็น <code>long long</code> ทุกตัว</p>
+
+      <h2 id="compare">เทียบระยะไม่ต้องถอดราก</h2>
+
+      <p>ถ้าโจทย์ถามแค่ว่าใครอยู่ใกล้กว่า ไม่ได้ถามระยะจริง ไม่ต้องใช้ <code>sqrt</code> เลย ระยะที่ยาวกว่าก็มีกำลังสองที่มากกว่าเสมอ เทียบ dx<sup>2</sup> + dy<sup>2</sup> ซึ่งเป็นจำนวนเต็มได้ตรงๆ ไม่มีการคลาด โรงเรียนอยู่ที่ (0, 0) หาว่าบ้านของนักเรียนคนไหนใกล้โรงเรียนที่สุด</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="nearest"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    long long best = -1;
+    int best_index = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        long long x, y;
+        scanf("%lld %lld", &amp;x, &amp;y);
+        long long squared = x * x + y * y;
+        if (best == -1 || squared &lt; best) {
+            best = squared;
+            best_index = i;
+        }
+    }
+    printf("nearest = %d\n", best_index);
+    printf("squared distance = %lld\n", best);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="nearest" data-title="ข้อมูลเข้า"><pre><code>4
+5 5
+-6 2
+1 -7
+3 -6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="nearest" data-title="C:\code\nearest.exe"><pre><code>nearest = 2
+squared distance = 40
+</code></pre></div>
+      </div>
+
+      <p>กำลังสองของระยะคือ 50 40 50 และ 45 คนที่ 2 ใกล้สุด ส่วนคนที่ 1 กับคนที่ 3 ห่างเท่ากันพอดี ซึ่งเทียบด้วยจำนวนเต็มรู้ได้แน่นอน ถ้าเทียบด้วยทศนิยมจาก <code>sqrt</code> อาจเจอค่าที่ควรเท่ากันแต่คลาดกันในหลักท้ายๆ</p>
+
+      <p>ถ้าโจทย์เป็นการเดินบนตารางที่เดินได้แค่ขึ้นลงซ้ายขวา ระยะที่เดินจริงคือ |dx| + |dy| เรียกว่า<strong>ระยะแมนฮัตตัน (Manhattan distance)</strong> ตามถนนที่ตัดกันเป็นตารางในเมืองนั้น คำนวณด้วยจำนวนเต็มล้วน ค่าสัมบูรณ์ทำได้ด้วย if แบบในโปรแกรมข้างล่าง</p>
+
+      <h2 id="triangle">พื้นที่สามเหลี่ยมจากพิกัด</h2>
+
+      <p>สูตรครึ่งหนึ่งของฐานคูณสูงต้องรู้ความสูง ซึ่งหาจากพิกัดยาก มีสูตรที่ใช้พิกัดสามจุดตรงๆ และมีแค่การบวก ลบ คูณ</p>
+
+      <div class="code" data-lang="text"><pre><code>2 × พื้นที่ = | x1(y2 - y3) + x2(y3 - y1) + x3(y1 - y2) |
+</code></pre></div>
+
+      <p>ค่าในเครื่องหมายค่าสัมบูรณ์เป็นจำนวนเต็มเสมอเมื่อพิกัดเป็นจำนวนเต็ม พื้นที่จึงเป็นจำนวนเต็มหรือลงท้ายด้วย .5 เท่านั้น เก็บค่าสองเท่าของพื้นที่ไว้เป็นจำนวนเต็มแล้วพิมพ์เองโดยไม่ต้องใช้ <code>double</code> เลย</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="triangle"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    long long x1, y1, x2, y2, x3, y3;
+    scanf("%lld %lld %lld %lld %lld %lld", &amp;x1, &amp;y1, &amp;x2, &amp;y2, &amp;x3, &amp;y3);
+    long long twice = x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2);
+    if (twice &lt; 0) { // (1)!
+        twice = -twice;
+    }
+    if (twice == 0) { // (2)!
+        printf("on one line\n");
+    } else if (twice % 2 == 0) {
+        printf("area = %lld.0\n", twice / 2);
+    } else {
+        printf("area = %lld.5\n", twice / 2);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ค่าจากสูตรติดลบเมื่อไล่สามจุดตามเข็มนาฬิกา และเป็นบวกเมื่อไล่ทวนเข็มนาฬิกา เครื่องหมายนี้ใช้บอกทิศได้ด้วย แต่พื้นที่ต้องเป็นบวก จึงกลับเครื่องหมายก่อน และต้องทำก่อนดู <code>% 2</code> เพราะเศษของเลขติดลบเป็น -1 ตามหน้า <a href="mod.html#negative">12.1</a></li>
+        <li>สามจุดอยู่บนเส้นตรงเดียวกันพอดีเมื่อค่านี้เป็น 0 เทียบกับ 0 แบบจำนวนเต็มได้แน่นอน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="triangle" data-title="ข้อมูลเข้า"><pre><code>1 1 5 1 1 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="triangle" data-title="C:\code\triangle.exe"><pre><code>area = 6.0
+</code></pre></div>
+      </div>
+
+      <p>สามเหลี่ยมมุมฉากฐาน 4 สูง 3 พื้นที่ 6 ตรงกับสูตรครึ่งฐานคูณสูง ป้อน <code>0 0 3 1 1 2</code> ได้ <code>area = 2.5</code> และป้อน <code>0 0 1 1 3 3</code> ได้ <code>on one line</code></p>
+
+      <h2 id="polygon">พื้นที่รูปหลายเหลี่ยม</h2>
+
+      <p>สูตรเดียวกันขยายไปใช้กับรูปหลายเหลี่ยมกี่เหลี่ยมก็ได้ ถ้ารู้พิกัดของทุกมุมเรียงตามขอบรูป จะเรียงตามหรือทวนเข็มนาฬิกาก็ได้ เรียกว่า<strong>สูตรเชือกผูกรองเท้า (shoelace formula)</strong> เพราะถ้าเขียนพิกัดเป็นสองคอลัมน์แล้วลากเส้นคูณไขว้ จะดูเหมือนเชือกผูกรองเท้า</p>
+
+      <div class="code" data-lang="text"><pre><code>2 × พื้นที่ = | ผลรวมของ (x[i] × y[i+1] - x[i+1] × y[i]) ทุก i |
+              โดยมุมถัดจากมุมสุดท้ายคือมุมแรก
+</code></pre></div>
+
+      <p>ที่ดินรูปตัว L มีหมุด 6 หมุด</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="polygon"><pre><code>#include &lt;stdio.h&gt;
+
+long long x[100000], y[100000];
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%lld %lld", &amp;x[i], &amp;y[i]);
+    }
+    long long twice = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int next = (i + 1) % n;
+        twice += x[i] * y[next] - x[next] * y[i];
+    }
+    if (twice &lt; 0) {
+        twice = -twice;
+    }
+    printf("%lld", twice / 2);
+    if (twice % 2 == 1) {
+        printf(".5\n");
+    } else {
+        printf(".0\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="polygon" data-title="ข้อมูลเข้า"><pre><code>6
+0 0
+4 0
+4 2
+2 2
+2 5
+0 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="polygon" data-title="C:\code\polygon.exe"><pre><code>14.0
+</code></pre></div>
+      </div>
+
+      <p>ตรวจด้วยมือได้ ตัว L นี้คือสี่เหลี่ยม 4 × 2 ต่อกับสี่เหลี่ยม 2 × 3 รวม 8 + 6 = 14 <code>(i + 1) % n</code> ทำให้มุมถัดจากมุมสุดท้ายวนกลับไปมุมที่ 0 แบบเดียวกับการวนรอบในหน้า 12.1 ถ้าพิกัดไม่เรียงตามขอบรูป เช่น สลับลำดับหมุดสองตัว สูตรจะได้พื้นที่ของรูปที่เส้นขอบตัดกันเอง ซึ่งไม่ใช่ที่ดินแปลงนี้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="heron">แบบที่ 1 หาพื้นที่ด้วยทศนิยม</h3>
+
+      <p>สูตรของเฮรอนหาพื้นที่จากความยาวด้านสามด้าน a b c ได้เป็น √(s(s - a)(s - b)(s - c)) เมื่อ s คือครึ่งหนึ่งของเส้นรอบรูป ความยาวด้านต้องหาด้วย <code>sqrt</code> จึงเป็นทศนิยมตั้งแต่ต้น ใช้ตรวจว่าสามจุดอยู่บนเส้นตรงเดียวกันไหม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="heron"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+
+int main()
+{
+    double x1, y1, x2, y2, x3, y3;
+    scanf("%lf %lf %lf %lf %lf %lf", &amp;x1, &amp;y1, &amp;x2, &amp;y2, &amp;x3, &amp;y3);
+    double a = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    double b = sqrt((x3 - x2) * (x3 - x2) + (y3 - y2) * (y3 - y2));
+    double c = sqrt((x1 - x3) * (x1 - x3) + (y1 - y3) * (y1 - y3));
+    double s = (a + b + c) / 2;
+    double area = sqrt(s * (s - a) * (s - b) * (s - c));
+    printf("%.10f\n", area);
+    if (area == 0) {
+        printf("on one line\n");
+    } else {
+        printf("triangle\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="heron" data-title="ข้อมูลเข้า"><pre><code>0 0 1 1 3 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="heron" data-title="C:\code\heron.exe"><pre><code>0.0000001228
+triangle
+</code></pre></div>
+      </div>
+
+      <p>(0, 0) (1, 1) (3, 3) อยู่บนเส้น y = x ทั้งสามจุด พื้นที่ต้องเป็น 0 แต่ √2 กับ 3√2 เก็บแบบลงตัวไม่ได้ ค่าที่คลาดนิดเดียวสะสมจนได้พื้นที่ไม่เป็นศูนย์ โปรแกรมจึงตอบว่าเป็นสามเหลี่ยม บางชุดพิกัดได้ 0 พอดี บางชุดไม่ได้ ทดสอบไม่กี่ชุดจึงอาจไม่เห็น โปรแกรม triangle ที่ใช้จำนวนเต็มตอบชุดนี้ถูก และถูกทุกชุด</p>
+
+      <h3 id="int-cross">แบบที่ 2 ใช้ int เก็บพิกัด</h3>
+
+      <p>เปลี่ยนตัวแปรพิกัดในโปรแกรม triangle เป็น <code>int</code> คิดว่าเก็บผลใน <code>long long</code> แล้วก็พอ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="triangle-int"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int x1, y1, x2, y2, x3, y3;
+    scanf("%d %d %d %d %d %d", &amp;x1, &amp;y1, &amp;x2, &amp;y2, &amp;x3, &amp;y3);
+    long long twice = x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2);
+    if (twice &lt; 0) {
+        twice = -twice;
+    }
+    printf("twice area = %lld\n", twice);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="triangle-int" data-title="ข้อมูลเข้า"><pre><code>0 0 100000 0 0 100000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="triangle-int" data-title="C:\code\triangle.exe"><pre><code>twice area = 1410065408
+</code></pre></div>
+      </div>
+
+      <p>ค่าที่ถูกคือ 100000 × 100000 = 10000000000 แต่ <code>x2 * (y3 - y1)</code> เป็น <code>int</code> คูณ <code>int</code> ล้นไปก่อนถึงกล่อง <code>long long</code> เป็นกับดักจากหน้า <a href="../01-variables/integers.html#int-times-int">1.3</a> อีกครั้ง โจทย์เรขาคณิตคูณพิกัดกันเกือบทุกบรรทัด ให้ประกาศพิกัดเป็น <code>long long</code> ตั้งแต่ต้น และเช็กขอบเขตด้วย พิกัดถึง 10<sup>9</sup> ทำให้แต่ละพจน์ใหญ่ถึง 2 × 10<sup>18</sup> ยังพอสำหรับสามเหลี่ยม แต่รูปหลายเหลี่ยมที่บวกพจน์เป็นแสนพจน์อาจเกิน <code>long long</code> โจทย์แบบนั้นจึงมักให้พิกัดเล็กกว่านี้</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ระยะห่างคือ √(dx<sup>2</sup> + dy<sup>2</sup>) ใช้ <code>sqrt</code> จาก <code>math.h</code> เฉพาะตอนต้องพิมพ์ระยะจริง</li>
+        <li>เทียบว่าใกล้หรือไกลกว่า ให้เทียบ dx<sup>2</sup> + dy<sup>2</sup> ซึ่งเป็นจำนวนเต็ม ไม่ต้องถอดราก</li>
+        <li>สองเท่าของพื้นที่สามเหลี่ยมคือ |x1(y2 - y3) + x2(y3 - y1) + x3(y1 - y2)| เป็นจำนวนเต็มเสมอ เป็น 0 เมื่อสามจุดอยู่บนเส้นตรงเดียวกัน</li>
+        <li>รูปหลายเหลี่ยมใช้สูตรเชือกผูกรองเท้า พิกัดต้องเรียงตามขอบรูป และวนมุมสุดท้ายกลับไปมุมแรกด้วย <code>(i + 1) % n</code></li>
+        <li>พิกัดเป็น <code>long long</code> เสมอ และทำงานกับสองเท่าของพื้นที่แบบจำนวนเต็ม แทนการใช้ <code>double</code></li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

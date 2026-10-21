@@ -1,0 +1,386 @@
+<article class="doc">
+      <h1>5.5 แทรก ลบ และขอบของอาเรย์</h1>
+
+      <p>คนในแถวซื้อข้าวออกจากแถวกลางคัน คนข้างหลังทุกคนก็ขยับขึ้นมาหนึ่งที่ มีคนแซงเข้ามา คนข้างหลังก็ถอยไปหนึ่งที่ อาเรย์ทำงานแบบเดียวกัน ช่องวางติดกันตายตัว จะลบหรือแทรกตรงกลางต้องเลื่อนสมาชิกที่เหลือเอง ครึ่งหลังของหน้าดูว่าเกิดอะไรขึ้นเมื่อใช้ช่องที่ไม่มีอยู่จริง และทำไมอาเรย์ใหญ่ต้องประกาศไว้นอก <code>main</code></p>
+
+      <h2 id="delete">ลบสมาชิก</h2>
+
+      <p>แถวมี N คน แต่ละคนถือบัตรคิวคนละเลข คนที่ยืนลำดับที่ p ออกจากแถว ลำดับที่ p อยู่ช่อง <code>p - 1</code> ทุกคนที่อยู่หลังเขาต้องขยับขึ้นมาหนึ่งช่อง แล้วแถวก็สั้นลงหนึ่ง</p>
+
+      <figure>
+        <svg viewBox="0 0 520 210" width="520" style="max-width:100%;height:auto" role="img" aria-label="ลบคนในช่อง 2 ออกจากแถว 11 12 13 14 15 16 ค่าในช่อง 3 4 5 เลื่อนมาทางซ้ายทีละช่อง ได้ 11 12 14 15 16 ช่อง 5 ยังมี 16 ค้างอยู่แต่ไม่นับแล้ว เพราะ n เหลือ 5">
+          <defs>
+            <marker id="arrow-left" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="6" y="58" style="fill:var(--ink);font-size:14px">before</text>
+            <rect x="80" y="30" width="60" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="140" y="30" width="60" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="200" y="30" width="60" height="44" style="fill:var(--surface);stroke:var(--danger);stroke-width:2"/>
+            <rect x="260" y="30" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="320" y="30" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="380" y="30" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="110" y="58" text-anchor="middle" style="fill:var(--ink);font-size:18px">11</text>
+            <text x="170" y="58" text-anchor="middle" style="fill:var(--ink);font-size:18px">12</text>
+            <text x="230" y="58" text-anchor="middle" style="fill:var(--danger);font-size:18px">13</text>
+            <text x="290" y="58" text-anchor="middle" style="fill:var(--ink);font-size:18px">14</text>
+            <text x="350" y="58" text-anchor="middle" style="fill:var(--ink);font-size:18px">15</text>
+            <text x="410" y="58" text-anchor="middle" style="fill:var(--ink);font-size:18px">16</text>
+            <text x="450" y="58" style="fill:var(--muted);font-size:13px">n = 6</text>
+            <text x="110" y="20" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">0</text>
+            <text x="170" y="20" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">1</text>
+            <text x="230" y="20" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">2</text>
+            <text x="290" y="20" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">3</text>
+            <text x="350" y="20" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">4</text>
+            <text x="410" y="20" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">5</text>
+            <line x1="285" y1="78" x2="238" y2="126" style="stroke:var(--brand);stroke-width:2" marker-end="url(#arrow-left)"/>
+            <line x1="345" y1="78" x2="298" y2="126" style="stroke:var(--brand);stroke-width:2" marker-end="url(#arrow-left)"/>
+            <line x1="405" y1="78" x2="358" y2="126" style="stroke:var(--brand);stroke-width:2" marker-end="url(#arrow-left)"/>
+            <text x="6" y="158" style="fill:var(--ink);font-size:14px">after</text>
+            <rect x="80" y="130" width="60" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="140" y="130" width="60" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="200" y="130" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="260" y="130" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="320" y="130" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="380" y="130" width="60" height="44" style="fill:none;stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 4"/>
+            <text x="110" y="158" text-anchor="middle" style="fill:var(--ink);font-size:18px">11</text>
+            <text x="170" y="158" text-anchor="middle" style="fill:var(--ink);font-size:18px">12</text>
+            <text x="230" y="158" text-anchor="middle" style="fill:var(--ink);font-size:18px">14</text>
+            <text x="290" y="158" text-anchor="middle" style="fill:var(--ink);font-size:18px">15</text>
+            <text x="350" y="158" text-anchor="middle" style="fill:var(--ink);font-size:18px">16</text>
+            <text x="410" y="158" text-anchor="middle" style="fill:var(--muted);font-size:18px">16</text>
+            <text x="450" y="158" style="fill:var(--muted);font-size:13px">n = 5</text>
+            <text x="260" y="200" text-anchor="middle" style="fill:var(--muted);font-size:13px">cell 5 still holds 16, but it is past n</text>
+          </g>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="leave"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int line[100];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;line[i]);
+    }
+    int p;
+    scanf("%d", &amp;p);
+    for (int i = p - 1; i &lt; n - 1; i++) { // (1)!
+        line[i] = line[i + 1];
+    }
+    n--; // (2)!
+    for (int i = 0; i &lt; n; i++) {
+        printf("%d ", line[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เริ่มจากช่องของคนที่ออก เอาค่าช่องถัดไปมาทับ ทำจาก <strong>ซ้ายไปขวา</strong> หยุดที่ <code>n - 2</code> เพราะช่องสุดท้ายที่ต้องอ่านคือ <code>line[n - 1]</code></li>
+        <li>ช่องสุดท้ายเดิมยังมีค่าค้างอยู่ ไม่ต้องลบ แค่ลด <code>n</code> ลง ช่องนั้นก็อยู่นอกแถวแล้ว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="leave" data-title="ข้อมูลเข้า"><pre><code>6
+11 12 13 14 15 16
+3
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="leave" data-title="C:\code\leave.exe"><pre><code>11 12 14 15 16
+</code></pre></div>
+      </div>
+
+      <h2 id="insert">แทรกสมาชิก</h2>
+
+      <p>คราวนี้มีคนถือบัตรเลข x แทรกเข้ามาให้ตัวเองเป็นคนลำดับที่ p ทุกคนตั้งแต่ช่อง <code>p - 1</code> ไปต้องถอยหลังหนึ่งช่องก่อน ให้ช่องนั้นว่าง แล้วค่อยใส่ x ลงไป</p>
+
+      <p>ลำดับการเลื่อนสำคัญมาก ต้องเริ่มจาก <strong>คนท้ายแถวก่อน</strong> คนท้ายถอยไปช่องว่างที่อยู่หลังแถว คนรองสุดท้ายจึงถอยไปช่องที่คนท้ายเพิ่งออกมาได้ ถ้าเริ่มจากคนหน้าก่อน เขาจะไปยืนทับคนข้างหลังที่ยังไม่ได้ขยับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="cut-in"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int line[101]; // (1)!
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;line[i]);
+    }
+    int p, x;
+    scanf("%d %d", &amp;p, &amp;x);
+    for (int i = n; i &gt; p - 1; i--) { // (2)!
+        line[i] = line[i - 1];
+    }
+    line[p - 1] = x;
+    n++;
+    for (int i = 0; i &lt; n; i++) {
+        printf("%d ", line[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>N ไม่เกิน 100 แต่แทรกแล้วมี N + 1 คน จึงต้องเผื่อไว้ 101 ช่อง</li>
+        <li>วนจาก <strong>ขวาไปซ้าย</strong> เริ่มที่ช่อง <code>n</code> ซึ่งว่างอยู่ ให้รับค่าจากช่อง <code>n - 1</code> แล้วถอยลงมาเรื่อยๆ รอบสุดท้ายคือ <code>i = p</code> ช่อง <code>p</code> รับค่าจากช่อง <code>p - 1</code> ช่อง <code>p - 1</code> จึงพร้อมรับ x</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="cut-in" data-title="ข้อมูลเข้า"><pre><code>5
+11 12 13 14 15
+2 99
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="cut-in" data-title="C:\code\cut_in.exe"><pre><code>11 99 12 13 14 15
+</code></pre></div>
+      </div>
+
+      <p>ลองกับขอบด้วยทุกครั้ง <code>p = 1</code> แทรกหัวแถว ทุกคนต้องถอย และ <code>p = n + 1</code> แทรกท้ายแถว ลูปไม่ทำงานเลยสักรอบ แค่ใส่ x ที่ช่อง <code>n</code> ทั้งสองกรณีโปรแกรมนี้ทำได้ถูกโดยไม่ต้องเขียนกรณีพิเศษ</p>
+
+      <h3 id="rotate">หมุนแถว</h3>
+
+      <p>หมุนแถวไปทางซ้ายหนึ่งช่อง คือคนหัวแถวออกไปต่อท้าย ก็คือลบช่อง 0 แล้วใส่ค่านั้นที่ท้าย ต้องจำค่าหัวแถวไว้ในตัวแปรพักก่อนจะโดนทับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="rotate"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int line[100];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;line[i]);
+    }
+    int first = line[0];
+    for (int i = 0; i &lt; n - 1; i++) {
+        line[i] = line[i + 1];
+    }
+    line[n - 1] = first;
+    for (int i = 0; i &lt; n; i++) {
+        printf("%d ", line[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="rotate" data-title="ข้อมูลเข้า"><pre><code>5
+11 12 13 14 15
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="rotate" data-title="C:\code\rotate.exe"><pre><code>12 13 14 15 11
+</code></pre></div>
+      </div>
+
+      <p>ถ้าต้องหมุน K ช่อง อย่าวนหมุนทีละช่อง K รอบ เพราะ K อาจเป็นพันล้าน ลองคิดดูว่าหลังหมุน K ช่อง ช่อง i ควรได้ค่ามาจากช่องไหนของอาเรย์เดิม แล้วใช้ <code>%</code> จากหน้า 1.2 ช่วย</p>
+
+      <h2 id="break-it">ลองทำให้พัง เลื่อนผิดทาง</h2>
+
+      <p>ในโปรแกรม cut-in เปลี่ยนลูปเลื่อนให้วนจากซ้ายไปขวา เหมือนตอนลบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="cut-in-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int line[101];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;line[i]);
+    }
+    int p, x;
+    scanf("%d %d", &amp;p, &amp;x);
+    for (int i = p; i &lt;= n; i++) {
+        line[i] = line[i - 1];
+    }
+    line[p - 1] = x;
+    n++;
+    for (int i = 0; i &lt; n; i++) {
+        printf("%d ", line[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="cut-in-bug" data-title="ข้อมูลเข้า"><pre><code>5
+11 12 13 14 15
+2 99
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="cut-in-bug" data-title="C:\code\cut_in.exe"><pre><code>11 99 12 12 12 12
+</code></pre></div>
+      </div>
+
+      <p>รอบแรก 12 ถูกคัดลอกไปทับ 13 รอบถัดไปคัดลอกช่องนั้น ซึ่งตอนนี้เป็น 12 ไปทับ 14 ต่อไปเรื่อยๆ จน 12 ไหลไปเต็มแถว ค่าเดิมหายหมดก่อนจะได้ขยับ จำง่ายๆ <strong>ลบเลื่อนจากซ้าย แทรกเลื่อนจากขวา</strong> เริ่มจากฝั่งที่ไม่ทับค่าที่ยังไม่ได้ใช้</p>
+
+      <h2 id="out-of-bounds">ใช้ช่องที่ไม่มีอยู่จริง</h2>
+
+      <p>ภาษา C <strong>ไม่ตรวจว่า index อยู่ในขอบเขต</strong> อาเรย์ <code>int score[5]</code> มีช่อง 0 ถึง 4 แต่ถ้าเขียน <code>score[5]</code> หรือ <code>score[-1]</code> โปรแกรมก็ยังคอมไพล์ได้ และตอนรันจะไปอ่านหรือเขียนหน่วยความจำตรงที่ควรเป็นช่องนั้นถ้ามันมีอยู่จริง ซึ่งเป็นของอย่างอื่น ผลที่ได้ขึ้นกับว่าตรงนั้นเป็นของอะไร จึงไม่มีอะไรรับประกัน ทุกอาการด้านล่างเกิดบนเครื่องที่ทดลอง ถ้าน้องลองเองอาจได้ไม่เหมือน</p>
+
+      <h3 id="read-past">อาการที่ 1 อ่านได้ค่าที่ดูปกติ</h3>
+
+      <p>ลูปที่ใช้ <code>&lt;=</code> แทน <code>&lt;</code> คือสาเหตุอันดับหนึ่ง</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score[5] = {70, 85, 90, 65, 80};
+    for (int i = 0; i &lt;= 5; i++) {
+        printf("score[%d] = %d\n", i, score[i]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ใน Code::Blocks ไม่มีคำเตือน รันสี่ครั้ง บรรทัดสุดท้ายเป็น <code>score[5] = 0</code> ทุกครั้ง ห้าบรรทัดแรกถูกหมด และ 0 ก็ดูเป็นคะแนนที่เป็นไปได้ ถ้าโจทย์ให้หาค่าน้อยสุด คำตอบจะผิดเป็น 0 โดยไม่มีอะไรเตือนเลย</p>
+
+      <p>พอคอมไพล์ด้วย <code>-O2 -Wall -Wextra</code> แบบตัวตรวจของเว็บนี้ gcc ถึงจะเตือน</p>
+
+      <div class="code" data-lang="gcc"><pre><code>oob_read.c:7:9: warning: iteration 5 invokes undefined behavior [-Waggressive-loop-optimizations]
+    7 |         printf("score[%d] = %d\n", i, score[i]);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+oob_read.c:6:23: note: within this loop
+    6 |     for (int i = 0; i &lt;= 5; i++) {
+      |                     ~~^~~~
+</code></pre></div>
+
+      <p>ข้อความแปลว่ารอบที่ i เป็น 5 ทำสิ่งที่มาตรฐานไม่ได้กำหนดผลไว้ และโปรแกรมที่คอมไพล์แบบนี้พิมพ์ <code>score[5]</code> เป็น 426 321 413 648 เปลี่ยนไปทุกครั้งที่รัน การเตือนนี้ขึ้นเพราะ <code>-O2</code> ทำให้ gcc วิเคราะห์ลูปละเอียดขึ้น ซึ่ง Code::Blocks ที่ตั้งไว้ในบทที่ 0 ไม่ได้เปิด อย่าคาดหวังว่าจะมีคนเตือน</p>
+
+      <h3 id="write-past">อาการที่ 2 เขียนทับของคนอื่น</h3>
+
+      <p>เอาโปรแกรม cut-in ที่ถูกต้องมาเปลี่ยนแค่บรรทัดประกาศเป็น <code>int line[5];</code> แล้วแทรกคนที่หกเข้าไปในแถวที่มีห้าคน ลูปเลื่อนจะเขียนลง <code>line[5]</code> ซึ่งไม่มีอยู่จริง คอมไพล์ใน Code::Blocks ไม่มีคำเตือน ป้อนข้อมูลชุดเดิม ผลที่ได้คือ</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\cut_in.exe"><pre><code>11 99 12 13 14 5
+</code></pre></div>
+
+      <p>ห้าตัวแรกถูก แต่ตัวท้ายเป็น 5 แทนที่จะเป็น 15 รันกี่ครั้งก็ได้แบบนี้ ลองให้ลูปพิมพ์ค่าของ <code>line[5]</code> ออกมาทุกรอบ ได้ 0 1 2 3 4 5 ตรงกับ <code>i</code> ของลูปพิมพ์ทุกรอบ แปลว่าบนเครื่องที่ทดลอง ตำแหน่งที่ควรเป็น <code>line[5]</code> คือที่เดียวกับตัวแปร <code>i</code> ของลูปพิมพ์ ค่า 15 ที่เลื่อนไปไว้ถูกทับทันทีที่ลูปตั้ง <code>i = 0</code> และตอนพิมพ์ช่องสุดท้ายก็ได้ค่าของ <code>i</code> ซึ่งเป็น 5 กลับมา ถ้าเปลี่ยนเครื่อง เปลี่ยน compiler หรือแก้โค้ดส่วนอื่น ตัวแปรที่โดนทับก็อาจเป็นตัวอื่น บั๊กแบบนี้จึงหายากมาก</p>
+
+      <h3 id="crash">อาการที่ 3 โปรแกรมพัง</h3>
+
+      <p>ถ้า index ไกลจากขอบมาก จะไปโดนหน่วยความจำที่โปรแกรมไม่มีสิทธิ์ใช้ Windows จะปิดโปรแกรมทันที</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int seat[100] = {0};
+    int number;
+    scanf("%d", &amp;number);
+    seat[number] = 1;
+    printf("seat %d booked\n", number);
+    printf("%d\n", seat[0]);
+    return 0;
+}
+</code></pre></div>
+
+      <p>ป้อน <code>120</code> โปรแกรมพิมพ์ <code>seat 120 booked</code> แล้วจบปกติ ทั้งที่ช่อง 120 ไม่มีอยู่จริง ป้อน <code>100000</code> โปรแกรมปิดตัวโดยไม่พิมพ์อะไรเลย และ Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p><code>0xC0000005</code> คือรหัสของ Windows ที่แปลว่าเข้าถึงหน่วยความจำที่ไม่มีสิทธิ์ (access violation) ถ้าส่ง grader จะได้ผลว่า runtime error เหมือนหารด้วยศูนย์ในหน้า 1.2</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">ไม่พังไม่ได้แปลว่าถูก</p>
+        <p>ในสามอาการ มีแค่แบบที่ 3 ที่บอกตัวเองว่าผิด อีกสองแบบได้คำตอบที่ดูปกติ ก่อนส่งให้ไล่ดูทุกจุดที่ใช้ index ถามตัวเองว่าค่าน้อยสุดกับมากสุดของ index ตรงนั้นคือเท่าไร และอาเรย์มีช่องนั้นจริงไหม จุดที่ต้องดูเป็นพิเศษคือ <code>&lt;=</code> ในลูป <code>i - 1</code> ตอน <code>i</code> เป็น 0 <code>i + 1</code> ตอน <code>i</code> เป็นตัวสุดท้าย และอาเรย์นับที่ขาดไปหนึ่งช่องแบบ<a href="counting.html#one-short">หน้า 5.3</a></p>
+      </div>
+
+      <h2 id="big-arrays">อาเรย์ใหญ่ต้องอยู่นอก main</h2>
+
+      <p>โจทย์ให้ N ถึง 10<sup>7</sup> ก็ประกาศ 10<sup>7</sup> ช่องตามขอบเขต ดูเหมือนไม่มีอะไรผิด</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int heights[10000000];
+    int n;
+    printf("start\n");
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;heights[i]);
+    }
+    long long sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        sum += heights[i];
+    }
+    printf("%lld\n", sum);
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ผ่าน ไม่มีคำเตือน แต่พอรัน ไม่มีอะไรพิมพ์ออกมาเลยแม้แต่ <code>start</code> ที่อยู่ก่อนบรรทัดอื่น และ Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p><code>0xC00000FD</code> คือ <strong>stack overflow</strong> ตัวแปรที่ประกาศใน <code>main</code> อยู่ในหน่วยความจำส่วนที่เรียกว่า stack ซึ่งมีขนาดจำกัด อาเรย์ <code>int</code> สิบล้านช่องใช้ 40 ล้าน byte หรือประมาณ 40 MB ใหญ่กว่า stack หลายเท่า โปรแกรมจึงพังตั้งแต่ตอนเข้า <code>main</code> ก่อนจะได้ทำบรรทัดแรกเสียอีก</p>
+
+      <p>บนเครื่องที่ทดลอง ลองเปลี่ยนขนาดดูทีละค่า <code>int</code> 500000 ช่อง (2 ล้าน byte) ยังรันได้ แต่ 520000 ช่องพังแล้ว stack ของโปรแกรมที่ GCC ของ Code::Blocks สร้างจึงประมาณ 2 MB เท่านั้น เทียบเป็นอาเรย์ <code>int</code> ได้ราวห้าแสนช่อง <code>long long</code> ได้แค่ครึ่งหนึ่งของนั้น</p>
+
+      <p>วิธีแก้คือย้ายบรรทัดประกาศออกไปไว้ <strong>นอก <code>main</code></strong> ก่อนบรรทัด <code>int main()</code> ตัวแปรที่ประกาศนอกฟังก์ชันเรียกว่า <strong>ตัวแปร global</strong> ไม่ได้อยู่ใน stack แต่อยู่ในพื้นที่ที่จองไว้ตามขนาดจริงตั้งแต่โปรแกรมเริ่ม</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="global"><pre><code>#include &lt;stdio.h&gt;
+
+int heights[10000000]; // (1)!
+
+int main()
+{
+    int n;
+    printf("start\n");
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;heights[i]);
+    }
+    long long sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        sum += heights[i];
+    }
+    printf("%lld\n", sum);
+    printf("%d\n", heights[9999999]); // (2)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ย้ายมาไว้นอก <code>main</code> ข้างล่างใช้งานเหมือนเดิมทุกอย่าง</li>
+        <li>ช่องสุดท้ายที่ไม่เคยใส่ค่าเป็น 0 ไม่ใช่ค่าขยะ</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="global" data-title="ข้อมูลเข้า"><pre><code>3
+150 160 170
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="global" data-title="C:\code\heights.exe"><pre><code>start
+480
+0
+</code></pre></div>
+      </div>
+
+      <p>ได้ของแถมด้วย <strong>อาเรย์ global ทุกช่องเริ่มเป็น 0 เสมอ</strong> ไม่ต้องเขียน <code>= {0}</code> อาเรย์นับขนาด 10<sup>6</sup> ช่องในหน้า 5.3 ก็ต้องประกาศแบบนี้</p>
+
+      <p>คนเขียนโปรแกรมแข่งขันส่วนใหญ่ประกาศอาเรย์ที่มีขนาดตามขอบเขตโจทย์ไว้นอก <code>main</code> ตั้งแต่แรกจนเป็นนิสัย เพราะไม่ต้องคิดว่าเกินสองเมกะไบต์หรือยัง และไม่ต้องห่วงเรื่องลืมใส่ค่าเริ่มต้น เฉลยแบบฝึกหัดของบทนี้ก็ทำแบบนั้น ข้อเสียของตัวแปร global และเหตุผลที่ไม่ควรใช้กับทุกอย่าง จะได้เห็นในบทที่ 8 ตอนเรียนเรื่องขอบเขตตัวแปร</p>
+
+      <p>ขนาดก็ยังมีขีดจำกัดอยู่ดี อาเรย์ทุกตัวในโปรแกรมรวมกันต้องไม่เกินหน่วยความจำที่โจทย์กำหนด ให้คูณจำนวนช่องกับขนาดของชนิดดูก่อน <code>int</code> ช่องละ 4 byte <code>long long</code> ช่องละ 8 byte</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ลบช่องตรงกลาง เลื่อนตัวที่อยู่หลังมาทางซ้าย วนจากซ้ายไปขวา แล้วลด <code>n</code></li>
+        <li>แทรกช่องตรงกลาง เลื่อนไปทางขวา วนจาก <strong>ขวาไปซ้าย</strong> แล้วเพิ่ม <code>n</code> อาเรย์ต้องมีช่องเผื่อ</li>
+        <li>ภาษา C ไม่ตรวจขอบเขตของ index ใช้ช่องที่ไม่มีอยู่จริงอาจได้ค่าที่ดูปกติ ทับตัวแปรอื่น หรือพังด้วย <code>0xC0000005</code></li>
+        <li>อาเรย์ใน <code>main</code> ใหญ่เกินประมาณ 2 MB พังด้วย stack overflow <code>0xC00000FD</code></li>
+        <li>อาเรย์ใหญ่ประกาศนอก <code>main</code> ทุกช่องเริ่มเป็น 0 ให้เอง</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

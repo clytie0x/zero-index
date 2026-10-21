@@ -1,0 +1,329 @@
+<article class="doc">
+      <h1>5.1 อาเรย์และช่องที่ 0</h1>
+
+      <p>ในบทที่ 4 เราอ่านตัวเลขทีละตัวในลูปแล้วบวกสะสมได้ แต่ตัวเลขแต่ละตัวถูกทับทิ้งทันทีที่อ่านตัวถัดไป ถ้าโจทย์ถามว่า "มีกี่คนที่ได้คะแนนไม่ต่ำกว่าค่าเฉลี่ย" เราต้องรู้ค่าเฉลี่ยก่อน ซึ่งรู้ได้ก็ต่อเมื่ออ่านครบทุกคนแล้ว แล้วต้องย้อนกลับไปดูคะแนนของทุกคนอีกรอบ ตอนนั้นคะแนนหายไปหมดแล้ว หน้านี้รู้จัก <strong>อาเรย์ (array)</strong> ตัวแปรที่เก็บค่าได้หลายค่าในชื่อเดียว</p>
+
+      <h2 id="why">ตัวแปรห้าตัวยังพอไหว สี่สิบตัวไม่ไหว</h2>
+
+      <p>ถ้าห้องมีนักเรียน 5 คน ใช้ตัวแปร 5 ตัวก็ยังเขียนได้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="five-vars"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int s1, s2, s3, s4, s5;
+    scanf("%d %d %d %d %d", &amp;s1, &amp;s2, &amp;s3, &amp;s4, &amp;s5);
+    int total = s1 + s2 + s3 + s4 + s5;
+    printf("total = %d\n", total);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="five-vars" data-title="ข้อมูลเข้า"><pre><code>70 85 90 65 80
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="five-vars" data-title="C:\code\five_vars.exe"><pre><code>total = 390
+</code></pre></div>
+      </div>
+
+      <p>แต่ห้องจริงมี 40 คน โจทย์แข่งขันให้มาเป็นแสนตัว เราเขียนตัวแปรแสนตัวไม่ได้ และเขียนลูปวนผ่าน <code>s1</code> <code>s2</code> <code>s3</code> ก็ไม่ได้ เพราะชื่อตัวแปรเป็นแค่ตัวหนังสือในโค้ด โปรแกรมเปลี่ยนเลขท้ายชื่อตอนรันไม่ได้ อาเรย์แก้ปัญหานี้ด้วยการให้ชื่อเดียว แล้วแยกแต่ละค่าด้วย <strong>ตัวเลข</strong> ซึ่งเป็นค่าที่คำนวณและวนลูปได้</p>
+
+      <h2 id="declare">ประกาศอาเรย์</h2>
+
+      <div class="code" data-lang="c"><pre><code>int score[5];
+</code></pre></div>
+
+      <p>บรรทัดนี้ขอกล่อง <code>int</code> ห้ากล่อง วางเรียงติดกันในหน่วยความจำ ทั้งแถวใช้ชื่อ <code>score</code> ตัวเลขในวงเล็บเหลี่ยมตอนประกาศคือ <strong>จำนวนช่อง</strong> ทุกช่องเป็นชนิดเดียวกันหมด</p>
+
+      <p>เวลาใช้ ให้เขียนชื่อแล้วตามด้วยเลขช่องในวงเล็บเหลี่ยม เลขช่องเรียกว่า <strong>index</strong> (ดัชนี) และ <strong>ช่องแรกคือช่องที่ 0</strong></p>
+
+      <figure>
+        <svg viewBox="0 0 560 170" width="560" style="max-width:100%;height:auto" role="img" aria-label="อาเรย์ score ห้าช่อง เก็บ 70 85 90 65 80 ใต้ช่องมีเลข index 0 ถึง 4 ช่องแรกคือ score[0] ช่องสุดท้ายคือ score[4]">
+          <g style="font-family:var(--font-code)">
+            <text x="20" y="80" style="fill:var(--ink);font-size:16px">score</text>
+            <rect x="90" y="50" width="88" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="178" y="50" width="88" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="266" y="50" width="88" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="354" y="50" width="88" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="442" y="50" width="88" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="134" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">70</text>
+            <text x="222" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">85</text>
+            <text x="310" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">90</text>
+            <text x="398" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">65</text>
+            <text x="486" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">80</text>
+            <text x="134" y="126" text-anchor="middle" style="fill:var(--brand-text);font-size:18px">0</text>
+            <text x="222" y="126" text-anchor="middle" style="fill:var(--brand-text);font-size:18px">1</text>
+            <text x="310" y="126" text-anchor="middle" style="fill:var(--brand-text);font-size:18px">2</text>
+            <text x="398" y="126" text-anchor="middle" style="fill:var(--brand-text);font-size:18px">3</text>
+            <text x="486" y="126" text-anchor="middle" style="fill:var(--brand-text);font-size:18px">4</text>
+            <text x="20" y="126" style="fill:var(--muted);font-size:14px">index</text>
+            <text x="134" y="36" text-anchor="middle" style="fill:var(--muted);font-size:14px">score[0]</text>
+            <text x="486" y="36" text-anchor="middle" style="fill:var(--muted);font-size:14px">score[4]</text>
+            <text x="310" y="158" text-anchor="middle" style="fill:var(--muted);font-size:14px">5 cells: index 0 to 4</text>
+          </g>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="c" data-linenums data-test="first-array"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score[5];
+    score[0] = 70;
+    score[1] = 85;
+    score[2] = 90;
+    score[3] = 65;
+    score[4] = 80;
+    printf("first = %d\n", score[0]);
+    printf("last = %d\n", score[4]);
+    int i = 2;
+    printf("score[%d] = %d\n", i, score[i]);
+    printf("score[%d] = %d\n", i + 1, score[i + 1]);
+    score[1] = score[1] + 5;
+    printf("score[1] = %d\n", score[1]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="first-array" data-title="C:\code\first_array.exe"><pre><code>first = 70
+last = 80
+score[2] = 90
+score[3] = 65
+score[1] = 90
+</code></pre></div>
+
+      <ul>
+        <li><code>score[0]</code> ถึง <code>score[4]</code> แต่ละตัวใช้ได้เหมือนตัวแปร <code>int</code> ธรรมดาทุกอย่าง ใส่ค่า อ่านค่า เอาไปคำนวณ</li>
+        <li>บรรทัดที่ 14 กับ 15 เลขช่องเป็นตัวแปรหรือนิพจน์ก็ได้ <code>score[i]</code> เมื่อ <code>i</code> เป็น 2 คือ <code>score[2]</code> ข้อนี้คือเหตุผลทั้งหมดที่อาเรย์มีประโยชน์ เพราะ <code>i</code> เปลี่ยนค่าในลูปได้</li>
+        <li>วงเล็บเหลี่ยมมีสองความหมาย ตอนประกาศ <code>int score[5]</code> คือมีห้าช่อง ตอนใช้ <code>score[4]</code> คือช่องที่ index เป็น 4</li>
+      </ul>
+
+      <h2 id="zero-index">ทำไมเริ่มที่ 0</h2>
+
+      <p>ให้คิดว่าเลขในวงเล็บเหลี่ยมไม่ได้แปลว่า "ช่องที่เท่าไร" แต่แปลว่า <strong>"เดินจากช่องแรกไปกี่ช่อง"</strong> ช่องแรกไม่ต้องเดินเลย จึงเป็น 0 ช่องถัดไปเดินหนึ่งช่อง จึงเป็น 1 เหมือนไม้บรรทัดที่เริ่มที่ 0 เลขบนไม้บรรทัดบอกว่าห่างจากจุดเริ่มกี่เซนติเมตร</p>
+
+      <p>ผลที่ตามมาคือกฎที่ต้องจำให้ขึ้นใจ</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">อาเรย์ N ช่อง</p>
+        <p>ช่องแรกคือ <code>[0]</code> ช่องสุดท้ายคือ <code>[N - 1]</code> ไม่มีช่อง <code>[N]</code></p>
+      </div>
+
+      <p>ชื่อเว็บนี้ zero-index ก็มาจากเรื่องนี้ แปลว่า index เริ่มที่ศูนย์ บทแรกของเว็บจึงเป็นบทที่ 0 และ<a href="../../index.html#path">แผนที่บทในหน้าแรก</a>ก็ติดเลขบทไว้แบบช่องอาเรย์ <code>[0]</code> <code>[1]</code> <code>[2]</code> ถ้าวันไหนลืมว่าอาเรย์เริ่มที่เลขอะไร ให้นึกถึงชื่อเว็บ</p>
+
+      <h2 id="initialize">กำหนดค่าตอนประกาศ</h2>
+
+      <p>ใส่ค่าทีละช่องแบบข้างบนยาวเกินไป ใส่ค่าทั้งหมดในปีกกาตอนประกาศได้เลย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="init"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score[5] = {70, 85, 90, 65, 80};
+    int bonus[5] = {5, 3};
+    int zeros[5] = {0};
+    for (int i = 0; i &lt; 5; i++) {
+        printf("%d %d %d\n", score[i], bonus[i], zeros[i]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="init" data-title="C:\code\init.exe"><pre><code>70 5 0
+85 3 0
+90 0 0
+65 0 0
+80 0 0
+</code></pre></div>
+
+      <ul>
+        <li>ค่าในปีกกาเติมลงช่อง 0 1 2 ไปตามลำดับ</li>
+        <li>ถ้าใส่ไม่ครบ ช่องที่เหลือเป็น 0 ทั้งหมด <code>bonus</code> ใส่สองค่า ช่อง 2 ถึง 4 จึงเป็น 0</li>
+        <li><code>= {0}</code> จึงเป็นวิธีมาตรฐานที่ทำให้ทุกช่องเป็น 0 จะได้ใช้บ่อยมากในหน้า 5.3</li>
+        <li>ถ้าไม่ใส่ค่าเลย อย่าง <code>int score[5];</code> ที่ประกาศใน <code>main</code> ทุกช่องเป็นค่าขยะ เหมือนตัวแปรธรรมดาที่ยังไม่ได้ใส่ค่าในหน้า 1.1</li>
+      </ul>
+
+      <p>ลูป <code>for (int i = 0; i &lt; 5; i++)</code> คือรูปแบบที่จะเห็นตลอดบทนี้ <code>i</code> เริ่มที่ 0 และหยุดก่อนถึง 5 จึงผ่านครบทุกช่องพอดี ตั้งแต่ 0 ถึง 4</p>
+
+      <h3 id="month-days">ไม่บอกจำนวนช่องก็ได้</h3>
+
+      <p>ถ้าใส่ค่าครบตั้งแต่ตอนประกาศ เว้นจำนวนช่องไว้ได้ compiler นับให้เอง ตัวอย่างนี้เก็บจำนวนวันในแต่ละเดือนของปีที่ไม่ใช่ปีอธิกสุรทิน รับเลขเดือน 1 ถึง 12 แล้วบอกว่าเดือนนั้นมีกี่วัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="month"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    int month;
+    scanf("%d", &amp;month);
+    printf("%d\n", days[month - 1]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="month" data-title="ข้อมูลเข้า"><pre><code>2
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="month" data-title="C:\code\month.exe"><pre><code>28
+</code></pre></div>
+      </div>
+
+      <p>คนนับเดือนเริ่มที่ 1 แต่อาเรย์เริ่มที่ 0 เดือน 2 จึงอยู่ช่อง 1 ต้องลบหนึ่งก่อนใช้เป็น index การแปลงระหว่าง "ลำดับที่คนนับ" กับ "index" แบบนี้จะเจอในโจทย์แทบทุกข้อ ให้ถามตัวเองทุกครั้งว่าเลขที่ถืออยู่เป็นแบบไหน</p>
+
+      <h2 id="read-print">อ่าน N ตัวเข้าอาเรย์</h2>
+
+      <p>โจทย์แบบ grader มักให้ N มาก่อน แล้วตามด้วยตัวเลข N ตัว และบอกขอบเขตไว้ เช่น 1 ≤ N ≤ 100 ภาษา C ต้องรู้จำนวนช่องตั้งแต่ตอนเขียนโปรแกรม เราจึงประกาศอาเรย์ตาม <strong>ค่ามากสุดที่โจทย์บอก</strong> แล้วใช้แค่ N ช่องแรก</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="heights"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int height[100]; // (1)!
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;height[i]); // (2)!
+    }
+    for (int i = 0; i &lt; n; i++) {
+        printf("%d ", height[i]);
+    }
+    printf("\n");
+    for (int i = n - 1; i &gt;= 0; i--) { // (3)!
+        printf("%d ", height[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>โจทย์บอกว่า N ไม่เกิน 100 จึงขอไว้ 100 ช่อง ถ้า N เป็น 4 ก็ใช้แค่ช่อง 0 ถึง 3 ช่องที่เหลือปล่อยว่างไว้ ไม่เป็นไร</li>
+        <li><code>scanf</code> ต้องการที่อยู่ของกล่องเหมือนเดิม กล่องคือ <code>height[i]</code> จึงใส่ <code>&amp;</code> หน้ามันเป็น <code>&amp;height[i]</code></li>
+        <li>พิมพ์กลับหลัง เริ่มจากช่องสุดท้าย <code>n - 1</code> ลดลงทีละหนึ่งจนถึงช่อง 0</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="heights" data-title="ข้อมูลเข้า"><pre><code>4
+152 160 147 171
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="heights" data-title="C:\code\heights.exe"><pre><code>152 160 147 171
+171 147 160 152
+</code></pre></div>
+      </div>
+
+      <p>ลูปอ่านกับลูปพิมพ์แยกกันได้ เพราะทุกค่ายังอยู่ในอาเรย์ นี่คือสิ่งที่ลูปในบทที่ 4 ทำไม่ได้ จะอ่านกี่รอบ ย้อนไปช่องไหน ก็ได้ค่าเดิม</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">ช่องว่างท้ายบรรทัด</p>
+        <p>โปรแกรมนี้พิมพ์ช่องว่างหลังตัวเลขทุกตัว รวมถึงตัวสุดท้าย ตัวตรวจแบบฝึกหัดของเว็บนี้ไม่สนช่องว่างท้ายบรรทัด ถ้าเจอโจทย์ที่เข้มงวดเรื่องนี้ ให้พิมพ์ช่องว่าง <strong>ก่อน</strong> ตัวเลขทุกตัวยกเว้นตัวแรก ด้วย <code>if (i &gt; 0) printf(" ");</code> แล้วค่อยพิมพ์ตัวเลข</p>
+      </div>
+
+      <h2 id="reverse">กลับลำดับในอาเรย์</h2>
+
+      <p>บางโจทย์ต้องกลับลำดับแล้วเอาอาเรย์ไปใช้ต่อ ไม่ใช่แค่พิมพ์ วิธีคือสลับค่าช่องแรกกับช่องสุดท้าย ช่องที่สองกับช่องรองสุดท้าย เข้ามาเรื่อยๆ จนถึงตรงกลาง</p>
+
+      <p>การสลับค่าสองกล่องต้องมีกล่องพักหนึ่งใบ ถ้าเขียน <code>a = b;</code> แล้ว <code>b = a;</code> เลย ค่าเดิมของ <code>a</code> จะหายไปตั้งแต่บรรทัดแรก เหมือนสลับน้ำในแก้วสองใบ ต้องมีแก้วเปล่าใบที่สาม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="reverse"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int height[100];
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;height[i]);
+    }
+    for (int i = 0; i &lt; n / 2; i++) {
+        int temp = height[i];
+        height[i] = height[n - 1 - i];
+        height[n - 1 - i] = temp;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        printf("%d ", height[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="reverse" data-title="ข้อมูลเข้า"><pre><code>5
+152 160 147 171 158
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="reverse" data-title="C:\code\reverse.exe"><pre><code>158 171 147 160 152
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>คู่ของช่อง <code>i</code> คือช่อง <code>n - 1 - i</code> ลองแทน <code>i = 0</code> ได้ช่องสุดท้ายพอดี</li>
+        <li>วนแค่ <code>n / 2</code> รอบ ถ้าวนครบ <code>n</code> รอบ ครึ่งหลังจะสลับกลับไปเป็นแบบเดิม ลองแก้เป็น <code>i &lt; n</code> แล้วดูผลเอง</li>
+        <li>N เป็นเลขคี่ ช่องตรงกลางไม่ต้องสลับกับใคร <code>5 / 2</code> ได้ 2 จึงสลับแค่สองคู่ ช่อง 2 อยู่ที่เดิมพอดี</li>
+      </ul>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="print-whole">แบบที่ 1 พิมพ์ทั้งอาเรย์ด้วย %d ตัวเดียว</h3>
+
+      <div class="code" data-lang="c"><pre><code>int score[5] = {70, 85, 90, 65, 80};
+printf("%d\n", score);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>scores.c:6:14: warning: format '%d' expects argument of type 'int', but argument 2 has type 'int *' [-Wformat=]
+    6 |     printf("%d\n", score);
+      |             ~^     ~~~~~
+      |              |     |
+      |              int   int *
+      |             %n
+</code></pre></div>
+
+      <p><code>score</code> เฉยๆ ไม่มีวงเล็บเหลี่ยม ไม่ใช่ค่าในอาเรย์ แต่เป็นที่อยู่ของอาเรย์ในหน่วยความจำ ชนิด <code>int *</code> จะได้เรียนในบทที่ 10 รอบนี้ compiler แนะนำ <code>%n</code> มาด้วย ซึ่งไม่ใช่สิ่งที่เราต้องการ ห้ามทำตาม บนเครื่องที่ทดลอง รันสามครั้งได้ <code>-2111833536</code> <code>-1826621040</code> และ <code>1080031088</code> ไม่ซ้ำกันเลย <code>printf</code> พิมพ์ทั้งอาเรย์ในคำสั่งเดียวไม่ได้ ต้องวนลูปพิมพ์ทีละช่อง</p>
+
+      <h3 id="assign-array">แบบที่ 2 คัดลอกอาเรย์ด้วย =</h3>
+
+      <div class="code" data-lang="c"><pre><code>int score[5] = {70, 85, 90, 65, 80};
+int backup[5];
+backup = score;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>copy.c:7:12: error: assignment to expression with array type
+    7 |     backup = score;
+      |            ^
+</code></pre></div>
+
+      <p>ใช้ <code>=</code> กับทั้งอาเรย์ไม่ได้ ข้อความแปลว่ากำหนดค่าให้สิ่งที่เป็นอาเรย์ทั้งก้อนไม่ได้ ต้องคัดลอกทีละช่อง</p>
+
+      <div class="code" data-lang="c"><pre><code>for (int i = 0; i &lt; 5; i++) {
+    backup[i] = score[i];
+}
+</code></pre></div>
+
+      <h3 id="too-many">แบบที่ 3 ใส่ค่าเกินจำนวนช่อง</h3>
+
+      <div class="code" data-lang="c"><pre><code>int score[5] = {70, 85, 90, 65, 80, 75};
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>days.c:5:41: warning: excess elements in array initializer
+    5 |     int score[5] = {70, 85, 90, 65, 80, 75};
+      |                                         ^~
+days.c:5:41: note: (near initialization for 'score')
+</code></pre></div>
+
+      <p>excess แปลว่าเกิน ห้าช่องใส่หกค่าไม่ได้ ค่าที่เกินถูกทิ้งไปเฉยๆ แค่เป็น warning โปรแกรมจึงยังรันได้ ถ้าเห็นข้อความนี้ แปลว่านับจำนวนช่องผิด</p>
+
+      <p>ความผิดพลาดที่เจอบ่อยที่สุดกับอาเรย์คือใช้ช่องที่ไม่มีอยู่จริง เช่น <code>score[5]</code> ในอาเรย์ห้าช่อง เรื่องนี้ compiler แทบไม่เตือน และผลที่ได้แปลกพอจะมีหัวข้อของตัวเองใน<a href="insert-delete.html#out-of-bounds">หน้า 5.5</a></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>int score[5];</code> ประกาศอาเรย์ห้าช่อง ทุกช่องเป็น <code>int</code></li>
+        <li>ช่องแรกคือ <code>[0]</code> ช่องสุดท้ายคือ <code>[N - 1]</code> เลข index คือจำนวนช่องที่เดินจากช่องแรก</li>
+        <li><code>= {...}</code> กำหนดค่าตอนประกาศ ใส่ไม่ครบช่องที่เหลือเป็น 0 <code>= {0}</code> ทำให้ทุกช่องเป็น 0</li>
+        <li>ประกาศอาเรย์ตามขอบเขตมากสุดในโจทย์ แล้ววนด้วย <code>for (int i = 0; i &lt; n; i++)</code></li>
+        <li>รับค่าด้วย <code>scanf("%d", &amp;a[i])</code> พิมพ์และคัดลอกทีละช่องเท่านั้น</li>
+        <li>สลับค่าสองช่องต้องมีตัวแปรพัก กลับลำดับทั้งอาเรย์วนแค่ <code>n / 2</code> รอบ</li>
+      </ul>
+    </article>

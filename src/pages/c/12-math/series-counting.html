@@ -1,0 +1,335 @@
+<article class="doc">
+      <h1>12.4 ลำดับ อนุกรม และการนับ</h1>
+
+      <p>หลายโจทย์ดูเหมือนต้องวนลูปบวกเลขเป็นพันล้านตัว หรือต้องไล่ทุกวิธีที่เป็นไปได้ทีละแบบ แต่ถ้ารู้สูตรผลรวมหรือหลักการนับ คำตอบได้ด้วยการคำนวณไม่กี่ครั้ง หน้านี้รวมสูตรผลรวมที่ใช้บ่อย วิธีใช้สูตรที่มีการหารร่วมกับ mod เรียงสับเปลี่ยน จัดหมู่ด้วยสามเหลี่ยมปาสกาล และหลักรังนกพิราบ</p>
+
+      <h2 id="arithmetic">อนุกรมเลขคณิต</h2>
+
+      <p>ในแบบฝึกหัดบทที่ 1 น้องหาผลรวม A ถึง B ด้วยการจับคู่ตัวแรกกับตัวสุดท้าย จึงได้สูตรที่ควรจำไว้</p>
+
+      <div class="code" data-lang="text"><pre><code>1 + 2 + 3 + ... + n  =  n(n + 1) / 2
+</code></pre></div>
+
+      <p>ลำดับที่แต่ละตัวเพิ่มขึ้นเท่ากันทุกครั้งเรียกว่า<strong>ลำดับเลขคณิต</strong> ผลบวกของมันเรียกว่า<strong>อนุกรมเลขคณิต</strong> น้องออมเงิน วันแรกหยอดกระปุก a บาท แล้วหยอดเพิ่มขึ้นวันละ d บาท วันที่ i จึงหยอด a + (i - 1) × d บาท รวม n วัน</p>
+
+      <div class="code" data-lang="text"><pre><code>รวม = (a + 0d) + (a + 1d) + (a + 2d) + ... + (a + (n - 1)d)
+    = n × a + d × (0 + 1 + 2 + ... + (n - 1))
+    = n × a + d × n(n - 1) / 2
+</code></pre></div>
+
+      <div class="code" data-lang="c" data-linenums data-test="savings"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    long long first, step, days;
+    scanf("%lld %lld %lld", &amp;first, &amp;step, &amp;days);
+    long long loop_total = 0, amount = first;
+    for (long long i = 0; i &lt; days; i++) {
+        loop_total += amount;
+        amount += step;
+    }
+    long long formula_total = days * first + step * (days * (days - 1) / 2);
+    printf("loop    = %lld\n", loop_total);
+    printf("formula = %lld\n", formula_total);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="savings" data-title="ข้อมูลเข้า"><pre><code>10 5 30
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="savings" data-title="C:\code\savings.exe"><pre><code>loop    = 2475
+formula = 2475
+</code></pre></div>
+      </div>
+
+      <p>ตอนเขียนสูตรเอง ให้เขียนลูปแบบนี้คู่กันเพื่อเทียบกับเลขเล็กๆ ก่อน ถ้าตรงกันหลายค่าค่อยลบลูปทิ้ง ลูปใช้เวลาตามจำนวนวัน ถ้าโจทย์ให้ n ถึง 10<sup>9</sup> และถามหนึ่งแสนคำถาม ลูปต้องวนรวม 10<sup>14</sup> รอบ ส่วนสูตรใช้การคำนวณไม่กี่ครั้งต่อคำถาม</p>
+
+      <p>สังเกตวงเล็บใน <code>step * (days * (days - 1) / 2)</code> ข้างในทำก่อน days กับ days - 1 เป็นเลขติดกัน ตัวหนึ่งต้องเป็นเลขคู่ ผลคูณจึงหารสองลงตัวเสมอ และหารเสร็จก่อนจะคูณ step ตัวเลขระหว่างทางจึงเล็กลงครึ่งหนึ่ง ถ้าลืมวงเล็บจะเจอปัญหาในส่วนลองทำให้พัง</p>
+
+      <h2 id="more-formulas">สูตรผลรวมอื่นที่ควรรู้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ผลรวม</th><th>สูตร</th><th>ตัวอย่าง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1 + 2 + ... + n</td><td>n(n + 1) / 2</td><td>n = 100 ได้ 5050</td></tr>
+            <tr><td>1<sup>2</sup> + 2<sup>2</sup> + ... + n<sup>2</sup></td><td>n(n + 1)(2n + 1) / 6</td><td>n = 100 ได้ 338350</td></tr>
+            <tr><td>1 + 3 + 5 + ... (เลขคี่ n ตัวแรก)</td><td>n<sup>2</sup></td><td>n = 4 ได้ 16</td></tr>
+            <tr><td>1 + 2 + 4 + ... + 2<sup>n - 1</sup></td><td>2<sup>n</sup> - 1</td><td>n = 10 ได้ 1023</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แถวสุดท้ายเป็น<strong>อนุกรมเรขาคณิต</strong> แต่ละตัวเป็นสองเท่าของตัวก่อน ดูจากฐานสองในหน้า <a href="bases-bits.html#place-value">12.3</a> ก็เห็นว่าจริง 1 + 2 + 4 + ... + 2<sup>n - 1</sup> คือเลขฐานสองที่มี 1 เรียงกัน n ตัว บวกอีก 1 จะได้ 1 ตามด้วย 0 อีก n ตัว ซึ่งคือ 2<sup>n</sup></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="squares"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    long long n;
+    scanf("%lld", &amp;n);
+    long long loop_total = 0;
+    for (long long i = 1; i &lt;= n; i++) {
+        loop_total += i * i;
+    }
+    printf("loop    = %lld\n", loop_total);
+    printf("formula = %lld\n", n * (n + 1) * (2 * n + 1) / 6);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="squares" data-title="ข้อมูลเข้า"><pre><code>100
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="squares" data-title="C:\code\squares.exe"><pre><code>loop    = 338350
+formula = 338350
+</code></pre></div>
+      </div>
+
+      <h2 id="divide-before-mod">สูตรที่มีการหาร กับ mod</h2>
+
+      <p>ถ้าโจทย์ถามผลรวม 1 ถึง n mod 1000000007 เมื่อ n ถึง 10<sup>18</sup> ใช้ n(n + 1) / 2 ตรงๆ ไม่ได้ เพราะ n(n + 1) ใหญ่ถึง 10<sup>36</sup> จะ mod ก่อนคูณตามหน้า <a href="mod.html#mod-rules">12.1</a> ก็ติดที่หาร 2 ทีหลังไม่ได้ ทางออกคือ<strong>หารให้เสร็จก่อนจะ mod</strong> ในสองตัว n กับ n + 1 มีเลขคู่อยู่ตัวหนึ่งเสมอ ก็หารตัวนั้นด้วย 2 ก่อน ที่เหลือเป็นการคูณล้วน ใช้กฎ mod ได้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="sum-mod"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+int main()
+{
+    long long n;
+    scanf("%lld", &amp;n);
+    long long a = n, b = n + 1;
+    if (a % 2 == 0) {
+        a /= 2;
+    } else {
+        b /= 2;
+    }
+    printf("correct = %lld\n", (a % MOD) * (b % MOD) % MOD);
+    printf("wrong   = %lld\n", (n % MOD) * ((n + 1) % MOD) % MOD / 2);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sum-mod" data-title="ข้อมูลเข้า"><pre><code>123456789012
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sum-mod" data-title="C:\code\sum_mod.exe"><pre><code>correct = 945099534
+wrong   = 445099530
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 15 mod ก่อนแล้วค่อยหาร 2 ผิด เพราะเศษที่ได้อาจเป็นเลขคี่ หารสองแล้วเศษส่วนหายไป ถ้าลองกับ n = 10<sup>18</sup> สองแบบบังเอิญได้เท่ากัน ทดสอบแค่ค่าเดียวอาจไม่เห็นความผิด สูตรผลรวมกำลังสองที่หาร 6 ก็ทำแบบเดียวกัน หาร 2 ออกจากตัวที่เป็นเลขคู่ และหาร 3 ออกจากตัวที่ 3 หารลงตัว ในสามตัว n, n + 1, 2n + 1 ต้องมีตัวที่ 3 หารลงตัวเสมอ</p>
+
+      <h2 id="counting">หลักการนับ</h2>
+
+      <p><strong>กฎการคูณ</strong> ถ้างานมีหลายขั้น ขั้นแรกเลือกได้ a แบบ ขั้นที่สองเลือกได้ b แบบไม่ว่าขั้นแรกจะเลือกอะไร ทั้งงานทำได้ a × b แบบ มีเสื้อ 3 ตัว กางเกง 4 ตัว แต่งตัวได้ 12 แบบ รหัสผ่านตัวเลข 4 หลัก มี 10 × 10 × 10 × 10 = 10000 แบบ</p>
+
+      <h3 id="permutation">เรียงสับเปลี่ยน</h3>
+
+      <p>นักเรียน n คนเข้าแข่งขัน มีเหรียญทอง เงิน ทองแดง อย่างละเหรียญ แจกได้กี่แบบ ทองเลือกได้ n คน เงินเหลือ n - 1 คน ทองแดงเหลือ n - 2 คน จึงได้ n × (n - 1) × (n - 2) แบบ การเลือก r คนจาก n คนโดย<strong>ลำดับมีผล</strong> เรียกว่า<strong>การเรียงสับเปลี่ยน (permutation)</strong> เขียนว่า P(n, r) = n × (n - 1) × ... × (n - r + 1) ถ้าเรียงทั้ง n คนก็คือ n!</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="podium"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n, r;
+    scanf("%d %d", &amp;n, &amp;r);
+    long long ways = 1;
+    for (int i = 0; i &lt; r; i++) {
+        ways *= n - i;
+    }
+    printf("%lld\n", ways);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="podium" data-title="ข้อมูลเข้า"><pre><code>10 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="podium" data-title="C:\code\podium.exe"><pre><code>720
+</code></pre></div>
+      </div>
+
+      <h3 id="combination">จัดหมู่</h3>
+
+      <p>ถ้าเปลี่ยนเป็นเลือกตัวแทน 3 คนไปแข่ง ไม่มีตำแหน่ง ลำดับไม่มีผลแล้ว กลุ่ม ก ข ค ที่นับไว้ 3! = 6 แบบในการเรียงสับเปลี่ยน กลายเป็นกลุ่มเดียว จึงได้ 720 / 6 = 120 แบบ การเลือก r จาก n โดยลำดับไม่มีผลเรียกว่า<strong>การจัดหมู่ (combination)</strong> เขียนว่า C(n, r) หรือ nCr</p>
+
+      <div class="code" data-lang="text"><pre><code>C(n, r) = n! / (r! × (n - r)!)
+</code></pre></div>
+
+      <p>สูตรนี้ถูก แต่เอาไปเขียนโปรแกรมตรงๆ ไม่ได้ เพราะ n! ล้น <code>long long</code> ตั้งแต่ 21! (ดูส่วนลองทำให้พัง) ในการแข่งขันจึงใช้<strong>สามเหลี่ยมปาสกาล</strong> แทน ซึ่งใช้แค่การบวก</p>
+
+      <h3 id="pascal">สามเหลี่ยมปาสกาล</h3>
+
+      <p>จะเลือก r คนจาก n คน ให้มองคนที่ n คนเดียว มีสองกรณี ถ้าเลือกเขา ต้องเลือกอีก r - 1 คนจาก n - 1 คนที่เหลือ ถ้าไม่เลือกเขา ต้องเลือกครบ r คนจาก n - 1 คน สองกรณีไม่ซ้ำกันและครอบคลุมทุกแบบ จึงได้</p>
+
+      <div class="code" data-lang="text"><pre><code>C(n, r) = C(n - 1, r - 1) + C(n - 1, r)
+C(n, 0) = 1       เลือกศูนย์คนได้แบบเดียว คือไม่เลือกใครเลย
+C(n, r) = 0       ถ้า r &gt; n
+</code></pre></div>
+
+      <p>เก็บ C(i, j) ไว้ในอาเรย์สองมิติแบบบทที่ 7 แล้วเติมทีละแถว แต่ละช่องคือผลบวกของช่องบนซ้ายกับช่องบน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="pascal"><pre><code>#include &lt;stdio.h&gt;
+
+long long choose[61][61]; // (1)!
+
+int main()
+{
+    int n, r;
+    scanf("%d %d", &amp;n, &amp;r);
+    for (int i = 0; i &lt;= 60; i++) {
+        choose[i][0] = 1;
+        for (int j = 1; j &lt;= i; j++) {
+            choose[i][j] = choose[i - 1][j - 1] + choose[i - 1][j]; // (2)!
+        }
+    }
+    for (int i = 0; i &lt;= 6; i++) {
+        for (int j = 0; j &lt;= i; j++) {
+            if (j &gt; 0) {
+                printf(" ");
+            }
+            printf("%lld", choose[i][j]);
+        }
+        printf("\n");
+    }
+    printf("C(%d, %d) = %lld\n", n, r, choose[n][r]);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อาเรย์นอก <code>main</code> เริ่มเป็น 0 ทุกช่อง ช่องที่ j &gt; i จึงเป็น 0 ตรงกับ C(n, r) = 0 เมื่อ r &gt; n โดยไม่ต้องเขียนเพิ่ม</li>
+        <li>ตอน j = i ช่อง <code>choose[i - 1][i]</code> อยู่เกินขอบสามเหลี่ยมไปหนึ่งช่อง แต่ยังอยู่ในอาเรย์และเป็น 0 ผลจึงเป็น 1 ถูกต้อง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="pascal" data-title="ข้อมูลเข้า"><pre><code>30 15
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="pascal" data-title="C:\code\pascal.exe"><pre><code>1
+1 1
+1 2 1
+1 3 3 1
+1 4 6 4 1
+1 5 10 10 5 1
+1 6 15 20 15 6 1
+C(30, 15) = 155117520
+</code></pre></div>
+      </div>
+
+      <p>แถวที่ 6 อ่านได้ว่า C(6, 2) = 15 คือเลือก 2 คนจาก 6 คนได้ 15 แบบ ค่าทุกช่องในตารางนี้เก็บใน <code>long long</code> ได้ แต่ถ้าสร้างต่อไปถึงแถวที่ 67 ค่าตรงกลางแถวจะเกิน <code>long long</code> โจทย์ที่ n ใหญ่กว่านั้นจึงให้ตอบ mod 1000000007 ซึ่งแก้แค่ mod หลังบวก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="pascal-mod"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+int choose[1001][1001];
+
+int main()
+{
+    for (int i = 0; i &lt;= 1000; i++) {
+        choose[i][0] = 1;
+        for (int j = 1; j &lt;= i; j++) {
+            choose[i][j] = (choose[i - 1][j - 1] + choose[i - 1][j]) % MOD;
+        }
+    }
+    int q;
+    scanf("%d", &amp;q);
+    for (int k = 0; k &lt; q; k++) {
+        int n, r;
+        scanf("%d %d", &amp;n, &amp;r);
+        printf("%d\n", choose[n][r]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="pascal-mod" data-title="ข้อมูลเข้า"><pre><code>3
+30 15
+60 30
+1000 500
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="pascal-mod" data-title="C:\code\pascal_mod.exe"><pre><code>155117520
+737009364
+159835829
+</code></pre></div>
+      </div>
+
+      <p>คราวนี้ใช้ <code>int</code> ได้ เพราะมีแต่การบวก สองค่าที่ไม่เกิน 1000000006 บวกกันไม่ล้น <code>int</code> ตามเหตุผลในหน้า <a href="mod.html#why-mod">12.1</a> ตารางพันคูณพันใช้หน่วยความจำราว 4 MB สร้างครั้งเดียว แล้วตอบกี่คำถามก็ได้ทันที</p>
+
+      <h2 id="pigeonhole">หลักรังนกพิราบ</h2>
+
+      <p>ถ้ามีนกพิราบ 13 ตัว แต่มีรังแค่ 12 รัง ต้องมีอย่างน้อยหนึ่งรังที่มีนกตั้งแต่สองตัวขึ้นไป ฟังดูธรรมดา แต่ใช้ตอบคำถามที่ดูยากได้ เช่น นักเรียน 13 คนต้องมีอย่างน้อยสองคนที่เกิดเดือนเดียวกัน ไม่ว่าจะเป็นใคร</p>
+
+      <p>ในการเขียนโปรแกรม หลักนี้มักใช้รับประกันว่าลูปจะจบ เช่น เลข N + 1 ตัวใดๆ ต้องมีสองตัวที่หารด้วย N แล้วเหลือเศษเท่ากัน เพราะเศษมีได้แค่ N แบบ (0 ถึง N - 1) โจทย์ที่สร้างตัวเลขถัดไปจากเศษของตัวก่อนหน้า เช่น หารยาวทีละหลัก จึงต้องวนกลับมาเจอเศษเดิมภายใน N + 1 ขั้นแน่นอน ใช้อาเรย์นับแบบหน้า <a href="../05-arrays/counting.html">5.3</a> จำว่าเศษไหนเคยเห็นแล้วก็หาจุดที่วนได้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="factorial-choose">แบบที่ 1 หา C(n, r) ด้วยแฟกทอเรียล</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="choose-factorial"><pre><code>#include &lt;stdio.h&gt;
+
+long long factorial(int n)
+{
+    long long result = 1;
+    for (int i = 2; i &lt;= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+
+int main()
+{
+    int n, r;
+    scanf("%d %d", &amp;n, &amp;r);
+    printf("%lld\n", factorial(n) / (factorial(r) * factorial(n - r)));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="choose-factorial" data-title="ข้อมูลเข้า"><pre><code>30 15
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="choose-factorial" data-title="C:\code\choose.exe"><pre><code>9
+</code></pre></div>
+      </div>
+
+      <p>ป้อน <code>10 3</code> ได้ 120 ถูกต้อง แต่ C(30, 15) ได้ 9 แทน 155117520 เพราะ 30! ล้น <code>long long</code> ไปนานแล้ว และ 15! × 15! ก็ล้นด้วย ผลหารของเลขขยะสองตัวจึงเป็นเลขอะไรก็ได้ สามเหลี่ยมปาสกาลไม่มีปัญหานี้ เพราะค่าระหว่างทางไม่เคยเกินคำตอบ</p>
+
+      <h3 id="formula-order">แบบที่ 2 คูณก่อนหารในสูตรผลรวม</h3>
+
+      <p>ในโปรแกรม savings ลบลูปทิ้ง แล้วเขียนสูตรโดยไม่ใส่วงเล็บ ป้อนเงินวันแรก 1 บาท เพิ่มวันละ 1000 บาท นาน 10<sup>8</sup> วัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="savings-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    long long first, step, days;
+    scanf("%lld %lld %lld", &amp;first, &amp;step, &amp;days);
+    long long total = days * first + step * days * (days - 1) / 2;
+    printf("%lld\n", total);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="savings-bug" data-title="ข้อมูลเข้า"><pre><code>1 1000 100000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="savings-bug" data-title="C:\code\savings.exe"><pre><code>-4223372086754775808
+</code></pre></div>
+      </div>
+
+      <p>คำตอบจริงคือ 4999999950100000000 ซึ่งเก็บใน <code>long long</code> ได้ แต่ไม่มีวงเล็บ การคำนวณจึงทำจากซ้ายไปขวา step × days × (days - 1) ได้ราว 10<sup>19</sup> เกิน <code>long long</code> ก่อนจะได้หารสอง ใส่วงเล็บให้ <code>days * (days - 1) / 2</code> ทำก่อน เหมือนโปรแกรม savings ตอนแรก ค่าระหว่างทางจะไม่เกินคำตอบ เป็นหลักเดียวกับ ค.ร.น. ในหน้า <a href="gcd-primes.html#lcm">12.2</a> <strong>ถ้าหารลงตัวแน่ ให้หารก่อนคูณ</strong></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>1 + 2 + ... + n = n(n + 1) / 2 อนุกรมเลขคณิต n วันคือ n × a + d × n(n - 1) / 2 เขียนลูปคู่ไว้เทียบกับเลขเล็กก่อนใช้สูตร</li>
+        <li>1<sup>2</sup> + ... + n<sup>2</sup> = n(n + 1)(2n + 1) / 6 และ 1 + 2 + ... + 2<sup>n - 1</sup> = 2<sup>n</sup> - 1</li>
+        <li>สูตรที่มีการหารกับ mod ให้หารตัวที่หารลงตัวก่อน แล้วค่อย mod และคูณ</li>
+        <li>ลำดับมีผลใช้การเรียงสับเปลี่ยน n × (n - 1) × ... ลำดับไม่มีผลใช้การจัดหมู่ C(n, r)</li>
+        <li>หา C(n, r) ด้วยสามเหลี่ยมปาสกาล C(n, r) = C(n - 1, r - 1) + C(n - 1, r) ไม่ใช้แฟกทอเรียล</li>
+        <li>ของ n + 1 ชิ้นใส่กล่อง n กล่อง ต้องมีกล่องที่มีของตั้งแต่สองชิ้น</li>
+      </ul>
+    </article>

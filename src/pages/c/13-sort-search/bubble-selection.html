@@ -1,0 +1,660 @@
+<article class="doc">
+      <h1>13.2 bubble sort และ selection sort</h1>
+
+      <p>หน้านี้เขียนวิธีเรียงเองสองวิธี ทั้งสองวิธีใช้แค่ลูปซ้อนกับการสลับค่าจากหน้า 13.1 แต่คิดคนละแบบ bubble sort ค่อยๆ ดันค่ามากไปทางขวาทีละช่อง ส่วน selection sort เลือกค่าน้อยสุดมาวางทีละตำแหน่ง ทุกตัวอย่างใช้ข้อมูลชุดเดียวกันคือ <code>6 3 8 2 5</code> เพื่อให้เทียบกันได้ และจบหน้าด้วยการนับว่าแต่ละวิธีสลับกี่ครั้ง</p>
+
+      <h2 id="bubble-idea">bubble sort เทียบคู่ที่ติดกัน</h2>
+
+      <p>ไล่จากซ้ายไปขวา เทียบช่อง <code>j</code> กับช่อง <code>j + 1</code> ทีละคู่ ถ้าตัวซ้ายมากกว่าตัวขวา แปลว่าผิดลำดับ ก็สลับ ไล่จนสุดแถวนับเป็นหนึ่งรอบ (pass) รูปนี้คือรอบที่ 1 ช่องที่มีขอบสีส้มคือคู่ที่กำลังเทียบ ถ้าระบายสีส้มด้วยคือคู่ที่เพิ่งสลับ</p>
+
+      <figure>
+        <svg viewBox="0 0 560 310" width="560" style="max-width:100%;height:auto" role="img" aria-label="bubble sort รอบที่ 1 ของ 6 3 8 2 5 เทียบคู่ติดกันทีละคู่ คู่ 6 3 สลับ คู่ 6 8 ไม่สลับ คู่ 8 2 สลับ คู่ 8 5 สลับ จบรอบได้ 3 6 2 5 8 ค่ามากสุด 8 ไปอยู่ท้ายสุด">
+          <g style="font-family:var(--font-code)">
+            <text x="8" y="44" style="fill:var(--muted);font-size:14px">start</text>
+            <rect x="96" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="140" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="272" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="8" y="102" style="fill:var(--muted);font-size:14px">j = 0</text>
+            <rect x="96" y="74" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="118" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="140" y="74" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="162" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="184" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="272" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="334" y="102" style="fill:var(--muted);font-size:14px">6 &gt; 3 swap</text>
+            <text x="8" y="160" style="fill:var(--muted);font-size:14px">j = 1</text>
+            <rect x="96" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="140" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/><text x="162" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="184" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/><text x="206" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="272" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="334" y="160" style="fill:var(--muted);font-size:14px">6 &lt; 8 keep</text>
+            <text x="8" y="218" style="fill:var(--muted);font-size:14px">j = 2</text>
+            <rect x="96" y="190" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="140" y="190" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="184" y="190" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="206" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="228" y="190" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="250" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="272" y="190" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="334" y="218" style="fill:var(--muted);font-size:14px">8 &gt; 2 swap</text>
+            <text x="8" y="276" style="fill:var(--muted);font-size:14px">j = 3</text>
+            <rect x="96" y="248" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="140" y="248" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="184" y="248" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="228" y="248" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="250" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="272" y="248" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="294" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <text x="334" y="276" style="fill:var(--muted);font-size:14px">8 &gt; 5 swap</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>สังเกตเลข 8 พอเจอแล้วมันถูกสลับไปทางขวาทุกคู่ จนไปจบที่ช่องสุดท้าย ค่ามากสุดจะลอยไปท้ายแถวเสมอในรอบแรก เหมือนฟองอากาศที่ลอยขึ้นผิวน้ำ จึงได้ชื่อว่า bubble sort</p>
+
+      <p>รอบที่ 2 ทำแบบเดิม แต่ไม่ต้องเทียบถึงช่องสุดท้ายแล้ว เพราะ 8 เข้าที่แล้ว ค่าที่มากเป็นอันดับสองจะลอยไปอยู่ช่องรองสุดท้าย ทุกรอบจะมีหนึ่งช่องที่ท้ายแถวเข้าที่เพิ่ม รูปนี้แสดงผลหลังจบแต่ละรอบ ส่วนที่ระบายสีน้ำเงินคือช่องที่เข้าที่แล้ว</p>
+
+      <figure>
+        <svg viewBox="0 0 560 310" width="560" style="max-width:100%;height:auto" role="img" aria-label="bubble sort ของ 6 3 8 2 5 หลังรอบที่ 1 ได้ 3 6 2 5 8 หลังรอบที่ 2 ได้ 3 2 5 6 8 หลังรอบที่ 3 ได้ 2 3 5 6 8 รอบที่ 4 ไม่มีการสลับ ส่วนท้ายที่ระบายสีคือส่วนที่เข้าที่แล้ว">
+          <g style="font-family:var(--font-code)">
+            <text x="8" y="44" style="fill:var(--muted);font-size:14px">start</text>
+            <rect x="96" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="140" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="272" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="8" y="102" style="fill:var(--muted);font-size:14px">pass 1</text>
+            <rect x="96" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="140" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="184" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="228" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="272" y="74" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="294" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <text x="334" y="102" style="fill:var(--muted);font-size:14px">3 swaps</text>
+            <text x="8" y="160" style="fill:var(--muted);font-size:14px">pass 2</text>
+            <rect x="96" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="140" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="184" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="228" y="132" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="250" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="132" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="294" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <text x="334" y="160" style="fill:var(--muted);font-size:14px">2 swaps</text>
+            <text x="8" y="218" style="fill:var(--muted);font-size:14px">pass 3</text>
+            <rect x="96" y="190" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="190" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="190" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="206" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="228" y="190" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="250" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="190" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="294" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <text x="334" y="218" style="fill:var(--muted);font-size:14px">1 swap</text>
+            <text x="8" y="276" style="fill:var(--muted);font-size:14px">pass 4</text>
+            <rect x="96" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="118" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="162" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="206" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="228" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="250" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="294" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <text x="334" y="276" style="fill:var(--muted);font-size:14px">0 swaps</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ข้อมูล 5 ตัว ใช้ 4 รอบ หลังรอบที่ 4 สี่ช่องทางขวาเข้าที่หมด ช่องที่เหลือทางซ้ายสุดจึงต้องเป็นค่าน้อยสุดโดยอัตโนมัติ ข้อมูล n ตัวจึงใช้ n - 1 รอบ</p>
+
+      <h2 id="bubble-trace">เขียน bubble sort แล้วพิมพ์ทุกรอบ</h2>
+
+      <p>โปรแกรมนี้ทำตามรูปข้างบน และพิมพ์อาเรย์หลังจบแต่ละรอบ เวลาเขียนวิธีเรียงเองครั้งแรก การพิมพ์ทุกรอบออกมาดูเป็นวิธีที่ดีที่สุดในการตรวจว่าทำงานตามที่คิดไหม</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="bubble-trace"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void print_array(int a[], int n)
+{
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", a[i]);
+    }
+    printf("\n");
+}
+
+int main()
+{
+    int a[5] = {6, 3, 8, 2, 5};
+    int n = 5;
+    for (int i = 0; i &lt; n - 1; i++) { // (1)!
+        for (int j = 0; j &lt; n - 1 - i; j++) { // (2)!
+            if (a[j] &gt; a[j + 1]) {
+                swap(&amp;a[j], &amp;a[j + 1]);
+            }
+        }
+        printf("pass %d: ", i + 1);
+        print_array(a, n);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>วน n - 1 รอบ <code>i</code> นับว่าจบไปแล้วกี่รอบ ซึ่งเท่ากับจำนวนช่องท้ายแถวที่เข้าที่แล้ว</li>
+        <li>เทียบ <code>a[j]</code> กับ <code>a[j + 1]</code> ช่องขวาสุดที่ยังต้องดูคือ <code>n - 1 - i</code> จึงให้ <code>j</code> ไปถึงแค่ <code>n - 2 - i</code> ถ้าให้ <code>j</code> ไปถึง <code>n - 1</code> จะแตะ <code>a[n]</code> ซึ่งไม่ใช่ข้อมูล ดูผลของมันในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="bubble-trace" data-title="C:\code\bubble_trace.exe"><pre><code>pass 1: 3 6 2 5 8
+pass 2: 3 2 5 6 8
+pass 3: 2 3 5 6 8
+pass 4: 2 3 5 6 8
+</code></pre></div>
+
+      <p>ตรงกับรูปทุกบรรทัด รอบที่ 4 ไม่ได้สลับอะไรเลย เพราะข้อมูลเรียงเสร็จตั้งแต่รอบที่ 3 แล้ว แต่โปรแกรมไม่รู้ จึงทำจนครบ เรื่องนี้แก้ได้ในหัวข้อถัดไป</p>
+
+      <p>เมื่อแน่ใจแล้วว่าถูก ก็เก็บเป็นฟังก์ชันเพื่อใช้ซ้ำ ตัวอย่างนี้เรียงส่วนสูงของนักเรียน 8 คนเป็นเซนติเมตร</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="bubble"><pre><code>#include &lt;stdio.h&gt;
+
+int height[1000];
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void bubble_sort(int a[], int n)
+{
+    for (int i = 0; i &lt; n - 1; i++) {
+        for (int j = 0; j &lt; n - 1 - i; j++) {
+            if (a[j] &gt; a[j + 1]) {
+                swap(&amp;a[j], &amp;a[j + 1]);
+            }
+        }
+    }
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;height[i]);
+    }
+    bubble_sort(height, n);
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", height[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="bubble" data-title="ข้อมูลเข้า"><pre><code>8
+152 148 160 155 149 171 158 163
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bubble" data-title="C:\code\bubble.exe"><pre><code>148 149 152 155 158 160 163 171
+</code></pre></div>
+      </div>
+
+      <p>ฟังก์ชันรับอาเรย์เป็น <code>int a[]</code> แล้วแก้ค่าในอาเรย์ได้เลย เพราะสิ่งที่ส่งเข้าไปจริงๆ คือที่อยู่ของช่องแรก ไม่ใช่สำเนาของทั้งอาเรย์ ตามที่เห็นในบทที่ 10 ฟังก์ชันเรียงจึงไม่ต้องคืนค่าอะไร</p>
+
+      <h2 id="early-stop">หยุดเมื่อไม่มีการสลับ</h2>
+
+      <p>ถ้าทั้งรอบไม่มีการสลับเลยสักครั้ง แปลว่าทุกคู่ที่ติดกันอยู่ในลำดับที่ถูกแล้ว ข้อมูลเรียงเสร็จ รอบต่อไปก็จะไม่สลับอะไรอีก หยุดได้ทันที ใช้ตัวแปร <code>swapped</code> จำว่ารอบนี้สลับไปหรือยัง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="early-stop"><pre><code>#include &lt;stdio.h&gt;
+
+int a[1000];
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+int bubble_sort(int a[], int n)
+{
+    int passes = 0;
+    for (int i = 0; i &lt; n - 1; i++) {
+        int swapped = 0; // (1)!
+        for (int j = 0; j &lt; n - 1 - i; j++) {
+            if (a[j] &gt; a[j + 1]) {
+                swap(&amp;a[j], &amp;a[j + 1]);
+                swapped = 1;
+            }
+        }
+        passes++;
+        if (swapped == 0) { // (2)!
+            break;
+        }
+    }
+    return passes;
+}
+
+int main()
+{
+    int n;
+    while (scanf("%d", &amp;n) == 1) {
+        for (int i = 0; i &lt; n; i++) {
+            scanf("%d", &amp;a[i]);
+        }
+        printf("passes = %d\n", bubble_sort(a, n));
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เริ่มทุกรอบด้วย 0 ต้องตั้งใหม่ในลูปนอก ถ้าตั้งไว้ครั้งเดียวก่อนลูป พอเป็น 1 แล้วจะเป็น 1 ตลอดไป</li>
+        <li>รอบนี้ไม่มีการสลับ ออกจากลูปด้วย <code>break</code> แบบหน้า 4.3</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="early-stop" data-title="ข้อมูลเข้า"><pre><code>5
+6 3 8 2 5
+8
+1 2 3 5 4 6 7 8
+8
+1 2 3 4 5 6 7 8
+8
+8 7 6 5 4 3 2 1
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="early-stop" data-title="C:\code\early_stop.exe"><pre><code>passes = 4
+passes = 2
+passes = 1
+passes = 7
+</code></pre></div>
+      </div>
+
+      <p>ชุดแรกหยุดที่รอบที่ 4 เพราะต้องมีหนึ่งรอบที่ไม่สลับเพื่อยืนยันว่าเรียงแล้ว ชุดที่เกือบเรียงใช้ 2 รอบ ชุดที่เรียงอยู่แล้วใช้รอบเดียว แต่ชุดที่เรียงกลับด้านยังต้องใช้ครบ 7 รอบ การหยุดก่อนจึงช่วยเฉพาะข้อมูลที่เกือบเรียงอยู่แล้ว กรณีแย่ที่สุดยังช้าเท่าเดิม</p>
+
+      <h2 id="selection-idea">selection sort เลือกตัวน้อยสุดมาวาง</h2>
+
+      <p>อีกวิธีที่คนใช้จริงตอนจัดของ คือหาตัวที่น้อยที่สุดในกองแล้ววางไว้ที่ 1 หาตัวน้อยสุดในที่เหลือวางไว้ที่ 2 ไปเรื่อยๆ ในอาเรย์ทำแบบนี้</p>
+
+      <ul>
+        <li>รอบ <code>i = 0</code> หาค่าน้อยสุดในช่อง 0 ถึง n - 1 แล้วสลับกับช่อง 0</li>
+        <li>รอบ <code>i = 1</code> หาค่าน้อยสุดในช่อง 1 ถึง n - 1 แล้วสลับกับช่อง 1</li>
+        <li>ทำจนถึงรอบ <code>i = n - 2</code> ช่องสุดท้ายจะเหลือค่ามากสุดเอง</li>
+      </ul>
+
+      <p>การหาค่าน้อยสุดก็คือการหาตำแหน่งของค่าน้อยสุดในหน้า 5.2 แค่เริ่มหาจากช่อง <code>i</code> แทนช่อง 0 รูปนี้แสดงผลหลังจบแต่ละรอบ ช่องสีส้มคือช่องที่เพิ่งสลับกัน ถ้าค่าน้อยสุดอยู่ที่เดิมอยู่แล้วก็มีช่องเดียว ส่วนทางซ้ายที่เป็นสีน้ำเงินคือส่วนที่เข้าที่แล้ว</p>
+
+      <figure>
+        <svg viewBox="0 0 560 368" width="560" style="max-width:100%;height:auto" role="img" aria-label="selection sort ของ 6 3 8 2 5 รอบ i = 0 หาค่าน้อยสุดได้ 2 สลับกับช่อง 0 ได้ 2 3 8 6 5 รอบ i = 1 ค่าน้อยสุด 3 อยู่ที่เดิม รอบ i = 2 ค่าน้อยสุด 5 สลับกับช่อง 2 ได้ 2 3 5 6 8 รอบ i = 3 ค่าน้อยสุด 6 อยู่ที่เดิม">
+          <g style="font-family:var(--font-code)">
+            <text x="8" y="44" style="fill:var(--muted);font-size:14px">start</text>
+            <rect x="96" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="118" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="140" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="272" y="16" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="45" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="8" y="102" style="fill:var(--muted);font-size:14px">i = 0</text>
+            <rect x="96" y="74" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="118" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="162" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="74" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="250" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="74" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="103" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="334" y="102" style="fill:var(--muted);font-size:14px">min 2, swap a[0] a[3]</text>
+            <text x="8" y="160" style="fill:var(--muted);font-size:14px">i = 1</text>
+            <rect x="96" y="132" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="118" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="132" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="162" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="206" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <rect x="228" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="132" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="161" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="334" y="160" style="fill:var(--muted);font-size:14px">min 3 already at a[1]</text>
+            <text x="8" y="218" style="fill:var(--muted);font-size:14px">i = 2</text>
+            <rect x="96" y="190" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="118" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="190" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="162" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="190" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="206" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="228" y="190" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="250" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="190" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="294" y="219" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <text x="334" y="218" style="fill:var(--muted);font-size:14px">min 5, swap a[2] a[4]</text>
+            <text x="8" y="276" style="fill:var(--muted);font-size:14px">i = 3</text>
+            <rect x="96" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="118" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="162" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="248" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="206" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="228" y="248" width="44" height="44" style="fill:var(--warning);fill-opacity:.16;stroke:var(--warning);stroke-width:2"/><text x="250" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="248" width="44" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="294" y="277" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+            <text x="334" y="276" style="fill:var(--muted);font-size:14px">min 6 already at a[3]</text>
+            <text x="8" y="334" style="fill:var(--muted);font-size:14px">done</text>
+            <rect x="96" y="306" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="118" y="335" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+            <rect x="140" y="306" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="162" y="335" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+            <rect x="184" y="306" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="206" y="335" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <rect x="228" y="306" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="250" y="335" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+            <rect x="272" y="306" width="44" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/><text x="294" y="335" text-anchor="middle" style="fill:var(--ink);font-size:18px">8</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ต่างจาก bubble sort ตรงที่ส่วนที่เข้าที่แล้วโตจากทางซ้าย และแต่ละรอบสลับแค่ครั้งเดียว รอบ <code>i = 1</code> กับ <code>i = 3</code> ค่าน้อยสุดอยู่ที่ของมันอยู่แล้ว จึงไม่ต้องสลับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="selection-trace"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void print_array(int a[], int n)
+{
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", a[i]);
+    }
+    printf("\n");
+}
+
+int main()
+{
+    int a[5] = {6, 3, 8, 2, 5};
+    int n = 5;
+    for (int i = 0; i &lt; n - 1; i++) {
+        int min_index = i; // (1)!
+        for (int j = i + 1; j &lt; n; j++) {
+            if (a[j] &lt; a[min_index]) {
+                min_index = j;
+            }
+        }
+        swap(&amp;a[i], &amp;a[min_index]); // (2)!
+        printf("i = %d, min = %d: ", i, a[i]);
+        print_array(a, n);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สมมติก่อนว่าช่อง <code>i</code> น้อยสุด แล้วเทียบกับช่องที่เหลือทางขวา ต้องตั้งใหม่ทุกรอบ</li>
+        <li>สลับครั้งเดียวต่อรอบ หลังหาจนจบแล้ว ถ้า <code>min_index</code> เท่ากับ <code>i</code> ก็คือสลับกับตัวเอง ค่าไม่เปลี่ยน</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="selection-trace" data-title="C:\code\selection_trace.exe"><pre><code>i = 0, min = 2: 2 3 8 6 5
+i = 1, min = 3: 2 3 8 6 5
+i = 2, min = 5: 2 3 5 6 8
+i = 3, min = 6: 2 3 5 6 8
+</code></pre></div>
+
+      <p>เก็บเป็นฟังก์ชันได้แบบเดียวกับ bubble sort</p>
+
+      <div class="code" data-lang="c"><pre><code>void selection_sort(int a[], int n)
+{
+    for (int i = 0; i &lt; n - 1; i++) {
+        int min_index = i;
+        for (int j = i + 1; j &lt; n; j++) {
+            if (a[j] &lt; a[min_index]) {
+                min_index = j;
+            }
+        }
+        swap(&amp;a[i], &amp;a[min_index]);
+    }
+}
+</code></pre></div>
+
+      <h2 id="swap-count">นับว่าสลับกี่ครั้ง</h2>
+
+      <p>ทั้งสองวิธีเรียงได้ถูก แต่ทำงานไม่เท่ากัน โปรแกรมนี้นับจำนวนครั้งที่สลับจริงของทั้งสองวิธีบนข้อมูลชุดเดียวกัน การสลับกับตัวเองไม่นับ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="swap-count"><pre><code>#include &lt;stdio.h&gt;
+
+int original[1000], a[1000];
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+int bubble_swaps(int a[], int n)
+{
+    int count = 0;
+    for (int i = 0; i &lt; n - 1; i++) {
+        for (int j = 0; j &lt; n - 1 - i; j++) {
+            if (a[j] &gt; a[j + 1]) {
+                swap(&amp;a[j], &amp;a[j + 1]);
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+int selection_swaps(int a[], int n)
+{
+    int count = 0;
+    for (int i = 0; i &lt; n - 1; i++) {
+        int min_index = i;
+        for (int j = i + 1; j &lt; n; j++) {
+            if (a[j] &lt; a[min_index]) {
+                min_index = j;
+            }
+        }
+        if (min_index != i) {
+            swap(&amp;a[i], &amp;a[min_index]);
+            count++;
+        }
+    }
+    return count;
+}
+
+int main()
+{
+    int n;
+    while (scanf("%d", &amp;n) == 1) {
+        for (int i = 0; i &lt; n; i++) {
+            scanf("%d", &amp;original[i]);
+        }
+        for (int i = 0; i &lt; n; i++) {
+            a[i] = original[i];
+        }
+        int bubble = bubble_swaps(a, n);
+        for (int i = 0; i &lt; n; i++) {
+            a[i] = original[i];
+        }
+        int selection = selection_swaps(a, n);
+        printf("n = %d: bubble %d swaps, selection %d swaps\n", n, bubble, selection);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="swap-count" data-title="ข้อมูลเข้า"><pre><code>5
+6 3 8 2 5
+8
+8 7 6 5 4 3 2 1
+8
+1 2 3 4 5 6 7 8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="swap-count" data-title="C:\code\swap_count.exe"><pre><code>n = 5: bubble 6 swaps, selection 2 swaps
+n = 8: bubble 28 swaps, selection 4 swaps
+n = 8: bubble 0 swaps, selection 0 swaps
+</code></pre></div>
+      </div>
+
+      <p>ก่อนเรียงแต่ละรอบต้องคัดลอกข้อมูลจาก <code>original</code> มาใหม่ ไม่อย่างนั้น selection sort จะได้ข้อมูลที่ bubble sort เรียงไว้แล้ว ผลที่ได้</p>
+
+      <ul>
+        <li><strong>bubble sort สลับเท่ากับจำนวนคู่ที่ผิดลำดับพอดี</strong> คู่ที่ผิดลำดับคือคู่ที่ตัวซ้ายมากกว่าตัวขวา ไม่จำเป็นต้องติดกัน ใน <code>6 3 8 2 5</code> มี 6 คู่ คือ 6-3 6-2 6-5 3-2 8-2 8-5 การสลับคู่ที่ติดกันหนึ่งครั้งแก้คู่ที่ผิดได้ทีละคู่เท่านั้น ข้อมูลที่เรียงกลับด้าน 8 ตัว ทุกคู่ผิดหมด 8 × 7 / 2 = 28 คู่</li>
+        <li><strong>selection sort สลับไม่เกิน n - 1 ครั้ง</strong> เพราะสลับรอบละไม่เกินหนึ่งครั้ง ข้อมูลกลับด้าน 8 ตัวสลับแค่ 4 ครั้ง เพราะการสลับแต่ละครั้งวางค่าเข้าที่ได้สองตัว</li>
+      </ul>
+
+      <p>แต่จำนวนครั้งที่<strong>เทียบ</strong>ของทั้งสองวิธีเท่ากัน คือ n(n - 1) / 2 ครั้ง (ไม่นับการหยุดก่อนของ bubble sort) เพราะลูปซ้อนทั้งคู่วนจำนวนรอบเท่ากัน หน้าถัดไปจะดูว่าตัวเลขนี้ทำให้ช้าแค่ไหนเมื่อ n ใหญ่</p>
+
+      <h2 id="descending">เรียงจากมากไปน้อย</h2>
+
+      <p>เปลี่ยนแค่เครื่องหมายที่เทียบ bubble sort เปลี่ยน <code>a[j] &gt; a[j + 1]</code> เป็น <code>a[j] &lt; a[j + 1]</code> คือสลับเมื่อตัวซ้ายน้อยกว่า ตัวน้อยจึงลอยไปท้ายแถวแทน ส่วน selection sort เปลี่ยนเป็นหาค่ามากสุดแทนค่าน้อยสุด ตัวอย่างนี้เรียงคะแนนสอบจากมากไปน้อย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="descending"><pre><code>#include &lt;stdio.h&gt;
+
+int score[1000];
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void bubble_sort_desc(int a[], int n)
+{
+    for (int i = 0; i &lt; n - 1; i++) {
+        for (int j = 0; j &lt; n - 1 - i; j++) {
+            if (a[j] &lt; a[j + 1]) {
+                swap(&amp;a[j], &amp;a[j + 1]);
+            }
+        }
+    }
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;score[i]);
+    }
+    bubble_sort_desc(score, n);
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", score[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="descending" data-title="ข้อมูลเข้า"><pre><code>6
+72 85 64 85 90 58
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="descending" data-title="C:\code\descending.exe"><pre><code>90 85 85 72 64 58
+</code></pre></div>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="one-too-far">แบบที่ 1 ลูปข้างในเกินไปหนึ่งช่อง</h3>
+
+      <p>ในโปรแกรม bubble เปลี่ยนเงื่อนไขลูปข้างในเป็น <code>j &lt; n - i</code> ดูเผินๆ เหมือนถูก เพราะลูปแบบ <code>&lt; n</code> คุ้นตา</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="one-too-far"><pre><code>#include &lt;stdio.h&gt;
+
+int height[1000];
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void bubble_sort(int a[], int n)
+{
+    for (int i = 0; i &lt; n - 1; i++) {
+        for (int j = 0; j &lt; n - i; j++) {
+            if (a[j] &gt; a[j + 1]) {
+                swap(&amp;a[j], &amp;a[j + 1]);
+            }
+        }
+    }
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;height[i]);
+    }
+    bubble_sort(height, n);
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", height[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="one-too-far" data-title="ข้อมูลเข้า"><pre><code>8
+152 148 160 155 149 171 158 163
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="one-too-far" data-title="C:\code\bubble.exe"><pre><code>148 0 149 152 155 158 160 163
+</code></pre></div>
+      </div>
+
+      <p>ได้ 0 มาจากไหนไม่รู้ และคนที่สูงที่สุด 171 หายไป รอบแรก <code>j</code> ไปถึง 7 จึงเทียบ <code>a[7]</code> กับ <code>a[8]</code> ช่อง 8 ไม่ใช่ข้อมูลของเรา แต่เป็นช่องว่างของอาเรย์ 1000 ช่องที่ประกาศนอก <code>main</code> ซึ่งมีค่าเริ่มต้นเป็น 0 ตามหน้า 5.5 ค่ามากสุดจึงถูกสลับออกไปอยู่ช่อง 8 แล้ว 0 เข้ามาแทน รอบต่อๆ มา 0 ค่อยๆ เลื่อนไปทางซ้ายได้รอบละช่องเดียว จึงไปค้างอยู่ที่ช่อง 1 เมื่อครบ 7 รอบ</p>
+
+      <p>ถ้าอาเรย์ประกาศไว้พอดี n ช่อง <code>a[n]</code> จะเป็นหน่วยความจำของอย่างอื่น ผลจะเดาไม่ได้เลย เวลาเขียนลูปที่ใช้ <code>a[j + 1]</code> ให้ถามตัวเองเสมอว่า เมื่อ <code>j</code> เป็นค่าสุดท้าย <code>j + 1</code> ยังอยู่ในข้อมูลไหม</p>
+
+      <h3 id="min-not-reset">แบบที่ 2 ลืมตั้ง min_index ใหม่ทุกรอบ</h3>
+
+      <p>ในโปรแกรม selection sort ย้ายบรรทัดประกาศ <code>min_index</code> ออกไปไว้นอกลูป แล้วตั้งเป็น 0 ครั้งเดียว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="min-not-reset"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+int main()
+{
+    int a[5] = {6, 3, 8, 2, 5};
+    int n = 5;
+    int min_index = 0;
+    for (int i = 0; i &lt; n - 1; i++) {
+        for (int j = i + 1; j &lt; n; j++) {
+            if (a[j] &lt; a[min_index]) {
+                min_index = j;
+            }
+        }
+        swap(&amp;a[i], &amp;a[min_index]);
+    }
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", a[i]);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="min-not-reset" data-title="C:\code\selection.exe"><pre><code>2 5 3 8 6
+</code></pre></div>
+
+      <p>รอบแรกถูก แต่รอบที่ 2 <code>min_index</code> ยังเป็น 3 จากรอบก่อน ซึ่งชี้ไปที่ช่องที่ตอนนี้เป็น 6 การหาค่าน้อยสุดจึงเริ่มเทียบกับ 6 แทนที่จะเริ่มจากช่อง 1 แล้วไปเจอ 5 ที่น้อยกว่า 6 แต่ไม่ได้น้อยกว่า 3 ซึ่งอยู่ช่อง 1 แล้ว 5 กับ 3 จึงถูกสลับผิดทาง ตัวแปรที่ต้องเริ่มใหม่ทุกรอบ ให้ประกาศไว้ในลูปแบบในตัวอย่างเดิม</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>bubble sort เทียบคู่ที่ติดกัน ผิดลำดับก็สลับ แต่ละรอบค่ามากสุดที่เหลือลอยไปท้ายแถว ใช้ n - 1 รอบ ลูปข้างในหยุดที่ <code>j &lt; n - 1 - i</code></li>
+        <li>หยุดก่อนได้เมื่อรอบไหนไม่มีการสลับ ช่วยกับข้อมูลที่เกือบเรียง แต่ไม่ช่วยกรณีแย่ที่สุด</li>
+        <li>selection sort หาค่าน้อยสุดของส่วนที่เหลือมาวางที่ช่อง <code>i</code> สลับรอบละครั้ง ไม่เกิน n - 1 ครั้ง</li>
+        <li>bubble sort สลับเท่ากับจำนวนคู่ที่ผิดลำดับ ซึ่งมากได้ถึง n(n - 1) / 2 ส่วนทั้งสองวิธีเทียบ n(n - 1) / 2 ครั้งเท่ากัน</li>
+        <li>เรียงจากมากไปน้อยแค่กลับเครื่องหมายที่เทียบ</li>
+        <li>เขียนวิธีเรียงเองครั้งแรก ให้พิมพ์อาเรย์ทุกรอบออกมาดู และระวัง <code>a[j + 1]</code> ที่เกินข้อมูล</li>
+      </ul>
+    </article>

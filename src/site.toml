@@ -90,7 +90,15 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "5"
 title = "บทที่ 5 อาเรย์"
 summary = "เก็บข้อมูลหลายตัว หาค่ามากสุด นับความถี่ ผลรวมสะสม"
-# dir = "c/05-arrays"
+path = "c/05-arrays/index.html"
+pages = [
+  { num = "5.1", title = "อาเรย์และช่องที่ 0", path = "c/05-arrays/basics.html" },
+  { num = "5.2", title = "ผลรวม มากสุด น้อยสุด", path = "c/05-arrays/sum-max.html" },
+  { num = "5.3", title = "นับความถี่ด้วยอาเรย์นับ", path = "c/05-arrays/counting.html" },
+  { num = "5.4", title = "ผลรวมสะสม", path = "c/05-arrays/prefix-sum.html" },
+  { num = "5.5", title = "แทรก ลบ และขอบของอาเรย์", path = "c/05-arrays/insert-delete.html" },
+  { num = "5.6", title = "แบบฝึกหัด", path = "c/05-arrays/exercises.html", exercises = "c/05-arrays" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
@@ -178,14 +186,30 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "12"
 title = "บทที่ 12 คณิตศาสตร์ในการเขียนโปรแกรม"
 summary = "mod ห.ร.ม. จำนวนเฉพาะ เลขฐาน ลำดับ และการนับ"
-# dir = "c/12-math"
+path = "c/12-math/index.html"
+pages = [
+  { num = "12.1", title = "mod และคำตอบที่ใหญ่เกิน", path = "c/12-math/mod.html" },
+  { num = "12.2", title = "ห.ร.ม. ค.ร.น. และจำนวนเฉพาะ", path = "c/12-math/gcd-primes.html" },
+  { num = "12.3", title = "เลขฐานและตัวดำเนินการระดับบิต", path = "c/12-math/bases-bits.html" },
+  { num = "12.4", title = "ลำดับ อนุกรม และการนับ", path = "c/12-math/series-counting.html" },
+  { num = "12.5", title = "เรขาคณิตบนพิกัด", path = "c/12-math/geometry.html" },
+  { num = "12.6", title = "แบบฝึกหัด", path = "c/12-math/exercises.html", exercises = "c/12-math" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "13"
 title = "บทที่ 13 เรียงข้อมูลและค้นหา"
 summary = "bubble selection insertion sort ค้นหาแบบไล่ และค้นหาข้อความ"
-# dir = "c/13-sort-search"
+path = "c/13-sort-search/index.html"
+pages = [
+  { num = "13.1", title = "ทำไมต้องเรียงข้อมูล", path = "c/13-sort-search/why-sort.html" },
+  { num = "13.2", title = "bubble sort และ selection sort", path = "c/13-sort-search/bubble-selection.html" },
+  { num = "13.3", title = "insertion sort และเวลาที่ใช้", path = "c/13-sort-search/insertion-time.html" },
+  { num = "13.4", title = "เรียงด้วย qsort", path = "c/13-sort-search/qsort.html" },
+  { num = "13.5", title = "counting sort และการค้นหา", path = "c/13-sort-search/counting-search.html" },
+  { num = "13.6", title = "แบบฝึกหัด", path = "c/13-sort-search/exercises.html", exercises = "c/13-sort-search" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"

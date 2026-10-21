@@ -1,0 +1,409 @@
+<article class="doc">
+      <h1>12.1 mod และคำตอบที่ใหญ่เกิน</h1>
+
+      <p>น้องใช้ <code>%</code> มาตั้งแต่บทที่ 1 ทั้งแยกหลัก ตรวจเลขคู่ และแปลงเวลา หน้านี้ต่อจากตรงนั้นสามเรื่อง เรื่องแรกคือ <code>%</code> กับเลขติดลบที่ให้ผลไม่เหมือนในห้องเรียนคณิตศาสตร์ เรื่องที่สองคือโจทย์ที่คำตอบใหญ่เกิน <code>long long</code> แล้วสั่งว่า "ตอบเป็นเศษจากการหารด้วย 1000000007" ซึ่งเจอบ่อยมากในโจทย์นับจำนวนวิธี และเรื่องสุดท้ายคือยกกำลังเลขชี้กำลังระดับ 10<sup>18</sup> ให้เสร็จในเสี้ยววินาที</p>
+
+      <h2 id="negative">หารและ mod เมื่อมีเลขติดลบ</h2>
+
+      <p>ในหน้า <a href="../01-variables/operators.html#negative">1.2</a> เราเห็นแล้วว่าเลขติดลบกับ <code>%</code> ต้องระวัง คราวนี้ดูให้ครบทุกแบบของเครื่องหมาย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="negdiv"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("%d %d\n", 7 / 3, 7 % 3);
+    printf("%d %d\n", -7 / 3, -7 % 3);
+    printf("%d %d\n", 7 / -3, 7 % -3);
+    printf("%d %d\n", -7 / -3, -7 % -3);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="negdiv" data-title="C:\code\negdiv.exe"><pre><code>2 1
+-2 -1
+-2 1
+2 -1
+</code></pre></div>
+
+      <p>ภาษา C ตั้งแต่มาตรฐาน C99 เป็นต้นมา ซึ่งรวมถึง GCC ที่เราใช้ ทำตามกฎสองข้อนี้ทุกเครื่อง</p>
+
+      <ol>
+        <li><strong>ผลหารตัดทศนิยมทิ้งไปทาง 0</strong> -7 / 3 คือ -2.33 ตัดเหลือ -2 ไม่ใช่ -3</li>
+        <li><strong>เศษมีเครื่องหมายตามตัวตั้ง</strong> ตัวตั้งคือเลขที่อยู่หน้า <code>%</code> ตัวตั้งติดลบ เศษก็ติดลบหรือเป็น 0</li>
+      </ol>
+
+      <p>สองข้อนี้มาคู่กันเพื่อให้ความสัมพันธ์ <code>a == (a / b) * b + a % b</code> เป็นจริงเสมอ ลองแทน a = -7 กับ b = 3 จะได้ (-2) × 3 + (-1) = -7 พอดี</p>
+
+      <p>แต่ในวิชาคณิตศาสตร์ เศษต้องอยู่ระหว่าง 0 ถึง b - 1 เสมอ -7 หารด้วย 3 จึงเขียนเป็น -7 = 3 × (-3) + 2 เศษคือ 2 ไม่ใช่ -1 โจทย์ที่ถามเรื่องวนรอบ เช่น วันในสัปดาห์ ชั่วโมงบนหน้าปัดนาฬิกา หรือที่นั่งรอบโต๊ะกลม ต้องการเศษแบบคณิตศาสตร์ ถ้าใช้ <code>%</code> ตรงๆ กับเลขติดลบจะได้ตำแหน่งที่ไม่มีอยู่จริง</p>
+
+      <h2 id="positive-mod">ทำให้ mod เป็นบวก</h2>
+
+      <p>ให้วันอาทิตย์เป็นวันที่ 0 จันทร์เป็น 1 ไปจนถึงเสาร์เป็น 6 วันนี้วันพุธ (3) ถามว่า 12 วันก่อนเป็นวันอะไร</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="weekday"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int today, shift;
+    scanf("%d %d", &amp;today, &amp;shift);
+    printf("plain %%  : %d\n", (today + shift) % 7);
+    printf("fixed     : %d\n", ((today + shift) % 7 + 7) % 7);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="weekday" data-title="ข้อมูลเข้า"><pre><code>3 -12
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="weekday" data-title="C:\code\weekday.exe"><pre><code>plain %  : -2
+fixed     : 5
+</code></pre></div>
+      </div>
+
+      <p>3 - 12 = -9 ใช้ <code>%</code> ตรงๆ ได้ -2 ซึ่งไม่ใช่วันไหนเลย บรรทัดที่ 8 แก้ด้วยสามจังหวะ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>จังหวะ</th><th>ค่าเริ่ม -9</th><th>ค่าเริ่ม 15</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>x % 7</code> ได้ค่าระหว่าง -6 ถึง 6</td><td>-2</td><td>1</td></tr>
+            <tr><td><code>+ 7</code> ได้ค่าระหว่าง 1 ถึง 13</td><td>5</td><td>8</td></tr>
+            <tr><td><code>% 7</code> อีกรอบ ได้ค่าระหว่าง 0 ถึง 6</td><td>5</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><code>% 7</code> รอบสองมีไว้สำหรับค่าที่เป็นบวกอยู่แล้ว ถ้าไม่มี 15 จะกลายเป็น 8 ซึ่งเกิน 6 ไป วันที่ 5 คือวันศุกร์ ตรวจด้วยมือได้ว่า 14 วันก่อนเป็นวันพุธ อีกสองวันหลังจากนั้นคือวันศุกร์ จำรูปนี้ไว้ใช้ทุกครั้งที่ค่าอาจติดลบ</p>
+
+      <div class="code" data-lang="text"><pre><code>((x % m) + m) % m    ได้ค่าระหว่าง 0 ถึง m - 1 เสมอ
+</code></pre></div>
+
+      <h2 id="why-mod">ทำไมโจทย์ให้ตอบ mod 1000000007</h2>
+
+      <p>ห้องหนึ่งมีนักเรียน N คน ครูจะเลือกกลุ่มหนึ่งไปแข่งขัน จะเลือกกี่คนก็ได้ นักเรียนแต่ละคนมีสองทาง ไปหรือไม่ไป จำนวนแบบทั้งหมดจึงเป็น 2 × 2 × ... × 2 = 2<sup>N</sup> แบบ ถ้า N = 100 คำตอบคือ 1267650600228229401496703205376 ยาว 31 หลัก ส่วน <code>long long</code> เก็บได้แค่ 19 หลัก</p>
+
+      <p>โจทย์นับจำนวนวิธีแทบทุกข้อเจอปัญหานี้ คนตั้งโจทย์จึงสั่งว่า "ตอบเป็นเศษจากการหารด้วย 1000000007" (ก็คือ 10<sup>9</sup> + 7 ซึ่งโจทย์มักเขียนแบบนี้) ตัวเลขนี้ถูกเลือกเพราะ</p>
+
+      <ul>
+        <li>ค่าที่ mod แล้วอยู่ระหว่าง 0 ถึง 1000000006 เก็บใน <code>int</code> ได้</li>
+        <li>สองค่านั้นบวกกัน ได้ไม่เกิน 2000000012 ยังไม่เกิน <code>int</code> ที่เก็บได้ถึง 2147483647</li>
+        <li>สองค่านั้นคูณกัน ได้ไม่เกินราว 10<sup>18</sup> ยังไม่เกิน <code>long long</code> ที่เก็บได้ราว 9.2 × 10<sup>18</sup></li>
+        <li>เป็นจำนวนเฉพาะ ซึ่งมีประโยชน์กับเทคนิคขั้นสูงที่อยู่นอกหลักสูตรนี้ ตอนนี้ไม่ต้องใช้</li>
+      </ul>
+
+      <p>บางโจทย์ใช้ 998244353 แทน ทุกอย่างในหน้านี้ใช้ได้เหมือนกัน</p>
+
+      <h3 id="define">ตั้งชื่อให้ค่าคงที่ด้วย #define</h3>
+
+      <p>เลข 1000000007 จะโผล่หลายที่ในโปรแกรม พิมพ์ผิดศูนย์เดียวก็ได้คำตอบผิดทั้งข้อ จึงตั้งชื่อให้มันครั้งเดียวที่บรรทัดบนสุด</p>
+
+      <div class="code" data-lang="c"><pre><code>#define MOD 1000000007
+</code></pre></div>
+
+      <p><code>#define</code> สั่งให้ compiler เอา 1000000007 ไปแทนคำว่า <code>MOD</code> ทุกที่ก่อนคอมไพล์ ไม่มีเครื่องหมาย <code>=</code> และไม่มี <code>;</code> ท้ายบรรทัด ชื่อแบบนี้นิยมเขียนเป็นตัวพิมพ์ใหญ่ทั้งหมด จะได้รู้ว่าเป็นค่าคงที่ ไม่ใช่ตัวแปร</p>
+
+      <h2 id="mod-rules">บวก ลบ คูณ แบบ mod</h2>
+
+      <p>ความลับที่ทำให้ไม่ต้องเก็บเลข 31 หลักคือ <strong>ถ้าสุดท้ายต้องการแค่เศษ ระหว่างทางก็เก็บแค่เศษได้</strong> เหมือนเข็มสั้นของนาฬิกา เดินไปกี่ชั่วโมงก็ตาม สิ่งที่บอกตำแหน่งเข็มคือจำนวนชั่วโมงหารด้วย 12 เหลือเศษเท่าไร ไม่ต้องจำว่าเดินมาแล้วกี่รอบ เขียนเป็นกฎได้แบบนี้ เมื่อ m คือ 1000000007</p>
+
+      <div class="code" data-lang="text"><pre><code>(a + b) % m  ==  ((a % m) + (b % m)) % m
+(a * b) % m  ==  ((a % m) * (b % m)) % m
+(a - b) % m  ==  ((a % m) - (b % m) + m) % m
+</code></pre></div>
+
+      <p>ในโค้ดแปลว่า <strong>mod ทันทีหลังบวกหรือคูณทุกครั้ง</strong> ค่าในตัวแปรจะอยู่ระหว่าง 0 ถึง m - 1 ตลอดเวลา ผลคูณของสองค่าแบบนี้ไม่เกิน 10<sup>18</sup> เก็บใน <code>long long</code> ได้เสมอ นับแบบเลือกนักเรียนไปแข่งได้แบบนี้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="pow2"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    long long ways = 1;
+    for (int i = 0; i &lt; n; i++) {
+        ways = ways * 2 % MOD;
+    }
+    printf("%lld\n", ways);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="pow2" data-title="ข้อมูลเข้า"><pre><code>100
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="pow2" data-title="C:\code\pow2.exe"><pre><code>976371285
+</code></pre></div>
+      </div>
+
+      <p><code>ways * 2 % MOD</code> ทำจากซ้ายไปขวา คูณก่อนแล้วค่อย mod ตามลำดับการคำนวณในหน้า 1.2 แฟกทอเรียลที่ล้น <code>long long</code> ตั้งแต่ 21! ในหน้า <a href="../04-loops/count-sum.html#product">4.2</a> ก็คิดแบบเดียวกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="factorial"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    long long answer = 1;
+    for (int i = 1; i &lt;= n; i++) {
+        answer = answer * i % MOD;
+    }
+    printf("%lld\n", answer);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="factorial" data-title="ข้อมูลเข้า"><pre><code>100
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="factorial" data-title="C:\code\factorial.exe"><pre><code>437918130
+</code></pre></div>
+      </div>
+
+      <h3 id="subtract">ลบแล้วต้องบวก MOD กลับ</h3>
+
+      <p>รหัสผ่านยาว N หลัก แต่ละหลักเป็น 0 1 หรือ 2 ต้องมีเลข 2 อย่างน้อยหนึ่งตัว มีได้กี่แบบ วิธีคิดคือนับทั้งหมด 3<sup>N</sup> แบบ แล้วลบแบบที่ไม่มีเลข 2 เลย ซึ่งมี 2<sup>N</sup> แบบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="password"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    long long all = 1, no_two = 1;
+    for (int i = 0; i &lt; n; i++) {
+        all = all * 3 % MOD;
+        no_two = no_two * 2 % MOD;
+    }
+    printf("all     = %lld\n", all);
+    printf("no two  = %lld\n", no_two);
+    printf("wrong   = %lld\n", (all - no_two) % MOD);
+    printf("correct = %lld\n", (all - no_two + MOD) % MOD);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="password" data-title="ข้อมูลเข้า"><pre><code>29
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="password" data-title="C:\code\password.exe"><pre><code>all     = 376884473
+no two  = 536870912
+wrong   = -159986439
+correct = 840013568
+</code></pre></div>
+      </div>
+
+      <p>ของจริง 3<sup>29</sup> มากกว่า 2<sup>29</sup> แน่นอน แต่หลัง mod แล้ว เศษของ 3<sup>29</sup> บังเอิญน้อยกว่า ลบกันจึงติดลบ เป็นปัญหาเดียวกับวันในสัปดาห์ข้างบน บวก <code>MOD</code> เข้าไปก่อน mod ทำให้ผลกลับมาอยู่ระหว่าง 0 ถึง MOD - 1 เพราะทั้งสองค่าอยู่ระหว่าง 0 ถึง MOD - 1 อยู่แล้ว ผลลบจึงไม่ต่ำกว่า -(MOD - 1) บวก MOD ครั้งเดียวก็พอ ชุดทดสอบเล็กๆ มักไม่ติดลบ โปรแกรมที่ลืมบวก <code>MOD</code> จึงผ่านตัวอย่างแต่ตกชุดใหญ่</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">หารไม่มีกฎแบบนี้</p>
+        <p>(10 / 2) % 3 ได้ 2 แต่ (10 % 3) / (2 % 3) คือ 1 / 2 ได้ 0 การหารใช้กฎ mod ระหว่างทางไม่ได้ ถ้าสูตรมีการหาร ให้หารให้เสร็จตอนตัวเลขยังเป็นค่าจริง ก่อนจะ mod วิธีทำดูได้ในหน้า <a href="series-counting.html#divide-before-mod">12.4</a></p>
+      </div>
+
+      <h2 id="fast-power">ยกกำลังแบบเร็ว</h2>
+
+      <p>ถ้าโจทย์ถาม A<sup>N</sup> mod 1000000007 เมื่อ N ใหญ่ถึง 10<sup>18</sup> ลูปคูณ N รอบแบบโปรแกรม pow2 ไม่มีทางทัน ตามหลักในหน้า <a href="../04-loops/numbers-time.html#estimate">4.5</a> หนึ่งวินาทีทำได้ราว 10<sup>8</sup> รอบเท่านั้น</p>
+
+      <p>สังเกตว่า 3<sup>8</sup> = (3<sup>4</sup>)<sup>2</sup> และ 3<sup>4</sup> = (3<sup>2</sup>)<sup>2</sup> ถ้ารู้ 3<sup>4</sup> แล้ว คูณตัวมันเองครั้งเดียวก็ได้ 3<sup>8</sup> ไม่ต้องคูณ 3 อีกสี่ครั้ง ถ้าเลขชี้กำลังเป็นเลขคี่ เช่น 3<sup>9</sup> ก็คือ 3<sup>8</sup> × 3 เขียนเป็นกฎได้ โดย N / 2 คือหารแบบตัดเศษของภาษา C</p>
+
+      <div class="code" data-lang="text"><pre><code>A^0 = 1
+A^N = (A^(N/2))^2        ถ้า N เป็นเลขคู่
+A^N = (A^(N/2))^2 * A    ถ้า N เป็นเลขคี่
+</code></pre></div>
+
+      <p>กฎนี้คำนวณ A<sup>N</sup> จากคำตอบของปัญหาที่เล็กลงครึ่งหนึ่ง ตรงกับการเขียน recursion ในบทที่ 9 พอดี</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="power"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+long long power(long long base, long long exp)
+{
+    if (exp == 0) { // (1)!
+        return 1;
+    }
+    long long half = power(base, exp / 2); // (2)!
+    long long result = half * half % MOD;
+    if (exp % 2 == 1) {
+        result = result * base % MOD;
+    }
+    return result;
+}
+
+int main()
+{
+    long long base, exp;
+    scanf("%lld %lld", &amp;base, &amp;exp);
+    printf("%lld\n", power(base % MOD, exp)); // (3)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>กรณีฐานของ recursion ทุกอย่างยกกำลัง 0 ได้ 1</li>
+        <li>เรียกตัวเองแค่ครั้งเดียว แล้วเก็บผลไว้ใน <code>half</code> ถ้าเขียน <code>power(base, exp / 2) * power(base, exp / 2)</code> จะเรียกสองครั้ง งานจะกลับไปมากเท่ากับลูปธรรมดา</li>
+        <li>mod ฐานก่อน ฐานที่รับเข้ามาอาจใหญ่ถึง 10<sup>18</sup> ถ้าไม่ลดก่อน <code>result * base</code> จะล้น <code>long long</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="power" data-title="ข้อมูลเข้า"><pre><code>2 1000000000000000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="power" data-title="C:\code\power.exe"><pre><code>719476260
+</code></pre></div>
+      </div>
+
+      <p>ไล่การเรียก <code>power(3, 13)</code> ดูว่ามันทำงานอย่างไร (ตัวเลขเล็กจน mod ไม่มีผล)</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>exp</th><th>เรียกต่อด้วย</th><th>half</th><th>คี่หรือคู่</th><th>ส่งกลับ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>ไม่เรียกต่อ</td><td></td><td></td><td>1</td></tr>
+            <tr><td>1</td><td>exp 0</td><td>1</td><td>คี่ คูณ 3</td><td>1 × 1 × 3 = 3</td></tr>
+            <tr><td>3</td><td>exp 1</td><td>3</td><td>คี่ คูณ 3</td><td>3 × 3 × 3 = 27</td></tr>
+            <tr><td>6</td><td>exp 3</td><td>27</td><td>คู่</td><td>27 × 27 = 729</td></tr>
+            <tr><td>13</td><td>exp 6</td><td>729</td><td>คี่ คูณ 3</td><td>729 × 729 × 3 = 1594323</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>อ่านจากล่างขึ้นบนคือลำดับการเรียก อ่านจากบนลงล่างคือลำดับที่คำตอบถูกส่งกลับ ทุกครั้งที่เรียก exp ลดลงครึ่งหนึ่ง เลข 10<sup>18</sup> หารสองไปเรื่อยๆ 60 ครั้งก็เหลือ 0 การเรียกจึงลึกแค่ 60 ชั้น แต่ละชั้นคูณไม่เกินสองครั้ง รวมไม่เกิน 120 ครั้ง เทียบกับลูปธรรมดาที่ต้องคูณ 10<sup>18</sup> ครั้ง</p>
+
+      <h3 id="timing">เร็วขึ้นแค่ไหน</h3>
+
+      <p>เพิ่ม <code>clock()</code> แบบหน้า <a href="../04-loops/numbers-time.html#measure">4.5</a> ครอบส่วนที่คำนวณของทั้งสองวิธี วิธีลูปคือ</p>
+
+      <div class="code" data-lang="c"><pre><code>long long result = 1;
+for (long long i = 0; i &lt; exp; i++) {
+    result = result * base % MOD;
+}
+</code></pre></div>
+
+      <p>วัดบนเครื่องที่เขียนเอกสารนี้ คือโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 ระบบ Windows 11 เสียบสายชาร์จ โหมดพลังงาน Balanced คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks ใช้ฐาน 2 รันแบบละ 5 ครั้ง ตารางเป็นค่ากลางของ 5 ครั้งนั้น</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>เลขชี้กำลัง</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ลูปคูณทีละครั้ง</td><td>10<sup>8</sup></td><td>0.299 วินาที</td><td>0.288 วินาที</td></tr>
+            <tr><td>ลูปคูณทีละครั้ง</td><td>10<sup>9</sup></td><td>2.999 วินาที</td><td>2.997 วินาที</td></tr>
+            <tr><td>ยกกำลังแบบเร็ว</td><td>10<sup>9</sup></td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>ยกกำลังแบบเร็ว</td><td>10<sup>18</sup></td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ลูปที่มีทั้งคูณและ mod ใช้เวลาราว 3 วินาทีต่อ 10<sup>9</sup> รอบ ช้ากว่าลูปที่มีแค่ <code>%</code> ในหน้า 4.5 เกินสองเท่า ถ้าเลขชี้กำลังเป็น 10<sup>18</sup> ลูปจะใช้ราว 3 × 10<sup>9</sup> วินาที หรือประมาณ 95 ปี ส่วนวิธีเร็วได้ 0.000 ทุกครั้งทั้งสองแบบ คือเร็วเกินกว่าที่ <code>clock()</code> วัดได้ แม้เลขชี้กำลังจะเป็น 10<sup>18</sup></p>
+
+      <p>หน้า <a href="bases-bits.html#power-bits">12.3</a> มียกกำลังแบบเร็วอีกแบบที่ใช้ลูปแทน recursion โดยอ่านเลขชี้กำลังเป็นเลขฐานสอง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="odd-negative">แบบที่ 1 ตรวจเลขคี่ด้วย <code>% 2 == 1</code></h3>
+
+      <p>นับว่าในข้อมูลมีเลขคี่กี่ตัว ข้อมูลมี -3 -1 1 3 เป็นเลขคี่ คำตอบที่ถูกคือ 4</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="odd-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int odd = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        scanf("%d", &amp;x);
+        if (x % 2 == 1) {
+            odd++;
+        }
+    }
+    printf("odd = %d\n", odd);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="odd-bug" data-title="ข้อมูลเข้า"><pre><code>7
+-3 -2 -1 0 1 2 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="odd-bug" data-title="C:\code\odd.exe"><pre><code>odd = 2
+</code></pre></div>
+      </div>
+
+      <p>-3 % 2 ได้ -1 ไม่ใช่ 1 เลขคี่ที่ติดลบจึงหลุดไปหมด แก้เป็น <code>x % 2 != 0</code> ซึ่งถูกทั้งเลขบวกและลบ</p>
+
+      <h3 id="mod-at-end">แบบที่ 2 mod แค่ตอนท้าย</h3>
+
+      <p>ในโปรแกรม pow2 ย้าย <code>% MOD</code> ออกจากลูปไปไว้ตอนพิมพ์ คิดว่า mod ครั้งเดียวตอนท้ายก็ได้ผลเท่ากัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="nomod"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    long long ways = 1;
+    for (int i = 0; i &lt; n; i++) {
+        ways = ways * 2;
+    }
+    printf("%lld\n", ways % MOD);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="nomod" data-title="ข้อมูลเข้า"><pre><code>100
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="nomod" data-title="C:\code\nomod.exe"><pre><code>0
+</code></pre></div>
+      </div>
+
+      <p>ได้ 0 แทน 976371285 กฎ mod บอกว่าผลเท่ากันก็จริง แต่ใช้ได้กับค่าจริงเท่านั้น <code>ways</code> ล้นตั้งแต่ 2<sup>63</sup> แล้ว ค่าในกล่องจึงไม่ใช่ 2<sup>100</sup> อีกต่อไป ลองป้อน 62 จะได้คำตอบถูก แต่ป้อน 63 ได้เลขติดลบ ถ้าโจทย์บอกให้ตอบ mod แปลว่าคำตอบจริงใหญ่จนเก็บไม่ได้ ต้อง mod ทุกครั้งที่คำนวณ</p>
+
+      <h3 id="int-multiply">แบบที่ 3 เก็บค่าที่ mod แล้วใน int</h3>
+
+      <p>ค่าที่ mod แล้วไม่เกิน 1000000006 เก็บใน <code>int</code> ได้ หลายคนจึงประกาศ <code>answer</code> ในโปรแกรม factorial เป็น <code>int</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="factorial-int"><pre><code>#include &lt;stdio.h&gt;
+#define MOD 1000000007
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int answer = 1;
+    for (int i = 1; i &lt;= n; i++) {
+        answer = answer * i % MOD;
+    }
+    printf("%d\n", answer);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="factorial-int" data-title="ข้อมูลเข้า"><pre><code>13
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="factorial-int" data-title="C:\code\factorial.exe"><pre><code>932053497
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรม factorial ที่ใช้ <code>long long</code> ตอบ 227020758 ป้อน 12 ยังถูกทั้งสองแบบ แต่ 13 ผิด เพราะ 12! = 479001600 คูณ 13 ได้ราว 6.2 × 10<sup>9</sup> ล้น <code>int</code> ไปก่อนจะได้ mod กับดักเดียวกับหน้า <a href="../01-variables/integers.html#int-times-int">1.3</a> กล่องที่<strong>เก็บ</strong>ค่าเล็กพอ แต่ผล<strong>คูณ</strong>ระหว่างทางไม่เล็ก ตัวแปรที่จะเอามาคูณแบบ mod ให้เป็น <code>long long</code> ทุกตัว</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ภาษา C หารตัดทศนิยมไปทาง 0 และเศษมีเครื่องหมายตามตัวตั้ง -7 % 3 ได้ -1</li>
+        <li>อยากได้เศษแบบคณิตศาสตร์ระหว่าง 0 ถึง m - 1 ใช้ <code>((x % m) + m) % m</code> ตรวจเลขคี่ใช้ <code>x % 2 != 0</code></li>
+        <li>คำตอบใหญ่เกินให้ตอบ mod 1000000007 ใช้ <code>#define MOD 1000000007</code> แล้ว mod ทุกครั้งหลังบวกหรือคูณ</li>
+        <li>ลบแบบ mod ต้องบวก <code>MOD</code> ก่อน mod ส่วนการหารใช้กฎ mod ไม่ได้</li>
+        <li>ตัวแปรที่จะคูณแบบ mod ต้องเป็น <code>long long</code></li>
+        <li>ยกกำลังแบบเร็วลดเลขชี้กำลังลงครึ่งหนึ่งทุกครั้ง 10<sup>18</sup> ใช้แค่ราว 60 ชั้น ส่วนลูปธรรมดาใช้ราว 3 วินาทีต่อ 10<sup>9</sup> รอบบนเครื่องที่เขียนเอกสารนี้</li>
+      </ul>
+    </article>
