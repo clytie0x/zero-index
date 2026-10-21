@@ -16,7 +16,7 @@ title = "หน้าแรก"
 # พอเขียนบทนั้นแล้ว ให้ใส่ path กับ pages ตามบทที่ 0
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "0"
 title = "บทที่ 0 เริ่มต้น"
 summary = "ติดตั้งเครื่องมือ และเขียนโปรแกรมแรกให้รันได้"
@@ -29,73 +29,211 @@ pages = [
 ]
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "1"
-title = "บทที่ 1 ตัวแปรและชนิดข้อมูล"
-summary = "int long long double char และตัวเลขที่ใหญ่เกินจะเก็บได้"
+title = "บทที่ 1 ตัวแปรและการคำนวณ"
+summary = "int long long double char ตัวดำเนินการ และตัวเลขที่ใหญ่เกินจะเก็บได้"
+# dir = "c/01-variables"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "2"
 title = "บทที่ 2 รับและแสดงผล"
-summary = "scanf printf การจัดทศนิยม และรับข้อมูลแบบ grader"
+summary = "scanf printf จัดทศนิยม อ่านโจทย์ และรับข้อมูลแบบ grader"
+# dir = "c/02-input-output"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "3"
 title = "บทที่ 3 เงื่อนไข"
-summary = "if else switch และการเปรียบเทียบ"
+summary = "if else switch การเปรียบเทียบ และตรรกะ"
+# dir = "c/03-conditions"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "4"
 title = "บทที่ 4 วนซ้ำ"
-summary = "for while ลูปซ้อน และวาดรูปด้วยดาว"
+summary = "for while ลูปซ้อน นับ สะสม และวาดรูปด้วยดาว"
+# dir = "c/04-loops"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "5"
 title = "บทที่ 5 อาเรย์"
 summary = "เก็บข้อมูลหลายตัว หาค่ามากสุด นับความถี่ ผลรวมสะสม"
+# dir = "c/05-arrays"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "6"
-title = "บทที่ 6 สตริง"
-summary = "ข้อความ นับตัวอักษร กลับคำ palindrome"
+title = "บทที่ 6 ตัวอักษรและสตริง"
+summary = "char รหัส ASCII ข้อความ นับตัวอักษร กลับคำ"
+# dir = "c/06-strings"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "7"
 title = "บทที่ 7 อาเรย์สองมิติ"
 summary = "ตาราง เมทริกซ์ และการเดินในกริด"
+# dir = "c/07-2d-arrays"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "8"
 title = "บทที่ 8 ฟังก์ชัน"
-summary = "แบ่งโค้ดเป็นส่วน และ recursion เบื้องต้น"
+summary = "แบ่งโค้ดเป็นส่วน ส่งค่า คืนค่า และขอบเขตตัวแปร"
+# dir = "c/08-functions"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "9"
-title = "บทที่ 9 คณิตศาสตร์ที่ออกบ่อย"
-summary = "mod ห.ร.ม. ค.ร.น. จำนวนเฉพาะ แยกหลักตัวเลข"
+title = "บทที่ 9 recursion"
+summary = "ฟังก์ชันที่เรียกตัวเอง และคิดปัญหาแบบแบ่งเป็นปัญหาเล็ก"
+# dir = "c/09-recursion"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "10"
-title = "บทที่ 10 เรียงลำดับ"
-summary = "bubble sort ให้เข้าใจหลักการ แล้วใช้ qsort"
+title = "บทที่ 10 pointer"
+summary = "ที่อยู่ในหน่วยความจำ ส่งตัวแปรให้ฟังก์ชันแก้ และ pointer กับอาเรย์"
+# dir = "c/10-pointers"
 
 [[chapters]]
-track = "ภาษา C"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "11"
-title = "บทที่ 11 จำลองสถานการณ์"
-summary = "ทำตามกติกาในโจทย์ทีละขั้น แนวที่ TOI Zero ชอบออก"
+title = "บทที่ 11 struct"
+summary = "รวมข้อมูลหลายชนิดเป็นก้อนเดียว และอาเรย์ของ struct"
+# dir = "c/11-structs"
 
 [[chapters]]
-track = "ภาษา C++"
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "12"
-title = "บทที่ 12 ขึ้น C++"
-summary = "เครื่องมือของ C++ ที่ใช้บ่อยในการแข่ง ต่อยอดจาก C ที่รู้แล้ว"
+title = "บทที่ 12 คณิตศาสตร์ในการเขียนโปรแกรม"
+summary = "mod ห.ร.ม. จำนวนเฉพาะ เลขฐาน ลำดับ และการนับ"
+# dir = "c/12-math"
+
+[[chapters]]
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
+num = "13"
+title = "บทที่ 13 เรียงข้อมูลและค้นหา"
+summary = "bubble selection insertion sort ค้นหาแบบไล่ และค้นหาข้อความ"
+# dir = "c/13-sort-search"
+
+[[chapters]]
+track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
+num = "14"
+title = "บทที่ 14 linked list stack queue"
+summary = "โครงสร้างข้อมูลพื้นฐานที่เขียนเองด้วยภาษา C"
+# dir = "c/14-linked-structures"
+
+[[chapters]]
+track = "ภาษา C++ และ STL  ปลายค่าย 1"
+num = "15"
+title = "บทที่ 15 จาก C สู่ C++"
+summary = "cin cout string bool reference และอ่านเขียนให้เร็ว"
+# dir = "cpp/15-from-c"
+
+[[chapters]]
+track = "ภาษา C++ และ STL  ปลายค่าย 1"
+num = "16"
+title = "บทที่ 16 vector pair และ sort"
+summary = "อาเรย์ที่ยืดได้ คู่ข้อมูล และเรียงข้อมูลในบรรทัดเดียว"
+# dir = "cpp/16-vector-sort"
+
+[[chapters]]
+track = "ภาษา C++ และ STL  ปลายค่าย 1"
+num = "17"
+title = "บทที่ 17 stack queue deque ใน STL"
+summary = "ใช้โครงสร้างข้อมูลสำเร็จรูป แทนที่เขียนเองในบทที่ 14"
+# dir = "cpp/17-stl-containers"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "18"
+title = "บทที่ 18 ความซับซ้อนของเวลา"
+summary = "Big O ประมาณเวลารันจากขอบเขตโจทย์ ก่อนเริ่มเขียน"
+# dir = "algo/18-complexity"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "19"
+title = "บทที่ 19 binary search และ prefix sum"
+summary = "ค้นในข้อมูลที่เรียงแล้ว และหาผลรวมช่วงในเวลาคงที่"
+# dir = "algo/19-binary-search-prefix"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "20"
+title = "บทที่ 20 set map และ priority queue"
+summary = "เก็บข้อมูลไม่ซ้ำ จับคู่คีย์กับค่า และดึงค่ามากสุดเร็วๆ"
+# dir = "algo/20-set-map-pq"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "21"
+title = "บทที่ 21 brute force และ backtracking"
+summary = "ลองทุกทางอย่างเป็นระบบ และตัดทางที่ไม่มีหวังทิ้ง"
+# dir = "algo/21-brute-force"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "22"
+title = "บทที่ 22 divide and conquer"
+summary = "แบ่งปัญหาครึ่งๆ merge sort quick sort"
+# dir = "algo/22-divide-conquer"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "23"
+title = "บทที่ 23 greedy"
+summary = "เลือกสิ่งที่ดีที่สุดตอนนี้ และพิสูจน์ว่าทำไมถึงถูก"
+# dir = "algo/23-greedy"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "24"
+title = "บทที่ 24 dynamic programming เบื้องต้น"
+summary = "จำคำตอบของปัญหาย่อย ไม่คำนวณซ้ำ"
+# dir = "algo/24-dp-basics"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "25"
+title = "บทที่ 25 dynamic programming แบบคลาสสิก"
+summary = "knapsack LIS LCS และ DP บนตาราง"
+# dir = "algo/25-dp-classic"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "26"
+title = "บทที่ 26 tree BST และ heap"
+summary = "โครงสร้างแบบต้นไม้ การท่องต้นไม้ และ heap"
+# dir = "algo/26-trees"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "27"
+title = "บทที่ 27 กราฟ DFS และ BFS"
+summary = "แทนกราฟในโปรแกรม เดินกราฟ ส่วนเชื่อมต่อ และ BFS บนตาราง"
+# dir = "algo/27-graphs"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "28"
+title = "บทที่ 28 เส้นทางสั้นสุด"
+summary = "Dijkstra Bellman-Ford และ Floyd-Warshall"
+# dir = "algo/28-shortest-paths"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "29"
+title = "บทที่ 29 MST และ union-find"
+summary = "ต้นไม้แผ่ทั่วที่มีน้ำหนักน้อยสุด Kruskal Prim"
+# dir = "algo/29-mst"
+
+[[chapters]]
+track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
+num = "30"
+title = "บทที่ 30 หัวข้อเสริม"
+summary = "topological sort Fenwick tree segment tree และค้นหาข้อความ"
+# dir = "algo/30-extras"

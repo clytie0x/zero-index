@@ -7,7 +7,8 @@
    ถ้ามีบล็อก data-lang="input" data-for="ชื่อ" จะใช้เป็น input
    ถ้ามีบล็อก data-lang="output" data-for="ชื่อ" ผลที่รันได้ต้องตรงกัน
    ใส่ data-allow-warnings ถ้าตั้งใจให้ตัวอย่างนั้นมีคำเตือน
-2. แบบฝึกหัดใน src/exercises เฉลยทุกไฟล์ต้องผ่านชุดทดสอบทุกชุด
+2. แบบฝึกหัดใน src/exercises เฉลยทุกไฟล์ (solution*) ต้องผ่านชุดทดสอบทุกชุด
+   วิธีช้า (naive*) ต้องผ่านทุกชุดที่ชื่อไม่มีคำว่า big
 
 คอมไพล์ด้วย -Wall -Wextra และถือว่าคำเตือนคือข้อผิดพลาด เพราะเอกสารสอนให้น้องเปิด -Wall
 เลือก compiler ได้ด้วยตัวแปร ZI_GCC และ ZI_GXX (ค่าเริ่มต้น gcc และ g++)
@@ -119,7 +120,8 @@ def check_exercises(workdir: Path) -> tuple[int, list[str]]:
         if not tests:
             errors.append(f"แบบฝึกหัด {rel} ไม่มีชุดทดสอบ")
             continue
-        solutions = sorted(p for p in d.iterdir() if p.stem.startswith("solution") and p.suffix in (".c", ".cpp"))
+        solutions = sorted(p for p in d.iterdir()
+                           if p.stem.startswith(("solution", "naive")) and p.suffix in (".c", ".cpp"))
         if not solutions:
             errors.append(f"แบบฝึกหัด {rel} ไม่มีเฉลย")
             continue
@@ -132,6 +134,9 @@ def check_exercises(workdir: Path) -> tuple[int, list[str]]:
                 errors.append(f"แบบฝึกหัด {rel}/{sol.name} คอมไพล์ไม่ผ่าน\n{err}")
                 continue
             for t in tests:
+                # วิธีช้าตรวจเฉพาะชุดเล็ก ชุดที่ชื่อมีคำว่า big ตั้งใจให้วิธีช้าไม่ทัน
+                if sol.stem.startswith("naive") and "big" in t.stem:
+                    continue
                 ans = t.with_suffix(".out")
                 if not ans.exists():
                     errors.append(f"แบบฝึกหัด {rel} ไม่มี {ans.name}")
