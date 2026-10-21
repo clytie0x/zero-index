@@ -1,0 +1,321 @@
+<article class="doc">
+      <h1>4.3 break continue และอ่านจนหมดข้อมูล</h1>
+
+      <p>ลูปในสองหน้าก่อนวนครบทุกรอบเสมอ แต่งานจริงบางทีอยากเลิกกลางทาง เช่น เจอสิ่งที่หาแล้วก็พอ หรืออยากข้ามข้อมูลบางตัวไป หน้านี้รู้จัก <code>break</code> กับ <code>continue</code> แล้วใช้มันอ่านข้อมูลแบบที่โจทย์ไม่บอกว่ามีกี่ตัว ซึ่งมีสองแบบ คือ อ่านจนเจอค่าหยุด และอ่านจนหมดไฟล์</p>
+
+      <h2 id="break">break ออกจากลูปทันที</h2>
+
+      <p>ครูอยากรู้ว่านักเรียนคนแรกในรายชื่อที่สอบตก (ได้ต่ำกว่า 50) คือคนที่เท่าไร พอเจอคนแรกแล้ว ไม่ต้องดูคนที่เหลืออีก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="first-fail"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int fail_at = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        if (score &lt; 50) {
+            fail_at = i;
+            break;
+        }
+    }
+    if (fail_at == 0) {
+        printf("everyone passed\n");
+    } else {
+        printf("first fail is student %d\n", fail_at);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="first-fail" data-title="ข้อมูลเข้า"><pre><code>6
+70 85 49 62 48 50
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="first-fail" data-title="C:\code\first_fail.exe"><pre><code>first fail is student 3
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>break</code> หยุดลูปที่มันอยู่ทันที แล้วกระโดดไปทำบรรทัดถัดจากปีกกาปิดของลูป ในตัวอย่างคือ <code>if</code> บรรทัดที่ 16</li>
+        <li><code>fail_at</code> เป็นตัวแปรที่จำว่าเจอหรือยัง เริ่มที่ 0 ซึ่งไม่ใช่ลำดับของนักเรียนคนไหน ถ้าลูปวนจนครบโดยไม่เจอ ค่าก็ยังเป็น 0 ตัวแปรที่ใช้บอกสถานะแบบนี้เรียกว่า <strong>flag</strong> (ธง)</li>
+      </ul>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">break ทิ้งข้อมูลที่ยังไม่ได้อ่าน</p>
+        <p>หลัง <code>break</code> ตัวเลข 62 48 50 ไม่ได้ถูกอ่านเลย ในตัวอย่างนี้ไม่เป็นไรเพราะโปรแกรมจบแล้ว แต่ถ้าหลังลูปยังต้องอ่านข้อมูลส่วนอื่นต่อ <code>scanf</code> ตัวถัดไปจะได้ 62 แทนที่จะได้ข้อมูลที่ตั้งใจ แบบนั้นห้ามใช้ <code>break</code> ให้วนอ่านจนครบ แล้วใช้ flag จำผลแทน</p>
+      </div>
+
+      <h2 id="continue">continue ข้ามไปรอบถัดไป</h2>
+
+      <p>คะแนน -1 หมายถึงนักเรียนคนนั้นขาดสอบ ให้หาค่าเฉลี่ยของคนที่มาสอบ และนับคนที่ขาด</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="absent"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int total = 0, present = 0, absent = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        if (score == -1) {
+            absent++;
+            continue;
+        }
+        total += score;
+        present++;
+    }
+    printf("absent = %d\n", absent);
+    printf("average = %.2f\n", (double)total / present);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="absent" data-title="ข้อมูลเข้า"><pre><code>5
+80 -1 75 -1 90
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="absent" data-title="C:\code\absent.exe"><pre><code>absent = 2
+average = 81.67
+</code></pre></div>
+      </div>
+
+      <p><code>continue</code> ข้ามคำสั่งที่เหลือในรอบนี้ทั้งหมด แล้วไปเริ่มรอบถัดไป ใน <code>for</code> มันจะไปทำส่วนเปลี่ยนค่า <code>i++</code> ก่อน แล้วค่อยตรวจเงื่อนไข เหมือนรอบนั้นจบตามปกติ</p>
+
+      <p>จริงๆ แล้วเขียนด้วย <code>if else</code> แทนก็ได้ทุกครั้ง <code>continue</code> แค่ช่วยให้โค้ดไม่ต้องซ้อนลึก อ่านแล้วเข้าใจทันทีว่า "ตัวนี้ไม่เอา ข้ามไป" ถ้าใช้แล้วงง ใช้ <code>if else</code> ไปเลยไม่ผิด</p>
+
+      <h2 id="sentinel">อ่านจนเจอค่าหยุด</h2>
+
+      <p>บางโจทย์ไม่บอกว่ามีข้อมูลกี่ตัว แต่บอกว่า "ข้อมูลจบด้วย -1" หรือ "จบด้วย 0" ค่าที่บอกว่าหมดแล้วนี้เรียกว่า <strong>ค่าหยุด (sentinel)</strong> แปลตรงตัวว่ายามเฝ้าประตู มันไม่ใช่ข้อมูลจริง ห้ามเอาไปคำนวณ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="sentinel"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int total = 0, count = 0;
+    while (1) {
+        int score;
+        scanf("%d", &amp;score);
+        if (score == -1) {
+            break;
+        }
+        total += score;
+        count++;
+    }
+    if (count == 0) {
+        printf("no scores\n");
+    } else {
+        printf("count = %d\n", count);
+        printf("average = %.2f\n", (double)total / count);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sentinel" data-title="ข้อมูลเข้า"><pre><code>72 65 88 91 -1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sentinel" data-title="C:\code\sentinel.exe"><pre><code>count = 4
+average = 79.00
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>while (1)</code> คือเงื่อนไขที่จริงตลอด เพราะภาษา C ถือว่า 0 คือเท็จ และค่าอื่นที่ไม่ใช่ 0 คือจริง ลูปนี้จึงจะไม่จบเอง ทางออกเดียวคือ <code>break</code></li>
+        <li>ลำดับสำคัญมาก <strong>อ่าน ตรวจค่าหยุด แล้วค่อยใช้</strong> ถ้าสลับเป็นใช้ก่อนตรวจ -1 จะหลุดเข้าไปในผลรวม ดูในส่วนลองทำให้พัง</li>
+        <li>ถ้าข้อมูลมีแค่ <code>-1</code> ตัวเดียว <code>count</code> เป็น 0 ถ้าหารเลยจะได้ค่าเฉลี่ยที่ไม่มีความหมาย จึงต้องแยกกรณีนี้ไว้ ชุดทดสอบที่ไม่มีข้อมูลเลยเป็นชุดขอบที่เจอบ่อย</li>
+      </ul>
+
+      <p>อีกแบบที่เจอในหนังสือหลายเล่ม คืออ่านตัวแรกก่อนเข้าลูป แล้วอ่านตัวถัดไปที่ท้ายลูป ได้ผลเหมือนกัน</p>
+
+      <div class="code" data-lang="c"><pre><code>scanf("%d", &amp;score);
+while (score != -1) {
+    total += score;
+    count++;
+    scanf("%d", &amp;score);
+}
+</code></pre></div>
+
+      <h2 id="eof">อ่านจนหมดไฟล์</h2>
+
+      <p>โจทย์บางข้อไม่มีทั้งจำนวนข้อมูลและค่าหยุด บอกแค่ว่า "อ่านจนจบข้อมูลเข้า" ใน grader ข้อมูลเข้ามาจากไฟล์ เราจึงต้องรู้ว่าไฟล์หมดแล้วหรือยัง คำตอบอยู่ที่ค่าที่ <code>scanf</code> ส่งกลับมา ซึ่งเราไม่เคยสนใจมาก่อน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="scanf-result"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    int result = scanf("%d", &amp;score);
+    printf("result = %d\n", result);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="scanf-result" data-title="ข้อมูลเข้า"><pre><code>70
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="scanf-result" data-title="C:\code\scanf_result.exe"><pre><code>result = 1
+</code></pre></div>
+      </div>
+
+      <p><code>scanf</code> ส่งกลับมาว่าอ่านค่าใส่ตัวแปรสำเร็จกี่ตัว รันโปรแกรมนี้กับข้อมูลเข้าสามแบบได้ผลแบบนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูลเข้า</th><th>result</th><th>ความหมาย</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>70</code></td><td>1</td><td>อ่านได้ 1 ตัว</td></tr>
+            <tr><td><code>abc</code></td><td>0</td><td>เจอข้อมูลแต่ไม่ใช่ตัวเลข อ่านไม่ได้สักตัว</td></tr>
+            <tr><td>ไม่มีอะไรเลย</td><td>-1</td><td>ข้อมูลหมดแล้ว ค่านี้มีชื่อว่า <code>EOF</code> (end of file)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ดังนั้น "อ่านจนหมด" เขียนได้ว่า ตราบใดที่ <code>scanf</code> อ่านได้ครบตามจำนวนที่ขอ ให้ทำต่อ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="until-eof"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    int total = 0, count = 0;
+    while (scanf("%d", &amp;score) == 1) {
+        total += score;
+        count++;
+    }
+    printf("count = %d\n", count);
+    printf("total = %d\n", total);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="until-eof" data-title="ข้อมูลเข้า"><pre><code>70 85 90
+62 48
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="until-eof" data-title="C:\code\until_eof.exe"><pre><code>count = 5
+total = 355
+</code></pre></div>
+      </div>
+
+      <p>ทุกรอบ <code>scanf</code> อ่านตัวเลขหนึ่งตัวใส่ <code>score</code> แล้วส่งกลับ 1 เงื่อนไขจริง จึงทำตัวลูป พออ่านครบห้าตัวแล้วไม่มีอะไรเหลือ <code>scanf</code> ส่งกลับ -1 เงื่อนไขเป็นเท็จ ลูปจบ ถ้ารับทีละสองค่า เช่น <code>scanf("%d %d", &amp;a, &amp;b)</code> ก็เทียบกับ 2 แทน</p>
+
+      <h3 id="ctrl-z">จบข้อมูลเองในหน้าต่างดำ</h3>
+
+      <p>ตอนกด <span class="keys"><kbd>F9</kbd></span> ทดลองใน Code::Blocks ข้อมูลมาจากคีย์บอร์ด ซึ่งไม่มีวันหมดเอง โปรแกรมจะรอเราพิมพ์ไปเรื่อยๆ ต้องบอก Windows ว่าข้อมูลจบแล้ว ทำแบบนี้</p>
+
+      <ol>
+        <li>พิมพ์ข้อมูลให้ครบ แล้วกด <span class="keys"><kbd>Enter</kbd></span> ให้เคอร์เซอร์ขึ้นบรรทัดใหม่</li>
+        <li>ที่ต้นบรรทัดใหม่ กด <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Z</kbd></span> จะเห็น <code>^Z</code> ขึ้นมา</li>
+        <li>กด <span class="keys"><kbd>Enter</kbd></span> อีกครั้ง <code>scanf</code> จะได้ EOF แล้วโปรแกรมพิมพ์ผลลัพธ์</li>
+      </ol>
+
+      <div class="code" data-lang="text"><pre><code>70 85 90
+62 48
+^Z
+count = 5
+total = 355
+</code></pre></div>
+
+      <p>กด <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Z</kbd></span> ที่ต้นบรรทัดใหม่เท่านั้น อย่ากดต่อท้ายตัวเลขในบรรทัดเดียวกัน ส่วนใน grader ไม่ต้องทำอะไร ไฟล์ข้อมูลเข้ามีจุดจบอยู่แล้ว</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-compare">แบบที่ 1 ไม่เทียบกับ 1</h3>
+
+      <p>ในโปรแกรม until-eof ตัด <code>== 1</code> ออก เหลือ <code>while (scanf("%d", &amp;score))</code></p>
+
+      <p>คอมไพล์ผ่านไม่มีคำเตือน แต่ป้อน <code>70 85 90</code> แล้วจบข้อมูล โปรแกรม<strong>ไม่พิมพ์อะไรเลยและไม่จบ</strong> ต้องหยุดเองตามวิธีในหน้า 4.1 สาเหตุคือตอนข้อมูลหมด <code>scanf</code> ส่งกลับ -1 ซึ่งไม่ใช่ 0 จึงถือว่าจริง ลูปวนต่อไป <code>scanf</code> ก็ส่ง -1 กลับมาอีก วนอย่างนี้ไม่มีที่สิ้นสุด ใน grader ข้อนี้จะได้ Time Limit Exceeded ทุกชุด</p>
+
+      <p>บางคนแก้เป็น <code>!= EOF</code> ซึ่งจบได้ตอนไฟล์หมดก็จริง แต่ถ้าข้อมูลมีตัวที่ไม่ใช่ตัวเลขปนมา <code>scanf</code> จะส่ง 0 ซ้ำๆ โดยไม่ขยับไปไหน แล้วค้างแบบเดิม เทียบ <code>== 1</code> ปลอดภัยที่สุด</p>
+
+      <h3 id="continue-while">แบบที่ 2 continue ใน while</h3>
+
+      <p>อยากพิมพ์ 1 ถึง 10 ยกเว้นเลขที่หารด้วย 3 ลงตัว ถ้าใช้ <code>for</code> ทำงานถูก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="skip3"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    for (int i = 1; i &lt;= 10; i++) {
+        if (i % 3 == 0) {
+            continue;
+        }
+        printf("%d\n", i);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="skip3" data-title="C:\code\skip3.exe"><pre><code>1
+2
+4
+5
+7
+8
+10
+</code></pre></div>
+
+      <p>แต่ถ้าแปลงเป็น <code>while</code> ตรงๆ</p>
+
+      <div class="code" data-lang="c"><pre><code>int i = 1;
+while (i &lt;= 10) {
+    if (i % 3 == 0) {
+        continue;
+    }
+    printf("%d\n", i);
+    i++;
+}
+</code></pre></div>
+
+      <p>โปรแกรมพิมพ์ 1 กับ 2 แล้วนิ่งไม่จบ พอ i เป็น 3 <code>continue</code> กระโดดกลับไปตรวจเงื่อนไขทันที ข้าม <code>i++</code> ที่อยู่ท้ายลูปไปด้วย i จึงเป็น 3 ตลอดกาล ใน <code>for</code> ไม่มีปัญหานี้เพราะ <code>i++</code> อยู่ในวงเล็บของ <code>for</code> ซึ่ง <code>continue</code> ไม่ได้ข้าม</p>
+
+      <h3 id="count-sentinel">แบบที่ 3 นับค่าหยุดเป็นข้อมูล</h3>
+
+      <p>เห็นว่าต้องอ่านอย่างน้อยหนึ่งครั้ง เลยเลือก <code>do while</code> แต่ใช้ค่าก่อนตรวจ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="sentinel-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    int total = 0, count = 0;
+    do {
+        scanf("%d", &amp;score);
+        total += score;
+        count++;
+    } while (score != -1);
+    printf("count = %d\n", count);
+    printf("average = %.2f\n", (double)total / count);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sentinel-bug" data-title="ข้อมูลเข้า"><pre><code>72 65 88 91 -1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sentinel-bug" data-title="C:\code\sentinel.exe"><pre><code>count = 5
+average = 63.00
+</code></pre></div>
+      </div>
+
+      <p>-1 ถูกนับเป็นคะแนนคนที่ห้า ผลรวมจึงเป็น 315 หารด้วย 5 ได้ 63.00 แทนที่จะเป็น 79.00 ค่าหยุดต้องถูกตรวจ<strong>ก่อน</strong>นำไปใช้เสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>break</code> ออกจากลูปทันที <code>continue</code> ข้ามส่วนที่เหลือของรอบนี้ไปรอบถัดไป</li>
+        <li>ใช้ flag จำว่าเจอหรือยัง และระวังว่า <code>break</code> ทิ้งข้อมูลที่ยังไม่ได้อ่าน</li>
+        <li><code>continue</code> ใน <code>while</code> ข้ามการเปลี่ยนค่าตัวนับ อาจกลายเป็นลูปไม่รู้จบ</li>
+        <li>อ่านจนเจอค่าหยุด ใช้ <code>while (1)</code> อ่าน ตรวจ แล้ว <code>break</code> ก่อนนำไปใช้</li>
+        <li>อ่านจนหมดไฟล์ ใช้ <code>while (scanf("%d", &amp;x) == 1)</code> ต้องมี <code>== 1</code></li>
+        <li>ทดลองในหน้าต่างดำ จบข้อมูลด้วย <span class="keys"><kbd>Enter</kbd></span> <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Z</kbd></span> <span class="keys"><kbd>Enter</kbd></span></li>
+      </ul>
+    </article>

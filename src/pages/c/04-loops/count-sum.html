@@ -1,0 +1,302 @@
+<article class="doc">
+      <h1>4.2 นับ สะสม หาค่ามากสุด</h1>
+
+      <p>โจทย์แข่งขันจำนวนมากให้ข้อมูลมาเป็นชุด บรรทัดแรกบอกว่ามีกี่ตัว แล้วตามด้วยตัวเลขทีละตัว เช่น คะแนนสอบของนักเรียน N คน อุณหภูมิ N วัน แล้วถามว่ารวมเท่าไร เฉลี่ยเท่าไร มีกี่คนที่ผ่าน ใครได้มากที่สุด ตอนนี้เรายังเก็บตัวเลขหลายตัวไว้พร้อมกันไม่ได้ (ต้องรอ array ในบทที่ 5) แต่โจทย์กลุ่มนี้ไม่ต้องเก็บ ใช้วิธี <strong>อ่านทีละตัว ใช้ทันที แล้วทิ้ง</strong> โดยมีตัวแปรสองสามตัวคอยจำสิ่งที่สรุปได้จนถึงตอนนั้น</p>
+
+      <h2 id="sum">สะสมผลรวม</h2>
+
+      <p>ครูมีคะแนนสอบของนักเรียน N คน อยากรู้คะแนนรวม</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="total"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int total = 0; // (1)!
+    for (int i = 1; i &lt;= n; i++) {
+        int score; // (2)!
+        scanf("%d", &amp;score);
+        total += score; // (3)!
+    }
+    printf("total = %d\n", total);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตัวแปรสะสมต้องตั้งค่าเริ่มต้นเป็น 0 ก่อนเข้าลูป เหมือนกดปุ่มล้างเครื่องคิดเลขก่อนเริ่มบวก</li>
+        <li><code>score</code> เก็บแค่คะแนนของคนที่กำลังอ่านอยู่ รอบถัดไปก็ถูกค่าใหม่ทับ ไม่เป็นไร เพราะเราบวกเข้า <code>total</code> ไปแล้ว</li>
+        <li>เอาคะแนนคนนี้บวกเข้ากับผลรวมที่มีอยู่ ตรงนี้คือรูปแบบ <code>x = x + ...</code> ที่บทที่ 1 บอกว่าจะเจอบ่อย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="total" data-title="ข้อมูลเข้า"><pre><code>5
+70 85 90 62 48
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="total" data-title="C:\code\total.exe"><pre><code>total = 355
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>รอบ i</th><th>อ่านได้ score</th><th>total หลังบวก</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ก่อนเข้าลูป</td><td></td><td>0</td></tr>
+            <tr><td>1</td><td>70</td><td>70</td></tr>
+            <tr><td>2</td><td>85</td><td>155</td></tr>
+            <tr><td>3</td><td>90</td><td>245</td></tr>
+            <tr><td>4</td><td>62</td><td>307</td></tr>
+            <tr><td>5</td><td>48</td><td>355</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้อมูลเข้าจะวางบรรทัดเดียวหรือคนละบรรทัดก็ได้ <code>scanf("%d")</code> ข้ามช่องว่างและการขึ้นบรรทัดให้เองอยู่แล้ว ตามที่เห็นในหน้า 1.1</p>
+
+      <h2 id="count">นับเฉพาะที่ตรงเงื่อนไข</h2>
+
+      <p>ตัวนับคือตัวสะสมที่บวกทีละ 1 และบวกเฉพาะตอนที่เงื่อนไขเป็นจริง เอา <code>if</code> จากบทที่ 3 มาใส่ในลูป ทีนี้หาค่าเฉลี่ยและนับคนที่ได้ตั้งแต่ 50 คะแนนขึ้นไปพร้อมกัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="report"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int total = 0;
+    int passed = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        int score;
+        scanf("%d", &amp;score);
+        total += score;
+        if (score &gt;= 50) {
+            passed++;
+        }
+    }
+    printf("average = %.2f\n", (double)total / n);
+    printf("passed = %d\n", passed);
+    printf("failed = %d\n", n - passed);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="report" data-title="ข้อมูลเข้า"><pre><code>6
+70 85 49 62 48 50
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="report" data-title="C:\code\report.exe"><pre><code>average = 60.67
+passed = 4
+failed = 2
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>ค่าเฉลี่ยต้องแปลงเป็น <code>double</code> ก่อนหาร ตามกับดักในหน้า 1.4 ถ้าหาร <code>int</code> ตรงๆ จะได้ 60</li>
+        <li>ไม่ต้องนับคนตกแยก เพราะคนตกคือคนที่ไม่ผ่าน <code>n - passed</code> ได้เลย</li>
+        <li>ข้อมูลชุดนี้ตั้งใจใส่ 49 กับ 50 ไว้ เพื่อตรวจว่า <code>&gt;=</code> ถูก ถ้าเขียน <code>&gt;</code> จะได้ passed เป็น 3 เวลาทดสอบโปรแกรมเอง ให้ลองค่าที่อยู่ตรงขอบเงื่อนไขเสมอ</li>
+      </ul>
+
+      <h2 id="max-min">หาค่ามากสุดและน้อยสุด</h2>
+
+      <p>บันทึกอุณหภูมิสูงสุดของแต่ละวันไว้ N วัน วันไหนร้อนที่สุด วิธีคิดเหมือนเราดูตัวเลขทีละตัวด้วยตา จำตัวที่มากที่สุดเท่าที่เห็นมาไว้ในหัว เจอตัวใหม่ที่มากกว่าก็เปลี่ยนไปจำตัวใหม่ คำถามคือก่อนเห็นตัวเลขตัวแรก ควรจำค่าอะไรไว้ คำตอบที่ปลอดภัยที่สุดคือ <strong>ให้ตัวแรกเป็นค่าเริ่มต้น</strong></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="hottest"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int first;
+    scanf("%d", &amp;first);
+    int highest = first;
+    int lowest = first;
+    for (int day = 2; day &lt;= n; day++) {
+        int temp;
+        scanf("%d", &amp;temp);
+        if (temp &gt; highest) {
+            highest = temp;
+        }
+        if (temp &lt; lowest) {
+            lowest = temp;
+        }
+    }
+    printf("highest = %d\n", highest);
+    printf("lowest = %d\n", lowest);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="hottest" data-title="ข้อมูลเข้า"><pre><code>7
+31 34 29 35 33 35 28
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="hottest" data-title="C:\code\hottest.exe"><pre><code>highest = 35
+lowest = 28
+</code></pre></div>
+      </div>
+
+      <p>อ่านวันแรกนอกลูป ลูปจึงเริ่มที่วันที่ 2 ถ้าโจทย์รับประกันว่า N อย่างน้อย 1 วิธีนี้ถูกเสมอ ไม่ว่าตัวเลขจะเป็นบวกหรือลบ</p>
+
+      <p>อีกวิธีที่เจอบ่อยคือเริ่มด้วยค่าที่น้อยกว่าทุกค่าที่เป็นไปได้ เช่น <code>int highest = INT_MIN;</code> จาก <code>limits.h</code> ที่เห็นในหน้า 1.3 ตัวเลขตัวแรกที่อ่านเข้ามาจะมากกว่าแน่นอน ใช้ได้เหมือนกัน แต่ต้องคิดให้ดีว่าค่าเริ่มต้นนั้นน้อยพอจริงไหม ส่วนลองทำให้พังท้ายหน้าจะเห็นว่าเริ่มด้วย 0 พังยังไง</p>
+
+      <h3 id="which-day">จำว่าเป็นวันที่เท่าไรด้วย</h3>
+
+      <p>โจทย์มักถามต่อว่าเกิดขึ้นวันไหน ให้มีตัวแปรอีกตัวจำวันไว้ เปลี่ยนพร้อมกับค่ามากสุดทุกครั้ง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="hot-day"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int highest;
+    scanf("%d", &amp;highest);
+    int hot_day = 1;
+    for (int day = 2; day &lt;= n; day++) {
+        int temp;
+        scanf("%d", &amp;temp);
+        if (temp &gt; highest) {
+            highest = temp;
+            hot_day = day;
+        }
+    }
+    printf("hottest %d on day %d\n", highest, hot_day);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="hot-day" data-title="ข้อมูลเข้า"><pre><code>7
+31 34 29 35 33 35 28
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="hot-day" data-title="C:\code\hot_day.exe"><pre><code>hottest 35 on day 4
+</code></pre></div>
+      </div>
+
+      <p>35 องศาเกิดสองครั้ง วันที่ 4 กับวันที่ 6 โปรแกรมตอบวันที่ 4 เพราะ <code>&gt;</code> เปลี่ยนค่าเฉพาะเมื่อเจอค่าที่มากกว่าจริงๆ ถ้าเปลี่ยนเป็น <code>&gt;=</code> จะตอบวันที่ 6 แทน เพราะเท่ากันก็เปลี่ยน อ่านโจทย์ให้ดีว่าถามครั้งแรกหรือครั้งสุดท้าย แล้วเลือกเครื่องหมายให้ตรง</p>
+
+      <h2 id="product">สะสมผลคูณ</h2>
+
+      <p>สะสมผลคูณใช้หลักเดียวกับผลรวม ต่างกันตรงค่าเริ่มต้นต้องเป็น <strong>1</strong> ไม่ใช่ 0 เพราะอะไรคูณ 0 ก็ได้ 0 ตัวอย่างคือ <strong>แฟกทอเรียล (factorial)</strong> เขียนว่า n! คือ 1 × 2 × 3 × ... × n ใช้นับจำนวนวิธีเรียงของ n ชิ้น เช่น จัดเพื่อน 5 คนเข้าแถวได้ 5! = 120 แบบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="factorial"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    long long factorial = 1;
+    for (int i = 1; i &lt;= n; i++) {
+        factorial *= i;
+    }
+    printf("%d! = %lld\n", n, factorial);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="factorial" data-title="ข้อมูลเข้า"><pre><code>20
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="factorial" data-title="C:\code\factorial.exe"><pre><code>20! = 2432902008176640000
+</code></pre></div>
+      </div>
+
+      <p>ผลคูณโตเร็วมาก 20! มี 19 หลักแล้ว ใกล้ขอบของ <code>long long</code> ที่ประมาณ 9 × 10<sup>18</sup> ส่วน 21! เกินไปแล้ว ถ้าโจทย์ถามแฟกทอเรียลของเลขที่ใหญ่กว่านี้ มักให้ตอบเป็นเศษจากการหาร ซึ่งจะเรียนในบทที่ 12</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-zero">แบบที่ 1 ลืมตั้ง total = 0</h3>
+
+      <p>ในโปรแกรม total แก้บรรทัดที่ 7 เป็น <code>int total;</code> เฉยๆ</p>
+
+      <p>กด <span class="keys"><kbd>F9</kbd></span> ใน Code::Blocks แล้ว<strong>ไม่มีคำเตือนเลย</strong> และบนเครื่องที่เขียนเอกสารนี้ยังพิมพ์ <code>total = 355</code> ถูกด้วย เพราะบังเอิญหน่วยความจำตรงนั้นเป็น 0 อยู่ก่อน แต่ <code>total</code> เริ่มจากค่าขยะ ซึ่งจะเป็นอะไรก็ได้ เปลี่ยนเครื่องหรือเปลี่ยนโปรแกรมนิดเดียวก็ได้คำตอบผิด ถ้าคอมไพล์ด้วยตัวเลือก <code>-O2</code> ที่สั่งให้ compiler ปรับโค้ดให้เร็วขึ้น compiler จะวิเคราะห์โค้ดละเอียดกว่าเดิม แล้วเตือนแบบนี้</p>
+
+      <div class="code" data-lang="gcc"><pre><code>total.c:11:15: warning: 'total' may be used uninitialized [-Wmaybe-uninitialized]
+   11 |         total += score;
+      |         ~~~~~~^~~~~~~~
+total.c:7:9: note: 'total' was declared here
+    7 |     int total;
+      |         ^~~~~
+</code></pre></div>
+
+      <p>บทเรียนคือ <strong>ได้คำตอบถูกบนเครื่องตัวเอง ไม่ได้แปลว่าโปรแกรมถูก</strong> ตัวแปรสะสม ตัวนับ ค่ามากสุด ต้องตั้งค่าเริ่มต้นเองทุกครั้ง</p>
+
+      <h3 id="max-zero">แบบที่ 2 เริ่มค่ามากสุดที่ 0</h3>
+
+      <p>หลายคนเริ่ม <code>highest</code> ที่ 0 เพราะคิดว่าอุณหภูมิไม่ติดลบ แต่ถ้าเป็นอุณหภูมิช่องแช่แข็งของตู้เย็นล่ะ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="freezer"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int highest = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        int temp;
+        scanf("%d", &amp;temp);
+        if (temp &gt; highest) {
+            highest = temp;
+        }
+    }
+    printf("highest = %d\n", highest);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="freezer" data-title="ข้อมูลเข้า"><pre><code>4
+-18 -20 -15 -19
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="freezer" data-title="C:\code\freezer.exe"><pre><code>highest = 0
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ -15 แต่ไม่มีค่าไหนมากกว่า 0 เลย <code>highest</code> จึงค้างอยู่ที่ 0 ซึ่งไม่ได้อยู่ในข้อมูลด้วยซ้ำ ชุดทดสอบของโจทย์ที่มีค่าติดลบได้มักมีชุดที่ติดลบทั้งหมดไว้ดักจุดนี้ ใช้วิธีให้ตัวแรกเป็นค่าเริ่มต้นแบบโปรแกรม hottest จะไม่พลาด</p>
+
+      <h3 id="int-factorial">แบบที่ 3 แฟกทอเรียลใน int</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="factorial-int"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int factorial = 1;
+    for (int i = 1; i &lt;= 14; i++) {
+        factorial *= i;
+        printf("%d! = %d\n", i, factorial);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="factorial-int" data-title="C:\code\factorial_int.exe"><pre><code>1! = 1
+2! = 2
+3! = 6
+4! = 24
+5! = 120
+6! = 720
+7! = 5040
+8! = 40320
+9! = 362880
+10! = 3628800
+11! = 39916800
+12! = 479001600
+13! = 1932053504
+14! = 1278945280
+</code></pre></div>
+
+      <p>ถึง 12! ยังถูก แต่ 13! จริงๆ คือ 6227020800 เกิน <code>int</code> ไปแล้ว ได้เลขที่ดูเหมือนปกติแต่ผิด และ 14! ยังน้อยกว่า 13! อีก ซึ่งเป็นไปไม่ได้ ลูปที่คูณสะสมทำให้ overflow ได้เร็วกว่าที่คิดมาก ก่อนเขียนให้ประมาณว่ารอบสุดท้ายผลจะใหญ่แค่ไหน ตามวิธีในหน้า 1.3</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ข้อมูล N ตัวที่ใช้แค่ครั้งเดียว อ่านทีละตัวในลูป ใช้ทันที ไม่ต้องเก็บทุกตัว</li>
+        <li>ผลรวมเริ่มที่ 0 ผลคูณเริ่มที่ 1 ตัวนับเริ่มที่ 0 ต้องตั้งเองทุกครั้ง Code::Blocks ไม่เตือนถ้าลืม</li>
+        <li>นับตามเงื่อนไขคือใส่ <code>if</code> ในลูป แล้ว <code>count++</code> เมื่อจริง</li>
+        <li>ค่ามากสุดน้อยสุด ให้ค่าตัวแรกเป็นค่าเริ่มต้น อย่าเริ่มที่ 0</li>
+        <li><code>&gt;</code> ได้ตำแหน่งแรกที่เจอ <code>&gt;=</code> ได้ตำแหน่งสุดท้าย</li>
+        <li>ผลรวมและผลคูณในลูปโตเร็ว ประมาณค่าสุดท้ายก่อนเลือก <code>int</code> หรือ <code>long long</code></li>
+      </ul>
+    </article>

@@ -1,0 +1,408 @@
+<article class="doc">
+      <h1>4.5 ลูปกับตัวเลขและเวลาที่ใช้</h1>
+
+      <p>ในบทที่ 1 เราแยกหลักได้แค่เลขที่รู้จำนวนหลักล่วงหน้า มีลูปแล้วทำได้กับเลขกี่หลักก็ได้ หน้านี้รวมงานตัวเลขที่ออกสอบบ่อย คือ แยกหลัก กลับเลข หาตัวหาร และตรวจจำนวนเฉพาะ แล้วปิดท้ายด้วยเรื่องที่สำคัญพอๆ กับเขียนให้ถูก คือ<strong>เขียนให้ทันเวลา</strong> เราจะจับเวลาลูปจริงบนเครื่อง แล้วใช้ตัวเลขนั้นตัดสินว่าวิธีไหนผ่านโจทย์ที่จำกัดเวลา 1 วินาที</p>
+
+      <h2 id="digits">แยกหลักทีละหลัก</h2>
+
+      <p>หลักการเดิมจากหน้า 1.2 <code>% 10</code> หยิบหลักขวาสุด <code>/ 10</code> ตัดหลักขวาสุดทิ้ง ทำซ้ำไปเรื่อยๆ จนเลขเหลือ 0 ก็ได้ครบทุกหลัก เราไม่รู้ล่วงหน้าว่าต้องวนกี่รอบ จึงใช้ <code>while</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="digits"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int digits = 0, digit_sum = 0;
+    while (n &gt; 0) {
+        digit_sum += n % 10;
+        digits++;
+        n /= 10;
+    }
+    printf("digits = %d\n", digits);
+    printf("sum = %d\n", digit_sum);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="digits" data-title="ข้อมูลเข้า"><pre><code>9075
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="digits" data-title="C:\code\digits.exe"><pre><code>digits = 4
+sum = 21
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>รอบ</th><th>n ตอนเริ่มรอบ</th><th>n % 10</th><th>digit_sum</th><th>n หลัง /= 10</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>9075</td><td>5</td><td>5</td><td>907</td></tr>
+            <tr><td>2</td><td>907</td><td>7</td><td>12</td><td>90</td></tr>
+            <tr><td>3</td><td>90</td><td>0</td><td>12</td><td>9</td></tr>
+            <tr><td>4</td><td>9</td><td>9</td><td>21</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ลูปได้หลักออกมาจากขวาไปซ้าย และทำให้ <code>n</code> กลายเป็น 0 ตอนจบ ถ้ายังต้องใช้เลขเดิมหลังลูป ให้เก็บสำเนาไว้ในตัวแปรอื่นก่อน ถ้าเลขใหญ่ถึง 10<sup>18</sup> ก็ใช้วิธีเดียวกัน แค่เปลี่ยน <code>n</code> เป็น <code>long long</code> และรับด้วย <code>%lld</code></p>
+
+      <h3 id="zero">เลข 0 มีกี่หลัก</h3>
+
+      <p>ป้อน <code>0</code> ให้โปรแกรมข้างบน จะได้ <code>digits = 0</code> เพราะเงื่อนไข <code>0 &gt; 0</code> เป็นเท็จตั้งแต่แรก ลูปไม่ทำเลยสักรอบ แต่ 0 เขียนได้ด้วยหลักเดียว คำตอบที่ถูกคือ 1 นี่คืองานที่ต้องทำอย่างน้อยหนึ่งครั้ง ตรงกับ <code>do while</code> ในหน้า 4.1</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="count-digits"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int digits = 0;
+    do {
+        digits++;
+        n /= 10;
+    } while (n &gt; 0);
+    printf("digits = %d\n", digits);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-digits" data-title="ข้อมูลเข้า"><pre><code>0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-digits" data-title="C:\code\count_digits.exe"><pre><code>digits = 1
+</code></pre></div>
+      </div>
+
+      <p>เลขอื่นที่ไม่ใช่ 0 ได้คำตอบเท่าเดิมทั้งสองแบบ ต่างกันแค่ 0 ตัวเดียว ชุดทดสอบชอบใส่ 0 ไว้ดักตรงนี้</p>
+
+      <h3 id="reverse">กลับเลข</h3>
+
+      <p>สร้างเลขใหม่จากหลักที่หยิบออกมา ทุกครั้งที่ได้หลักใหม่ เลื่อนเลขเดิมไปทางซ้ายหนึ่งหลักด้วยการคูณ 10 แล้วบวกหลักใหม่ต่อท้าย เลขที่อ่านกลับหลังแล้วได้เลขเดิม เช่น 12321 เรียกว่า <strong>palindrome</strong></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="palindrome"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int original = n;
+    int reversed = 0;
+    while (n &gt; 0) {
+        reversed = reversed * 10 + n % 10;
+        n /= 10;
+    }
+    printf("reversed = %d\n", reversed);
+    if (reversed == original) {
+        printf("palindrome\n");
+    } else {
+        printf("not palindrome\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="palindrome" data-title="ข้อมูลเข้า"><pre><code>12321
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="palindrome" data-title="C:\code\palindrome.exe"><pre><code>reversed = 12321
+palindrome
+</code></pre></div>
+      </div>
+
+      <p>ลองป้อน 1230 จะได้ <code>reversed = 321</code> เพราะ 0 ที่ขึ้นหน้าไม่มีค่าเมื่อเป็นตัวเลข และต้องเก็บ <code>original</code> ไว้ก่อนเข้าลูปเพราะ <code>n</code> จะเหลือ 0</p>
+
+      <h2 id="divisors">หาตัวหาร</h2>
+
+      <p>ตัวหารของ n คือเลขที่หาร n ลงตัว วิธีตรงไปตรงมาคือลองทุกเลขตั้งแต่ 1 ถึง n แล้วดูว่า <code>n % i</code> เป็น 0 ไหม</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="divisors"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int count = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        if (n % i == 0) {
+            if (count &gt; 0) {
+                printf(" ");
+            }
+            printf("%d", i);
+            count++;
+        }
+    }
+    printf("\n");
+    printf("count = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="divisors" data-title="ข้อมูลเข้า"><pre><code>36
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="divisors" data-title="C:\code\divisors.exe"><pre><code>1 2 3 4 6 9 12 18 36
+count = 9
+</code></pre></div>
+      </div>
+
+      <p>ใช้ <code>count</code> เป็นตัวบอกว่าพิมพ์ตัวแรกไปหรือยัง ตามวิธีพิมพ์คั่นด้วยช่องว่างในหน้า 4.1</p>
+
+      <h2 id="prime">ตรวจจำนวนเฉพาะ</h2>
+
+      <p><strong>จำนวนเฉพาะ (prime)</strong> คือจำนวนเต็มที่มากกว่า 1 และมีตัวหารแค่ 1 กับตัวมันเอง เช่น 2 3 5 7 11 ตรวจได้ด้วยการลองหารด้วย 2 ถึง n - 1 ถ้ามีตัวไหนหารลงตัวก็ไม่ใช่จำนวนเฉพาะ และเจอตัวเดียวก็พอ ใช้ <code>break</code> ได้เลย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="prime"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int smallest = 0;
+    for (int i = 2; i &lt; n; i++) {
+        if (n % i == 0) {
+            smallest = i;
+            break;
+        }
+    }
+    if (n &lt; 2) {
+        printf("%d is not prime\n", n);
+    } else if (smallest == 0) {
+        printf("%d is prime\n", n);
+    } else {
+        printf("%d is not prime, divisible by %d\n", n, smallest);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="prime" data-title="ข้อมูลเข้า"><pre><code>91
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="prime" data-title="C:\code\prime.exe"><pre><code>91 is not prime, divisible by 7
+</code></pre></div>
+      </div>
+
+      <p><code>smallest</code> เป็นทั้ง flag และเก็บตัวหารที่เจอ ถ้ายังเป็น 0 แปลว่าไม่มีอะไรหารลงตัว ส่วนเงื่อนไข <code>n &lt; 2</code> แยกไว้เพราะ 0 กับ 1 ไม่ใช่จำนวนเฉพาะ แต่ลูปไม่ทำงานเลยสำหรับสองค่านี้ ถ้าไม่แยกจะตอบผิด</p>
+
+      <p>โปรแกรมนี้ถูก แต่ถ้า n เป็นจำนวนเฉพาะขนาดใหญ่ ลูปต้องวนเกือบ n รอบ เร็วพอไหม ต้องวัดดู</p>
+
+      <h2 id="measure">ลูปหนึ่งรอบใช้เวลาเท่าไร</h2>
+
+      <p>โจทย์แข่งขันทุกข้อมีเวลาจำกัด ส่วนใหญ่ 1 วินาที ถ้าโปรแกรมทำงานนานกว่านั้น grader จะตัดจบแล้วให้ผล Time Limit Exceeded แม้คำตอบจะถูก เราจึงต้องรู้ว่าใน 1 วินาทีคอมพิวเตอร์ทำได้กี่รอบ วิธีที่ดีที่สุดคือจับเวลาเอง</p>
+
+      <p>ไลบรารี <code>time.h</code> มีฟังก์ชัน <code>clock()</code> ทำหน้าที่เหมือนนาฬิกาจับเวลา เรียกก่อนและหลังส่วนที่อยากวัด แล้วเอามาลบกัน หารด้วย <code>CLOCKS_PER_SEC</code> ก็ได้เป็นวินาที ชนิด <code>clock_t</code> คือชนิดของค่าที่ <code>clock()</code> ส่งกลับ ตอนนี้ใช้ตามแบบไปก่อนได้</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    clock_t start = clock();
+    long long sum = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        sum += i;
+    }
+    clock_t end = clock();
+    printf("sum = %lld\n", sum);
+    printf("time = %.3f seconds\n", (double)(end - start) / CLOCKS_PER_SEC);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>100000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\speed.exe"><pre><code>sum = 5000000050000000
+time = 0.039 seconds
+</code></pre></div>
+      </div>
+
+      <p>เวลาขึ้นกับเครื่อง ผลข้างบนวัดบนเครื่องที่เขียนเอกสารนี้ คือโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 ระบบ Windows 11 เสียบสายชาร์จและตั้งโหมดพลังงานเป็น Balanced คอมไพล์ด้วย GCC 14.2 ที่มากับ Code::Blocks วัดสองแบบ</p>
+
+      <ul>
+        <li><strong>แบบ Code::Blocks</strong> กด <span class="keys"><kbd>F9</kbd></span> ตามปกติ ใช้ตัวเลือก <code>-Wall</code> อย่างเดียว compiler ไม่ได้ปรับโค้ดให้เร็ว</li>
+        <li><strong>แบบ -O2</strong> เพิ่มตัวเลือก <code>-O2</code> ที่สั่งให้ compiler ปรับโค้ดให้เร็วขึ้น ระบบตรวจของการแข่งขันมักคอมไพล์แบบนี้</li>
+      </ul>
+
+      <p>รันแบบละ 5 ครั้ง ตารางนี้เป็นค่ากลางของ 5 ครั้งนั้น แถวที่เป็น <code>n % i</code> คือเปลี่ยนตัวลูปเป็น <code>if (n % i == 0) count++;</code> ซึ่งต้องหารทุกรอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>งานในลูป</th><th>จำนวนรอบ</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>sum += i</code></td><td>10<sup>8</sup></td><td>0.039 วินาที</td><td>0.020 วินาที</td></tr>
+            <tr><td><code>sum += i</code></td><td>10<sup>9</sup></td><td>0.390 วินาที</td><td>0.209 วินาที</td></tr>
+            <tr><td><code>n % i</code></td><td>10<sup>8</sup></td><td>0.120 วินาที</td><td>0.122 วินาที</td></tr>
+            <tr><td><code>n % i</code></td><td>10<sup>9</sup></td><td>1.209 วินาที</td><td>1.199 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>อ่านตารางได้สามเรื่อง</p>
+
+      <ol>
+        <li><strong>บวก 10<sup>8</sup> ครั้งใช้ไม่ถึงหนึ่งในยี่สิบวินาที</strong> บนเครื่องนี้ เวลาโตตามจำนวนรอบตรงๆ รอบเพิ่ม 10 เท่า เวลาก็เพิ่มราว 10 เท่า</li>
+        <li><strong>งานในลูปมีผล</strong> การหาร (<code>%</code>) ช้ากว่าการบวกราว 3 เท่า ลูป 10<sup>9</sup> รอบที่มีการหารเกิน 1 วินาทีไปแล้ว แม้บนโน้ตบุ๊กที่ค่อนข้างใหม่</li>
+        <li><strong>-O2 ช่วยได้บางงาน</strong> ลูปบวกเร็วขึ้นเกือบเท่าตัว แต่ลูปที่มีการหารแทบไม่เปลี่ยน อย่าหวังให้ compiler ช่วยแก้วิธีที่ช้าเกินไป</li>
+      </ol>
+
+      <h2 id="estimate">ประมาณเวลาก่อนเขียน</h2>
+
+      <p>เครื่องของ grader เป็นเครื่องอะไร เร็วแค่ไหน เราไม่รู้ และลูปในโจทย์จริงมักทำงานหลายอย่างต่อรอบ มากกว่าบวกเลขตัวเดียว จึงควรเผื่อไว้มากๆ หลักที่ใช้กันในวงการแข่งขันคือ</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">เวลา 1 วินาที</p>
+        <p>ทำงานง่ายๆ ราว 10<sup>8</sup> รอบ ทันแน่นอน ราว 10<sup>9</sup> รอบ เสี่ยงมาก ขึ้นกับงานในลูปและเครื่อง 10<sup>10</sup> รอบขึ้นไป ไม่มีทางทัน</p>
+      </div>
+
+      <p>ตัวเลขนี้ตรงกับที่วัดได้ข้างบน 10<sup>8</sup> รอบเหลือเวลาเผื่ออีกมาก ส่วน 10<sup>9</sup> รอบที่มีการหารก็เกิน 1 วินาทีให้เห็นแล้ว วิธีใช้คือ ก่อนเขียนโค้ด ให้เอาขอบเขตในโจทย์มาคำนวณว่าลูปจะวนกี่รอบในกรณีที่แย่ที่สุด</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ขอบเขตในโจทย์</th><th>วิธี</th><th>จำนวนรอบที่แย่ที่สุด</th><th>ทันไหม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>N ≤ 10<sup>6</sup></td><td>อ่านข้อมูล N ตัว ลูปชั้นเดียว</td><td>10<sup>6</sup></td><td>ทันสบาย</td></tr>
+            <tr><td>N ≤ 10<sup>4</sup></td><td>ไล่ทุกคู่ ลูปซ้อนสองชั้น</td><td>ราว 5 × 10<sup>7</sup></td><td>ทัน</td></tr>
+            <tr><td>N ≤ 10<sup>5</sup></td><td>ไล่ทุกคู่ ลูปซ้อนสองชั้น</td><td>ราว 5 × 10<sup>9</sup></td><td>ไม่ทัน</td></tr>
+            <tr><td>N ≤ 10<sup>9</sup></td><td>ตรวจจำนวนเฉพาะด้วยการหาร 2 ถึง N - 1</td><td>10<sup>9</sup></td><td>ไม่ทัน</td></tr>
+            <tr><td>N ≤ 10<sup>12</sup></td><td>หาตัวหารด้วยการหาร 1 ถึง N</td><td>10<sup>12</sup></td><td>ไม่มีทาง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าคำนวณแล้วไม่ทัน อย่าเพิ่งเขียน ให้หาวิธีที่วนน้อยลงก่อน เรื่องการประมาณเวลาแบบละเอียดจะเรียนในบทที่ 18</p>
+
+      <h2 id="sqrt">หาตัวหารให้เร็วขึ้น</h2>
+
+      <p>ตัวหารมาเป็นคู่เสมอ ถ้า i หาร n ลงตัว n / i ก็หาร n ลงตัวด้วย เช่น 36 มีคู่ 1 กับ 36, 2 กับ 18, 3 กับ 12, 4 กับ 9 และ 6 กับ 6 ในแต่ละคู่ ตัวที่เล็กกว่าไม่มีทางเกิน √n เพราะถ้าทั้งสองตัวมากกว่า √n ผลคูณจะเกิน n จึงลองแค่ i ที่ <code>i * i &lt;= n</code> แล้วนับทั้ง i และคู่ของมัน ระวังกรณีที่ i กับ n / i เป็นเลขเดียวกัน อย่างคู่ 6 กับ 6 ต้องนับครั้งเดียว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="divisors-fast"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    long long n;
+    scanf("%lld", &amp;n);
+    int count = 0;
+    for (long long i = 1; i * i &lt;= n; i++) {
+        if (n % i == 0) {
+            count++;
+            if (i != n / i) {
+                count++;
+            }
+        }
+    }
+    printf("count = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="divisors-fast" data-title="ข้อมูลเข้า"><pre><code>1000000000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="divisors-fast" data-title="C:\code\divisors_fast.exe"><pre><code>count = 169
+</code></pre></div>
+      </div>
+
+      <p>n = 10<sup>12</sup> วิธีเดิมต้องวน 10<sup>12</sup> รอบ เทียบจากตารางข้างบนที่ลูปมีการหาร 10<sup>9</sup> รอบใช้ราว 1.2 วินาที 10<sup>12</sup> รอบก็ราว 1200 วินาที หรือ 20 นาที วิธีนี้วนแค่ 10<sup>6</sup> รอบ เสร็จทันที ตัวนับ <code>i</code> เป็น <code>long long</code> เพราะ n เกิน <code>int</code> และ <code>i * i</code> ต้องไม่ล้น</p>
+
+      <p>ตรวจจำนวนเฉพาะใช้เหตุผลเดียวกัน ถ้า n มีตัวหารอื่นนอกจาก 1 กับตัวเอง ต้องมีตัวหนึ่งที่ไม่เกิน √n แน่นอน ในโปรแกรม prime เปลี่ยนแค่บรรทัดที่ 8 เป็น</p>
+
+      <div class="code" data-lang="c"><pre><code>for (long long i = 2; i * i &lt;= n; i++) {
+</code></pre></div>
+
+      <p>จับเวลาลูปของโปรแกรม prime ทั้งสองแบบด้วย <code>clock()</code> บนเครื่องเดิม ป้อน 999999937 ซึ่งเป็นจำนวนเฉพาะ ลูปจึงวนจนสุดทาง ได้ค่ากลางของ 5 ครั้งดังนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เงื่อนไขลูป</th><th>จำนวนรอบ</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>i &lt; n</code></td><td>ราว 10<sup>9</sup></td><td>1.234 วินาที</td><td>1.231 วินาที</td></tr>
+            <tr><td><code>i * i &lt;= n</code></td><td>ราว 31623</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>0.000 ไม่ได้แปลว่าไม่ใช้เวลาเลย แต่น้อยกว่าที่ <code>clock()</code> วัดได้ แก้บรรทัดเดียว จากไม่ผ่านกลายเป็นผ่านสบาย นี่คือเหตุผลที่ต้องประมาณเวลาก่อนส่งทุกครั้ง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="one-is-prime">แบบที่ 1 ลืมว่า 1 ไม่ใช่จำนวนเฉพาะ</h3>
+
+      <p>ในโปรแกรม prime ตัดเงื่อนไข <code>n &lt; 2</code> ออก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="prime-one"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int smallest = 0;
+    for (int i = 2; i &lt; n; i++) {
+        if (n % i == 0) {
+            smallest = i;
+            break;
+        }
+    }
+    if (smallest == 0) {
+        printf("%d is prime\n", n);
+    } else {
+        printf("%d is not prime, divisible by %d\n", n, smallest);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="prime-one" data-title="ข้อมูลเข้า"><pre><code>1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="prime-one" data-title="C:\code\prime.exe"><pre><code>1 is prime
+</code></pre></div>
+      </div>
+
+      <p>n = 1 ลูปไม่ทำเลยเพราะ <code>2 &lt; 1</code> เป็นเท็จ <code>smallest</code> ยังเป็น 0 โปรแกรมจึงสรุปว่าไม่มีตัวหาร ทั้งที่ 1 ไม่ใช่จำนวนเฉพาะตามนิยาม ชุดทดสอบเรื่องจำนวนเฉพาะแทบทุกโจทย์มี 1 อยู่ด้วย</p>
+
+      <h3 id="start-zero">แบบที่ 2 เริ่มลองหารที่ 0</h3>
+
+      <p>ในโปรแกรม divisors เผลอเขียนลูปเริ่มที่ 0</p>
+
+      <div class="code" data-lang="c"><pre><code>for (int i = 0; i &lt;= n; i++) {
+    if (n % i == 0) {
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านไม่มีคำเตือน แต่รันแล้วโปรแกรมพังทันทีในรอบแรก เพราะ <code>n % 0</code> คือหารด้วยศูนย์ Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741676 (0xC0000094)
+</code></pre></div>
+
+      <p>เป็นรหัสเดียวกับหารด้วยศูนย์ในหน้า 1.2 ลูปที่ใช้ตัวนับเป็นตัวหาร ต้องเริ่มที่ 1 เสมอ</p>
+
+      <h3 id="square-overflow">แบบที่ 3 i * i ล้น int</h3>
+
+      <p>ถ้าในโปรแกรม prime เขียนเงื่อนไขเป็น <code>i * i &lt;= n</code> แต่ <code>i</code> ยังเป็น <code>int</code> จะใช้ได้กับ n ทั่วไป แต่ลองป้อน 2147483647 ซึ่งเป็นค่ามากสุดของ <code>int</code> และเป็นจำนวนเฉพาะ</p>
+
+      <p>พอ <code>i</code> ถึง 46341 ค่า <code>i * i</code> เกิน <code>int</code> แล้วกลายเป็นค่าติดลบ ซึ่งน้อยกว่า n เสมอ ลูปจึงไม่หยุดที่ √n แต่วนต่อไปจนถึง n เอง บนเครื่องที่เขียนเอกสารนี้ ลูปใช้เวลาราว 2.8 วินาทีเมื่อจับด้วย <code>clock()</code> แล้วโปรแกรมพิมพ์ <code>2147483647 is not prime, divisible by 2147483647</code> ผิดทั้งเวลาและคำตอบ ประกาศ <code>i</code> เป็น <code>long long</code> แบบในหัวข้อก่อนหน้าจะไม่มีปัญหานี้</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>แยกหลัก ใช้ <code>while (n &gt; 0)</code> กับ <code>% 10</code> และ <code>/= 10</code> ถ้าต้องนับ 0 เป็นหนึ่งหลัก ใช้ <code>do while</code></li>
+        <li>กลับเลข <code>reversed = reversed * 10 + n % 10</code> และเก็บเลขเดิมไว้ก่อนถ้าต้องใช้</li>
+        <li>จำนวนเฉพาะต้องมากกว่า 1 ลองหารตั้งแต่ 2 พอเจอตัวที่หารลงตัวก็ <code>break</code></li>
+        <li>บนเครื่องที่เขียนเอกสารนี้ บวก 10<sup>8</sup> ครั้งใช้ 0.039 วินาที แต่ลูป 10<sup>9</sup> รอบที่มีการหารใช้ 1.2 วินาที</li>
+        <li>วางแผนด้วยหลัก 1 วินาที ทำได้ราว 10<sup>8</sup> รอบ คำนวณจำนวนรอบจากขอบเขตโจทย์ก่อนเขียน</li>
+        <li>ตัวหารมาเป็นคู่ ลองแค่ <code>i * i &lt;= n</code> ก็พอ ลดจาก n รอบเหลือ √n รอบ</li>
+      </ul>
+
+      <p>กลับเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

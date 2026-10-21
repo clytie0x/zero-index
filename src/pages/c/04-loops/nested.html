@@ -1,0 +1,315 @@
+<article class="doc">
+      <h1>4.4 ลูปซ้อน</h1>
+
+      <p>ตัวลูปจะมีคำสั่งอะไรอยู่ข้างในก็ได้ รวมถึงลูปอีกตัว เรียกว่า <strong>ลูปซ้อน (nested loop)</strong> ใช้กับงานที่มีสองมิติ เช่น แถวกับคอลัมน์ของตาราง ทุกคู่ของนักเรียนในห้อง หรือรูปที่วาดด้วยดาว ในค่าย สอวน. จะได้ฝึกวาดรูปด้วยดาวหลายสิบแบบ เพราะเป็นวิธีที่ดีที่สุดในการฝึกคุมลูปให้แม่น นับผิดไปหนึ่งช่องก็เห็นทันทีในรูป</p>
+
+      <h2 id="rectangle">สี่เหลี่ยมดาว</h2>
+
+      <div class="code" data-lang="c" data-linenums data-test="rectangle"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int i = 1; i &lt;= rows; i++) {
+        for (int j = 1; j &lt;= cols; j++) {
+            printf("*");
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="rectangle" data-title="ข้อมูลเข้า"><pre><code>3 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="rectangle" data-title="C:\code\rectangle.exe"><pre><code>*****
+*****
+*****
+</code></pre></div>
+      </div>
+
+      <p>อ่านจากข้างนอกเข้าข้างใน ลูป <code>i</code> ข้างนอกคุมแถว ทำ 3 รอบ ในแต่ละรอบของ <code>i</code> ลูป <code>j</code> ข้างในทำ<strong>ครบทุกรอบ</strong>ก่อน คือพิมพ์ดาว 5 ดวงติดกัน แล้วค่อยออกมาพิมพ์ <code>\n</code> ขึ้นบรรทัดใหม่ จากนั้น <code>i</code> ถึงจะเพิ่มเป็นรอบถัดไป และ <code>j</code> เริ่มนับ 1 ใหม่</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>i</th><th>j ที่ลูปข้างในวิ่งผ่าน</th><th>หลังลูปข้างในจบ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>1 2 3 4 5 (พิมพ์ดาว 5 ดวง)</td><td>ขึ้นบรรทัดใหม่</td></tr>
+            <tr><td>2</td><td>1 2 3 4 5</td><td>ขึ้นบรรทัดใหม่</td></tr>
+            <tr><td>3</td><td>1 2 3 4 5</td><td>ขึ้นบรรทัดใหม่</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คำสั่ง <code>printf("*")</code> จึงทำทั้งหมด 3 × 5 = 15 ครั้ง ลูปซ้อนสองชั้นทำงานเท่ากับจำนวนรอบข้างนอก<strong>คูณ</strong>จำนวนรอบข้างใน ตัวเลขนี้สำคัญมากตอนประมาณเวลาในหน้า 4.5</p>
+
+      <p>ตั้งชื่อตัวนับลูปข้างในว่า <code>j</code> เป็นธรรมเนียมเหมือน <code>i</code> ถ้าซ้อนสามชั้นก็ใช้ <code>k</code> ต่อ</p>
+
+      <h2 id="table">ตารางสูตรคูณ</h2>
+
+      <p>แถวที่ i คอลัมน์ที่ j ใส่ผลคูณ i × j ใช้ <code>%4d</code> จากบทที่ 2 จองที่ตัวเลขละ 4 ช่อง ตัวเลขจะเรียงตรงเป็นคอลัมน์ไม่ว่ามีกี่หลัก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="times"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= n; j++) {
+            printf("%4d", i * j);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="times" data-title="ข้อมูลเข้า"><pre><code>6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="times" data-title="C:\code\times.exe"><pre><code>   1   2   3   4   5   6
+   2   4   6   8  10  12
+   3   6   9  12  15  18
+   4   8  12  16  20  24
+   5  10  15  20  25  30
+   6  12  18  24  30  36
+</code></pre></div>
+      </div>
+
+      <p>โครงเหมือนสี่เหลี่ยมดาวทุกอย่าง เปลี่ยนแค่สิ่งที่พิมพ์ในลูปข้างใน จาก <code>*</code> เป็นตัวเลขที่คำนวณจาก <code>i</code> กับ <code>j</code> รูปแบบนี้ใช้กับงานตารางได้ทุกแบบ</p>
+
+      <h2 id="triangle">สามเหลี่ยม ลูปข้างในขึ้นกับลูปข้างนอก</h2>
+
+      <p>ในสี่เหลี่ยม ทุกแถวมีดาวเท่ากัน แต่ในสามเหลี่ยม แถวที่ 1 มี 1 ดวง แถวที่ 2 มี 2 ดวง แถวที่ i มี i ดวง ขอบเขตของลูปข้างในจึงเป็น <code>i</code> แทนที่จะเป็นตัวเลขคงที่</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="triangle"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= i; j++) {
+            printf("*");
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="triangle" data-title="ข้อมูลเข้า"><pre><code>4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="triangle" data-title="C:\code\triangle.exe"><pre><code>*
+**
+***
+****
+</code></pre></div>
+      </div>
+
+      <h2 id="pyramid">พีระมิด หาสูตรจากตาราง</h2>
+
+      <p>รูปที่ซับซ้อนขึ้น อย่าเดาสูตร ให้เขียนตารางว่าแต่ละแถวมีอะไรกี่ตัว แล้วหาความสัมพันธ์กับเลขแถว พีระมิดสูง 4 แถวหน้าตาแบบนี้ (ใช้จุดแทนช่องว่างให้มองเห็น)</p>
+
+      <div class="code" data-lang="text"><pre><code>...*
+..***
+.*****
+*******
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>แถว i</th><th>ช่องว่าง</th><th>ดาว</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>3</td><td>1</td></tr>
+            <tr><td>2</td><td>2</td><td>3</td></tr>
+            <tr><td>3</td><td>1</td><td>5</td></tr>
+            <tr><td>4</td><td>0</td><td>7</td></tr>
+            <tr><td>i</td><td>n - i</td><td>2i - 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ช่องว่างลดทีละ 1 จาก n - 1 จึงเป็น n - i ส่วนดาวเพิ่มทีละ 2 เริ่มจาก 1 จึงเป็น 2i - 1 ได้สูตรแล้วแต่ละแถวก็คือลูปข้างในสองตัวต่อกัน ตัวแรกพิมพ์ช่องว่าง ตัวที่สองพิมพ์ดาว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="pyramid"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= n - i; j++) {
+            printf(" ");
+        }
+        for (int j = 1; j &lt;= 2 * i - 1; j++) {
+            printf("*");
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="pyramid" data-title="ข้อมูลเข้า"><pre><code>4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="pyramid" data-title="C:\code\pyramid.exe"><pre><code>   *
+  ***
+ *****
+*******
+</code></pre></div>
+      </div>
+
+      <p>ลูปข้างในสองตัวใช้ชื่อ <code>j</code> ซ้ำกันได้ เพราะ <code>j</code> ของลูปแรกหายไปแล้วตอนลูปแรกจบ ตามที่เห็นในหน้า 4.1 สังเกตด้วยว่าเราไม่พิมพ์ช่องว่างหลังดาว เพราะมองไม่เห็นและไม่จำเป็น</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">ตรวจสูตรด้วยแถวแรกและแถวสุดท้าย</p>
+        <p>ได้สูตรแล้วแทนค่าแถวแรกกับแถวสุดท้ายเสมอ แถว 1 ได้ช่องว่าง 4 - 1 = 3 ดาว 2 × 1 - 1 = 1 ตรงกับรูป แถว 4 ได้ช่องว่าง 0 ดาว 7 ตรงอีก ถ้าสองแถวนี้ถูก แถวกลางมักถูกด้วย</p>
+      </div>
+
+      <h2 id="pairs">ทุกคู่ที่เป็นไปได้</h2>
+
+      <p>ลูปซ้อนไม่ได้มีไว้วาดรูปอย่างเดียว ใช้ไล่ "ทุกคู่" ได้ด้วย เช่น ในห้องมีนักเรียน n คน ทุกคนจับมือกับทุกคนคนละหนึ่งครั้ง มีการจับมือกี่ครั้ง ถ้าให้ลูปข้างในเริ่มที่ <code>i + 1</code> จะได้แต่ละคู่ครั้งเดียว ไม่นับคนจับมือกับตัวเอง และไม่นับคู่ 2 กับ 1 ซ้ำกับคู่ 1 กับ 2</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="handshakes"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int count = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = i + 1; j &lt;= n; j++) {
+            printf("%d-%d\n", i, j);
+            count++;
+        }
+    }
+    printf("handshakes = %d\n", count);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="handshakes" data-title="ข้อมูลเข้า"><pre><code>4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="handshakes" data-title="C:\code\handshakes.exe"><pre><code>1-2
+1-3
+1-4
+2-3
+2-4
+3-4
+handshakes = 6
+</code></pre></div>
+      </div>
+
+      <p>คนที่ 1 จับมือ 3 คน คนที่ 2 จับมือเพิ่มอีก 2 คน คนที่ 3 อีก 1 คน คนที่ 4 ไม่เหลือใครแล้ว รวม 3 + 2 + 1 = 6 ทั่วไปคือ n(n - 1) / 2 ครั้ง ถ้า n เป็นแสน ลูปข้างในจะทำงานราว 5 × 10<sup>9</sup> ครั้ง หน้า 4.5 จะวัดให้ดูว่านั่นนานเกินไปแค่ไหน</p>
+
+      <h2 id="break-inner">break ในลูปซ้อน</h2>
+
+      <div class="code" data-lang="c" data-linenums data-test="break-inner"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    for (int i = 1; i &lt;= 3; i++) {
+        for (int j = 1; j &lt;= 3; j++) {
+            if (j == 2) {
+                break;
+            }
+            printf("i = %d, j = %d\n", i, j);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="break-inner" data-title="C:\code\break_inner.exe"><pre><code>i = 1, j = 1
+i = 2, j = 1
+i = 3, j = 1
+</code></pre></div>
+
+      <p><code>break</code> ออกจากลูปที่อยู่ใกล้มันที่สุดชั้นเดียว คือลูป <code>j</code> ลูป <code>i</code> ยังวนต่อครบ 3 รอบ ถ้าอยากออกจากลูปทั้งสองชั้น ต้องมี flag แบบในหน้า 4.3 แล้วตรวจ flag เพื่อ <code>break</code> ลูปข้างนอกอีกที</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="same-counter">แบบที่ 1 ใช้ตัวนับตัวเดียวกันทั้งสองชั้น</h3>
+
+      <p>เขียนสี่เหลี่ยม 3 × 4 โดยประกาศ <code>i</code> ไว้ข้างนอก แล้วเผลอใช้ <code>i</code> ในลูปข้างในด้วย</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="same-counter"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int i;
+    for (i = 1; i &lt;= 3; i++) {
+        for (i = 1; i &lt;= 4; i++) {
+            printf("*");
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="same-counter" data-title="C:\code\same_counter.exe"><pre><code>****
+</code></pre></div>
+
+      <p>ได้แถวเดียว compiler ไม่เตือน ลูปข้างในจบโดยทิ้ง <code>i</code> ไว้ที่ 5 กลับไปที่ลูปข้างนอก <code>i++</code> ได้ 6 ซึ่งเกิน 3 ลูปข้างนอกเลยจบ ถ้าเปลี่ยนเป็นลูปข้างนอก 5 รอบ ลูปข้างใน 3 รอบ ผลจะร้ายกว่านี้ ลูปข้างในทิ้ง <code>i</code> ไว้ที่ 4 ข้างนอกบวกเป็น 5 ซึ่งยังไม่เกิน 5 ลูปข้างในก็ตั้ง <code>i</code> กลับเป็น 1 อีก วนแบบนี้ไม่จบ พิมพ์ <code>***</code> ไปเรื่อยๆ ให้ประกาศตัวนับในวงเล็บของ <code>for</code> แต่ละตัว แบบ <code>for (int j = 1; ...)</code> จะพลาดแบบนี้ยากขึ้น</p>
+
+      <h3 id="newline-inside">แบบที่ 2 ขึ้นบรรทัดใหม่ผิดชั้น</h3>
+
+      <p>ในโปรแกรม rectangle ย้าย <code>printf("\n");</code> เข้าไปอยู่ในลูป <code>j</code> หลัง <code>printf("*");</code> แล้วป้อน <code>2 3</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="newline-inside"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int rows, cols;
+    scanf("%d %d", &amp;rows, &amp;cols);
+    for (int i = 1; i &lt;= rows; i++) {
+        for (int j = 1; j &lt;= cols; j++) {
+            printf("*");
+            printf("\n");
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="newline-inside" data-title="ข้อมูลเข้า"><pre><code>2 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="newline-inside" data-title="C:\code\rectangle.exe"><pre><code>*
+*
+*
+*
+*
+*
+</code></pre></div>
+      </div>
+
+      <p>ดาว 6 ดวงครบ แต่อยู่คนละบรรทัดหมด เพราะขึ้นบรรทัดใหม่หลังดาวทุกดวง ถามตัวเองทุกครั้งว่าคำสั่งนี้ต้องทำ<strong>ทุกช่อง</strong> (อยู่ในลูปข้างใน) หรือ<strong>ทุกแถว</strong> (อยู่ในลูปข้างนอก หลังลูปข้างในจบ)</p>
+
+      <h3 id="wrong-bound">แบบที่ 3 ขอบเขตลูปข้างในผิดตัว</h3>
+
+      <p>ในโปรแกรม triangle เขียนเงื่อนไขลูปข้างในเป็น <code>j &lt;= n</code> แทน <code>j &lt;= i</code> ป้อน 4 แล้วจะได้สี่เหลี่ยม 4 × 4 แทนสามเหลี่ยม เพราะทุกแถวพิมพ์ n ดวงเท่ากันหมด ถ้ารูปที่ได้ถูกจำนวนแถวแต่รูปร่างผิด ให้ดูขอบเขตของลูปข้างในก่อน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ลูปข้างในวิ่งครบทุกรอบ ต่อหนึ่งรอบของลูปข้างนอก จำนวนครั้งรวมคือผลคูณของจำนวนรอบทั้งสองชั้น</li>
+        <li>งานตาราง ลูปข้างนอกคุมแถว ลูปข้างในคุมคอลัมน์ <code>\n</code> อยู่หลังลูปข้างใน</li>
+        <li>รูปทรงที่แต่ละแถวไม่เท่ากัน ให้ขอบเขตลูปข้างในขึ้นกับ <code>i</code></li>
+        <li>รูปซับซ้อน เขียนตารางแถว ช่องว่าง ดาว หาสูตร แล้วตรวจกับแถวแรกและแถวสุดท้าย</li>
+        <li>ไล่ทุกคู่ไม่ซ้ำ ให้ลูปข้างในเริ่มที่ <code>i + 1</code></li>
+        <li><code>break</code> ออกได้แค่ชั้นเดียว และอย่าใช้ตัวนับตัวเดียวกันในสองชั้น</li>
+      </ul>
+    </article>

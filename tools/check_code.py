@@ -10,7 +10,7 @@
    ใส่ data-allow-warnings ถ้าตั้งใจให้ตัวอย่างนั้นมีคำเตือน
    ทุกตัวอย่างรันสองแบบ แบบตัวตรวจ และแบบที่ Code::Blocks ใช้จริง ต้องได้ผลตรงทั้งคู่
 2. แบบฝึกหัดใน src/exercises เฉลยทุกไฟล์ (solution*) ต้องผ่านชุดทดสอบทุกชุด
-   วิธีช้า (naive*) ต้องผ่านทุกชุดที่ชื่อไม่มีคำว่า big
+   วิธีช้า (naive*) ต้องผ่านทุกชุดที่ชื่อไม่ได้ขึ้นต้นด้วย big
 
 คอมไพล์ด้วย -Wall -Wextra และถือว่าคำเตือนคือข้อผิดพลาด เพราะเอกสารสอนให้น้องเปิด -Wall
 เลือก compiler ได้ด้วยตัวแปร ZI_GCC และ ZI_GXX (ค่าเริ่มต้น gcc และ g++)
@@ -132,8 +132,8 @@ def check_solution(workdir: Path, rel: str, sol: Path, tests: list[Path]) -> lis
     if exe is None:
         return [f"แบบฝึกหัด {rel}/{sol.name} คอมไพล์ไม่ผ่าน\n{err}"]
     for t in tests:
-        # วิธีช้าตรวจเฉพาะชุดเล็ก ชุดที่ชื่อมีคำว่า big ตั้งใจให้วิธีช้าไม่ทัน
-        if sol.stem.startswith("naive") and "big" in t.stem:
+        # วิธีช้าตรวจเฉพาะชุดเล็ก ชุดที่ชื่อขึ้นต้นด้วย big ตั้งใจให้วิธีช้าไม่ทัน
+        if sol.stem.startswith("naive") and t.stem.startswith("big"):
             continue
         ans = t.with_suffix(".out")
         if not ans.exists():

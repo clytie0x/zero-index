@@ -1,0 +1,433 @@
+<article class="doc">
+      <h1>4.1 while และ for</h1>
+
+      <p>ถ้าโจทย์ให้พิมพ์เลข 1 ถึง 5 เขียน <code>printf</code> ห้าบรรทัดก็เสร็จ แต่ถ้าให้พิมพ์ 1 ถึง N โดย N มาจากข้อมูลเข้า และอาจใหญ่ถึงหนึ่งล้าน เขียนทีละบรรทัดไม่ได้แล้ว เราต้องสั่งให้คอมพิวเตอร์ทำคำสั่งชุดเดิมซ้ำหลายรอบ เรียกว่า <strong>วนซ้ำ (loop)</strong> หน้านี้รู้จักคำสั่งวนซ้ำทั้งสามแบบของภาษา C และวิธีเลือกใช้</p>
+
+      <h2 id="while">while ทำซ้ำตราบที่เงื่อนไขยังจริง</h2>
+
+      <div class="code" data-lang="text"><pre><code>while (เงื่อนไข) {
+    คำสั่งที่ต้องการทำซ้ำ
+}
+</code></pre></div>
+
+      <p><code>while</code> แปลว่า "ตราบใดที่" ก่อนเริ่มแต่ละรอบ โปรแกรมจะตรวจเงื่อนไขในวงเล็บแบบเดียวกับ <code>if</code> ในบทที่ 3 ถ้าจริงก็ทำคำสั่งในปีกกาหนึ่งรอบ แล้วกลับขึ้นไปตรวจใหม่ ถ้าเท็จก็ข้ามปีกกาไปทำบรรทัดถัดไปเลย คำสั่งที่อยู่ในปีกกาเรียกว่า <strong>ตัวลูป (loop body)</strong></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="count"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int i = 1;
+    while (i &lt;= 5) {
+        printf("%d\n", i);
+        i++;
+    }
+    printf("done\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="count" data-title="C:\code\count.exe"><pre><code>1
+2
+3
+4
+5
+done
+</code></pre></div>
+
+      <p>ไล่ทีละรอบด้วยตารางแบบนี้ เวลาลูปทำงานไม่ตรงที่คิด ให้เขียนตารางนี้บนกระดาษ จะเห็นจุดผิดเร็วกว่านั่งจ้องโค้ด</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>รอบ</th><th>ค่า i ตอนตรวจ</th><th><code>i &lt;= 5</code></th><th>สิ่งที่เกิดขึ้น</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>1</td><td>จริง</td><td>พิมพ์ 1 แล้ว i เป็น 2</td></tr>
+            <tr><td>2</td><td>2</td><td>จริง</td><td>พิมพ์ 2 แล้ว i เป็น 3</td></tr>
+            <tr><td>3</td><td>3</td><td>จริง</td><td>พิมพ์ 3 แล้ว i เป็น 4</td></tr>
+            <tr><td>4</td><td>4</td><td>จริง</td><td>พิมพ์ 4 แล้ว i เป็น 5</td></tr>
+            <tr><td>5</td><td>5</td><td>จริง</td><td>พิมพ์ 5 แล้ว i เป็น 6</td></tr>
+            <tr><td></td><td>6</td><td>เท็จ</td><td>ออกจากลูป ไปพิมพ์ done</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ลูปที่นับรอบแบบนี้มีสามส่วนเสมอ ขาดส่วนไหนไปลูปจะพัง</p>
+
+      <ol>
+        <li><strong>ค่าเริ่มต้น</strong> <code>int i = 1;</code> ตั้งตัวนับก่อนเข้าลูป</li>
+        <li><strong>เงื่อนไข</strong> <code>i &lt;= 5</code> บอกว่าจะทำต่อไปถึงเมื่อไร</li>
+        <li><strong>การเปลี่ยนค่า</strong> <code>i++;</code> ทำให้ตัวนับเดินหน้า จนวันหนึ่งเงื่อนไขกลายเป็นเท็จ</li>
+      </ol>
+
+      <p>ตัวนับรอบนิยมตั้งชื่อว่า <code>i</code> ซึ่งเป็นข้อยกเว้นของกฎตั้งชื่อให้อ่านรู้เรื่อง เพราะทุกคนในวงการรู้ว่า <code>i</code> คือตัวนับ ถ้าตัวนับมีความหมายชัด เช่นเป็นรอบที่วิ่ง ตั้งชื่อตามความหมายจะดีกว่า</p>
+
+      <p>คราวนี้รับจำนวนรอบจากข้อมูลเข้า น้องวิ่งรอบสนาม N รอบ ให้พิมพ์บันทึกทุกรอบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="laps"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int lap = 1;
+    while (lap &lt;= n) {
+        printf("lap %d done\n", lap);
+        lap++;
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="laps" data-title="ข้อมูลเข้า"><pre><code>3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="laps" data-title="C:\code\laps.exe"><pre><code>lap 1 done
+lap 2 done
+lap 3 done
+</code></pre></div>
+      </div>
+
+      <p>ลองป้อน 0 ดู เงื่อนไข <code>1 &lt;= 0</code> เป็นเท็จตั้งแต่ครั้งแรก ตัวลูปจึงไม่ทำเลยสักรอบ และโปรแกรมไม่พิมพ์อะไรออกมา ซึ่งถูกต้องแล้ว วิ่ง 0 รอบก็ไม่มีบันทึก</p>
+
+      <h2 id="for">for รวมสามส่วนไว้บรรทัดเดียว</h2>
+
+      <p>ลูปนับรอบเจอบ่อยมาก ภาษา C จึงมี <code>for</code> ที่เอาค่าเริ่มต้น เงื่อนไข และการเปลี่ยนค่า มาไว้ในวงเล็บเดียว คั่นด้วย <code>;</code> โปรแกรมนี้ทำงานเหมือนโปรแกรม count ข้างบนทุกขั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="count-for"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    for (int i = 1; i &lt;= 5; i++) {
+        printf("%d\n", i);
+    }
+    printf("done\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="count-for" data-title="C:\code\count_for.exe"><pre><code>1
+2
+3
+4
+5
+done
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ส่วน</th><th>ในตัวอย่าง</th><th>ทำเมื่อไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ค่าเริ่มต้น</td><td><code>int i = 1</code></td><td>ครั้งเดียว ก่อนเริ่มลูป</td></tr>
+            <tr><td>เงื่อนไข</td><td><code>i &lt;= 5</code></td><td>ก่อนเริ่มทุกรอบ เท็จเมื่อไรออกจากลูป</td></tr>
+            <tr><td>การเปลี่ยนค่า</td><td><code>i++</code></td><td>หลังทำตัวลูปจบแต่ละรอบ แล้วค่อยไปตรวจเงื่อนไขใหม่</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 560 270" width="560" style="max-width:100%;height:auto" role="img" aria-label="ลำดับการทำงานของ for เริ่มจาก int i = 1 ไปตรวจ i น้อยกว่าหรือเท่ากับ 5 ถ้าจริงทำ printf แล้วทำ i++ แล้วกลับไปตรวจเงื่อนไขใหม่ ถ้าเท็จออกจากลูป">
+          <defs>
+            <marker id="flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" style="fill:var(--muted)"/>
+            </marker>
+          </defs>
+          <g style="stroke:var(--muted);stroke-width:2;fill:none">
+            <path d="M240 46V70" marker-end="url(#flow-arrow)"/>
+            <path d="M310 112H378" marker-end="url(#flow-arrow)"/>
+            <path d="M455 130V178" marker-end="url(#flow-arrow)"/>
+            <path d="M380 198H240V154" marker-end="url(#flow-arrow)"/>
+            <path d="M170 112H70V224" marker-end="url(#flow-arrow)"/>
+          </g>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+            <rect x="170" y="10" width="140" height="36" rx="8"/>
+            <path d="M240 72L310 112L240 152L170 112Z"/>
+            <rect x="380" y="94" width="150" height="36" rx="8"/>
+            <rect x="380" y="180" width="150" height="36" rx="8"/>
+          </g>
+          <rect x="10" y="226" width="120" height="36" rx="8" style="fill:none;stroke:var(--line-strong);stroke-width:2"/>
+          <g style="font-family:var(--font-code);font-size:15px;fill:var(--ink)" text-anchor="middle">
+            <text x="240" y="33">int i = 1</text>
+            <text x="240" y="117">i &lt;= 5</text>
+            <text x="455" y="117">printf</text>
+            <text x="455" y="203">i++</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--muted)" text-anchor="middle">
+            <text x="344" y="104">จริง</text>
+            <text x="120" y="104">เท็จ</text>
+            <text x="70" y="249" style="fill:var(--ink)">ออกจากลูป</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>จะเขียนลูปนับรอบด้วย <code>while</code> หรือ <code>for</code> ก็ได้ผลเหมือนกัน แต่ <code>for</code> ช่วยกันลืม เพราะทั้งสามส่วนอยู่ในที่เดียว มองบรรทัดเดียวก็รู้ว่าลูปนี้นับจากไหนถึงไหน</p>
+
+      <h3 id="count-down">นับถอยหลังและนับข้าม</h3>
+
+      <p>ส่วนเปลี่ยนค่าไม่จำเป็นต้องเป็น <code>i++</code> เสมอ จะลดค่าหรือเพิ่มทีละหลายๆ ก็ได้ ขอแค่สุดท้ายเงื่อนไขกลายเป็นเท็จ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="steps"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    for (int i = 5; i &gt;= 1; i--) {
+        printf("%d\n", i);
+    }
+    printf("go\n");
+    for (int floor = 0; floor &lt;= 20; floor += 5) {
+        printf("floor %d\n", floor);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="steps" data-title="C:\code\steps.exe"><pre><code>5
+4
+3
+2
+1
+go
+floor 0
+floor 5
+floor 10
+floor 15
+floor 20
+</code></pre></div>
+
+      <p>ลูปแรกนับถอยหลัง เริ่มที่ 5 ลดทีละ 1 จนเงื่อนไข <code>i &gt;= 1</code> เป็นเท็จตอน i เป็น 0 ลูปที่สองเหมือนลิฟต์ที่จอดทุก 5 ชั้น <code>floor += 5</code> เพิ่มทีละ 5</p>
+
+      <h3 id="spaces">พิมพ์ในบรรทัดเดียวคั่นด้วยช่องว่าง</h3>
+
+      <p>โจทย์มักสั่งให้พิมพ์ตัวเลขหลายตัวในบรรทัดเดียว คั่นด้วยช่องว่างหนึ่งช่อง ถ้าเขียน <code>printf("%d ", i)</code> จะมีช่องว่างเกินท้ายบรรทัด ซึ่งมองไม่เห็นด้วยตา แต่ถ้า grader ของข้อนั้นเทียบทุกตัวอักษรก็ผิดได้ วิธีที่ปลอดภัยคือพิมพ์ช่องว่าง <strong>ก่อน</strong> ตัวเลข ยกเว้นตัวแรก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="even"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 2; i &lt;= n; i += 2) {
+        if (i &gt; 2) {
+            printf(" ");
+        }
+        printf("%d", i);
+    }
+    printf("\n");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="even" data-title="ข้อมูลเข้า"><pre><code>11
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="even" data-title="C:\code\even.exe"><pre><code>2 4 6 8 10
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรมนี้พิมพ์เลขคู่ตั้งแต่ 2 ถึง n ตัวเลขตัวแรกคือ 2 จึงพิมพ์ช่องว่างก่อนตัวเลขเฉพาะเมื่อ <code>i &gt; 2</code> ส่วน <code>\n</code> อยู่นอกลูป พิมพ์ครั้งเดียวหลังจบ</p>
+
+      <h2 id="do-while">do while ทำก่อน ค่อยตรวจ</h2>
+
+      <p><code>while</code> กับ <code>for</code> ตรวจเงื่อนไขก่อนเริ่มรอบ ตัวลูปจึงอาจไม่ทำเลยสักรอบ แต่บางงานต้องทำอย่างน้อยหนึ่งครั้งก่อนถึงจะรู้ว่าควรทำต่อไหม เช่น รับคะแนนจากผู้ใช้ ต้องรับมาก่อนถึงจะตรวจได้ว่าคะแนนอยู่ระหว่าง 0 ถึง 100 หรือเปล่า ถ้าไม่อยู่ให้รับใหม่</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="valid-score"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score;
+    int tries = 0;
+    do {
+        scanf("%d", &amp;score);
+        tries++;
+    } while (score &lt; 0 || score &gt; 100);
+    printf("score = %d after %d tries\n", score, tries);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="valid-score" data-title="ข้อมูลเข้า"><pre><code>-5 120 85
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="valid-score" data-title="C:\code\valid_score.exe"><pre><code>score = 85 after 3 tries
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>do</code> แปลว่าทำ ตัวลูปทำหนึ่งรอบก่อน แล้วค่อยตรวจเงื่อนไขหลัง <code>while</code> จริงก็วนกลับไปทำใหม่ เท็จก็ออก</li>
+        <li>รอบแรกได้ -5 ซึ่งน้อยกว่า 0 จึงรับใหม่ รอบสองได้ 120 มากกว่า 100 รับใหม่อีก รอบสามได้ 85 เงื่อนไขเป็นเท็จ ออกจากลูป</li>
+        <li><strong>ต้องมี <code>;</code> หลังวงเล็บของ <code>while</code></strong> ใน do while เสมอ ต่างจาก <code>while</code> ธรรมดาที่ห้ามใส่</li>
+      </ul>
+
+      <h2 id="choose">เลือกแบบไหนดี</h2>
+
+      <p>ทั้งสามแบบเขียนแทนกันได้หมด แต่เลือกให้ตรงกับงานแล้วโค้ดจะอ่านง่ายและผิดยากกว่า</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ลักษณะงาน</th><th>ใช้</th><th>ตัวอย่าง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>รู้จำนวนรอบก่อนเริ่ม</td><td><code>for</code></td><td>รับคะแนน N คน พิมพ์ 1 ถึง N วาดรูปกว้าง N ช่อง</td></tr>
+            <tr><td>ไม่รู้จำนวนรอบ หยุดเมื่อเงื่อนไขบางอย่างเกิดขึ้น</td><td><code>while</code></td><td>หารเลขด้วย 10 ไปเรื่อยๆ จนเหลือ 0 รับข้อมูลจนหมด</td></tr>
+            <tr><td>ต้องทำอย่างน้อยหนึ่งครั้งก่อนจะรู้ว่าทำต่อไหม</td><td><code>do while</code></td><td>รับค่าจนกว่าจะถูกเงื่อนไข นับหลักของตัวเลขที่อาจเป็น 0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ในโจทย์แข่งขัน <code>for</code> ใช้บ่อยที่สุด รองลงมาคือ <code>while</code> ส่วน <code>do while</code> นานๆ ใช้ที ตัวอย่างนับหลักของตัวเลขจะได้เห็นในหน้า 4.5</p>
+
+      <h2 id="infinite">ลูปไม่รู้จบ</h2>
+
+      <p>ถ้าเงื่อนไขไม่มีวันเป็นเท็จ ลูปจะวนไปเรื่อยๆ ไม่จบ เรียกว่า <strong>ลูปไม่รู้จบ (infinite loop)</strong> สาเหตุที่เจอบ่อยที่สุดคือลืมเปลี่ยนค่าตัวนับ เช่นโปรแกรม forever.c ที่ตัดมาให้ดูเฉพาะส่วนใน <code>main</code></p>
+
+      <div class="code" data-lang="c"><pre><code>int i = 1;
+while (i &lt;= 5) {
+    printf("%d\n", i);
+}
+</code></pre></div>
+
+      <p>ไม่มี <code>i++</code> ค่า i จึงเป็น 1 ตลอดไป เงื่อนไขจริงทุกรอบ อาการที่เห็นมีสองแบบ</p>
+
+      <ul>
+        <li><strong>ตัวหนังสือไหลไม่หยุด</strong> โปรแกรมนี้พิมพ์เลข 1 ซ้ำๆ จนเต็มหน้าต่างและเลื่อนไปเรื่อยๆ</li>
+        <li><strong>หน้าต่างดำนิ่ง ไม่มีอะไรขึ้น</strong> ถ้าในลูปไม่มี <code>printf</code> โปรแกรมจะคำนวณวนอยู่เงียบๆ ไม่มีบรรทัด Process returned ขึ้นมาสักที พัดลมเครื่องอาจเริ่มดัง</li>
+      </ul>
+
+      <p>หน้าต่างดำที่นิ่งอาจไม่ใช่ลูปไม่รู้จบก็ได้ ถ้าโปรแกรมมี <code>scanf</code> มันอาจกำลังรอให้น้องพิมพ์ข้อมูลอยู่ ลองพิมพ์ข้อมูลแล้วกด <span class="keys"><kbd>Enter</kbd></span> ก่อน ถ้ายังนิ่งอยู่ค่อยสงสัยลูป</p>
+
+      <p>วิธีหยุดโปรแกรมที่ค้างใน Code::Blocks เลือกได้สามทาง</p>
+
+      <ol>
+        <li>คลิกที่หน้าต่างดำ แล้วกด <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>C</kbd></span></li>
+        <li>กดปุ่มกากบาทปิดหน้าต่างดำ</li>
+        <li>ใน Code::Blocks เลือกเมนู Build แล้วเลือก Abort หรือกดปุ่ม Abort บนแถบเครื่องมือ ซึ่งจะกดได้เฉพาะตอนที่โปรแกรมกำลังทำงาน</li>
+      </ol>
+
+      <p>ถ้าลืมหยุดโปรแกรมเก่า แก้โค้ดแล้วคอมไพล์ใหม่เลย จะได้ข้อความแบบนี้ (ตัด path ยาวๆ หน้า <code>ld.exe</code> ออกแล้ว)</p>
+
+      <div class="code" data-lang="gcc"><pre><code>ld.exe: cannot open output file forever.exe: Permission denied
+collect2.exe: error: ld returned 1 exit status
+</code></pre></div>
+
+      <p><code>ld</code> คือส่วนที่ประกอบไฟล์ <code>.exe</code> ขั้นสุดท้าย มันเขียนทับ <code>forever.exe</code> ไม่ได้เพราะไฟล์นั้นยังทำงานค้างอยู่ หยุดโปรแกรมเก่าก่อนแล้วคอมไพล์ใหม่ก็หาย ส่วนใน grader ลูปไม่รู้จบจะทำงานจนเกินเวลาที่โจทย์กำหนด แล้วได้ผลตรวจว่า Time Limit Exceeded</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="semicolon">แบบที่ 1 ใส่ <code>;</code> ท้าย for</h3>
+
+      <div class="code" data-lang="c" data-linenums data-test="semicolon" data-allow-warnings><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int i;
+    for (i = 1; i &lt;= 5; i++);
+    {
+        printf("%d\n", i);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>semicolon.c:6:5: warning: this 'for' clause does not guard... [-Wmisleading-indentation]
+    6 |     for (i = 1; i &lt;= 5; i++);
+      |     ^~~
+semicolon.c:7:5: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'for'
+    7 |     {
+      |     ^
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="semicolon" data-title="C:\code\semicolon.exe"><pre><code>6
+</code></pre></div>
+
+      <p><code>;</code> ท้ายบรรทัดที่ 6 คือคำสั่งว่างเปล่า ลูปจึงวนทำ "ไม่ทำอะไร" ห้ารอบ จนได้ i เป็น 6 แล้วค่อยไปทำปีกกาข้างล่างครั้งเดียว compiler เตือนว่า <code>for</code> นี้ไม่ได้คุม (does not guard) ปีกกาที่เยื้องเหมือนเป็นตัวลูป ทุกครั้งที่เห็นลูปทำแค่รอบเดียวแบบงงๆ ให้หา <code>;</code> ท้าย <code>for</code> หรือ <code>while</code> ก่อน</p>
+
+      <h3 id="braces">แบบที่ 2 ไม่ใส่ปีกกา</h3>
+
+      <p>ค่าย 3 วัน ได้เบี้ยเลี้ยงวันละ 10 บาท ตั้งใจให้ลูปพิมพ์วันและบวกเงินทุกวัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="braces" data-allow-warnings><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int total = 0;
+    for (int day = 1; day &lt;= 3; day++)
+        printf("day %d\n", day);
+        total += 10;
+    printf("total = %d\n", total);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>braces.c:6:5: warning: this 'for' clause does not guard... [-Wmisleading-indentation]
+    6 |     for (int day = 1; day &lt;= 3; day++)
+      |     ^~~
+braces.c:8:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'for'
+    8 |         total += 10;
+      |         ^~~~~
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="braces" data-title="C:\code\braces.exe"><pre><code>day 1
+day 2
+day 3
+total = 10
+</code></pre></div>
+
+      <p>ถ้าไม่มีปีกกา ตัวลูปมีแค่คำสั่งเดียวที่อยู่ถัดไป การเยื้องที่เห็นไม่มีผลกับ compiler เลย <code>total += 10;</code> จึงทำครั้งเดียวหลังลูปจบ ได้ 10 แทนที่จะเป็น 30 กฎง่ายๆ คือ <strong>ใส่ปีกกาให้ลูปทุกครั้ง</strong> แม้มีคำสั่งเดียว</p>
+
+      <h3 id="loop-variable">แบบที่ 3 ใช้ตัวนับของ for หลังลูปจบ</h3>
+
+      <p>ในโปรแกรม count-for เปลี่ยนบรรทัดที่ 8 จาก <code>printf("done\n");</code> เป็น</p>
+
+      <div class="code" data-lang="c"><pre><code>printf("after loop i = %d\n", i);
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>count_for.c:8:35: error: 'i' undeclared (first use in this function)
+    8 |     printf("after loop i = %d\n", i);
+      |                                   ^
+</code></pre></div>
+
+      <p>ตัวแปรที่ประกาศในวงเล็บของ <code>for</code> มีอยู่แค่ในลูปนั้น ลูปจบตัวแปรก็หายไป ถ้าต้องการค่าตัวนับหลังลูปจบ ให้ประกาศไว้ก่อนลูปแบบโปรแกรม semicolon ในแบบที่ 1 เรื่องที่ว่าตัวแปรมีชีวิตอยู่ตรงไหนบ้างจะเรียนละเอียดในบทที่ 8</p>
+
+      <h3 id="off-by-one">แบบที่ 4 <code>&lt;</code> กับ <code>&lt;=</code> สลับกัน</h3>
+
+      <p>ในโปรแกรม laps แก้เงื่อนไขเป็น <code>lap &lt; n</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="laps-bug"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int lap = 1;
+    while (lap &lt; n) {
+        printf("lap %d done\n", lap);
+        lap++;
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="laps-bug" data-title="ข้อมูลเข้า"><pre><code>3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="laps-bug" data-title="C:\code\laps.exe"><pre><code>lap 1 done
+lap 2 done
+</code></pre></div>
+      </div>
+
+      <p>ขาดไปหนึ่งรอบ compiler ไม่เตือน เพราะโค้ดถูกไวยากรณ์ ความผิดพลาดที่นับเกินหรือขาดไปหนึ่งแบบนี้มีชื่อเรียกว่า <strong>off-by-one</strong> เจอบ่อยที่สุดในเรื่องลูป วิธีกันคือถามตัวเองสองข้อ <strong>รอบแรก</strong>ตัวนับเป็นเท่าไร และ<strong>รอบสุดท้าย</strong>ตัวนับเป็นเท่าไร ถ้าเริ่มที่ 1 และต้องจบที่ n ใช้ <code>&lt;= n</code> ถ้าเริ่มที่ 0 และต้องการ n รอบ ใช้ <code>&lt; n</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>while (เงื่อนไข)</code> ตรวจก่อนทุกรอบ จริงทำต่อ เท็จออก ตัวลูปอาจไม่ทำเลยสักรอบ</li>
+        <li>ลูปนับรอบมีสามส่วน ค่าเริ่มต้น เงื่อนไข การเปลี่ยนค่า <code>for</code> รวมทั้งสามไว้ในบรรทัดเดียว</li>
+        <li><code>do { ... } while (เงื่อนไข);</code> ทำก่อนหนึ่งรอบเสมอ และต้องมี <code>;</code> ท้าย</li>
+        <li>รู้จำนวนรอบใช้ <code>for</code> ไม่รู้ใช้ <code>while</code> ต้องทำก่อนอย่างน้อยครั้งหนึ่งใช้ <code>do while</code></li>
+        <li>ใส่ปีกกาให้ลูปเสมอ และห้ามมี <code>;</code> ท้าย <code>for</code> หรือ <code>while</code></li>
+        <li>ลูปค้าง หยุดด้วย <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>C</kbd></span> ในหน้าต่างดำ หรือ Build แล้ว Abort</li>
+      </ul>
+    </article>

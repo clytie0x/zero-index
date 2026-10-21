@@ -75,7 +75,15 @@ track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "4"
 title = "บทที่ 4 วนซ้ำ"
 summary = "for while ลูปซ้อน นับ สะสม และวาดรูปด้วยดาว"
-# dir = "c/04-loops"
+path = "c/04-loops/index.html"
+pages = [
+  { num = "4.1", title = "while และ for", path = "c/04-loops/while-for.html" },
+  { num = "4.2", title = "นับ สะสม หาค่ามากสุด", path = "c/04-loops/count-sum.html" },
+  { num = "4.3", title = "break continue และอ่านจนหมดข้อมูล", path = "c/04-loops/break-input.html" },
+  { num = "4.4", title = "ลูปซ้อน", path = "c/04-loops/nested.html" },
+  { num = "4.5", title = "ลูปกับตัวเลขและเวลาที่ใช้", path = "c/04-loops/numbers-time.html" },
+  { num = "4.6", title = "แบบฝึกหัด", path = "c/04-loops/exercises.html", exercises = "c/04-loops" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
