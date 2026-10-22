@@ -69,6 +69,15 @@ python tools/check_code.py
 
 แล้วใส่หน้าแบบฝึกหัดของบทนั้นใน `site.toml` ด้วย `exercises = "<บท>"` ดูตัวอย่างที่บทที่ 0
 
+## ส่งแบบฝึกหัดไป CMS
+
+```bash
+python tools/prepare_tests.py
+python tools/export_cms.py
+```
+
+ได้โฟลเดอร์ `cms-export/zi_<บท>_<ข้อ>/` แบบ italy_yaml (task.yaml, statement/statement.pdf, input/, output/) ชุด sample อยู่หน้าสุดและเปิดให้เห็นผล สคริปต์ไม่ติดต่อเซิร์ฟเวอร์ การนำเข้า CMS จริงทำแยกและต้องตรวจบนเครื่อง judge ก่อนเปิดให้น้องใช้
+
 ## ส่วนประกอบที่ใช้ในเนื้อหา
 
 | ต้องการ | เขียนแบบนี้ |
