@@ -285,8 +285,7 @@ crates = 9
 
       <p>อาเรย์หนึ่งมิติที่ใส่ค่าเริ่มต้นไม่ต้องบอกขนาดก็ได้ หลายคนจึงลองเขียนแบบเดียวกันกับตาราง ในโปรแกรม score เปลี่ยนบรรทัดที่ 5 เป็น <code>int score[][] = {</code></p>
 
-      <div class="code" data-lang="gcc"><pre><code>score.c: In function 'main':
-score.c:5:9: error: array type has incomplete element type 'int[]'
+      <div class="code" data-lang="gcc"><pre><code>score.c:5:9: error: array type has incomplete element type 'int[]'
     5 |     int score[][] = {
       |         ^~~~~
 score.c:5:9: note: declaration of 'score' as multidimensional array must have bounds for all dimensions except the first
@@ -304,8 +303,7 @@ score.c:5:9: warning: unused variable 'score' [-Wunused-variable]
 
       <p>คอมไพล์ใน Code::Blocks ที่เปิดแค่ <code>-Wall</code> ไม่มีคำเตือนเลย บนเครื่องที่เขียนเอกสารนี้รันแล้วได้ <code>score[4][1] = 95</code> ดูเหมือนคะแนนจริงเสียด้วย ทั้งที่เป็นค่าขยะจากหน่วยความจำที่อยู่ถัดจากตาราง ถ้าคอมไพล์แบบเปิด <code>-O2</code> เพิ่ม gcc ถึงจะเตือน และรันแล้วได้ <code>254</code></p>
 
-      <div class="code" data-lang="gcc"><pre><code>score.c: In function 'main':
-score.c:11:39: warning: array subscript 4 is above array bounds of 'int[4][3]' [-Warray-bounds=]
+      <div class="code" data-lang="gcc"><pre><code>score.c:11:39: warning: array subscript 4 is above array bounds of 'int[4][3]' [-Warray-bounds=]
    11 |     printf("score[4][1] = %d\n", score[4][1]);
       |                                  ~~~~~^~~
 score.c:5:9: note: while referencing 'score'

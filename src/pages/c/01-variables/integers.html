@@ -185,7 +185,7 @@ int main()
 
       <p>compiler บอกชัดว่า <code>%d</code> รอ <code>int</code> แต่ได้ <code>long long int</code> และแนะให้ใช้ <code>%lld</code> ถ้าดื้อรันต่อ จะได้ <code>area = -1794967296</code> เหมือนตอนยังไม่แก้ เพราะ <code>printf</code> หยิบไปแค่ครึ่งเดียวของกล่อง</p>
 
-      <p>ลืมเปลี่ยน <code>%d</code> ใน <code>scanf</code> ก็ได้คำเตือนคล้ายกัน คือ <code>expects argument of type 'int *', but argument 2 has type 'long long int *'</code> แบบนี้อันตรายกว่า เพราะ <code>scanf</code> เขียนแค่ครึ่งกล่อง อีกครึ่งเป็นค่าขยะ บนเครื่องที่ทดลองบังเอิญได้คำตอบถูก แต่เปลี่ยนเครื่องหรือเปลี่ยนโปรแกรมนิดเดียวอาจผิดได้ เห็น warning เรื่อง format เมื่อไร แก้ทันที</p>
+      <p>ลืมเปลี่ยน <code>%d</code> ใน <code>scanf</code> ก็ได้คำเตือนคล้ายกัน คือ <code>expects argument of type 'int *', but argument 2 has type 'long long int *'</code> แบบนี้อันตรายกว่า เพราะ <code>scanf</code> เขียนแค่ครึ่งกล่อง อีกครึ่งเป็นค่าขยะ บนเครื่องที่เขียนเอกสารนี้บังเอิญได้คำตอบถูก แต่เปลี่ยนเครื่องหรือเปลี่ยนโปรแกรมนิดเดียวอาจผิดได้ เห็น warning เรื่อง format เมื่อไร แก้ทันที</p>
 
       <h3 id="literal-too-big">แบบที่ 2 ใส่เลขใหญ่เกินลงใน int ตรงๆ</h3>
 
