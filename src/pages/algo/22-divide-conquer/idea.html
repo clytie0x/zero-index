@@ -1,0 +1,322 @@
+<article class="doc">
+      <h1>22.1 แบ่ง แก้ย่อย รวม</h1>
+
+      <p>น้องเจอการแบ่งครึ่งมาแล้วหลายที่ ยกกำลังแบบแบ่งครึ่งในหน้า 9.2 หอคอยฮานอยในหน้า 9.5 binary search ในหน้า 9.4 และบทที่ 19 และหน้า 13.4 ที่บอกว่า <code>qsort</code> เร็วเพราะแบ่งข้อมูลเป็นส่วนๆ แล้วจัดทีละส่วน ทั้งหมดนี้คือวิธีคิดเดียวกัน ชื่อว่า <strong>divide and conquer</strong> (แบ่งแล้วเอาชนะ) หน้านี้แยกวิธีคิดนั้นออกเป็นสามขั้น ดูว่าทำไมการแบ่งครึ่งทำให้ recursion ไม่ลึก และอ่านเวลาที่ใช้ได้จากรูปของการแบ่ง ก่อนจะเอาไปเรียงข้อมูลในหน้าถัดไป</p>
+
+      <h2 id="three-steps">สามขั้น</h2>
+
+      <ol>
+        <li><strong>แบ่ง (divide)</strong> ตัดปัญหาเป็นปัญหาย่อยแบบเดียวกันที่เล็กกว่า ส่วนใหญ่ตัดเป็นสองครึ่ง</li>
+        <li><strong>แก้ย่อย (conquer)</strong> เรียกตัวเองกับปัญหาย่อยแต่ละส่วน จนส่วนเล็กพอที่ตอบได้ทันที ซึ่งก็คือกรณีฐานในบทที่ 9</li>
+        <li><strong>รวม (combine)</strong> เอาคำตอบของปัญหาย่อยมาประกอบเป็นคำตอบของปัญหาใหญ่</li>
+      </ol>
+
+      <p>เริ่มจากตัวอย่างที่ง่ายที่สุด ร้านขนมจดยอดขายรายวันไว้ 8 วัน อยากได้ยอดรวม แบ่งวันเป็นครึ่งแรกกับครึ่งหลัง หายอดของแต่ละครึ่ง แล้วบวกกัน ส่วนที่เหลือวันเดียวคือกรณีฐาน ยอดของวันนั้นคือคำตอบเลย</p>
+
+      <p>ช่วงของวันเขียนแบบ <code>[lo, hi)</code> คือตั้งแต่ <code>lo</code> ถึง <code>hi - 1</code> ไม่รวม <code>hi</code> แบบเดียวกับ <code>lo</code> กับ <code>hi</code> ในหน้า 19.1 ข้อดีคือช่วงยาว <code>hi - lo</code> พอดี และแบ่งที่ <code>mid</code> ได้สองช่วง <code>[lo, mid)</code> กับ <code>[mid, hi)</code> ที่ต่อกันสนิท ไม่ซ้ำและไม่ขาด ทั้งบทนี้ใช้แบบนี้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="split-sum"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long total(const vector&lt;int&gt; &amp;sales, int lo, int hi, int depth)
+{
+    string indent(4 * depth, ' '); // (1)!
+    if (hi - lo == 1) { // (2)!
+        cout &lt;&lt; indent &lt;&lt; "day " &lt;&lt; lo &lt;&lt; " = " &lt;&lt; sales[lo] &lt;&lt; '\n';
+        return sales[lo];
+    }
+    int mid = (lo + hi) / 2;
+    cout &lt;&lt; indent &lt;&lt; "split [" &lt;&lt; lo &lt;&lt; ", " &lt;&lt; hi &lt;&lt; ") at " &lt;&lt; mid &lt;&lt; '\n';
+    long long left = total(sales, lo, mid, depth + 1);
+    long long right = total(sales, mid, hi, depth + 1);
+    cout &lt;&lt; indent &lt;&lt; "[" &lt;&lt; lo &lt;&lt; ", " &lt;&lt; hi &lt;&lt; ") = " &lt;&lt; left &lt;&lt; " + " &lt;&lt; right &lt;&lt; " = " &lt;&lt; left + right &lt;&lt; '\n';
+    return left + right; // (3)!
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; sales(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; sales[i];
+    }
+    long long sum = total(sales, 0, n, 0);
+    cout &lt;&lt; "total = " &lt;&lt; sum &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สร้าง string ที่มีช่องว่าง <code>4 * depth</code> ตัว ใช้เยื้องตามความลึกแบบหน้า 9.1 จะได้เห็นว่าแต่ละบรรทัดอยู่ชั้นไหน</li>
+        <li>กรณีฐาน ช่วงเหลือวันเดียว ช่วง <code>[lo, hi)</code> ไม่มีทางว่าง เพราะเริ่มจาก n ที่ไม่น้อยกว่า 1 และแบ่งทีไรก็ได้สองช่วงที่ยาวอย่างน้อย 1</li>
+        <li>ขั้นรวมของปัญหานี้คือบวกเลขสองตัว ใช้เวลาคงที่</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="split-sum" data-title="ข้อมูลเข้า"><pre><code>8
+120 80 150 90 60 200 110 95
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="split-sum" data-title="C:\code\split_sum.exe"><pre><code>split [0, 8) at 4
+    split [0, 4) at 2
+        split [0, 2) at 1
+            day 0 = 120
+            day 1 = 80
+        [0, 2) = 120 + 80 = 200
+        split [2, 4) at 3
+            day 2 = 150
+            day 3 = 90
+        [2, 4) = 150 + 90 = 240
+    [0, 4) = 200 + 240 = 440
+    split [4, 8) at 6
+        split [4, 6) at 5
+            day 4 = 60
+            day 5 = 200
+        [4, 6) = 60 + 200 = 260
+        split [6, 8) at 7
+            day 6 = 110
+            day 7 = 95
+        [6, 8) = 110 + 95 = 205
+    [4, 8) = 260 + 205 = 465
+[0, 8) = 440 + 465 = 905
+total = 905
+</code></pre></div>
+      </div>
+
+      <p>อ่านจากบนลงล่าง บรรทัด <code>split</code> คือขาลงที่แบ่ง บรรทัด <code>day</code> คือกรณีฐาน และบรรทัดที่มีเครื่องหมายบวกคือขากลับที่รวม ครึ่งซ้ายทำจนเสร็จก่อนแล้วจึงเริ่มครึ่งขวา เพราะ <code>left</code> ต้องได้ค่ามาก่อนจะไปบรรทัดที่เรียก <code>right</code> วาดเป็นต้นไม้ได้แบบนี้</p>
+
+      <figure>
+        <svg viewBox="0 0 640 270" width="640" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้การแบ่งยอดขาย 8 วัน ชั้นบนสุดคือช่วง 0 ถึง 8 รวม 905 แบ่งเป็นช่วง 0 ถึง 4 รวม 440 กับช่วง 4 ถึง 8 รวม 465 แต่ละช่วงแบ่งต่อเป็นสองช่วงยาวสองวัน รวม 200 240 260 205 ชั้นล่างสุดคือยอดของแต่ละวัน 120 80 150 90 60 200 110 95">
+          <g style="stroke:var(--line-strong);stroke-width:1.5">
+            <line x1="320" y1="52" x2="160" y2="82"/>
+            <line x1="320" y1="52" x2="480" y2="82"/>
+            <line x1="160" y1="114" x2="80" y2="144"/>
+            <line x1="160" y1="114" x2="240" y2="144"/>
+            <line x1="480" y1="114" x2="400" y2="144"/>
+            <line x1="480" y1="114" x2="560" y2="144"/>
+            <line x1="80" y1="176" x2="40" y2="206"/>
+            <line x1="80" y1="176" x2="120" y2="206"/>
+            <line x1="240" y1="176" x2="200" y2="206"/>
+            <line x1="240" y1="176" x2="280" y2="206"/>
+            <line x1="400" y1="176" x2="360" y2="206"/>
+            <line x1="400" y1="176" x2="440" y2="206"/>
+            <line x1="560" y1="176" x2="520" y2="206"/>
+            <line x1="560" y1="176" x2="600" y2="206"/>
+          </g>
+          <g style="stroke-width:2">
+            <rect x="240" y="20" width="160" height="32" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="90" y="82" width="140" height="32" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="410" y="82" width="140" height="32" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="24" y="144" width="112" height="32" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="184" y="144" width="112" height="32" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="344" y="144" width="112" height="32" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="504" y="144" width="112" height="32" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="12" y="206" width="56" height="32" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="92" y="206" width="56" height="32" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="172" y="206" width="56" height="32" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="252" y="206" width="56" height="32" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="332" y="206" width="56" height="32" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="412" y="206" width="56" height="32" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="492" y="206" width="56" height="32" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="572" y="206" width="56" height="32" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:14px;fill:var(--ink)" text-anchor="middle">
+            <text x="320" y="41">[0, 8) = 905</text>
+            <text x="160" y="103">[0, 4) = 440</text>
+            <text x="480" y="103">[4, 8) = 465</text>
+            <text x="80" y="165">[0, 2) = 200</text>
+            <text x="240" y="165">[2, 4) = 240</text>
+            <text x="400" y="165">[4, 6) = 260</text>
+            <text x="560" y="165">[6, 8) = 205</text>
+            <text x="40" y="227">120</text>
+            <text x="120" y="227">80</text>
+            <text x="200" y="227">150</text>
+            <text x="280" y="227">90</text>
+            <text x="360" y="227">60</text>
+            <text x="440" y="227">200</text>
+            <text x="520" y="227">110</text>
+            <text x="600" y="227">95</text>
+          </g>
+          <g style="font-family:var(--font-code);font-size:12px;fill:var(--muted)" text-anchor="middle">
+            <text x="40" y="258">0</text>
+            <text x="120" y="258">1</text>
+            <text x="200" y="258">2</text>
+            <text x="280" y="258">3</text>
+            <text x="360" y="258">4</text>
+            <text x="440" y="258">5</text>
+            <text x="520" y="258">6</text>
+            <text x="600" y="258">7</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ขาลงอ่านจากบนลงล่าง ทุกกล่องแตกเป็นสองกล่องที่เล็กลงครึ่งหนึ่ง จนถึงชั้นล่างสุดที่เหลือวันเดียว ขากลับอ่านจากล่างขึ้นบน แต่ละกล่องได้ค่าจากการบวกสองกล่องข้างล่าง ต้นไม้แบบนี้จะใช้ตลอดบท ทั้งดูว่าโปรแกรมทำอะไร และนับว่าใช้เวลาเท่าไร</p>
+
+      <h2 id="depth">ลึกแค่ log N ชั้น</h2>
+
+      <p>หน้า 9.4 หาผลรวมของอาเรย์ด้วย recursion ที่ตัดทีละหนึ่งช่อง ลึกหนึ่งชั้นต่อหนึ่งช่อง แบบ Code::Blocks ป้อนคะแนน 33000 ตัวก็ stack เต็มแล้ว แบบแบ่งครึ่งต่างออกไป ทุกชั้นช่วงสั้นลงครึ่งหนึ่ง ต้นไม้จึงสูงแค่จำนวนครั้งที่หาร N ด้วยสองจนเหลือ 1 โปรแกรมนี้นับจำนวนครั้งที่เรียกและชั้นที่ลึกที่สุด ข้อมูลล้านวันสร้างจากสูตรเพื่อไม่ต้องพิมพ์เข้าไป</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="deep-sum"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long calls = 0;
+int deepest = 0;
+
+long long total(const vector&lt;int&gt; &amp;sales, int lo, int hi, int depth)
+{
+    calls++;
+    deepest = max(deepest, depth);
+    if (hi - lo == 1) {
+        return sales[lo];
+    }
+    int mid = (lo + hi) / 2;
+    return total(sales, lo, mid, depth + 1) + total(sales, mid, hi, depth + 1);
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; sales(n);
+    for (int i = 0; i &lt; n; i++) {
+        sales[i] = i * 37 % 100 + 1;
+    }
+    long long by_loop = 0;
+    for (int i = 0; i &lt; n; i++) {
+        by_loop += sales[i];
+    }
+    long long by_split = total(sales, 0, n, 0);
+    cout &lt;&lt; "loop  = " &lt;&lt; by_loop &lt;&lt; '\n';
+    cout &lt;&lt; "split = " &lt;&lt; by_split &lt;&lt; '\n';
+    cout &lt;&lt; "calls = " &lt;&lt; calls &lt;&lt; ", deepest = " &lt;&lt; deepest &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="deep-sum" data-title="ข้อมูลเข้า"><pre><code>1000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="deep-sum" data-title="C:\code\deep_sum.exe"><pre><code>loop  = 50500000
+split = 50500000
+calls = 1999999, deepest = 20
+</code></pre></div>
+      </div>
+
+      <p>ล้านช่องลึกแค่ 20 ชั้น เพราะ 2<sup>20</sup> ราวหนึ่งล้าน stack ไม่มีทางเต็ม จำนวนครั้งที่เรียกคือ 2N - 1 พอดี มีกรณีฐาน N ครั้ง ครั้งละหนึ่งวัน และกล่องที่แบ่ง N - 1 ครั้ง เพราะทุกครั้งที่แบ่ง จำนวนชิ้นเพิ่มขึ้นหนึ่ง จากหนึ่งชิ้นไปเป็น N ชิ้น</p>
+
+      <h2 id="faster">แบ่งแล้วเร็วขึ้นไหม</h2>
+
+      <p>ผลรวมแบบแบ่งครึ่งเรียกฟังก์ชันสองล้านครั้งเพื่อบวกเลขล้านตัว ส่วนลูปบวกล้านครั้งเฉยๆ ทั้งคู่เป็น O(N) แต่การเรียกฟังก์ชันมีค่าใช้จ่าย วัดด้วย <code>clock()</code> แบบหน้า 13.3 กับข้อมูล 10<sup>7</sup> วัน บนเครื่องเดียวกับหน้า 13.3 คือโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 เสียบสายชาร์จ คอมไพล์ด้วย g++ 14.2 ของ Code::Blocks รันแต่ละแบบ 5 ครั้ง ตารางเป็นค่ากลาง ทั้งบทนี้วัดแบบเดียวกันนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ลูปบวกทีละวัน</td><td>0.013 วินาที</td><td>0.003 วินาที</td></tr>
+            <tr><td>แบ่งครึ่งแล้วบวก</td><td>0.045 วินาที</td><td>0.011 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แบ่งครึ่งช้ากว่าลูปราวสามถึงสี่เท่า การแบ่งเฉยๆ ไม่ได้ทำให้เร็วขึ้น ถ้าทุกส่วนยังต้องทำครบ และขั้นรวมก็ไม่ได้ประหยัดอะไร divide and conquer เร็วกว่าวิธีตรงไปตรงมาได้จากสองทางเท่านั้น</p>
+
+      <ul>
+        <li><strong>ทิ้งได้ทั้งส่วน</strong> รู้ว่าคำตอบอยู่ส่วนไหน ก็ไม่ต้องทำอีกส่วนเลย แบบ binary search</li>
+        <li><strong>ขั้นรวมถูกกว่าทำทั้งก้อน</strong> เช่น เรียงสองครึ่งแยกกัน แล้วรวมสองครึ่งที่เรียงแล้วในเวลา O(N) ถูกกว่าเรียงทั้งก้อนด้วย insertion sort ที่เป็น O(N<sup>2</sup>) ซึ่งคือ merge sort ในหน้าถัดไป</li>
+      </ul>
+
+      <h2 id="decrease">decrease and conquer เมื่อเหลือส่วนเดียว</h2>
+
+      <p>ถ้าแบ่งแล้วต้องแก้แค่ส่วนเดียว เรียกว่า <strong>decrease and conquer</strong> (ลดขนาดแล้วเอาชนะ) เป็นกรณีพิเศษที่เร็วที่สุดของ divide and conquer น้องเขียนมาแล้วสองตัว</p>
+
+      <ul>
+        <li><strong>binary search</strong> ในหน้า 19.1 ดูช่อง <code>mid</code> แล้วทิ้งครึ่งที่คำตอบไม่มีทางอยู่ เหลือส่วนเดียวที่เล็กลงครึ่งหนึ่ง ขั้นรวมไม่มีเลย คำตอบของส่วนที่เหลือคือคำตอบทั้งหมด</li>
+        <li><strong>ยกกำลังแบบแบ่งครึ่ง</strong> ในหน้า 9.2 และ 12.1 คำนวณ a<sup>n/2</sup> ครั้งเดียว เก็บไว้ในตัวแปร แล้วยกกำลังสอง ขั้นรวมคือคูณหนึ่งหรือสองครั้ง</li>
+      </ul>
+
+      <p>ส่วนที่เหลือเล็กลงครึ่งหนึ่งทุกครั้ง และขั้นรวมใช้เวลาคงที่ ทั้งสองจึงเป็น O(log N) ส่วนการเขียนผิดในหน้า 9.2 ที่เรียก <code>fast_power(base, exponent / 2)</code> สองครั้ง กลายเป็นปัญหาย่อยสองส่วนเหมือนผลรวมข้างบน จึงตกไปเป็น O(N) และนับได้ 2097151 ครั้งที่เลขชี้กำลังหนึ่งล้าน หน้า 22.4 จะเห็น decrease and conquer อีกตัวคือ quickselect</p>
+
+      <h2 id="recurrence">อ่านเวลาจากรูปของการแบ่ง</h2>
+
+      <p>หน้า 18.3 นับเวลาของ recursion จากต้นไม้ของการเรียก แต่ละชั้นของต้นไม้มีงานรวมเท่าไร คูณด้วยจำนวนชั้น ใช้กับทุกวิธีในบทนี้ได้ตามตาราง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ปัญหาย่อยที่ต้องแก้</th><th>งานแบ่งและรวมต่อครั้ง</th><th>เวลารวม</th><th>ตัวอย่าง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1 ส่วน ขนาด n / 2</td><td>O(1)</td><td>O(log N)</td><td>binary search ยกกำลังแบบแบ่งครึ่ง</td></tr>
+            <tr><td>1 ส่วน ขนาดราว n / 2</td><td>O(n)</td><td>O(N) โดยเฉลี่ย</td><td>quickselect หน้า 22.4</td></tr>
+            <tr><td>2 ส่วน ขนาด n / 2</td><td>O(1)</td><td>O(N)</td><td>ผลรวมแบบแบ่งครึ่งในหน้านี้</td></tr>
+            <tr><td>2 ส่วน ขนาด n / 2</td><td>O(n)</td><td>O(N log N)</td><td>merge sort หน้า 22.2 นับคู่สลับหน้า 22.3</td></tr>
+            <tr><td>2 ส่วน ขนาด n / 2</td><td>O(n log n)</td><td>O(N log<sup>2</sup> N)</td><td>คู่จุดที่ใกล้ที่สุดหน้า 22.5</td></tr>
+            <tr><td>2 ส่วน ขนาด n - 1</td><td>O(1)</td><td>O(2<sup>N</sup>)</td><td>หอคอยฮานอยหน้า 9.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แถวที่สองกับแถวที่สามได้ O(N) ด้วยเหตุผลต่างกัน แถวที่สองงานแต่ละชั้นลดลงครึ่งหนึ่ง N + N/2 + N/4 + ... ไม่เกิน 2N แถวที่สามงานแต่ละครั้งคงที่ แต่จำนวนกล่องรวมคือ 2N - 1 ตามที่นับได้ข้างบน ส่วนแถวสุดท้ายแบ่งเป็นสองส่วนเหมือนกัน แต่ส่วนเล็กลงแค่หนึ่ง ไม่ใช่ครึ่งหนึ่ง ต้นไม้จึงลึก N ชั้น และกล่องเพิ่มเท่าตัวทุกชั้น <strong>ต้องแบ่งให้เล็กลงเป็นสัดส่วน ไม่ใช่ลดทีละหนึ่ง</strong> การแบ่งจึงจะคุ้ม</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="closed-range">แบบที่ 1 ใช้ช่วงปิดแต่แบ่งแบบช่วงเปิด</h3>
+
+      <p>หลายคนคุ้นกับช่วงปิด <code>[lo, hi]</code> แบบ binary search ในหน้า 9.4 จึงเขียนกรณีฐานเป็น <code>lo == hi</code> แต่ตอนแบ่งยังส่ง <code>mid</code> ให้ทั้งสองฝั่งแบบช่วงเปิด</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long total(const vector&lt;int&gt; &amp;sales, int lo, int hi)
+{
+    if (lo == hi) {
+        return sales[lo];
+    }
+    int mid = (lo + hi) / 2;
+    return total(sales, lo, mid) + total(sales, mid, hi);
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; sales(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; sales[i];
+    }
+    long long sum = total(sales, 0, n - 1);
+    cout &lt;&lt; "total = " &lt;&lt; sum &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <p>ป้อนยอดขาย 8 วันชุดเดิม แบบ Code::Blocks ไม่พิมพ์อะไรเลยแล้วจบด้วย</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p>รหัส <code>0xC00000FD</code> คือ stack overflow ตามหน้า 9.1 ไล่ด้วยมือกับช่วง <code>[0, 1]</code> ที่มีสองวัน ได้ <code>mid = 0</code> ฝั่งซ้ายเรียก <code>total(0, 0)</code> ซึ่งจบได้ แต่ฝั่งขวาเรียก <code>total(0, 1)</code> ซึ่งคือช่วงเดิมเป๊ะ ช่วงไม่เล็กลง จึงเรียกซ้ำไม่รู้จบ ส่วนแบบ <code>-O2</code> compiler แปลงการเรียกฝั่งขวาเป็นลูป โปรแกรมจึงไม่พังแต่วนค้าง บนเครื่องที่เขียนเอกสารนี้รอ 10 วินาทีแล้วยังไม่จบ ส่งให้ grader จะได้ผลว่าเกินเวลา</p>
+
+      <p>เลือกแบบใดแบบหนึ่งแล้วใช้ให้ตลอด ช่วงปิดต้องแบ่งเป็น <code>[lo, mid]</code> กับ <code>[mid + 1, hi]</code> ช่วงเปิดแบ่งเป็น <code>[lo, mid)</code> กับ <code>[mid, hi)</code> แล้วทดสอบด้วยช่วงที่ยาวสองเสมอ เพราะเป็นช่วงที่สั้นที่สุดที่ยังต้องแบ่ง</p>
+
+      <h3 id="uneven">แบบที่ 2 แบ่งไม่ครึ่ง</h3>
+
+      <p>ในโปรแกรม deep-sum เปลี่ยนจุดแบ่งเป็น</p>
+
+      <div class="code" data-lang="cpp"><pre><code>int mid = lo + 1;
+</code></pre></div>
+
+      <p>ผลรวมยังถูก เพราะ <code>[lo, lo + 1)</code> กับ <code>[lo + 1, hi)</code> ยังต่อกันสนิท จำนวนครั้งที่เรียกก็ยังเป็น 2N - 1 แต่ป้อน 1000 ได้ <code>deepest = 999</code> แทนที่จะเป็น 10 เพราะทุกครั้งตัดออกแค่หนึ่งวัน กลายเป็น recursion ทีละช่องแบบหน้า 9.4 ป้อน 30000 แบบ Code::Blocks ก็พังด้วย <code>0xC00000FD</code> แล้ว แบบ <code>-O2</code> ผ่านถึงล้านเพราะ compiler แปลงฝั่งที่ลึกเป็นลูปให้ แต่ห้ามพึ่งเรื่องนี้ตามที่หน้า 9.1 เตือนไว้ การแบ่งไม่ครึ่งแบบนี้คือสิ่งที่เกิดกับ quicksort ในหน้า 22.4 เมื่อเลือกตัวแบ่งไม่ดี</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>divide and conquer มีสามขั้น แบ่งเป็นปัญหาย่อยแบบเดียวกัน แก้ย่อยด้วยการเรียกตัวเอง และรวมคำตอบ</li>
+        <li>ใช้ช่วงแบบ <code>[lo, hi)</code> แบ่งที่ <code>mid</code> เป็น <code>[lo, mid)</code> กับ <code>[mid, hi)</code> กรณีฐานคือช่วงยาวหนึ่ง และทดสอบด้วยช่วงยาวสอง</li>
+        <li>แบ่งครึ่งทำให้ลึกแค่ราว log<sub>2</sub> N ชั้น ล้านช่องลึก 20 ชั้น แต่ถ้าแบ่งไม่ครึ่งจะลึกถึง N ชั้น</li>
+        <li>แบ่งเฉยๆ ไม่เร็วขึ้น ต้องทิ้งได้ทั้งส่วนแบบ decrease and conquer หรือขั้นรวมต้องถูกกว่าทำทั้งก้อน</li>
+        <li>binary search กับยกกำลังแบบแบ่งครึ่งคือ decrease and conquer เหลือปัญหาย่อยส่วนเดียว จึงเป็น O(log N)</li>
+        <li>อ่านเวลาจากต้นไม้ของการเรียก งานต่อชั้นคูณจำนวนชั้น สองส่วนครึ่งกับขั้นรวม O(n) ได้ O(N log N)</li>
+      </ul>
+    </article>

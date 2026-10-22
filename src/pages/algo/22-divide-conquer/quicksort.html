@@ -1,0 +1,396 @@
+<article class="doc">
+      <h1>22.4 quicksort และ quickselect</h1>
+
+      <p>merge sort แบ่งง่าย (ตัดกลางเฉยๆ) แต่รวมยาก (ต้องมีอาเรย์พัก) <strong>quicksort</strong> กลับกัน ทำงานหนักตอนแบ่ง โดยย้ายตัวที่น้อยไปไว้ซ้ายและตัวที่มากไปไว้ขวา พอแบ่งเสร็จก็ไม่ต้องรวมอะไรอีก และไม่ต้องใช้อาเรย์พัก ราคาที่ต้องจ่ายคือถ้าแบ่งไม่ดี มันช้าลงเป็น O(N<sup>2</sup>) หน้านี้จะทำให้มันช้าให้เห็นจริงกับข้อมูลที่เรียงมาแล้ว แก้ด้วยการสุ่ม แล้วต่อยอดเป็น <strong>quickselect</strong> ที่หาตัวที่เล็กเป็นอันดับ k ได้โดยไม่ต้องเรียงทั้งหมด ซึ่งก็คือสิ่งที่ <code>nth_element</code> ทำ</p>
+
+      <h2 id="partition">แบ่งรอบตัวแบ่ง</h2>
+
+      <p>เลือกค่าหนึ่งในช่วงมาเป็น <strong>ตัวแบ่ง (pivot)</strong> แล้วจัดช่วงใหม่ให้ทุกตัวที่น้อยกว่าตัวแบ่งอยู่ทางซ้าย ตัวแบ่งอยู่ตรงกลาง ตัวที่เหลืออยู่ทางขวา ขั้นนี้เรียกว่า <strong>partition</strong> พอเสร็จ ตัวแบ่งอยู่ในช่องที่มันต้องอยู่ตอนเรียงเสร็จแล้วพอดี เพราะมีตัวที่น้อยกว่ามันอยู่ทางซ้ายครบทุกตัว</p>
+
+      <p>วิธีที่เขียนง่ายที่สุดใช้ตัวสุดท้ายของช่วงเป็นตัวแบ่ง แล้วใช้ตัวแปร <code>store</code> จำว่าตัวที่น้อยกว่าตัวแบ่งตัวถัดไปจะต้องไปอยู่ช่องไหน ไล่ <code>i</code> จากซ้ายไปขวา เจอตัวที่น้อยกว่าตัวแบ่งก็สลับไปไว้ที่ <code>store</code> แล้วขยับ <code>store</code> ไปหนึ่งช่อง ทุกช่องก่อน <code>store</code> จึงน้อยกว่าตัวแบ่งเสมอ จบแล้วสลับตัวแบ่งมาไว้ที่ <code>store</code> คะแนนชุดเดียวกับหน้า 22.2 ตัวแบ่งคือ 55</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>i</th><th>a[i]</th><th>น้อยกว่า 55</th><th>store หลังรอบนี้</th><th>อาเรย์หลังรอบนี้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>38</td><td>ใช่ สลับกับช่อง 0</td><td>1</td><td><code>38 27 43 3 9 82 10 55</code></td></tr>
+            <tr><td>1</td><td>27</td><td>ใช่ สลับกับช่อง 1</td><td>2</td><td><code>38 27 43 3 9 82 10 55</code></td></tr>
+            <tr><td>2</td><td>43</td><td>ใช่ สลับกับช่อง 2</td><td>3</td><td><code>38 27 43 3 9 82 10 55</code></td></tr>
+            <tr><td>3</td><td>3</td><td>ใช่ สลับกับช่อง 3</td><td>4</td><td><code>38 27 43 3 9 82 10 55</code></td></tr>
+            <tr><td>4</td><td>9</td><td>ใช่ สลับกับช่อง 4</td><td>5</td><td><code>38 27 43 3 9 82 10 55</code></td></tr>
+            <tr><td>5</td><td>82</td><td>ไม่</td><td>5</td><td><code>38 27 43 3 9 82 10 55</code></td></tr>
+            <tr><td>6</td><td>10</td><td>ใช่ สลับกับช่อง 5</td><td>6</td><td><code>38 27 43 3 9 10 82 55</code></td></tr>
+            <tr><td>จบ</td><td></td><td>สลับตัวแบ่งไปช่อง 6</td><td></td><td><code>38 27 43 3 9 10 55 82</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ห้ารอบแรกสลับกับตัวเอง เพราะยังไม่เจอตัวที่ไม่น้อยกว่า 55 เลย พอเจอ 82 แล้ว <code>store</code> ค้างอยู่ที่ช่องของ 82 ตัวที่น้อยกว่าตัวต่อไปคือ 10 จึงสลับกับ 82 จบแล้ว 55 อยู่ช่อง 6 ทางซ้ายมีหกตัวที่น้อยกว่าทั้งหมด ทางขวามี 82 ตัวเดียว partition ไล่ช่วงครั้งเดียว ใช้เวลา O(n)</p>
+
+      <h2 id="quicksort">quicksort</h2>
+
+      <p>หลัง partition ตัวแบ่งเข้าที่แล้ว เหลือเรียงทางซ้ายกับทางขวาของมันแยกกัน ซึ่งก็ใช้ quicksort เหมือนเดิม และไม่ต้องรวมอะไร เพราะทุกตัวทางซ้ายน้อยกว่าทุกตัวทางขวาอยู่แล้ว ฟังก์ชันที่ทำ partition ตั้งชื่อว่า <code>place_pivot</code> เพราะ <code>partition</code> เป็นชื่อฟังก์ชันที่มีอยู่แล้วใน STL</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="quick-sort"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int place_pivot(vector&lt;int&gt; &amp;a, int lo, int hi)
+{
+    int pivot = a[hi - 1];
+    int store = lo;
+    for (int i = lo; i &lt; hi - 1; i++) {
+        if (a[i] &lt; pivot) {
+            swap(a[i], a[store]);
+            store++;
+        }
+    }
+    swap(a[store], a[hi - 1]); // (1)!
+    return store;
+}
+
+void quick_sort(vector&lt;int&gt; &amp;a, int lo, int hi)
+{
+    if (hi - lo &lt;= 1) {
+        return;
+    }
+    int p = place_pivot(a, lo, hi);
+    cout &lt;&lt; "[" &lt;&lt; lo &lt;&lt; ", " &lt;&lt; hi &lt;&lt; ") pivot " &lt;&lt; a[p] &lt;&lt; " -&gt; index " &lt;&lt; p &lt;&lt; ":";
+    for (int t = lo; t &lt; hi; t++) {
+        cout &lt;&lt; ' ' &lt;&lt; a[t];
+    }
+    cout &lt;&lt; '\n';
+    quick_sort(a, lo, p); // (2)!
+    quick_sort(a, p + 1, hi);
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    quick_sort(a, 0, n);
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; a[i] &lt;&lt; (i == n - 1 ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>swap</code> ใน STL สลับค่าของตัวแปรสองตัวที่ส่งเข้าไป ไม่ต้องเขียนเองแบบหน้า 13.2</li>
+        <li>ช่อง <code>p</code> เข้าที่แล้ว จึงไม่อยู่ในช่วงทั้งสองฝั่ง ทุกครั้งที่เรียกต่อ ช่วงจึงสั้นลงอย่างน้อยหนึ่งช่อง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="quick-sort" data-title="ข้อมูลเข้า"><pre><code>8
+38 27 43 3 9 82 10 55
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="quick-sort" data-title="C:\code\quick_sort.exe"><pre><code>[0, 8) pivot 55 -&gt; index 6: 38 27 43 3 9 10 55 82
+[0, 6) pivot 10 -&gt; index 2: 3 9 10 38 27 43
+[0, 2) pivot 9 -&gt; index 1: 3 9
+[3, 6) pivot 43 -&gt; index 5: 38 27 43
+[3, 5) pivot 27 -&gt; index 3: 27 38
+3 9 10 27 38 43 55 82
+</code></pre></div>
+      </div>
+
+      <p>ต่างจาก merge sort ที่งานอยู่ในขากลับ quicksort ทำงานในขาลง พิมพ์ก่อนแล้วค่อยเรียกตัวเอง และช่วงที่ได้ไม่เท่ากัน ครั้งแรกตัวแบ่ง 55 แบ่ง 8 ตัวเป็น 6 กับ 1 ไม่ใช่ 4 กับ 4 ถ้าตัวแบ่งตกตรงกลางทุกครั้ง ต้นไม้จะเหมือน merge sort คือ log<sub>2</sub> N ชั้น ชั้นละ O(N) รวม O(N log N) แต่ถ้าตัวแบ่งเป็นตัวมากที่สุดทุกครั้ง แต่ละชั้นตัดออกได้แค่ตัวเดียว เป็นการแบ่งไม่ครึ่งแบบในหน้า 22.1 ต้นไม้ลึก N ชั้น และเทียบรวม (N - 1) + (N - 2) + ... + 1 ราว N<sup>2</sup> / 2 ครั้ง</p>
+
+      <h2 id="worst-case">ข้อมูลที่เรียงแล้วคือกรณีแย่สุด</h2>
+
+      <p>ตัวแบ่งเป็นตัวมากที่สุดทุกครั้งเกิดเมื่อไร คำตอบคือเมื่อข้อมูลเรียงมาแล้ว ตัวสุดท้ายของทุกช่วงคือตัวมากที่สุดของช่วงนั้นพอดี ข้อมูลที่เรียงแล้วหรือเกือบเรียงเจอบ่อยมากในชุดทดสอบ เช่น ชุดที่คนตั้งโจทย์ตั้งใจใส่ไว้ดักวิธีนี้ วัด quicksort ข้างบน (ตัดส่วนที่พิมพ์ออก) แบบเดียวกับหน้า 22.1 กับข้อมูลสุ่มจาก <code>mt19937</code> และข้อมูล 0 1 2 ... N - 1 ที่เรียงแล้ว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>N</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">สุ่ม</td><td>100,000</td><td>0.019 วินาที</td><td>0.007 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>0.241 วินาที</td><td>0.081 วินาที</td></tr>
+            <tr><td rowspan="4">เรียงแล้ว</td><td>10,000</td><td>0.458 วินาที</td><td>0.027 วินาที</td></tr>
+            <tr><td>20,000</td><td>1.875 วินาที</td><td>0.107 วินาที</td></tr>
+            <tr><td>40,000</td><td>พัง <code>0xC00000FD</code> ทั้ง 5 ครั้ง</td><td>0.460 วินาที</td></tr>
+            <tr><td>100,000</td><td>พัง <code>0xC00000FD</code> ทั้ง 5 ครั้ง</td><td>3.989 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้อมูลสุ่มเร็วพอๆ กับ merge sort ในหน้า 22.2 แต่ข้อมูลที่เรียงแล้ว N เพิ่มสองเท่า เวลาเพิ่มราวสี่เท่า คือโตแบบ N<sup>2</sup> แค่สองหมื่นตัวก็ช้ากว่าการเรียงล้านตัวสุ่มแล้ว และแบบ Code::Blocks ที่สี่หมื่นตัวยังไม่ทันได้ช้า ก็พังด้วย stack overflow ก่อน เพราะลึกหนึ่งชั้นต่อหนึ่งตัวแบบหน้า 9.4 แบบ <code>-O2</code> ยังไม่พังที่แสนตัว แต่ก็ใช้เกือบสี่วินาที และห้ามพึ่งว่า <code>-O2</code> จะรอดตามที่หน้า 9.1 เตือนไว้</p>
+
+      <h2 id="random-pivot">สุ่มตัวแบ่ง</h2>
+
+      <p>ปัญหาไม่ได้อยู่ที่ข้อมูล แต่อยู่ที่เราเลือกตัวแบ่งแบบที่คนอื่นเดาได้ ถ้าสุ่มช่องที่จะเป็นตัวแบ่ง ข้อมูลเรียงมาแบบไหนก็ไม่มีผล แก้แค่ต้นฟังก์ชัน <code>place_pivot</code> สุ่มช่อง <code>r</code> ในช่วง แล้วสลับมาไว้ท้ายช่วงก่อน ส่วนที่เหลือเหมือนเดิมทุกบรรทัด</p>
+
+      <div class="code" data-lang="cpp" data-annotate><pre><code>mt19937 pick(2569); // (1)!
+
+int place_pivot(vector&lt;int&gt; &amp;a, int lo, int hi)
+{
+    int r = lo + pick() % (hi - lo);
+    swap(a[r], a[hi - 1]);
+    int pivot = a[hi - 1];
+    int store = lo;
+    for (int i = lo; i &lt; hi - 1; i++) {
+        if (a[i] &lt; pivot) {
+            swap(a[i], a[store]);
+            store++;
+        }
+    }
+    swap(a[store], a[hi - 1]);
+    return store;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตัวสุ่มประกาศนอกฟังก์ชัน ถ้าประกาศข้างในจะเริ่มใหม่จาก seed เดิมทุกครั้งที่เรียก ได้เลขชุดเดิมซ้ำๆ อย่าใช้ <code>rand()</code> ซึ่งบน Windows ได้เลขไม่เกิน 32767 สุ่มช่องในช่วงที่ยาวกว่านั้นไม่ได้ครบ</li>
+      </ol>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>N</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">สุ่ม</td><td>100,000</td><td>0.022 วินาที</td><td>0.008 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>0.229 วินาที</td><td>0.088 วินาที</td></tr>
+            <tr><td rowspan="2">เรียงแล้ว</td><td>100,000</td><td>0.014 วินาที</td><td>0.003 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>0.163 วินาที</td><td>0.033 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้อมูลที่เรียงแล้วกลับเร็วที่สุด และล้านตัวก็ไม่พัง ทำไมการสุ่มถึงได้ผล ตัวแบ่งที่สุ่มมีโอกาสครึ่งหนึ่งที่จะตกอยู่ในครึ่งกลางของค่าทั้งหมด (ไม่อยู่ในหนึ่งในสี่ที่น้อยที่สุดหรือมากที่สุด) ซึ่งทำให้ทั้งสองฝั่งเหลือไม่เกินสามในสี่ของช่วงเดิม การแบ่งที่ดีแบบนี้จึงเกิดทุกสองครั้งโดยเฉลี่ย ความลึกเฉลี่ยจึงยังเป็น O(log N) และเวลาเฉลี่ยเป็น O(N log N) กรณีแย่สุด O(N<sup>2</sup>) ยังมีอยู่ แต่ต้องสุ่มได้ตัวแบ่งที่แย่เกือบทุกครั้ง ซึ่งโอกาสน้อยจนไม่ต้องกังวล</p>
+
+      <h2 id="std-sort">sort ของ C++ ข้างในทำอะไร</h2>
+
+      <p><code>sort</code> ของ g++ ใช้วิธีที่เรียกว่า introsort คือ quicksort ที่เลือกตัวแบ่งจากค่ากลางของสามตัว และคอยนับความลึกไว้ ถ้าลึกเกินราว 2 log<sub>2</sub> N ชั้น แปลว่ากำลังเจอกรณีแย่ ก็เปลี่ยนไปใช้ <strong>heap sort</strong> ซึ่งเป็น O(N log N) เสมอ ส่วนช่วงที่เหลือไม่เกิน 16 ตัวใช้ insertion sort จาก 13.3 เพราะเร็วกว่ากับข้อมูลน้อย <code>sort</code> จึงไม่มีวันช้าเป็น O(N<sup>2</sup>) heap sort อาศัยโครงสร้างที่ชื่อ heap ซึ่งเป็นที่มาของ <code>priority_queue</code> ในหน้า 20.5 และจะเขียนเองในบทที่ 26 สรุปวิธีเรียงทั้งหมดที่เจอมาได้ตามตาราง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>เวลาโดยทั่วไป</th><th>กรณีแย่สุด</th><th>หน่วยความจำเพิ่ม</th><th>stable</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>insertion sort หน้า 13.3</td><td>O(N<sup>2</sup>)</td><td>O(N<sup>2</sup>)</td><td>O(1)</td><td>ใช่</td></tr>
+            <tr><td>merge sort หน้า 22.2</td><td>O(N log N)</td><td>O(N log N)</td><td>O(N)</td><td>ใช่</td></tr>
+            <tr><td>quicksort ตัวแบ่งสุ่ม</td><td>O(N log N) โดยเฉลี่ย</td><td>O(N<sup>2</sup>) โอกาสน้อยมาก</td><td>stack ราว O(log N)</td><td>ไม่</td></tr>
+            <tr><td>heap sort บทที่ 26</td><td>O(N log N)</td><td>O(N log N)</td><td>O(1)</td><td>ไม่</td></tr>
+            <tr><td><code>sort</code></td><td>O(N log N)</td><td>O(N log N)</td><td>stack ราว O(log N)</td><td>ไม่</td></tr>
+            <tr><td><code>stable_sort</code> หน้า 16.4</td><td>O(N log N)</td><td>O(N log N)</td><td>O(N)</td><td>ใช่</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="quickselect">quickselect หาอันดับที่ k</h2>
+
+      <p>นักกีฬาวิ่ง 100 เมตร 9 คน เวลาเป็นร้อยละของวินาที (1342 คือ 13.42 วินาที) อยากรู้เวลาของคนที่เร็วเป็นอันดับ 3 เพื่อใช้เป็นเกณฑ์เข้ารอบ เรียงทั้งหมดก็ได้คำตอบ แต่เราไม่ได้สนใจลำดับของคนอื่นเลย partition บอกอะไรมากกว่าที่คิด หลังแบ่งรอบตัวแบ่งที่ไปอยู่ช่อง <code>p</code> ตัวแบ่งเป็นตัวที่เล็กเป็นอันดับ <code>p</code> (นับจาก 0) แน่นอน</p>
+
+      <ul>
+        <li>ถ้า <code>p</code> เท่ากับอันดับที่ต้องการ ได้คำตอบเลย</li>
+        <li>ถ้าอันดับที่ต้องการน้อยกว่า <code>p</code> คำตอบอยู่ทางซ้าย ทิ้งทางขวาทั้งหมด</li>
+        <li>ถ้ามากกว่า คำตอบอยู่ทางขวา ทิ้งทางซ้ายทั้งหมด</li>
+      </ul>
+
+      <p>เหลือส่วนเดียวทุกครั้ง เป็น decrease and conquer แบบ binary search ในหน้า 22.1 จึงเขียนเป็นลูปได้ไม่ต้องเรียกตัวเอง ใช้ <code>place_pivot</code> แบบสุ่มตัวแบ่ง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="quick-select"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+mt19937 pick(2569);
+
+int place_pivot(vector&lt;int&gt; &amp;a, int lo, int hi)
+{
+    int r = lo + pick() % (hi - lo);
+    swap(a[r], a[hi - 1]);
+    int pivot = a[hi - 1];
+    int store = lo;
+    for (int i = lo; i &lt; hi - 1; i++) {
+        if (a[i] &lt; pivot) {
+            swap(a[i], a[store]);
+            store++;
+        }
+    }
+    swap(a[store], a[hi - 1]);
+    return store;
+}
+
+int kth_smallest(vector&lt;int&gt; &amp;a, int k) // (1)!
+{
+    int lo = 0, hi = a.size();
+    while (true) {
+        int p = place_pivot(a, lo, hi);
+        cout &lt;&lt; "[" &lt;&lt; lo &lt;&lt; ", " &lt;&lt; hi &lt;&lt; ") pivot " &lt;&lt; a[p] &lt;&lt; " -&gt; index " &lt;&lt; p &lt;&lt; '\n';
+        if (p == k) {
+            return a[p];
+        }
+        if (k &lt; p) {
+            hi = p;
+        } else {
+            lo = p + 1;
+        }
+    }
+}
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; times(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; times[i];
+    }
+    int answer = kth_smallest(times, k - 1); // (2)!
+    cout &lt;&lt; "rank " &lt;&lt; k &lt;&lt; " time = " &lt;&lt; answer &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>k นับจาก 0 ลูปจบแน่นอน เพราะ <code>k</code> อยู่ในช่วง <code>[lo, hi)</code> เสมอ และช่วงสั้นลงอย่างน้อยหนึ่งทุกรอบ ถ้าช่วงเหลือช่องเดียว <code>p</code> ก็ต้องเท่ากับ <code>k</code></li>
+        <li>โจทย์นับอันดับจาก 1 ส่วนช่องนับจาก 0 จึงลบหนึ่ง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="quick-select" data-title="ข้อมูลเข้า"><pre><code>9 3
+1342 1287 1405 1199 1350 1263 1311 1228 1376
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="quick-select" data-title="C:\code\quick_select.exe"><pre><code>[0, 9) pivot 1350 -&gt; index 6
+[0, 6) pivot 1311 -&gt; index 4
+[0, 4) pivot 1228 -&gt; index 1
+[2, 4) pivot 1263 -&gt; index 2
+rank 3 time = 1263
+</code></pre></div>
+      </div>
+
+      <p>รอบแรกสุ่มได้ 1350 ไปอยู่ช่อง 6 แปลว่า 1350 เร็วเป็นอันดับ 7 อันดับ 3 (ช่อง 2) จึงอยู่ทางซ้าย ทิ้งสองตัวทางขวาไปเลย ทำต่อจนตัวแบ่งตกช่อง 2 พอดี ได้ 12.63 วินาที เรียงด้วยมือจะได้ 1199 1228 1263 ... ตรงกัน <code>mt19937</code> ให้เลขชุดเดียวกันทุกเครื่องเมื่อ seed เท่ากัน ผลจึงเหมือนกันทุกครั้งที่รัน</p>
+
+      <p>ถ้าตัวแบ่งตกแถวกลางๆ ช่วงจะหดราวครึ่งหนึ่งทุกรอบ งานรวมคือ N + N/2 + N/4 + ... ไม่เกิน 2N เป็น O(N) โดยเฉลี่ย ตามแถวที่สองของตารางในหน้า 22.1 ต่างจากการเรียงที่ต้อง O(N log N) เพราะทิ้งได้ทีละครึ่ง ไม่ต้องทำทั้งสองฝั่ง</p>
+
+      <h2 id="nth-element">nth_element</h2>
+
+      <p>STL มี quickselect ให้ใช้ชื่อ <code>nth_element(begin, nth, end)</code> หลังเรียก ช่องที่ <code>nth</code> ชี้จะมีค่าเดียวกับที่ช่องนั้นจะมีถ้าเรียงทั้งหมด ทุกช่องก่อนหน้าไม่มากกว่า และทุกช่องหลังจากนั้นไม่น้อยกว่า แต่ภายในแต่ละฝั่งไม่เรียง ถ้าต้องการ k ตัวที่เล็กที่สุดแบบเรียงด้วย ให้ <code>sort</code> เฉพาะ k ช่องแรกต่อ ใช้เวลาเพิ่ม O(k log k) เท่านั้น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="nth-element"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; times(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; times[i];
+    }
+    nth_element(times.begin(), times.begin() + (k - 1), times.end()); // (1)!
+    cout &lt;&lt; "rank " &lt;&lt; k &lt;&lt; " time = " &lt;&lt; times[k - 1] &lt;&lt; '\n';
+    sort(times.begin(), times.begin() + k); // (2)!
+    cout &lt;&lt; "fastest " &lt;&lt; k &lt;&lt; ":";
+    for (int i = 0; i &lt; k; i++) {
+        cout &lt;&lt; ' ' &lt;&lt; times[i];
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อันดับ k นับจาก 1 อยู่ช่อง <code>k - 1</code></li>
+        <li>เรียงเฉพาะ k ช่องแรก ก่อนบรรทัดนี้ k ช่องแรกเป็น k ตัวที่เร็วที่สุดอยู่แล้ว แต่ลำดับข้างในไม่แน่นอน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="nth-element" data-title="ข้อมูลเข้า"><pre><code>9 3
+1342 1287 1405 1199 1350 1263 1311 1228 1376
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="nth-element" data-title="C:\code\nth_element.exe"><pre><code>rank 3 time = 1263
+fastest 3: 1199 1228 1263
+</code></pre></div>
+      </div>
+
+      <p>วัดการหาค่ามัธยฐาน (k = N / 2) ของเลขสุ่มจาก <code>mt19937</code> สามวิธี วัดแบบเดียวกับหน้า 22.1 ตารางนี้วัดคนละรอบกับตารางในหน้า 22.2 เวลาของ <code>sort</code> จึงไม่เท่ากันเป๊ะ เครื่องเดียวกันวัดคนละช่วงเวลาได้ตัวเลขแกว่งแบบที่หน้า 16.3 เจอ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>N</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2"><code>sort</code> แล้วอ่านช่องกลาง O(N log N)</td><td>1,000,000</td><td>0.355 วินาที</td><td>0.067 วินาที</td></tr>
+            <tr><td>10,000,000</td><td>3.337 วินาที</td><td>0.767 วินาที</td></tr>
+            <tr><td rowspan="2"><code>nth_element</code> O(N)</td><td>1,000,000</td><td>0.040 วินาที</td><td>0.009 วินาที</td></tr>
+            <tr><td>10,000,000</td><td>0.216 วินาที</td><td>0.050 วินาที</td></tr>
+            <tr><td rowspan="2"><code>kth_smallest</code> ที่เขียนเอง</td><td>1,000,000</td><td>0.020 วินาที</td><td>0.007 วินาที</td></tr>
+            <tr><td>10,000,000</td><td>0.423 วินาที</td><td>0.090 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสามวิธีได้ค่ามัธยฐานเท่ากัน <code>nth_element</code> เร็วกว่า <code>sort</code> ราวสิบห้าเท่าที่สิบล้านตัว ของที่เขียนเองก็เร็วระดับเดียวกัน แต่แกว่งตามดวงของการสุ่ม (5 ครั้งที่สิบล้านตัวแบบ <code>-O2</code> อยู่ระหว่าง 0.080 ถึง 0.102 วินาที) เมื่อโจทย์ต้องการแค่ค่ามัธยฐาน อันดับที่ k หรือ k ตัวที่เล็กที่สุด ใช้ <code>nth_element</code> ได้เลย</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="all-equal">แบบที่ 1 ข้อมูลซ้ำกันเยอะ</h3>
+
+      <p>เอา quicksort แบบสุ่มตัวแบ่งไปเรียงข้อมูลที่ทุกตัวเท่ากัน เช่น คะแนนเต็มทั้งห้อง วัดแบบเดียวกับตารางข้างบน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N ตัวที่เท่ากันหมด</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10,000</td><td>0.090 วินาที</td><td>0.016 วินาที</td></tr>
+            <tr><td>40,000</td><td>พัง <code>0xC00000FD</code> ทั้ง 5 ครั้ง</td><td>0.305 วินาที</td></tr>
+            <tr><td>100,000</td><td>พัง <code>0xC00000FD</code> ทั้ง 5 ครั้ง</td><td>1.677 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>การสุ่มไม่ช่วยเลย เพราะ partition เทียบด้วย <code>a[i] &lt; pivot</code> ตัวที่เท่ากับตัวแบ่งไปอยู่ทางขวาทั้งหมด สุ่มได้ตัวไหนก็เท่ากันหมด ทางซ้ายจึงว่างทุกครั้ง แบ่งไม่ครึ่งแบบเดียวกับข้อมูลที่เรียงแล้ว ข้อมูลที่มีค่าไม่กี่แบบ เช่น เกรด 0 ถึง 4 ของนักเรียนแสนคน ก็เจอปัญหาเดียวกัน</p>
+
+      <p>แก้ด้วยการแบ่งเป็นสามกลุ่ม น้อยกว่า เท่ากับ และมากกว่าตัวแบ่ง แล้วเรียกตัวเองเฉพาะกลุ่มน้อยกว่ากับกลุ่มมากกว่า กลุ่มที่เท่ากันเข้าที่แล้วทั้งกลุ่ม ใช้ตัวชี้สามตัว ทุกช่องก่อน <code>lt</code> น้อยกว่าตัวแบ่ง ช่อง <code>lt</code> ถึงก่อน <code>i</code> เท่ากับตัวแบ่ง ช่องตั้งแต่ <code>gt</code> มากกว่าตัวแบ่ง ส่วน <code>i</code> ถึงก่อน <code>gt</code> คือช่องที่ยังไม่ได้ดู</p>
+
+      <div class="code" data-lang="cpp" data-annotate><pre><code>void quick_sort(vector&lt;int&gt; &amp;a, int lo, int hi)
+{
+    if (hi - lo &lt;= 1) {
+        return;
+    }
+    int pivot = a[lo + pick() % (hi - lo)];
+    int lt = lo, i = lo, gt = hi;
+    while (i &lt; gt) {
+        if (a[i] &lt; pivot) {
+            swap(a[i], a[lt]);
+            lt++;
+            i++;
+        } else if (a[i] &gt; pivot) {
+            gt--;
+            swap(a[i], a[gt]); // (1)!
+        } else {
+            i++;
+        }
+    }
+    quick_sort(a, lo, lt);
+    quick_sort(a, gt, hi);
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ไม่เลื่อน <code>i</code> เพราะค่าที่สลับมาจากช่อง <code>gt</code> ยังไม่เคยถูกดู</li>
+      </ol>
+
+      <p>ข้อมูลที่เท่ากันหมดล้านตัวใช้ 0.002 วินาทีแบบ Code::Blocks และไม่ถึง 0.001 วินาทีแบบ <code>-O2</code> เพราะรอบแรกทุกตัวเข้ากลุ่มเท่ากับ แล้วจบเลย ส่วนข้อมูลสุ่มล้านตัวใช้ 0.447 กับ 0.080 วินาที ข้อมูลที่เรียงแล้วล้านตัวใช้ 0.277 กับ 0.035 วินาที ยังเป็น O(N log N) ตามเดิม แต่แบบ Code::Blocks ช้ากว่าแบบสองกลุ่มราวเท่าตัวเพราะเทียบมากกว่า ชุดทดสอบของโจทย์เรียงข้อมูลควรมีทั้งข้อมูลสุ่ม ข้อมูลที่เรียงแล้ว และข้อมูลที่ซ้ำกันหมด</p>
+
+      <h3 id="off-by-one">แบบที่ 2 ส่งอันดับให้ nth_element ผิดไปหนึ่ง</h3>
+
+      <p>ในโปรแกรม nth-element เขียน <code>times.begin() + k</code> และอ่าน <code>times[k]</code> แทน <code>k - 1</code> ป้อนข้อมูลชุดเดิมได้ <code>rank 3 time = 1287</code> ซึ่งเป็นเวลาของอันดับ 4 คอมไพล์ผ่านโดยไม่มีคำเตือน และถ้าป้อน k เท่ากับ N คือ 9 จะอ่านช่องที่ 9 ซึ่งอยู่นอก vector บนเครื่องที่เขียนเอกสารนี้ได้ <code>rank 9 time = 0</code> ทุกครั้งที่ใช้อันดับจากโจทย์ ให้ถามตัวเองว่านับจาก 0 หรือ 1 และทดสอบด้วย k = 1 กับ k = N เสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>partition จัดให้ตัวที่น้อยกว่าตัวแบ่งอยู่ซ้าย ตัวแบ่งเข้าที่ของมันพอดี ใช้เวลา O(n) quicksort เรียกตัวเองกับสองฝั่งโดยไม่ต้องรวม</li>
+        <li>ตัวแบ่งตัวสุดท้ายกับข้อมูลที่เรียงแล้วคือกรณีแย่สุด O(N<sup>2</sup>) บนเครื่องที่วัด สี่หมื่นตัวแบบ Code::Blocks พังด้วย stack overflow</li>
+        <li>สุ่มตัวแบ่งด้วย <code>mt19937</code> ได้ O(N log N) โดยเฉลี่ยกับข้อมูลทุกแบบ ข้อมูลซ้ำเยอะต้องแบ่งสามกลุ่ม</li>
+        <li><code>sort</code> คือ quicksort ที่สลับไปใช้ heap sort เมื่อลึกเกิน จึงเป็น O(N log N) เสมอ ส่วน merge sort ใช้เมื่อต้องการ stable หรือทำงานเพิ่มระหว่างรวม</li>
+        <li>quickselect ทิ้งฝั่งที่ไม่มีคำตอบทุกรอบ ได้อันดับที่ k ใน O(N) โดยเฉลี่ย ใน STL คือ <code>nth_element</code> ระวังอันดับนับจาก 0 หรือ 1</li>
+      </ul>
+    </article>

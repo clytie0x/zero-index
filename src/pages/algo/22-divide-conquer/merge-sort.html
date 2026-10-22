@@ -1,0 +1,462 @@
+<article class="doc">
+      <h1>22.2 merge sort</h1>
+
+      <p>หน้า 13.3 วัดแล้วว่า bubble selection และ insertion sort โตตาม N<sup>2</sup> ข้อมูลแสนตัวใช้หลายวินาที ส่วน <code>qsort</code> กับ <code>sort</code> เรียงได้ในเสี้ยววินาที หน้านี้เขียนวิธีเรียงที่เร็วระดับเดียวกันขึ้นเองด้วย divide and conquer ชื่อ <strong>merge sort</strong> เรียงครึ่งซ้าย เรียงครึ่งขวา แล้วรวมสองครึ่งที่เรียงแล้วเข้าด้วยกัน มี <code>sort</code> ให้ใช้อยู่แล้วก็ยังต้องรู้ เพราะขั้นรวมของ merge sort คือเครื่องมือของโจทย์อีกหลายแบบ เช่น นับคู่สลับในหน้าถัดไป และข้อสอบค่ายชอบให้ไล่ขั้นตอนของมันด้วยมือ</p>
+
+      <h2 id="merge">รวมสองแถวที่เรียงแล้ว</h2>
+
+      <p>ขั้นรวมเป็นหัวใจของวิธีนี้ เริ่มจากปัญหาเล็กๆ ป้ายรถเมล์มีรถสองสายผ่าน แต่ละสายมีตารางเวลามาถึงที่เรียงแล้ว (นาทีหลัง 6 โมงเช้า) อยากได้ตารางเดียวที่เรียงตามเวลา ไม่ต้องเรียงใหม่ทั้งหมด ใช้ตัวชี้สองตัว <code>i</code> ชี้คันแรกของสาย A ที่ยังไม่ได้ใส่ตาราง <code>j</code> ชี้ของสาย B ทุกรอบเทียบสองคันที่ชี้อยู่ คันที่มาก่อนคือคันที่มาเร็วที่สุดในบรรดาทุกคันที่เหลือแน่นอน เพราะทั้งสองสายเรียงแล้ว หยิบคันนั้นใส่ตาราง แล้วเลื่อนตัวชี้ของสายนั้น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="merge-lists"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;int&gt; line_a(n), line_b(m);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; line_a[i];
+    }
+    for (int j = 0; j &lt; m; j++) {
+        cin &gt;&gt; line_b[j];
+    }
+    vector&lt;int&gt; timetable;
+    int i = 0, j = 0;
+    while (i &lt; n &amp;&amp; j &lt; m) { // (1)!
+        if (line_a[i] &lt;= line_b[j]) {
+            cout &lt;&lt; "A " &lt;&lt; line_a[i] &lt;&lt; " vs B " &lt;&lt; line_b[j] &lt;&lt; ": take A\n";
+            timetable.push_back(line_a[i]);
+            i++;
+        } else {
+            cout &lt;&lt; "A " &lt;&lt; line_a[i] &lt;&lt; " vs B " &lt;&lt; line_b[j] &lt;&lt; ": take B\n";
+            timetable.push_back(line_b[j]);
+            j++;
+        }
+    }
+    while (i &lt; n) { // (2)!
+        timetable.push_back(line_a[i]);
+        i++;
+    }
+    while (j &lt; m) {
+        timetable.push_back(line_b[j]);
+        j++;
+    }
+    for (int k = 0; k &lt; n + m; k++) {
+        cout &lt;&lt; timetable[k] &lt;&lt; (k == n + m - 1 ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เทียบได้เฉพาะตอนที่ทั้งสองสายยังมีรถเหลือ สายใดหมดก่อนลูปนี้ก็จบ</li>
+        <li>สายที่ยังเหลือ ทุกคันมาช้ากว่าทุกคันในตารางแล้ว ต่อท้ายได้เลยโดยไม่ต้องเทียบ สองลูปนี้จะทำงานจริงแค่ลูปเดียว แต่ต้องเขียนทั้งคู่ เพราะไม่รู้ล่วงหน้าว่าสายไหนหมดก่อน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="merge-lists" data-title="ข้อมูลเข้า"><pre><code>4 5
+5 12 20 31
+7 8 25 40 41
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="merge-lists" data-title="C:\code\merge_lists.exe"><pre><code>A 5 vs B 7: take A
+A 12 vs B 7: take B
+A 12 vs B 8: take B
+A 12 vs B 25: take A
+A 20 vs B 25: take A
+A 31 vs B 25: take B
+A 31 vs B 40: take A
+5 7 8 12 20 25 31 40 41
+</code></pre></div>
+      </div>
+
+      <p>ทุกครั้งที่เทียบ มีหนึ่งคันได้ลงตาราง รถเก้าคันจึงเทียบไม่เกินแปดครั้ง ครั้งนี้เทียบแค่เจ็ดครั้ง เพราะพอสาย A หมด คันที่ 40 กับ 41 ของสาย B ต่อท้ายได้เลย การรวมสองแถวยาว n กับ m จึงเป็น O(n + m) ส่วนเงื่อนไข <code>&lt;=</code> ทำให้ถ้ามาถึงพร้อมกัน คันของสาย A ได้ลงตารางก่อน รายละเอียดนี้จะสำคัญในหัวข้อ stable ข้างล่าง</p>
+
+      <h2 id="merge-sort">เรียงด้วยการแบ่งแล้วรวม</h2>
+
+      <p>ถ้าอาเรย์ทั้งสองครึ่งเรียงอยู่แล้ว ขั้นรวมทำให้ทั้งอาเรย์เรียงได้ใน O(N) แล้วครึ่งแต่ละครึ่งจะเรียงได้ยังไง ก็ใช้วิธีเดียวกัน แบ่งครึ่งอีก จนเหลือช่วงยาวหนึ่งช่อง ซึ่งเรียงอยู่แล้วโดยไม่ต้องทำอะไร ครบสามขั้นของหน้า 22.1</p>
+
+      <ol>
+        <li><strong>แบ่ง</strong> ช่วง <code>[lo, hi)</code> ที่ <code>mid</code></li>
+        <li><strong>แก้ย่อย</strong> merge sort ครึ่งซ้ายกับครึ่งขวา</li>
+        <li><strong>รวม</strong> ครึ่งที่เรียงแล้วสองครึ่ง ใส่ลงอาเรย์พัก <code>temp</code> แล้วคัดลอกกลับ</li>
+      </ol>
+
+      <p>คะแนนสอบย่อยของนักเรียน 8 คน โปรแกรมพิมพ์ผลทุกครั้งที่รวมเสร็จ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="merge-sort"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+void merge_sort(vector&lt;int&gt; &amp;a, vector&lt;int&gt; &amp;temp, int lo, int hi) // (1)!
+{
+    if (hi - lo &lt;= 1) {
+        return;
+    }
+    int mid = (lo + hi) / 2;
+    merge_sort(a, temp, lo, mid);
+    merge_sort(a, temp, mid, hi);
+    int i = lo, j = mid, k = lo;
+    while (i &lt; mid &amp;&amp; j &lt; hi) {
+        if (a[i] &lt;= a[j]) {
+            temp[k] = a[i];
+            i++;
+        } else {
+            temp[k] = a[j];
+            j++;
+        }
+        k++;
+    }
+    while (i &lt; mid) {
+        temp[k] = a[i];
+        i++;
+        k++;
+    }
+    while (j &lt; hi) {
+        temp[k] = a[j];
+        j++;
+        k++;
+    }
+    for (int t = lo; t &lt; hi; t++) { // (2)!
+        a[t] = temp[t];
+    }
+    cout &lt;&lt; "merge [" &lt;&lt; lo &lt;&lt; ", " &lt;&lt; mid &lt;&lt; ") + [" &lt;&lt; mid &lt;&lt; ", " &lt;&lt; hi &lt;&lt; "):";
+    for (int t = lo; t &lt; hi; t++) {
+        cout &lt;&lt; ' ' &lt;&lt; a[t];
+    }
+    cout &lt;&lt; '\n';
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    vector&lt;int&gt; temp(n); // (3)!
+    merge_sort(a, temp, 0, n);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ส่งทั้ง <code>a</code> และ <code>temp</code> แบบ reference ตามบทที่ 15 ไม่มีการคัดลอก vector ตอนเรียก</li>
+        <li>ผลที่รวมแล้วอยู่ใน <code>temp</code> ช่อง <code>lo</code> ถึง <code>hi - 1</code> ต้องคัดลอกกลับมาที่ <code>a</code> ชั้นที่เรียกมาจะได้เห็นครึ่งนี้เรียงแล้ว</li>
+        <li>จองอาเรย์พักครั้งเดียวขนาด n แล้วใช้ร่วมกันทุกชั้น แต่ละชั้นใช้เฉพาะช่องในช่วงของตัวเอง ซึ่งไม่ทับกับช่วงที่ชั้นอื่นกำลังใช้ ดูว่าทำไมห้ามจองใหม่ทุกครั้งในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="merge-sort" data-title="ข้อมูลเข้า"><pre><code>8
+38 27 43 3 9 82 10 55
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="merge-sort" data-title="C:\code\merge_sort.exe"><pre><code>merge [0, 1) + [1, 2): 27 38
+merge [2, 3) + [3, 4): 3 43
+merge [0, 2) + [2, 4): 3 27 38 43
+merge [4, 5) + [5, 6): 9 82
+merge [6, 7) + [7, 8): 10 55
+merge [4, 6) + [6, 8): 9 10 55 82
+merge [0, 4) + [4, 8): 3 9 10 27 38 43 55 82
+</code></pre></div>
+      </div>
+
+      <p>การรวมเกิดขึ้นในขากลับ ครึ่งซ้ายทั้งหมดเสร็จก่อน (สามบรรทัดแรก) แล้วจึงถึงครึ่งขวา (สามบรรทัดถัดมา) บรรทัดสุดท้ายรวมสองครึ่งที่เรียงแล้ว ภาพนี้แสดงทั้งขาแบ่งและขารวม</p>
+
+      <figure>
+        <svg viewBox="0 0 520 300" width="520" style="max-width:100%;height:auto" role="img" aria-label="merge sort ของ 38 27 43 3 9 82 10 55 สามแถวบนคือขาแบ่ง จากแปดตัวเป็นสองกลุ่มกลุ่มละสี่ เป็นสี่กลุ่มกลุ่มละสอง จนเหลือตัวเดียวแปดกลุ่ม สามแถวล่างคือขารวม ได้ 27 38 กับ 3 43 กับ 9 82 กับ 10 55 แล้วได้ 3 27 38 43 กับ 9 10 55 82 และสุดท้ายได้ 3 9 10 27 38 43 55 82">
+          <g style="stroke-width:1.5">
+            <rect x="8" y="6" width="380" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="8" y="46" width="188" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="200" y="46" width="188" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="8" y="86" width="92" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="104" y="86" width="92" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="200" y="86" width="92" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="296" y="86" width="92" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="8" y="126" width="44" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="56" y="126" width="44" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="104" y="126" width="44" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="152" y="126" width="44" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="200" y="126" width="44" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="248" y="126" width="44" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="296" y="126" width="44" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="344" y="126" width="44" height="30" rx="6" style="fill:var(--surface);stroke:var(--line-strong)"/>
+            <rect x="8" y="176" width="92" height="30" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="104" y="176" width="92" height="30" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="200" y="176" width="92" height="30" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="296" y="176" width="92" height="30" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="8" y="216" width="188" height="30" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="200" y="216" width="188" height="30" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+            <rect x="8" y="256" width="380" height="30" rx="6" style="fill:var(--brand-soft);stroke:var(--brand)"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:14px;fill:var(--ink)" text-anchor="middle">
+            <text x="30" y="26">38</text><text x="78" y="26">27</text><text x="126" y="26">43</text><text x="174" y="26">3</text><text x="222" y="26">9</text><text x="270" y="26">82</text><text x="318" y="26">10</text><text x="366" y="26">55</text>
+            <text x="30" y="66">38</text><text x="78" y="66">27</text><text x="126" y="66">43</text><text x="174" y="66">3</text><text x="222" y="66">9</text><text x="270" y="66">82</text><text x="318" y="66">10</text><text x="366" y="66">55</text>
+            <text x="30" y="106">38</text><text x="78" y="106">27</text><text x="126" y="106">43</text><text x="174" y="106">3</text><text x="222" y="106">9</text><text x="270" y="106">82</text><text x="318" y="106">10</text><text x="366" y="106">55</text>
+            <text x="30" y="146">38</text><text x="78" y="146">27</text><text x="126" y="146">43</text><text x="174" y="146">3</text><text x="222" y="146">9</text><text x="270" y="146">82</text><text x="318" y="146">10</text><text x="366" y="146">55</text>
+            <text x="30" y="196">27</text><text x="78" y="196">38</text><text x="126" y="196">3</text><text x="174" y="196">43</text><text x="222" y="196">9</text><text x="270" y="196">82</text><text x="318" y="196">10</text><text x="366" y="196">55</text>
+            <text x="30" y="236">3</text><text x="78" y="236">27</text><text x="126" y="236">38</text><text x="174" y="236">43</text><text x="222" y="236">9</text><text x="270" y="236">10</text><text x="318" y="236">55</text><text x="366" y="236">82</text>
+            <text x="30" y="276">3</text><text x="78" y="276">9</text><text x="126" y="276">10</text><text x="174" y="276">27</text><text x="222" y="276">38</text><text x="270" y="276">43</text><text x="318" y="276">55</text><text x="366" y="276">82</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px">
+            <text x="404" y="66" style="fill:var(--muted)">แบ่งครึ่ง</text>
+            <text x="404" y="106" style="fill:var(--muted)">แบ่งครึ่ง</text>
+            <text x="404" y="146" style="fill:var(--muted)">เหลือตัวเดียว</text>
+            <text x="404" y="196" style="fill:var(--brand-text)">รวมทีละสอง</text>
+            <text x="404" y="236" style="fill:var(--brand-text)">รวมทีละสี่</text>
+            <text x="404" y="276" style="fill:var(--brand-text)">รวมทั้งหมด</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ขาแบ่งไม่ได้ย้ายข้อมูลเลย แค่คำนวณ <code>mid</code> งานจริงทั้งหมดอยู่ในขารวม แถวสีน้ำเงินแต่ละแถวคือการรวมหนึ่งชั้นของต้นไม้</p>
+
+      <h2 id="n-log-n">ทำไมเป็น O(N log N)</h2>
+
+      <p>ใช้วิธีนับของหน้า 18.3 รวมงานทีละชั้นของต้นไม้ การรวมช่วงยาว <code>hi - lo</code> ใช้งานราว <code>hi - lo</code> ครั้ง (หยิบใส่ <code>temp</code> หนึ่งครั้งต่อหนึ่งตัว) โปรแกรมนี้จดงานของการรวมแยกตามความลึก ข้อมูล 1000 ตัวสร้างจากสูตร <code>i * 7919 % n</code> แบบหน้า 13.3 ซึ่งได้ 0 ถึง 999 ครบทุกตัวแต่สลับลำดับ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="merge-levels"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;long long&gt; work(40, 0);
+
+void merge_sort(vector&lt;int&gt; &amp;a, vector&lt;int&gt; &amp;temp, int lo, int hi, int depth)
+{
+    if (hi - lo &lt;= 1) {
+        return;
+    }
+    int mid = (lo + hi) / 2;
+    merge_sort(a, temp, lo, mid, depth + 1);
+    merge_sort(a, temp, mid, hi, depth + 1);
+    int i = lo, j = mid, k = lo;
+    while (i &lt; mid &amp;&amp; j &lt; hi) {
+        if (a[i] &lt;= a[j]) {
+            temp[k] = a[i];
+            i++;
+        } else {
+            temp[k] = a[j];
+            j++;
+        }
+        k++;
+    }
+    while (i &lt; mid) {
+        temp[k] = a[i];
+        i++;
+        k++;
+    }
+    while (j &lt; hi) {
+        temp[k] = a[j];
+        j++;
+        k++;
+    }
+    for (int t = lo; t &lt; hi; t++) {
+        a[t] = temp[t];
+    }
+    work[depth] += hi - lo; // (1)!
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        a[i] = (long long)i * 7919 % n; // (2)!
+    }
+    vector&lt;int&gt; temp(n);
+    merge_sort(a, temp, 0, n, 0);
+    long long total = 0;
+    for (int d = 0; d &lt; 40 &amp;&amp; work[d] &gt; 0; d++) {
+        cout &lt;&lt; "depth " &lt;&lt; d &lt;&lt; ": " &lt;&lt; work[d] &lt;&lt; '\n';
+        total += work[d];
+    }
+    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ชั้นที่ <code>depth</code> หยิบของใส่ <code>temp</code> เพิ่มอีก <code>hi - lo</code> ตัว</li>
+        <li>cast เป็น <code>long long</code> ก่อนคูณ เพราะถ้า n เป็นล้าน <code>i * 7919</code> ถึงราว 8 × 10<sup>9</sup> เกิน <code>int</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="merge-levels" data-title="ข้อมูลเข้า"><pre><code>1000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="merge-levels" data-title="C:\code\merge_levels.exe"><pre><code>depth 0: 1000
+depth 1: 1000
+depth 2: 1000
+depth 3: 1000
+depth 4: 1000
+depth 5: 1000
+depth 6: 1000
+depth 7: 1000
+depth 8: 1000
+depth 9: 976
+total = 9976
+</code></pre></div>
+      </div>
+
+      <p>ทุกชั้นทำงาน 1000 ครั้งเท่ากับ N เพราะช่วงในชั้นเดียวกันไม่ทับกันและครอบคลุมทุกช่อง ชั้นสุดท้ายได้ 976 เพราะบางช่วงเหลือช่องเดียวไปก่อนแล้ว 1000 ไม่ใช่กำลังของสองพอดี จำนวนชั้นคือ 10 ซึ่งคือ log<sub>2</sub> 1000 ปัดขึ้น งานรวมจึงราว N × log<sub>2</sub> N ได้ 9976 ใกล้กับ 1000 × 9.97 = 9966 ป้อน 1000000 ได้ 20 ชั้นและงานรวม 19951424 เป็น O(N log N) ตามแถวที่สี่ของตารางในหน้า 22.1</p>
+
+      <p>เทียบกับ insertion sort ที่เทียบเฉลี่ยราว N<sup>2</sup> / 4 ครั้งกับข้อมูลสุ่มตามหน้า 13.3 ที่ N เป็นแสน คือ 2.5 × 10<sup>9</sup> ครั้ง ส่วน merge sort ทำงานราว 1.7 × 10<sup>6</sup> ครั้ง ต่างกันกว่าพันเท่า และไม่ว่าข้อมูลจะเรียงมาแล้ว เรียงกลับ หรือสุ่ม merge sort ก็แบ่งแบบเดิมทุกครั้ง จึงเป็น O(N log N) เสมอ</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>โปรแกรมจับเวลาใช้ฟังก์ชัน <code>merge_sort</code> แบบเดียวกับข้างบนแต่ตัดส่วนที่พิมพ์ออก ข้อมูลสร้างด้วย <code>mt19937</code> ตัวสุ่มของ C++ ที่ใช้ในหน้า 20.1 ได้เลข 0 ถึง 10<sup>9</sup> จาก seed ตายตัว แล้วจับเวลาด้วย <code>clock()</code> เฉพาะช่วงที่เรียง วัดแบบเดียวกับหน้า 22.1 insertion sort กับ <code>sort</code> ใช้ <code>main</code> เดียวกัน เปลี่ยนแค่บรรทัดที่เรียก</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    mt19937 rng(2569);
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        a[i] = rng() % 1000000000;
+    }
+    vector&lt;int&gt; temp(n);
+    clock_t start = clock();
+    merge_sort(a, temp, 0, n);
+    clock_t end = clock();
+    cout &lt;&lt; "first = " &lt;&lt; a[0] &lt;&lt; ", last = " &lt;&lt; a[n - 1] &lt;&lt; '\n';
+    cout &lt;&lt; "time = " &lt;&lt; fixed &lt;&lt; setprecision(3) &lt;&lt; (double)(end - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>N</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">insertion sort O(N<sup>2</sup>)</td><td>10,000</td><td>0.084 วินาที</td><td>0.008 วินาที</td></tr>
+            <tr><td>100,000</td><td>9.314 วินาที</td><td>0.765 วินาที</td></tr>
+            <tr><td rowspan="3">merge sort O(N log N)</td><td>10,000</td><td>0.001 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>100,000</td><td>0.019 วินาที</td><td>0.009 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>0.267 วินาที</td><td>0.107 วินาที</td></tr>
+            <tr><td rowspan="3"><code>sort</code></td><td>10,000</td><td>0.002 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>100,000</td><td>0.023 วินาที</td><td>0.006 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>0.225 วินาที</td><td>0.069 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul>
+        <li>N เพิ่มสิบเท่า insertion sort ช้าลงราวร้อยเท่า ส่วน merge sort ช้าลงราวสิบกว่าเท่า ตรงกับ N log N ที่ N เพิ่มสิบเท่า log N เพิ่มแค่ราว 1.2 เท่า insertion sort ที่ล้านตัวจะใช้เป็นนาที (ประมาณจากตาราง ไม่ได้วัดจริง)</li>
+        <li>insertion sort แบบ Code::Blocks ที่แสนตัวใช้ 9.3 วินาที ช้ากว่า 2.4 วินาทีในหน้า 13.3 เพราะโปรแกรมนี้ใช้ vector ถ้าไม่เปิด <code>-O2</code> การอ่านเขียนทุกช่องของ vector เป็นการเรียกฟังก์ชันจริงๆ แบบ <code>push_back</code> ในหน้า 16.2 พอเปิด <code>-O2</code> ก็ใกล้กับในหน้า 13.3</li>
+        <li>merge sort ที่เขียนเองเร็วพอๆ กับ <code>sort</code> แบบ Code::Blocks และช้ากว่าราว 1.5 เท่าแบบ <code>-O2</code> เรียงล้านตัวได้ในเสี้ยววินาทีทั้งคู่ ในการแข่งขันใช้ <code>sort</code> เมื่อแค่ต้องการให้เรียง เขียน merge sort เองเมื่อต้องทำอะไรเพิ่มระหว่างรวม แบบหน้าถัดไป</li>
+      </ul>
+
+      <h2 id="properties">หน่วยความจำและ stable</h2>
+
+      <ul>
+        <li><strong>ใช้หน่วยความจำเพิ่ม O(N)</strong> สำหรับ <code>temp</code> ข้อมูลล้านตัวต้องมีอีกล้านช่อง ต่างจาก insertion sort ที่เรียงในอาเรย์เดิม</li>
+        <li><strong>stable</strong> ตามความหมายในหน้า 13.4 ค่าที่เท่ากันอยู่ตามลำดับเดิม เพราะเงื่อนไข <code>a[i] &lt;= a[j]</code> หยิบจากครึ่งซ้ายก่อนเมื่อเท่ากัน และครึ่งซ้ายคือตัวที่มาก่อนในลำดับเดิมเสมอ ถ้าเปลี่ยนเป็น <code>&lt;</code> ก็ยังเรียงถูก แต่เสียความ stable ไป <code>stable_sort</code> ในหน้า 16.4 ก็ใช้วิธีแบบ merge sort ข้างใน</li>
+        <li><strong>ลึกแค่ราว log<sub>2</sub> N ชั้น</strong> ตามหน้า 22.1 ล้านตัวลึก 20 ชั้น ไม่มีปัญหาเรื่อง stack</li>
+      </ul>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forgot-rest">แบบที่ 1 ลืมเทส่วนที่เหลือของครึ่งซ้าย</h3>
+
+      <p>เขียนลูปเทส่วนที่เหลือไว้แค่ฝั่งขวา เพราะคิดว่าเหลือแค่ฝั่งเดียวก็พอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="forgot-rest"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+void merge_sort(vector&lt;int&gt; &amp;a, vector&lt;int&gt; &amp;temp, int lo, int hi)
+{
+    if (hi - lo &lt;= 1) {
+        return;
+    }
+    int mid = (lo + hi) / 2;
+    merge_sort(a, temp, lo, mid);
+    merge_sort(a, temp, mid, hi);
+    int i = lo, j = mid, k = lo;
+    while (i &lt; mid &amp;&amp; j &lt; hi) {
+        if (a[i] &lt;= a[j]) {
+            temp[k] = a[i];
+            i++;
+        } else {
+            temp[k] = a[j];
+            j++;
+        }
+        k++;
+    }
+    while (j &lt; hi) {
+        temp[k] = a[j];
+        j++;
+        k++;
+    }
+    for (int t = lo; t &lt; hi; t++) {
+        a[t] = temp[t];
+    }
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    vector&lt;int&gt; temp(n);
+    merge_sort(a, temp, 0, n);
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; a[i] &lt;&lt; (i == n - 1 ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="forgot-rest" data-title="ข้อมูลเข้า"><pre><code>8
+38 27 43 3 9 82 10 55
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="forgot-rest" data-title="C:\code\merge_sort.exe"><pre><code>3 0 3 0 9 10 55 55
+</code></pre></div>
+      </div>
+
+      <p>มีเลข 0 ที่ไม่เคยอยู่ในข้อมูล และ 27 38 43 82 หายไป ตั้งแต่การรวมครั้งแรก <code>[38] + [27]</code> หยิบ 27 จากขวาแล้วขวาก็หมด 38 ที่ค้างอยู่ทางซ้ายไม่ได้ลง <code>temp</code> ช่องนั้นจึงเป็นค่าเดิมของ <code>temp</code> คือ 0 หรือของที่ค้างจากการรวมครั้งก่อน แล้วถูกคัดลอกกลับไปทับข้อมูลจริง ตัวอย่างที่บังเอิญมีครึ่งซ้ายหมดก่อนทุกครั้งจะผ่าน เช่น ข้อมูลที่เรียงมาแล้ว จึงต้องทดสอบด้วยข้อมูลเรียงกลับด้านด้วย</p>
+
+      <h3 id="temp-every-call">แบบที่ 2 จองอาเรย์พักใหม่ทุกครั้ง</h3>
+
+      <p>อยากให้ฟังก์ชันรับแค่ <code>a</code> จึงย้ายการจอง <code>temp</code> เข้าไปไว้ในฟังก์ชัน ขนาดเท่าทั้งอาเรย์</p>
+
+      <div class="code" data-lang="cpp"><pre><code>void merge_sort(vector&lt;int&gt; &amp;a, int lo, int hi)
+{
+    if (hi - lo &lt;= 1) {
+        return;
+    }
+    int mid = (lo + hi) / 2;
+    vector&lt;int&gt; temp(a.size());
+    merge_sort(a, lo, mid);
+    merge_sort(a, mid, hi);
+    // รวมเหมือนเดิม
+}
+</code></pre></div>
+
+      <p>ผลยังเรียงถูก แต่เวลาที่วัดแบบเดียวกับตารางข้างบนเป็นแบบนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10,000</td><td>0.172 วินาที</td><td>0.097 วินาที</td></tr>
+            <tr><td>100,000</td><td>11.461 วินาที</td><td>7.037 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ช้ากว่า insertion sort เสียอีก <code>vector&lt;int&gt; temp(a.size())</code> ไม่ได้ฟรี มันจองที่ N ช่องแล้วเติม 0 ให้ทุกช่อง ใช้เวลา O(N) และเกิดขึ้นทุกครั้งที่แบ่ง ซึ่งมี N - 1 ครั้งตามหน้า 22.1 รวมเป็น O(N<sup>2</sup>) ความเร็วของ merge sort หายหมด งานที่ทำในแต่ละครั้งที่เรียกต้องเป็นสัดส่วนกับขนาดของช่วงนั้น ไม่ใช่ขนาดของทั้งอาเรย์ จองครั้งเดียวใน <code>main</code> แล้วส่ง reference เข้าไปแบบโปรแกรม merge-sort</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>รวมสองแถวที่เรียงแล้วด้วยตัวชี้สองตัว หยิบตัวที่น้อยกว่าทีละตัว แล้วเทส่วนที่เหลือให้ครบทั้งสองฝั่ง ใช้เวลา O(n + m)</li>
+        <li>merge sort แบ่งครึ่ง เรียงแต่ละครึ่ง แล้วรวม ทุกชั้นของต้นไม้ทำงาน N ครั้ง มี log<sub>2</sub> N ชั้น จึงเป็น O(N log N) เสมอ ไม่ขึ้นกับข้อมูล</li>
+        <li>บนเครื่องที่วัด แสนตัวใช้ 0.009 วินาทีแบบ <code>-O2</code> ส่วน insertion sort ใช้ 0.765 วินาที</li>
+        <li>ใช้หน่วยความจำเพิ่ม O(N) และเป็น stable เมื่อใช้ <code>&lt;=</code> หยิบฝั่งซ้ายก่อน</li>
+        <li>จองอาเรย์พักครั้งเดียว ห้ามจองขนาด N ในทุกครั้งที่เรียก และทดสอบด้วยข้อมูลเรียงกลับด้าน</li>
+      </ul>
+    </article>

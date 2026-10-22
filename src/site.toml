@@ -343,7 +343,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "22"
 title = "บทที่ 22 divide and conquer"
 summary = "แบ่งปัญหาครึ่งๆ merge sort quick sort"
-# dir = "algo/22-divide-conquer"
+path = "algo/22-divide-conquer/index.html"
+pages = [
+  { num = "22.1", title = "แบ่ง แก้ย่อย รวม", path = "algo/22-divide-conquer/idea.html" },
+  { num = "22.2", title = "merge sort", path = "algo/22-divide-conquer/merge-sort.html" },
+  { num = "22.3", title = "นับคู่สลับด้วย merge sort", path = "algo/22-divide-conquer/inversions.html" },
+  { num = "22.4", title = "quicksort และ quickselect", path = "algo/22-divide-conquer/quicksort.html" },
+  { num = "22.5", title = "คู่จุดที่ใกล้ที่สุด", path = "algo/22-divide-conquer/closest-pair.html" },
+  { num = "22.6", title = "แบบฝึกหัด", path = "algo/22-divide-conquer/exercises.html", exercises = "algo/22-divide-conquer" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

@@ -1,0 +1,264 @@
+<article class="doc">
+      <h1>22.5 คู่จุดที่ใกล้ที่สุด</h1>
+
+      <p>สามหน้าที่ผ่านมาใช้ divide and conquer กับข้อมูลที่เรียงเป็นแถว หน้านี้เป็นตัวอย่างขั้นสูงบนระนาบสองมิติ มีจุด N จุด หาคู่ที่อยู่ใกล้กันที่สุด เช่น เสาสัญญาณที่ตั้งใกล้กันเกินจะรบกวนกัน ลองทุกคู่เป็น O(N<sup>2</sup>) ซึ่งที่ N เป็นแสนต้องคำนวณห้าพันล้านคู่ วิธีแบ่งครึ่งในหน้านี้ลดเหลือ O(N log<sup>2</sup> N) ความยากอยู่ที่ขั้นรวม ต้องหาคู่ที่ข้ามเส้นแบ่งให้ได้โดยไม่ลองทุกคู่ข้ามฝั่ง ซึ่งเป็นความคิดเดียวกับการนับคู่ข้ามครึ่งในหน้า 22.3 แต่ใช้เรขาคณิตช่วยตัดคู่ที่ไม่มีหวังทิ้ง</p>
+
+      <h2 id="problem">โจทย์และวิธีลองทุกคู่</h2>
+
+      <p>เสาสัญญาณ N ต้นอยู่ที่พิกัดจำนวนเต็ม (x, y) ระยะระหว่างสองต้นคือ √((x<sub>1</sub> - x<sub>2</sub>)<sup>2</sup> + (y<sub>1</sub> - y<sub>2</sub>)<sup>2</sup>) ตามหน้า 12.5 เพื่อไม่ต้องยุ่งกับทศนิยม ให้เทียบกันด้วย <strong>ระยะกำลังสอง</strong> ซึ่งเป็นจำนวนเต็ม ระยะจริงยิ่งน้อย ระยะกำลังสองก็ยิ่งน้อย ลำดับจึงเหมือนกัน วิธีตรงไปตรงมาคือลูปซ้อนเทียบทุกคู่ i &lt; j เป็น O(N<sup>2</sup>) เขียนได้ในไม่กี่บรรทัด และควรเขียนไว้เทียบคำตอบเสมอ</p>
+
+      <div class="code" data-lang="cpp"><pre><code>long long best = LLONG_MAX;
+for (int i = 0; i &lt; n; i++) {
+    for (int j = i + 1; j &lt; n; j++) {
+        best = min(best, dist2(towers[i], towers[j]));
+    }
+}
+</code></pre></div>
+
+      <h2 id="divide">แบ่งด้วยเส้นตั้ง</h2>
+
+      <p>เรียงเสาตามพิกัด x แล้วแบ่งที่ต้นตรงกลาง ครึ่งซ้ายกับครึ่งขวามีจำนวนเท่าๆ กัน หาคู่ที่ใกล้ที่สุดของแต่ละครึ่งด้วยการเรียกตัวเอง ได้ระยะกำลังสองที่ดีที่สุดของสองฝั่ง ให้ d เป็นค่าที่น้อยกว่า เหลือแต่คู่ที่ข้ามเส้นแบ่ง ซึ่งการเรียกตัวเองมองไม่เห็น</p>
+
+      <p>คู่ข้ามเส้นที่จะชนะ d ได้ ต้องห่างกันตามแนว x น้อยกว่า √d ทั้งสองต้นจึงต้องอยู่ห่างจากเส้นแบ่งไม่ถึง √d ต้นที่อยู่ไกลกว่านั้นตัดทิ้งได้เลย เหลือเฉพาะต้นใน <strong>แถบ</strong> กว้าง √d สองข้างของเส้น ในโค้ดเทียบแบบกำลังสองทั้งหมด คือเก็บต้นที่ (x - x<sub>กลาง</sub>)<sup>2</sup> &lt; d</p>
+
+      <p>ตัวอย่าง เสา 8 ต้น เรียงตาม x แล้วครึ่งซ้ายคือ (2, 2) (5, 30) (8, 27) (21, 27) ครึ่งขวาคือ (22, 13) (23, 28) (28, 21) (34, 15) เส้นแบ่งอยู่ที่ x = 22 ซึ่งเป็นต้นแรกของครึ่งขวา</p>
+
+      <figure>
+        <svg viewBox="0 0 560 330" width="560" style="max-width:100%;height:auto" role="img" aria-label="จุดแปดจุดบนระนาบ เส้นประแนวตั้งที่ x เท่ากับ 22 แบ่งเป็นครึ่งซ้ายสี่จุดและครึ่งขวาสี่จุด คู่ที่ดีที่สุดของครึ่งซ้ายคือ 5,30 กับ 8,27 ระยะกำลังสอง 18 แถบสีจางกว้างราว 4.2 หน่วยสองข้างเส้นแบ่งมีสามจุดคือ 21,27 กับ 22,13 กับ 23,28 คู่ 21,27 กับ 23,28 ข้ามเส้นแบ่งและมีระยะกำลังสอง 5 ซึ่งเป็นคำตอบ">
+          <rect x="288.6" y="40" width="118.8" height="260" style="fill:var(--brand-soft)"/>
+          <line x1="348" y1="30" x2="348" y2="304" style="stroke:var(--brand);stroke-width:2;stroke-dasharray:6 4"/>
+          <line x1="40" y1="300" x2="530" y2="300" style="stroke:var(--line-strong);stroke-width:1"/>
+          <line x1="110" y1="60" x2="152" y2="84" style="stroke:var(--muted);stroke-width:2;stroke-dasharray:4 3"/>
+          <line x1="334" y1="84" x2="362" y2="76" style="stroke:var(--brand);stroke-width:3"/>
+          <g style="fill:var(--ink)">
+            <circle cx="68" cy="284" r="5"/>
+            <circle cx="110" cy="60" r="5"/>
+            <circle cx="152" cy="84" r="5"/>
+            <circle cx="334" cy="84" r="5"/>
+            <circle cx="348" cy="196" r="5"/>
+            <circle cx="362" cy="76" r="5"/>
+            <circle cx="432" cy="132" r="5"/>
+            <circle cx="516" cy="180" r="5"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">
+            <text x="76" y="280">(2, 2)</text>
+            <text x="76" y="50">(5, 30)</text>
+            <text x="160" y="98">(8, 27)</text>
+            <text x="262" y="104">(21, 27)</text>
+            <text x="356" y="212">(22, 13)</text>
+            <text x="368" y="66">(23, 28)</text>
+            <text x="440" y="128">(28, 21)</text>
+            <text x="470" y="200">(34, 15)</text>
+            <text x="340" y="320">x = 22</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px">
+            <text x="60" y="24" style="fill:var(--muted)">ครึ่งซ้าย ดีที่สุด 18</text>
+            <text x="420" y="24" style="fill:var(--muted)">ครึ่งขวา ดีที่สุด 72</text>
+            <text x="250" y="150" style="fill:var(--brand-text)">แถบ</text>
+            <text x="300" y="250" style="fill:var(--brand-text)">ข้ามเส้น ได้ 5</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ครึ่งซ้ายได้ 18 จาก (5, 30) กับ (8, 27) ครึ่งขวาได้ 72 จาก (28, 21) กับ (34, 15) d จึงเป็น 18 แถบคือต้นที่ห่างจาก x = 22 ไม่ถึง √18 ราว 4.24 เหลือแค่ (21, 27) (22, 13) (23, 28) และคู่ (21, 27) กับ (23, 28) ห่างกันกำลังสองเท่ากับ 2<sup>2</sup> + 1<sup>2</sup> = 5 ชนะทั้งสองฝั่ง คำตอบคือ 5</p>
+
+      <h2 id="strip">ในแถบเทียบแค่ไม่กี่ต้น</h2>
+
+      <p>แถบอาจยังมีเสาเยอะ ถ้าเสาเกือบทั้งหมดอยู่ใกล้เส้นแบ่ง ลองทุกคู่ในแถบก็กลับไปเป็น O(N<sup>2</sup>) เคล็ดคือเรียงต้นในแถบตามพิกัด y แล้วเทียบแต่ละต้นกับต้นถัดไปข้างบนเท่านั้น หยุดทันทีที่ผลต่างของ y ยกกำลังสองไม่น้อยกว่า d เพราะต้นที่สูงขึ้นไปอีกยิ่งห่างตามแนว y มากกว่านั้น</p>
+
+      <p>ทำไมถึงเทียบแค่ไม่กี่ต้น ต้นที่ต้องเทียบกับต้น p อยู่ในกรอบสี่เหลี่ยมกว้าง 2√d (แถบทั้งสองฝั่ง) สูง √d เหนือ p ลองตัดกรอบนี้เป็นช่องสี่เหลี่ยมจัตุรัสด้านละ √d / 2 ได้ 8 ช่อง ฝั่งละ 4 ช่อง แต่ละช่องมีเสาได้ไม่เกินหนึ่งต้น เพราะเสาสองต้นในช่องเดียวกันอยู่ฝั่งเดียวกันของเส้นแบ่ง และห่างกันไม่เกินเส้นทแยงของช่องคือ √d / √2 ซึ่งน้อยกว่า √d ขัดกับที่ d คือระยะที่ดีที่สุดของฝั่งนั้น กรอบนี้จึงมีเสาไม่เกิน 8 ต้นรวม p เอง แต่ละต้นในแถบจึงเทียบกับต้นถัดไปไม่เกิน 7 ต้น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="closest-pair"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;pair&lt;int, int&gt;&gt; towers;
+long long checks = 0;
+
+long long dist2(pair&lt;int, int&gt; p, pair&lt;int, int&gt; q)
+{
+    long long dx = p.first - q.first; // (1)!
+    long long dy = p.second - q.second;
+    return dx * dx + dy * dy;
+}
+
+long long closest(int lo, int hi)
+{
+    long long best = LLONG_MAX;
+    if (hi - lo &lt;= 3) { // (2)!
+        for (int i = lo; i &lt; hi; i++) {
+            for (int j = i + 1; j &lt; hi; j++) {
+                checks++;
+                best = min(best, dist2(towers[i], towers[j]));
+            }
+        }
+        return best;
+    }
+    int mid = (lo + hi) / 2;
+    int mid_x = towers[mid].first;
+    best = min(closest(lo, mid), closest(mid, hi));
+    vector&lt;pair&lt;int, int&gt;&gt; strip;
+    for (int i = lo; i &lt; hi; i++) {
+        long long dx = towers[i].first - mid_x;
+        if (dx * dx &lt; best) {
+            strip.push_back(towers[i]);
+        }
+    }
+    sort(strip.begin(), strip.end(), [](pair&lt;int, int&gt; p, pair&lt;int, int&gt; q) { // (3)!
+        return p.second &lt; q.second;
+    });
+    for (int i = 0; i &lt; (int)strip.size(); i++) {
+        for (int j = i + 1; j &lt; (int)strip.size(); j++) {
+            long long dy = strip[j].second - strip[i].second;
+            if (dy * dy &gt;= best) { // (4)!
+                break;
+            }
+            checks++;
+            best = min(best, dist2(strip[i], strip[j]));
+        }
+    }
+    return best;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    towers.resize(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; towers[i].first &gt;&gt; towers[i].second;
+    }
+    sort(towers.begin(), towers.end()); // (5)!
+    long long best = closest(0, n);
+    cout &lt;&lt; "closest squared distance = " &lt;&lt; best &lt;&lt; '\n';
+    cout &lt;&lt; "checks = " &lt;&lt; checks &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>หน้านี้พิกัดอยู่ระหว่าง 0 ถึง 10<sup>9</sup> ผลต่างจึงยังอยู่ใน <code>int</code> แต่ยกกำลังสองแล้วถึง 10<sup>18</sup> ต้องเก็บเป็น <code>long long</code> ก่อนคูณ ถ้าพิกัดติดลบได้ ผลต่างเองก็เกิน <code>int</code> ดูแบบฝึกหัดข้อ 8</li>
+        <li>กรณีฐานคือเหลือไม่เกินสามต้น เทียบทุกคู่ตรงๆ ใช้สามแทนหนึ่งเพื่อไม่ให้มีช่วงที่เหลือต้นเดียว ซึ่งไม่มีคู่ให้เทียบ ช่วงที่ยาวสี่ขึ้นไปแบ่งแล้วได้อย่างน้อยฝั่งละสองต้นเสมอ</li>
+        <li>เรียงแถบตาม y ด้วย lambda แบบหน้า 16.3</li>
+        <li>ต้นถัดไปทุกต้นสูงกว่านี้ ห่างตามแนว y มากกว่านี้ จึงหยุดได้ทันที ไม่ใช่แค่ข้าม</li>
+        <li>pair เรียงตาม x ก่อน ถ้า x เท่ากันเรียงตาม y ตามหน้า 16.4</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="closest-pair" data-title="ข้อมูลเข้า"><pre><code>8
+28 21
+34 15
+23 28
+2 2
+8 27
+21 27
+22 13
+5 30
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="closest-pair" data-title="C:\code\closest_pair.exe"><pre><code>closest squared distance = 5
+checks = 10
+</code></pre></div>
+      </div>
+
+      <p>วิธีลองทุกคู่ต้องเทียบ 8 × 7 / 2 = 28 คู่ วิธีนี้เทียบ 10 คู่ ข้อมูลน้อยแบบนี้ยังต่างกันไม่มาก แต่ตัวนับ <code>checks</code> โตเกือบเป็นเส้นตรงตาม N ตามตารางข้างล่าง</p>
+
+      <h2 id="timing">เวลาที่ใช้</h2>
+
+      <p>แต่ละชั้นของต้นไม้ สร้างแถบใช้ O(n) เรียงแถบใช้ O(n log n) และเทียบในแถบใช้ O(n) เพราะแต่ละต้นเทียบไม่เกิน 7 ต้น มี log<sub>2</sub> N ชั้น รวมเป็น O(N log<sup>2</sup> N) ตามแถวที่ห้าของตารางในหน้า 22.1 วัดแบบเดียวกับหน้า 22.1 พิกัดสุ่มจาก <code>mt19937</code> ระหว่าง 0 ถึง 10<sup>9</sup> จับเวลารวมการเรียงตาม x ด้วย</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>N</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th><th>checks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">ลองทุกคู่ O(N<sup>2</sup>)</td><td>10,000</td><td>0.410 วินาที</td><td>0.074 วินาที</td><td>ราว 5 × 10<sup>7</sup></td></tr>
+            <tr><td>100,000</td><td>27.906 วินาที (5 ครั้งอยู่ระหว่าง 24.2 ถึง 36.7)</td><td>4.936 วินาที</td><td>ราว 5 × 10<sup>9</sup></td></tr>
+            <tr><td rowspan="2">แบ่งครึ่ง O(N log<sup>2</sup> N)</td><td>100,000</td><td>0.097 วินาที</td><td>0.027 วินาที</td><td>142,609</td></tr>
+            <tr><td>1,000,000</td><td>1.429 วินาที</td><td>0.364 วินาที</td><td>1,216,103</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสองวิธีได้ระยะกำลังสอง 28528400 เท่ากันที่ N เป็นแสน แต่วิธีแบ่งครึ่งเทียบแค่ราว 1.4 คู่ต่อต้น น้อยกว่าขีด 7 ที่พิสูจน์ไว้มาก เพราะข้อมูลสุ่มมักมีเสาในแถบไม่กี่ต้น ส่วนเวลาที่เหลือส่วนใหญ่คือการเรียง ถ้าอยากได้ O(N log N) จริงๆ ให้เรียงตาม y ระหว่างทางขากลับแบบ merge sort ในหน้า 22.2 แทนการ <code>sort</code> แถบใหม่ทุกชั้น แต่ N ถึงสองแสนแบบนี้ก็ทันแล้ว</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-strip">แบบที่ 1 ลืมคู่ที่ข้ามเส้น</h3>
+
+      <p>คิดว่าการเรียกตัวเองกับสองครึ่งครอบคลุมทุกคู่แล้ว จึงคืนค่าที่น้อยกว่าของสองฝั่งเลย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="no-strip"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;pair&lt;int, int&gt;&gt; towers;
+
+long long dist2(pair&lt;int, int&gt; p, pair&lt;int, int&gt; q)
+{
+    long long dx = p.first - q.first;
+    long long dy = p.second - q.second;
+    return dx * dx + dy * dy;
+}
+
+long long closest(int lo, int hi)
+{
+    long long best = LLONG_MAX;
+    if (hi - lo &lt;= 3) {
+        for (int i = lo; i &lt; hi; i++) {
+            for (int j = i + 1; j &lt; hi; j++) {
+                best = min(best, dist2(towers[i], towers[j]));
+            }
+        }
+        return best;
+    }
+    int mid = (lo + hi) / 2;
+    return min(closest(lo, mid), closest(mid, hi));
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    towers.resize(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; towers[i].first &gt;&gt; towers[i].second;
+    }
+    sort(towers.begin(), towers.end());
+    cout &lt;&lt; "closest squared distance = " &lt;&lt; closest(0, n) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="no-strip" data-title="ข้อมูลเข้า"><pre><code>8
+28 21
+34 15
+23 28
+2 2
+8 27
+21 27
+22 13
+5 30
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="no-strip" data-title="C:\code\closest_pair.exe"><pre><code>closest squared distance = 72
+</code></pre></div>
+      </div>
+
+      <p>ได้ 72 แทนที่จะเป็น 5 และไม่ได้ 18 ของครึ่งซ้ายด้วย เพราะคู่ (5, 30) กับ (8, 27) ก็ข้ามเส้นแบ่งในชั้นที่ลึกลงไป ถ้าไม่ดูคู่ข้ามเส้น คำตอบขึ้นกับว่าคู่ที่ใกล้ที่สุดบังเอิญอยู่ฝั่งเดียวกันในทุกชั้นหรือไม่ ขั้นรวมของ divide and conquer คือส่วนที่ต้องคิดให้ครบที่สุด เหมือนคู่ข้ามครึ่งในหน้า 22.3</p>
+
+      <h3 id="no-sort-y">แบบที่ 2 ลืมเรียงแถบตาม y</h3>
+
+      <p>ในโปรแกรม closest-pair ลบบรรทัด <code>sort(strip.begin(), ...)</code> กับ lambda ออก แถบจึงเรียงตาม x ตามที่ได้มาจาก <code>towers</code> ข้อมูลเข้าชุดเดิมได้ <code>closest squared distance = 18</code> แถบชั้นบนสุดเรียงตาม x คือ (21, 27) (22, 13) (23, 28) ต้นแรกเทียบกับ (22, 13) ผลต่างของ y คือ 14 ยกกำลังสองได้ 196 ไม่น้อยกว่า 18 จึงหยุด ไม่เคยได้เทียบกับ (23, 28) ที่อยู่ถัดไป คำสั่ง <code>break</code> ถูกต้องก็ต่อเมื่อต้นที่ตามมาทุกต้นสูงกว่า ซึ่งจริงเฉพาะเมื่อเรียงตาม y แล้ว ลองสุ่มชุดเล็ก 200 ชุดเทียบกับวิธีลองทุกคู่ ผิด 40 ชุด เขียนวิธีลองทุกคู่ไว้เทียบกับข้อมูลสุ่มเล็กๆ จึงสำคัญกับโจทย์แบบนี้</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เทียบด้วยระยะกำลังสองที่เป็นจำนวนเต็ม เก็บใน <code>long long</code> ไม่ต้องใช้ทศนิยม</li>
+        <li>เรียงตาม x แบ่งที่ต้นกลาง หาคำตอบสองฝั่งได้ d แล้วดูเฉพาะแถบที่ (x - x<sub>กลาง</sub>)<sup>2</sup> &lt; d</li>
+        <li>เรียงแถบตาม y เทียบกับต้นถัดไปจนผลต่างของ y ยกกำลังสองถึง d แต่ละต้นเทียบไม่เกิน 7 ต้น</li>
+        <li>รวมเป็น O(N log<sup>2</sup> N) บนเครื่องที่วัด แสนต้นใช้ 0.027 วินาทีแบบ <code>-O2</code> แทน 4.9 วินาทีของวิธีลองทุกคู่</li>
+        <li>ขั้นรวมต้องดูคู่ข้ามเส้นแบ่งเสมอ และทดสอบกับวิธีลองทุกคู่ด้วยข้อมูลสุ่มเล็กๆ</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>
