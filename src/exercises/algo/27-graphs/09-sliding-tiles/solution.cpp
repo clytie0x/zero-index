@@ -15,7 +15,7 @@ int main()
     while (!waiting.empty()) {
         string board = waiting.front();
         waiting.pop();
-        int blank = board.find('0');
+        size_t blank = board.find('0');
         int r = blank / 3, c = blank % 3;
         for (int d = 0; d < 4; d++) {
             int nr = r + dr[d];

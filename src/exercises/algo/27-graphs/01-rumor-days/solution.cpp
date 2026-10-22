@@ -21,11 +21,11 @@ int main()
     queue<int> waiting;
     heard_on[s] = 0;
     waiting.push(s);
-    int count = 0, last_day = 0;
+    int heard = 0, last_day = 0;
     while (!waiting.empty()) {
         int v = waiting.front();
         waiting.pop();
-        count++;
+        heard++;
         last_day = heard_on[v];
         for (int next : adj[v]) {
             if (heard_on[next] == -1) {
@@ -34,6 +34,6 @@ int main()
             }
         }
     }
-    cout << count << ' ' << last_day << '\n';
+    cout << heard << ' ' << last_day << '\n';
     return 0;
 }

@@ -21,8 +21,8 @@ int main()
             if (grid[r][c] != '#' || seen[r][c]) {
                 continue;
             }
-            islands++;
             int cells = 0;
+            bool on_edge = false;
             queue<pair<int, int>> waiting;
             seen[r][c] = true;
             waiting.push({r, c});
@@ -30,6 +30,9 @@ int main()
                 auto [cr, cc] = waiting.front();
                 waiting.pop();
                 cells++;
+                if (cr == 0 || cr == rows - 1 || cc == 0 || cc == cols - 1) {
+                    on_edge = true;
+                }
                 for (int d = 0; d < 4; d++) {
                     int nr = cr + dr[d];
                     int nc = cc + dc[d];
@@ -39,7 +42,10 @@ int main()
                     }
                 }
             }
-            largest = max(largest, cells);
+            if (!on_edge) {
+                islands++;
+                largest = max(largest, cells);
+            }
         }
     }
     cout << islands << ' ' << largest << '\n';

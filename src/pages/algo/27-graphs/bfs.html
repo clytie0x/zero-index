@@ -22,6 +22,8 @@ int dist[MAXN];
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n, m, start;
     cin &gt;&gt; n &gt;&gt; m &gt;&gt; start;
     for (int i = 0; i &lt; m; i++) {
@@ -52,8 +54,8 @@ int main()
 }
 </code></pre></div>
       <ol class="anno-list">
-        <li>-1 ใช้แทน <code>visited</code> ได้ในตัว ระยะจริงไม่มีทางติดลบ และจุดที่ไปไม่ถึงจะเหลือ -1 จนจบ พิมพ์ออกไปตรงๆ ได้</li>
-        <li>ให้ระยะตั้งแต่ตอนใส่ queue ไม่ใช่ตอนหยิบออก แต่ละจุดจึงเข้า queue ครั้งเดียว ถ้ารอให้ระยะตอนหยิบออก จุดเดียวกันอาจถูกใส่ซ้ำจากหลายเพื่อนบ้าน หน้า 27.4 จะวัดให้เห็นว่าเสียหายแค่ไหน</li>
+        <li><code>fill(first, last, value)</code> จาก <code>algorithm</code> ใส่ค่า <code>value</code> ลงทุกช่องตั้งแต่ <code>first</code> ถึงช่องก่อน <code>last</code> ตรงนี้คือช่อง 0 ถึง n ของอาเรย์ธรรมดา ใช้กับ vector ได้ด้วย เช่น <code>fill(v.begin(), v.end(), -1)</code> ค่า -1 ใช้แทน <code>visited</code> ได้ในตัว ระยะจริงไม่มีทางติดลบ และจุดที่ไปไม่ถึงจะเหลือ -1 จนจบ พิมพ์ออกไปตรงๆ ได้</li>
+        <li>ให้ระยะตั้งแต่ตอนใส่ queue ไม่ใช่ตอนหยิบออก แต่ละจุดจึงเข้า queue ครั้งเดียว ถ้าเลื่อนไปจดตอนหยิบออกแทน จุดเดียวกันอาจถูกใส่ซ้ำจากหลายเพื่อนบ้าน หน้า 27.4 จะวัดให้เห็นว่าเสียหายแค่ไหน</li>
       </ol>
 
       <div class="io">
@@ -341,6 +343,8 @@ int color[MAXN];
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n, m;
     cin &gt;&gt; n &gt;&gt; m;
     for (int i = 0; i &lt; m; i++) {
@@ -473,6 +477,8 @@ int dist[MAXN];
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n, m, start;
     cin &gt;&gt; n &gt;&gt; m &gt;&gt; start;
     for (int i = 0; i &lt; m; i++) {
@@ -540,6 +546,8 @@ int dist[MAXN];
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n, m, start;
     cin &gt;&gt; n &gt;&gt; m &gt;&gt; start;
     for (int i = 0; i &lt; m; i++) {

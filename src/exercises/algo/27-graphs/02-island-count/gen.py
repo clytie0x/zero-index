@@ -3,9 +3,13 @@
     python gen.py
     python tools/make_outputs.py src/exercises/algo/27-graphs/02-island-count   (รันที่รากของโปรเจกต์)
 
-ชุดที่ชื่อขึ้นต้นด้วย big เป็นแผนที่ 1000 × 1000 big1 เป็นเกาะเดียวรูปงูเลื้อย big2 เป็นแผ่นดินทั้งแผ่น
-big3 สุ่มแผ่นดินราว 58% big1 กับ big3 ทำให้วิธีกระจายเลขกลุ่มซ้ำจนนิ่งใน naive.cpp ไม่ทัน
+ชุดที่ชื่อขึ้นต้นด้วย big เป็นแผนที่ 1000 × 1000 big1 เป็นเกาะเดียวรูปงูเลื้อยที่มีน้ำล้อมรอบขอบ
+big2 เป็นแผ่นดินทั้งแผ่นที่มีน้ำล้อมรอบขอบ big3 สุ่มแผ่นดินราว 58%
+big1 กับ big3 ทำให้วิธีกระจายเลขกลุ่มซ้ำจนนิ่งใน naive.cpp ไม่ทัน
 big1 กับ big2 ทำให้ recursion ที่ลึกเท่าจำนวนช่องของเกาะพังเพราะ stack เต็ม
+sample1 edge-bottom edge-right edge-left มีเกาะที่ช่องแรกที่เจอไม่อยู่บนขอบ แต่มีช่องอื่นแตะแถวล่าง
+คอลัมน์ขวา หรือคอลัมน์ซ้าย ดักวิธีที่ดูแค่ช่องแรกของเกาะ และวิธีที่ดูแค่แถวแรกกับคอลัมน์แรก
+all-land line thin frame snake ดักวิธีที่นับทุกเกาะโดยไม่สนขอบ
 """
 
 import random
@@ -51,20 +55,39 @@ def rand(r, c, p):
     return ["".join("#" if random.random() < p else "." for _ in range(c)) for _ in range(r)]
 
 
+def framed(rows):
+    """ล้อมแผนที่ด้วยน้ำหนึ่งช่องทุกด้าน"""
+    c = len(rows[0]) + 2
+    return ["." * c] + ["." + row + "." for row in rows] + ["." * c]
+
+
+def frame(r, c, p):
+    """ขอบนอกเป็นแผ่นดินทั้งหมด ถัดเข้าไปหนึ่งช่องเป็นน้ำ ข้างในสุ่ม"""
+    inner = framed(rand(r - 4, c - 4, p))
+    return ["#" * c] + ["#" + row + "#" for row in inner] + ["#" * c]
+
+
 def cases():
-    yield "sample1", "5 9\n##....#..\n#...###..\n..#....##\n.###..#..\n.....##.."
-    yield "sample2", "3 4\n....\n....\n...."
+    yield "sample1", "\n".join(["6 10", "..........", ".##...#...", ".#..####..", "....#...##", ".##.....##", ".##..#.###"])
+    yield "sample2", "\n".join(["5 5", ".....", ".###.", ".#.#.", ".###.", "....."])
     yield "one-land", "1 1\n#"
     yield "one-water", "1 1\n."
+    yield "all-water", "3 4\n....\n....\n...."
+    yield "edge-bottom", "\n".join(["5 7", ".......", ".#...#.", "..#..#.", ".###.#.", "..#..##"])
+    yield "edge-right", "\n".join(["5 7", ".......", ".#..##.", ".#...##", ".#...#.", "......."])
+    yield "edge-left", "\n".join(["6 6", "......", "..##..", ".##...", "##..#.", "....#.", "......"])
     yield "all-land", text(full(30, 40))
     yield "checker", text(checker(40, 40))
     yield "snake", text(snake(51, 51))
+    yield "snake-inside", text(framed(snake(49, 49)))
     yield "ring", text(ring(25))
     yield "line", text(["#" * 1000])
+    yield "thin", text(rand(2, 300, 0.5))
+    yield "frame", text(frame(42, 60, 0.45))
     yield "rand1", text(rand(10, 15, 0.5))
     yield "rand2", text(rand(200, 200, 0.55))
-    yield "big1", text(snake(1000, 1000))
-    yield "big2", text(full(1000, 1000))
+    yield "big1", text(framed(snake(998, 998)))
+    yield "big2", text(framed(full(998, 998)))
     yield "big3", text(rand(1000, 1000, 0.58))
 
 

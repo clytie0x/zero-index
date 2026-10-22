@@ -17,12 +17,13 @@ int main()
         adj[a].push_back(b);
         adj[b].push_back(a);
     }
-    int no_loop = 0, has_loop = 0;
+    int no_loop = 0, ring = 0;
     for (int start = 1; start <= n; start++) {
         if (seen[start]) {
             continue;
         }
         long long villages = 0, road_ends = 0;
+        bool all_two = true;
         stack<int> waiting;
         seen[start] = true;
         waiting.push(start);
@@ -31,6 +32,9 @@ int main()
             waiting.pop();
             villages++;
             road_ends += adj[v].size();
+            if (adj[v].size() != 2) {
+                all_two = false;
+            }
             for (int next : adj[v]) {
                 if (!seen[next]) {
                     seen[next] = true;
@@ -40,10 +44,10 @@ int main()
         }
         if (road_ends / 2 == villages - 1) {
             no_loop++;
-        } else {
-            has_loop++;
+        } else if (all_two) {
+            ring++;
         }
     }
-    cout << no_loop << ' ' << has_loop << '\n';
+    cout << no_loop << ' ' << ring << '\n';
     return 0;
 }

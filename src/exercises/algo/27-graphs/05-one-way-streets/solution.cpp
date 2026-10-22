@@ -5,6 +5,7 @@ const int MAXN = 200001;
 vector<int> out_roads[MAXN];
 vector<int> in_roads[MAXN];
 
+// รับอาเรย์ของ vector แบบเดียวกับส่งอาเรย์เข้าฟังก์ชันในหน้า 8.3 ฟังก์ชันใช้ตัวจริง ไม่ได้คัดลอก
 vector<bool> reachable(int n, vector<int> roads[])
 {
     vector<bool> seen(n + 1, false);
@@ -40,7 +41,7 @@ int main()
     vector<bool> back = reachable(n, in_roads);
     int go_count = 0, back_count = 0, both = 0;
     for (int v = 2; v <= n; v++) {
-        go_count += go[v];
+        go_count += go[v]; // true บวกเป็น 1 false บวกเป็น 0
         back_count += back[v];
         both += go[v] && back[v];
     }

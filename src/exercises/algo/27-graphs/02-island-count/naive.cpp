@@ -42,16 +42,22 @@ int main()
         }
     }
     vector<int> cells(rows * cols, 0);
-    int islands = 0, largest = 0;
+    vector<bool> on_edge(rows * cols, false);
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
             if (label[r][c] != -1) {
-                if (label[r][c] == r * cols + c) {
-                    islands++;
-                }
                 cells[label[r][c]]++;
-                largest = max(largest, cells[label[r][c]]);
+                if (r == 0 || r == rows - 1 || c == 0 || c == cols - 1) {
+                    on_edge[label[r][c]] = true;
+                }
             }
+        }
+    }
+    int islands = 0, largest = 0;
+    for (int i = 0; i < rows * cols; i++) {
+        if (cells[i] > 0 && !on_edge[i]) {
+            islands++;
+            largest = max(largest, cells[i]);
         }
     }
     cout << islands << ' ' << largest << '\n';

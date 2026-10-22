@@ -1,7 +1,7 @@
 <article class="doc">
       <h1>27.4 DFS และ BFS บนตาราง</h1>
 
-      <p>โจทย์เขาวงกต แผนที่เกาะ ไฟลาม และหุ่นยนต์เดินในห้อง เป็นโจทย์กราฟที่พบบ่อยมากใน TOI และค่าย 2 แต่ไม่มีใครให้รายการเส้นเชื่อมมา โจทย์ให้แค่ตารางตัวอักษรแบบบทที่ 7 หน้านี้มองตารางเป็นกราฟ แล้วใช้ BFS กับ DFS จากหน้า 27.2 และ 27.3 ได้เลยโดยไม่ต้องสร้าง adjacency list หาทางที่สั้นที่สุดในเขาวงกต นับเกาะ แล้ววัดว่าทำไมการจำลองทีละนาทีแบบบทที่ 7 ไม่ทันกับตารางใหญ่</p>
+      <p>โจทย์เขาวงกต แผนที่เกาะ ไฟลาม และหุ่นยนต์เดินในห้อง เป็นโจทย์กราฟที่ออกบ่อย แต่ไม่มีใครให้รายการเส้นเชื่อมมา โจทย์ให้แค่ตารางตัวอักษรแบบบทที่ 7 หน้านี้มองตารางเป็นกราฟ แล้วใช้ BFS กับ DFS จากหน้า 27.2 และ 27.3 ได้เลยโดยไม่ต้องสร้าง adjacency list หาทางที่สั้นที่สุดในเขาวงกต นับเกาะ แล้ววัดว่าทำไมการจำลองทีละนาทีแบบบทที่ 7 ไม่ทันกับตารางใหญ่</p>
 
       <h2 id="grid-graph">ตารางคือกราฟ</h2>
 
@@ -254,7 +254,7 @@ int dr[4] = {-1, 1, 0, 0};
 int dc[4] = {0, 0, -1, 1};
 int rows, cols;
 vector&lt;string&gt; grid;
-vector&lt;vector&lt;bool&gt;&gt; seen;
+vector&lt;vector&lt;bool&gt;&gt; seen; // (1)!
 
 int fill_island(int r, int c)
 {
@@ -264,7 +264,7 @@ int fill_island(int r, int c)
         int nr = r + dr[d];
         int nc = c + dc[d];
         if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; grid[nr][nc] == '#' &amp;&amp; !seen[nr][nc]) {
-            cells += fill_island(nr, nc); // (1)!
+            cells += fill_island(nr, nc); // (2)!
         }
     }
     return cells;
@@ -277,7 +277,7 @@ int main()
     for (int r = 0; r &lt; rows; r++) {
         cin &gt;&gt; grid[r];
     }
-    seen.assign(rows, vector&lt;bool&gt;(cols, false));
+    seen.assign(rows, vector&lt;bool&gt;(cols, false)); // (3)!
     int islands = 0, largest = 0;
     for (int r = 0; r &lt; rows; r++) {
         for (int c = 0; c &lt; cols; c++) {
@@ -294,7 +294,9 @@ int main()
 }
 </code></pre></div>
       <ol class="anno-list">
+        <li>ตาราง <code>bool</code> สองมิติแบบ vector ซ้อน vector ในหน้า 16.2 ประกาศไว้นอก <code>main</code> แบบว่างก่อน เพราะ <code>fill_island</code> ต้องใช้ด้วย แล้วค่อยกำหนดขนาดเมื่อรู้ <code>rows</code> กับ <code>cols</code></li>
         <li>ขนาดของเกาะคือช่องนี้หนึ่งช่อง บวกขนาดของส่วนที่ไปถึงได้จากเพื่อนบ้านแต่ละทิศที่ยังไม่เคยไป</li>
+        <li><code>assign(rows, vector&lt;bool&gt;(cols, false))</code> ทิ้งของเดิมแล้วให้ <code>seen</code> มี <code>rows</code> แถว แต่ละแถวเป็น <code>vector&lt;bool&gt;</code> ยาว <code>cols</code> ช่องที่เป็น <code>false</code> ทุกช่อง</li>
       </ol>
 
       <div class="io">
@@ -334,7 +336,7 @@ islands 5 largest 4
         </table>
       </div>
 
-      <p>แผนที่แค่ 150 × 150 ก็พังด้วย <code>0xC00000FD</code> แล้ว ทั้งที่โจทย์ตารางให้ขนาดถึง 1000 × 1000 เป็นปกติ ฟังก์ชันนี้มีตัวแปร local หลายตัว แต่ละชั้นจึงกินที่มาก ลึกได้น้อยกว่าโปรแกรมในหน้า 27.2 และ <code>-O2</code> ก็ไม่ได้ช่วยเลย ให้ใช้ BFS แทน ส่วนที่เปลี่ยนจากโปรแกรมเขาวงกตมีแค่ใช้ <code>seen</code> แทน <code>dist</code> และนับช่องตอนหยิบออก</p>
+      <p>แผนที่แค่ 150 × 150 ก็พังด้วย <code>0xC00000FD</code> แล้ว ทั้งที่โจทย์ตารางให้ขนาดถึง 1000 × 1000 เป็นปกติ ฟังก์ชันนี้มีตัวแปร local หลายตัว แต่ละชั้นจึงกินที่มาก ลึกได้น้อยกว่าเกณฑ์ราว 25,000 ชั้นในหน้า 27.2 และแบบ <code>-O2</code> ก็พังที่ขนาดเดียวกับแบบ Code::Blocks ตรงกับที่หน้า 27.2 บอกว่าตัวเลขของ <code>-O2</code> ขึ้นกับรูปของฟังก์ชัน วางใจไม่ได้ ให้ใช้ BFS แทน โครงเหมือน BFS ของเขาวงกต ส่วนที่เปลี่ยนคือ เริ่ม BFS ใหม่จากทุกช่องแผ่นดินที่ยังไม่เคยไปแบบนับส่วนเชื่อมต่อในหน้า 27.2 ใช้ <code>seen</code> แทน <code>dist</code> เพราะไม่ต้องรู้ระยะ เดินเข้าเฉพาะช่อง <code>#</code> แทนการเลี่ยงช่อง <code>#</code> ไม่ต้องจดทิศหรือวาดเส้นทาง และนับช่องตอนหยิบออก</p>
 
       <div class="code" data-lang="cpp" data-linenums data-annotate data-test="islands-bfs"><pre><code>#include &lt;bits/stdc++.h&gt;
 using namespace std;
@@ -455,7 +457,7 @@ for (int r = 0; r &lt; rows; r++) {
 
       <h3 id="mark-on-pop">แบบที่ 1 จดตอนหยิบออกจาก queue</h3>
 
-      <p>หน้า 27.3 บอกให้ให้ระยะตอนใส่ queue ลองฝืนดู ใช้ตาราง <code>taken</code> จดว่าช่องไหนถูกหยิบออกแล้ว จดตอนหยิบออก และใส่เพื่อนบ้านลง queue ถ้าเพื่อนบ้านยังไม่ถูกหยิบ ส่วนนี้ของโปรแกรมเป็นแบบนี้</p>
+      <p>หน้า 27.3 สอนว่าให้ระยะตอนใส่ queue ลองฝืนดู ใช้ตาราง <code>taken</code> จดว่าช่องไหนถูกหยิบออกแล้ว จดตอนหยิบออก และใส่เพื่อนบ้านลง queue ถ้าเพื่อนบ้านยังไม่ถูกหยิบ ส่วนนี้ของโปรแกรมเป็นแบบนี้</p>
 
       <div class="code" data-lang="cpp"><pre><code>while (!waiting.empty()) {
     auto [r, c] = waiting.front();
