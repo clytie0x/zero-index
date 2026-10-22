@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 21 brute force และ backtracking</h1>
+
+      <p>จบบทนี้ น้องจะดูขอบเขตของโจทย์แล้วรู้ว่าลองทุกแบบได้ไหม และเขียนตัวลองทุกแบบได้ครบโดยไม่ซ้ำ ทั้งลูปซ้อน ทุกเซตย่อยด้วย bitmask ทุกลำดับด้วย <code>next_permutation</code> และ backtracking ที่สร้างคำตอบทีละช่องแล้วถอยกลับเมื่อผิดกฎ เช่น N-Queens และซูโดกุ จากนั้นจะตัดกิ่งที่ไม่มีหวังทิ้ง จนโจทย์ที่ลองครบต้องใช้เวลาหลายนาทีเหลือไม่ถึงวินาที ซึ่งเป็นหัวข้อ exhaustive search และ backtracking ของค่าย 2 และใช้ได้กับโจทย์ TOI ที่ขอบเขตเล็กผิดปกติ ปิดท้ายด้วยการแทนสถานะของปริศนา ซึ่งต่อไปใช้กับ BFS ในบทที่ 27 และ meet in the middle สำหรับโจทย์ N ≤ 40</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="counting.html">21.1 นับก่อนลอง</a></td><td>สามขั้นก่อนลองทุกแบบ ลูปซ้อนที่ไม่หยิบซ้ำ ตัดลูปชั้นในที่คำนวณได้ และดูขอบเขตแล้วเดาวิธี</td></tr>
+            <tr><td><a href="subsets-permutations.html">21.2 ทุกเซตย่อยและทุกลำดับ</a></td><td>bitmask แทนเซตย่อย <code>__builtin_popcount</code> <code>next_permutation</code> และเวลาจริงของ 2<sup>n</sup> กับ n!</td></tr>
+            <tr><td><a href="backtracking.html">21.3 backtracking</a></td><td>ต้นไม้การค้นหา N-Queens ผลรวมเซตย่อย ซูโดกุ 4 × 4 และโครงเลือก ลอง คืนสภาพ</td></tr>
+            <tr><td><a href="pruning.html">21.4 ตัดกิ่งและ branch and bound</a></td><td>ตัดกิ่งที่ไม่มีทางถูก ตัดกิ่งที่ไม่มีทางดีกว่า ค่าประมาณที่มองโลกในแง่ดี และจำนวน nodes ก่อนและหลังตัดที่วัดจริง</td></tr>
+            <tr><td><a href="state-space.html">21.5 state space และ meet in the middle</a></td><td>แทนสถานะด้วย bitmask ค้นด้วย DFS ที่จำ visited และแบ่งครึ่งให้ N = 40 ทันเวลา</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>รันโปรแกรม triangle ในหน้า 21.1 ได้ <code>total 3</code> แล้วเปลี่ยนลูปชั้นในให้เริ่มที่ 0 จนได้ <code>total 68</code> และอธิบายได้ว่าส่วนที่เกินมาจากไหน</span></label></li>
+        <li><label><input type="checkbox"><span>ดูขอบเขต N ≤ 10, N ≤ 20 และ N ≤ 40 แล้วบอกได้ว่าควรลองทุกลำดับ ทุกเซตย่อย หรือ meet in the middle โดยไม่เปิดตารางในหน้า 21.1</span></label></li>
+        <li><label><input type="checkbox"><span>เขียนโปรแกรมเลือกของรางวัลด้วย bitmask เองโดยไม่เปิดดูหน้า 21.2 แล้วได้ <code>best 95</code> กับ <code>items 1 4</code> จากข้อมูลในหน้านั้น</span></label></li>
+        <li><label><input type="checkbox"><span>เขียน N-Queens แบบ backtracking เอง ป้อน 8 แล้วได้ <code>solutions 92</code> และ <code>nodes 2057</code></span></label></li>
+        <li><label><input type="checkbox"><span>ถอดการตัดกิ่งและการเรียงออกจากโปรแกรม parcel ในหน้า 21.4 ทีละอย่าง แล้วได้ nodes ตรงกับตารางแรกของหน้านั้นครบสี่แถว พร้อมคำตอบ <code>ways 8</code> ทุกแถว</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ โดยต้องผ่านชุดใหญ่ทันเวลา และรวมข้อ 5 8 หรือ 9 ที่ต้องตัดกิ่งอย่างน้อยหนึ่งข้อ</span></label></li>
+      </ul>
+    </article>

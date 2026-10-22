@@ -1,0 +1,373 @@
+<article class="doc">
+      <h1>21.3 backtracking</h1>
+
+      <p>วิธีในหน้า 21.2 สร้างคำตอบให้ครบทุกช่องก่อน แล้วค่อยตรวจว่าใช้ได้ไหม ถ้าคำตอบส่วนใหญ่ผิดกฎตั้งแต่ช่องแรกๆ ก็เสียเวลาสร้างส่วนที่เหลือไปเปล่าๆ <strong>backtracking</strong> (การย้อนรอย) สร้างคำตอบทีละช่อง และเลือกเฉพาะตัวเลือกที่ยังไม่ผิดกฎ ถ้าถึงช่องไหนแล้วไม่มีตัวเลือกเหลือ ก็ถอยกลับไปเปลี่ยนตัวเลือกของช่องก่อนหน้า โครง <strong>เลือก ลอง คืนสภาพ</strong> ในหน้า 9.5 คือ backtracking อยู่แล้ว หน้านี้เอาไปใช้กับโจทย์ที่มีกฎจริงๆ คือ N-Queens ผลรวมเซตย่อย และซูโดกุ</p>
+
+      <h2 id="search-tree">ต้นไม้การค้นหา</h2>
+
+      <p>โจทย์ N-Queens คือวางควีน N ตัวบนกระดาน N × N ไม่ให้มีสองตัวไหนกินกันได้ ควีนกินกันได้เมื่ออยู่แถวเดียวกัน คอลัมน์เดียวกัน หรือแนวทแยงเดียวกัน แต่ละแถวจึงมีควีนได้ตัวเดียวพอดี คำตอบหนึ่งแบบคือคอลัมน์ของควีนในแถวที่ 1 ถึง N</p>
+
+      <p>backtracking วางทีละแถว แถวละหนึ่งตัว ทุกครั้งที่วางให้เลือกเฉพาะคอลัมน์ที่ไม่โดนควีนแถวก่อนๆ กิน ภาพนี้คือการค้นหาทั้งหมดเมื่อ N = 4 แต่ละกล่องคือ<strong>สถานะ</strong>ระหว่างทาง ตัวเลขในกล่องคือคอลัมน์ของควีนในแถวที่วางไปแล้วเรียงตามแถว เช่น <code>14</code> คือแถว 1 วางคอลัมน์ 1 แถว 2 วางคอลัมน์ 4 เส้นจากกล่องลงไปคือตัวเลือกที่ยังไม่ผิดกฎ ภาพแบบนี้เรียกว่า <strong>ต้นไม้การค้นหา (search tree)</strong></p>
+
+      <figure>
+        <svg viewBox="0 0 640 270" width="640" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้การค้นหาของ 4-Queens เริ่มจากกระดานว่าง แตกเป็นคอลัมน์ 1 ถึง 4 ของแถวแรก กิ่ง 1 ไปถึง 13 ที่ตัน และ 142 ที่ตัน กิ่ง 2 ไปถึง 2413 ซึ่งเป็นคำตอบ กิ่ง 3 ไปถึง 3142 ซึ่งเป็นคำตอบ กิ่ง 4 ไปถึง 413 ที่ตัน และ 42 ที่ตัน รวม 17 สถานะ">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="320" y1="33" x2="80" y2="62"/>
+            <line x1="320" y1="33" x2="240" y2="62"/>
+            <line x1="320" y1="33" x2="400" y2="62"/>
+            <line x1="320" y1="33" x2="560" y2="62"/>
+            <line x1="80" y1="88" x2="45" y2="117"/>
+            <line x1="80" y1="88" x2="115" y2="117"/>
+            <line x1="115" y1="143" x2="115" y2="172"/>
+            <line x1="240" y1="88" x2="240" y2="117"/>
+            <line x1="240" y1="143" x2="240" y2="172"/>
+            <line x1="240" y1="198" x2="240" y2="227"/>
+            <line x1="400" y1="88" x2="400" y2="117"/>
+            <line x1="400" y1="143" x2="400" y2="172"/>
+            <line x1="400" y1="198" x2="400" y2="227"/>
+            <line x1="560" y1="88" x2="525" y2="117"/>
+            <line x1="560" y1="88" x2="595" y2="117"/>
+            <line x1="525" y1="143" x2="525" y2="172"/>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2">
+            <rect x="290" y="7" width="60" height="26" rx="6"/>
+            <rect x="54" y="62" width="52" height="26" rx="6"/>
+            <rect x="214" y="62" width="52" height="26" rx="6"/>
+            <rect x="374" y="62" width="52" height="26" rx="6"/>
+            <rect x="534" y="62" width="52" height="26" rx="6"/>
+            <rect x="89" y="117" width="52" height="26" rx="6"/>
+            <rect x="214" y="117" width="52" height="26" rx="6"/>
+            <rect x="374" y="117" width="52" height="26" rx="6"/>
+            <rect x="499" y="117" width="52" height="26" rx="6"/>
+            <rect x="214" y="172" width="52" height="26" rx="6"/>
+            <rect x="374" y="172" width="52" height="26" rx="6"/>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--muted);stroke-width:2;stroke-dasharray:4 3">
+            <rect x="19" y="117" width="52" height="26" rx="6"/>
+            <rect x="89" y="172" width="52" height="26" rx="6"/>
+            <rect x="499" y="172" width="52" height="26" rx="6"/>
+            <rect x="569" y="117" width="52" height="26" rx="6"/>
+          </g>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+            <rect x="214" y="227" width="52" height="26" rx="6"/>
+            <rect x="374" y="227" width="52" height="26" rx="6"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:13px;fill:var(--ink)" text-anchor="middle">
+            <text x="80" y="80">1</text>
+            <text x="240" y="80">2</text>
+            <text x="400" y="80">3</text>
+            <text x="560" y="80">4</text>
+            <text x="115" y="135">14</text>
+            <text x="240" y="135">24</text>
+            <text x="400" y="135">31</text>
+            <text x="525" y="135">41</text>
+            <text x="240" y="190">241</text>
+            <text x="400" y="190">314</text>
+            <text x="240" y="245">2413</text>
+            <text x="400" y="245">3142</text>
+          </g>
+          <g style="font-family:var(--font-code);font-size:13px;fill:var(--muted)" text-anchor="middle">
+            <text x="45" y="135">13</text>
+            <text x="115" y="190">142</text>
+            <text x="525" y="190">413</text>
+            <text x="595" y="135">42</text>
+          </g>
+          <text x="320" y="25" text-anchor="middle" style="font-family:var(--font-text);font-size:13px;fill:var(--muted)">ว่าง</text>
+        </svg>
+      </figure>
+
+      <p>กล่องเส้นประคือทางตัน เช่น <code>13</code> วางแถว 3 ที่ไหนก็โดนกิน จึงไม่มีเส้นลงไป ต้องถอยกลับไปลอง <code>14</code> แทน กล่องสีคือคำตอบที่วางครบ 4 ตัว มีสองแบบ คือ 2413 กับ 3142 ทั้งต้นไม้มี 17 กล่อง เทียบกับการสร้างทุกการเรียงสับเปลี่ยนของคอลัมน์ก่อนแล้วค่อยตรวจ ซึ่งต้องสร้างกระดานเต็ม 4! = 24 กระดาน กิ่งที่ตันตั้งแต่แถวที่ 2 ไม่ถูกสร้างต่อเลย ยิ่ง N ใหญ่ ส่วนที่ไม่ต้องสร้างยิ่งมาก</p>
+
+      <h2 id="n-queens">N-Queens</h2>
+
+      <p>ก่อนวางควีนที่แถว row คอลัมน์ c ต้องรู้ให้เร็วว่าโดนกินไหม ไม่ต้องไล่ดูควีนทุกตัว ใช้อาเรย์จำไว้สามอัน</p>
+
+      <ul>
+        <li><code>col_used[c]</code> คอลัมน์ c มีควีนแล้ว</li>
+        <li><code>diag1_used[row + c]</code> แนวทแยงที่ขึ้นไปทางขวา ทุกช่องบนเส้นเดียวกันมี row + c เท่ากัน มีค่า 0 ถึง 2N - 2</li>
+        <li><code>diag2_used[row - c + N - 1]</code> แนวทแยงที่ลงไปทางขวา ทุกช่องบนเส้นเดียวกันมี row - c เท่ากัน บวก N - 1 ให้ไม่ติดลบ ใช้เป็นตำแหน่งในอาเรย์ได้</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="queens"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+int queen_col[15];
+bool col_used[15], diag1_used[30], diag2_used[30];
+long long solutions = 0, nodes = 0;
+
+void print_board()
+{
+    for (int r = 0; r &lt; n; r++) {
+        for (int c = 0; c &lt; n; c++) {
+            cout &lt;&lt; (queen_col[r] == c ? 'Q' : '.');
+        }
+        cout &lt;&lt; '\n';
+    }
+}
+
+void place(int row)
+{
+    nodes++; // (1)!
+    if (row == n) {
+        if (solutions == 0) {
+            print_board();
+        }
+        solutions++;
+        return;
+    }
+    for (int c = 0; c &lt; n; c++) {
+        int d1 = row + c, d2 = row - c + n - 1;
+        if (col_used[c] || diag1_used[d1] || diag2_used[d2]) { // (2)!
+            continue;
+        }
+        queen_col[row] = c;
+        col_used[c] = diag1_used[d1] = diag2_used[d2] = true; // (3)!
+        place(row + 1);
+        col_used[c] = diag1_used[d1] = diag2_used[d2] = false; // (4)!
+    }
+}
+
+int main()
+{
+    cin &gt;&gt; n;
+    place(0);
+    cout &lt;&lt; "solutions " &lt;&lt; solutions &lt;&lt; '\n';
+    cout &lt;&lt; "nodes " &lt;&lt; nodes &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>นับว่าเรียก <code>place</code> กี่ครั้ง ซึ่งก็คือจำนวนกล่องในต้นไม้การค้นหา ใช้วัดว่าค้นหาหนักแค่ไหน ไม่เกี่ยวกับคำตอบ</li>
+        <li>ตัดตัวเลือกที่ผิดกฎทิ้งตั้งแต่ตอนนี้ ไม่ปล่อยให้ลงไปสร้างแถวที่เหลือ บรรทัดนี้คือส่วนที่ทำให้ backtracking ต่างจากลองทุกแบบ</li>
+        <li><strong>เลือก</strong> วางควีนแล้วจดว่าคอลัมน์และแนวทแยงทั้งสองเส้นถูกใช้แล้ว</li>
+        <li><strong>คืนสภาพ</strong> หลังลองทุกแบบที่มีควีนตัวนี้แล้ว ปลดออก ให้รอบถัดไปของลูปลองคอลัมน์อื่น ถ้าลืม แถวก่อนหน้าจะเห็นช่องว่างเป็นช่องที่โดนกินทั้งที่ไม่มีควีนแล้ว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="queens" data-title="ข้อมูลเข้า"><pre><code>4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="queens" data-title="C:\code\queens.exe"><pre><code>.Q..
+...Q
+Q...
+..Q.
+solutions 2
+nodes 17
+</code></pre></div>
+      </div>
+
+      <p>กระดานที่พิมพ์คือคำตอบ 2413 ในภาพ และ nodes เท่ากับ 17 กล่องพอดี ป้อน 8 ได้ <code>solutions 92</code> กับ <code>nodes 2057</code> ตารางนี้เทียบกับการลองทุกการเรียงสับเปลี่ยนของคอลัมน์ด้วย <code>next_permutation</code> แล้วตรวจแนวทแยงทุกคู่ทีหลัง วัดบนเครื่องเดียวกับหน้า 21.1 แบบ <code>-O2</code> ค่ากลางของ 3 ถึง 5 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>คำตอบ</th><th>nodes ของ backtracking</th><th>N! กระดานที่ต้องตรวจ</th><th>ลองทุกลำดับ</th><th>backtracking</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>8</td><td>92</td><td>2,057</td><td>40,320</td><td>0.024 วินาที</td><td>0.020 วินาที</td></tr>
+            <tr><td>10</td><td>724</td><td>35,539</td><td>3,628,800</td><td>0.051 วินาที</td><td>0.025 วินาที</td></tr>
+            <tr><td>11</td><td>2,680</td><td>166,926</td><td>39,916,800</td><td>0.276 วินาที</td><td>0.025 วินาที</td></tr>
+            <tr><td>12</td><td>14,200</td><td>856,189</td><td>479,001,600</td><td>3.143 วินาที</td><td>0.054 วินาที</td></tr>
+            <tr><td>13</td><td>73,712</td><td>4,674,890</td><td>6.2 × 10<sup>9</sup></td><td>ไม่ได้รัน</td><td>0.223 วินาที</td></tr>
+            <tr><td>14</td><td>365,596</td><td>27,358,553</td><td>8.7 × 10<sup>10</sup></td><td>ไม่ได้รัน</td><td>1.176 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ที่ N = 12 backtracking ไปแค่ 8.6 × 10<sup>5</sup> กล่อง ขณะที่ลองทุกลำดับต้องตรวจเกือบ 5 × 10<sup>8</sup> กระดาน แบบ Code::Blocks ต่างกันยิ่งกว่า คือ 49.4 วินาทีกับ 0.067 วินาที แต่ backtracking ก็ยังเป็นเวลาแบบเลขชี้กำลังอยู่ดี N เพิ่มหนึ่ง nodes เพิ่มราว 5 เท่า N = 14 ก็เกินหนึ่งวินาทีแล้ว ตัดกิ่งได้ดีแค่ไหนต้องวัดเอา ไม่มีสูตรตายตัวแบบ Big O ในบทที่ 18</p>
+
+      <h2 id="template">โครงของ backtracking</h2>
+
+      <p>โจทย์ backtracking ทุกข้อเขียนตามโครงเดียวกัน เปลี่ยนแค่ว่าสถานะคืออะไร ตัวเลือกคืออะไร และกฎคืออะไร</p>
+
+      <div class="code" data-lang="text"><pre><code>search(สถานะตอนนี้)
+    ถ้าสร้างครบแล้ว  บันทึกหรือนับคำตอบ แล้วกลับ
+    สำหรับทุกตัวเลือก x ของช่องถัดไป
+        ถ้า x ผิดกฎ  ข้าม
+        เลือก x  (เปลี่ยนสถานะ)
+        search(สถานะใหม่)
+        คืนสภาพ x  (เปลี่ยนสถานะกลับเหมือนก่อนเลือก)
+</code></pre></div>
+
+      <p>คำถามที่ต้องตอบก่อนเขียน คือแต่ละชั้นของ recursion เติมช่องไหน (N-Queens เติมทีละแถว) ตัวเลือกมีอะไรบ้าง (คอลัมน์ 0 ถึง N - 1) และเช็กกฎยังไงให้เร็ว (อาเรย์สามอัน)</p>
+
+      <h2 id="subset-sum">ผลรวมเซตย่อย</h2>
+
+      <p>ห้องเรียนมีงบซื้อของขวัญวันครู S บาทพอดี ร้านมีของ n ชิ้นราคาต่างๆ ให้พิมพ์ทุกชุดของของที่ราคารวมเท่ากับ S พอดี โจทย์แบบนี้เรียกว่า <strong>ผลรวมเซตย่อย (subset sum)</strong> ใช้ bitmask ในหน้า 21.2 ก็ได้ แต่เขียนแบบ backtracking ไล่ทีละชิ้น ชั้นที่ i ตัดสินใจเรื่องชิ้นที่ i ว่าจะเลือกหรือไม่ และเก็บชิ้นที่เลือกไว้ใน vector</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="subset-sum"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n, target;
+vector&lt;int&gt; price;
+vector&lt;int&gt; chosen;
+
+void search(int i, int sum)
+{
+    if (i == n) {
+        if (sum == target) {
+            for (int k = 0; k &lt; (int)chosen.size(); k++) {
+                cout &lt;&lt; chosen[k] &lt;&lt; (k + 1 &lt; (int)chosen.size() ? ' ' : '\n');
+            }
+        }
+        return;
+    }
+    chosen.push_back(price[i]); // (1)!
+    search(i + 1, sum + price[i]);
+    chosen.pop_back(); // (2)!
+    search(i + 1, sum); // (3)!
+}
+
+int main()
+{
+    cin &gt;&gt; n &gt;&gt; target;
+    price.resize(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; price[i];
+    }
+    search(0, 0);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><strong>เลือก</strong> ชิ้นที่ i ใส่ท้าย vector แล้วลองทุกแบบของชิ้นที่เหลือ ผลรวมส่งไปเป็นพารามิเตอร์ จึงไม่ต้องคืนสภาพเอง เพราะ <code>sum</code> ของชั้นนี้ไม่ได้เปลี่ยน</li>
+        <li><strong>คืนสภาพ</strong> เอาชิ้นที่ i ออกจาก vector ก่อนลองทางที่ไม่เลือก vector เป็นของที่ทุกชั้นใช้ร่วมกัน ต่างจาก <code>sum</code></li>
+        <li>ทางที่สอง ไม่เลือกชิ้นที่ i ทุกชั้นแตกเป็นสองทางแบบสตริงฐานสองในหน้า 9.5 รวม 2<sup>n</sup> ชุดที่ไปถึงชั้นล่างสุด</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="subset-sum" data-title="ข้อมูลเข้า"><pre><code>6 50
+20 15 30 10 5 25
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="subset-sum" data-title="C:\code\subset_sum.exe"><pre><code>20 15 10 5
+20 30
+20 5 25
+15 30 5
+15 10 25
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรมนี้ยังไม่ได้ตัดอะไรเลย ไปถึงชั้นล่างครบ 2<sup>n</sup> ชุดแล้วค่อยตรวจผลรวม ทั้งที่ระหว่างทางรู้ได้ตั้งแต่เนิ่นๆ เช่น เลือก 20 15 30 ไปแล้วได้ 65 เกิน 50 แล้ว ชิ้นที่เหลือราคาเป็นบวกทั้งนั้น เติมอีกเท่าไรก็ไม่มีทางกลับมาเป็น 50 การตัดกิ่งแบบนี้คือเรื่องของหน้า 21.4</p>
+
+      <h2 id="sudoku">ซูโดกุ 4 × 4</h2>
+
+      <p>ซูโดกุขนาดเล็ก ตาราง 4 × 4 แบ่งเป็นกล่อง 2 × 2 สี่กล่อง ต้องเติมเลข 1 ถึง 4 ให้ทุกแถว ทุกคอลัมน์ และทุกกล่องมีเลขครบไม่ซ้ำ ช่องที่เป็น 0 คือช่องว่าง เติมทีละช่องจากซ้ายไปขวา บนลงล่าง ให้ช่องที่ pos คือแถว pos / 4 คอลัมน์ pos % 4 เหมือนเปลี่ยนตารางเป็นแถวยาวแถวเดียว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="sudoku"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int grid[4][4];
+
+bool can_put(int r, int c, int d)
+{
+    for (int k = 0; k &lt; 4; k++) {
+        if (grid[r][k] == d || grid[k][c] == d) {
+            return false;
+        }
+    }
+    int top = r / 2 * 2, left = c / 2 * 2; // (1)!
+    for (int i = top; i &lt; top + 2; i++) {
+        for (int j = left; j &lt; left + 2; j++) {
+            if (grid[i][j] == d) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool solve(int pos)
+{
+    if (pos == 16) {
+        return true;
+    }
+    int r = pos / 4, c = pos % 4;
+    if (grid[r][c] != 0) {
+        return solve(pos + 1); // (2)!
+    }
+    for (int d = 1; d &lt;= 4; d++) {
+        if (can_put(r, c, d)) {
+            grid[r][c] = d;
+            if (solve(pos + 1)) { // (3)!
+                return true;
+            }
+            grid[r][c] = 0;
+        }
+    }
+    return false;
+}
+
+int main()
+{
+    for (int r = 0; r &lt; 4; r++) {
+        for (int c = 0; c &lt; 4; c++) {
+            cin &gt;&gt; grid[r][c];
+        }
+    }
+    if (!solve(0)) {
+        cout &lt;&lt; "no solution\n";
+        return 0;
+    }
+    for (int r = 0; r &lt; 4; r++) {
+        for (int c = 0; c &lt; 4; c++) {
+            cout &lt;&lt; grid[r][c] &lt;&lt; (c &lt; 3 ? ' ' : '\n');
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>มุมซ้ายบนของกล่องที่ช่อง (r, c) อยู่ หารแล้วคูณ 2 ปัดลงไปหาเลขคู่ที่ใกล้ที่สุด เช่น r = 3 ได้ 2</li>
+        <li>ช่องที่มีเลขให้มาแล้วไม่ต้องเลือก ข้ามไปช่องถัดไปเลย</li>
+        <li><code>solve</code> คืน <code>true</code> เมื่อเติมครบ พอเจอคำตอบแรกแล้วทุกชั้นคืน <code>true</code> ต่อกันขึ้นไปทันที ไม่ลองตัวเลือกที่เหลือ ตารางจึงค้างค่าของคำตอบไว้ให้พิมพ์ ถ้าโจทย์ต้องการนับทุกคำตอบ ให้ใช้แบบ N-Queens ที่ไม่หยุด</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sudoku" data-title="ข้อมูลเข้า"><pre><code>0 0 0 3
+0 4 0 0
+0 0 3 0
+2 0 0 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sudoku" data-title="C:\code\sudoku.exe"><pre><code>1 2 4 3
+3 4 2 1
+4 1 3 2
+2 3 1 4
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรมนี้ตรวจกฎเฉพาะเลขที่ตัวเองเติม ไม่ได้ตรวจว่าเลขที่ให้มาตั้งแต่ต้นขัดกันเองหรือเปล่า ถ้าโจทย์ไม่ได้รับประกันเรื่องนี้ ต้องตรวจเพิ่มก่อนเริ่มค้น ซูโดกุ 9 × 9 ใช้โครงเดียวกันได้ แต่ปริศนายากๆ บางข้อจะช้า ต้องเลือกเติมช่องที่มีตัวเลือกน้อยที่สุดก่อน ซึ่งเป็นการตัดกิ่งอีกแบบหนึ่ง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forgot-pop">แบบที่ 1 ลืม pop_back</h3>
+
+      <p>ในโปรแกรม subset-sum ลบบรรทัด <code>chosen.pop_back();</code> ออก คอมไพล์ผ่านโดยไม่มีคำเตือน ป้อนข้อมูลชุดเดิมได้</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\subset_sum.exe"><pre><code>20 15 30 10 5 25 25 5 25 25 10 5 25
+20 15 30 10 5 25 25 5 25 25 10 5 25 25 5 25 25 30 10 5 25 25 5 25 25
+20 15 30 10 5 25 25 5 25 25 10 5 25 25 5 25 25 30 10 5 25 25 5 25 25 10 5 25 25 5 25
+20 15 30 10 5 25 25 5 25 25 10 5 25 25 5 25 25 30 10 5 25 25 5 25 25 10 5 25 25 5 25 25 15 30 10 5 25 25 5 25
+20 15 30 10 5 25 25 5 25 25 10 5 25 25 5 25 25 30 10 5 25 25 5 25 25 10 5 25 25 5 25 25 15 30 10 5 25 25 5 25 25 10 5 25 25
+</code></pre></div>
+
+      <p>ยังพิมพ์ห้าบรรทัดเท่าเดิม เพราะ <code>sum</code> ยังถูกต้อง แต่ของในแต่ละบรรทัดยาวขึ้นเรื่อยๆ ทุกชิ้นที่เคยเลือกค้างอยู่ใน vector ไม่เคยถูกเอาออก ของที่เป็นพารามิเตอร์อย่าง <code>sum</code> คืนสภาพเองตอนฟังก์ชันจบ แต่ของที่ทุกชั้นใช้ร่วมกันอย่าง vector global หรืออาเรย์ <code>col_used</code> ต้องคืนสภาพเองทุกครั้ง</p>
+
+      <h3 id="forgot-reset">แบบที่ 2 ลืมลบเลขที่เติมผิด</h3>
+
+      <p>ในโปรแกรม sudoku ลบบรรทัด <code>grid[r][c] = 0;</code> ที่อยู่หลัง <code>if (solve(pos + 1))</code> ออก คอมไพล์ผ่านโดยไม่มีคำเตือน ป้อนตารางเดิมได้</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\sudoku.exe"><pre><code>no solution
+</code></pre></div>
+
+      <p>ปริศนาที่มีคำตอบกลายเป็นไม่มีคำตอบ เพราะเลขที่ลองแล้วไปต่อไม่ได้ยังค้างอยู่ในตาราง พอถอยกลับไปเปลี่ยนช่องก่อนหน้า ช่องนี้ไม่เป็น 0 แล้ว บรรทัด <code>if (grid[r][c] != 0)</code> จึงนึกว่าเป็นเลขที่โจทย์ให้มา ข้ามไปไม่ลองใหม่ เลขผิดนั้นยังไปบังตัวเลือกของช่องอื่นด้วย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>backtracking สร้างคำตอบทีละช่อง ตัดตัวเลือกที่ผิดกฎทิ้งทันที ถ้าไม่มีตัวเลือกเหลือก็ถอยกลับไปเปลี่ยนช่องก่อนหน้า</li>
+        <li>ต้นไม้การค้นหามีกล่องคือสถานะระหว่างทาง นับจำนวนกล่องด้วยตัวแปร <code>nodes</code> เพื่อดูว่าค้นหาหนักแค่ไหน</li>
+        <li>N-Queens วางทีละแถว ใช้อาเรย์จำคอลัมน์ row + c และ row - c + N - 1 ตรวจได้ใน O(1)</li>
+        <li>ทุกอย่างที่ทุกชั้นใช้ร่วมกัน ทั้ง vector อาเรย์ และตาราง ต้องคืนสภาพหลังลองเสร็จ</li>
+        <li>ต้องการแค่คำตอบเดียว ให้ฟังก์ชันคืน <code>bool</code> แล้วหยุดทันทีที่เจอ ต้องการนับทุกคำตอบ ให้ไล่จนครบ</li>
+      </ul>
+    </article>

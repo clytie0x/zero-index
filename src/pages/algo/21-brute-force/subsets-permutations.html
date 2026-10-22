@@ -1,0 +1,227 @@
+<article class="doc">
+      <h1>21.2 ทุกเซตย่อยและทุกลำดับ</h1>
+
+      <p>ลูปซ้อนในหน้า 21.1 ใช้ได้เมื่อรู้ล่วงหน้าว่าจะเลือกกี่ชิ้น แต่โจทย์จำนวนมากให้เลือกกี่ชิ้นก็ได้ เช่น เลือกของรางวัลให้ใช้คูปองคุ้มที่สุด หรือให้จัดลำดับทั้งหมด เช่น ลำดับที่นั่งของเพื่อน N คน หน้า 9.5 เขียน recursion พิมพ์สตริงฐานสองทุกแบบและการเรียงสับเปลี่ยนทุกแบบไปแล้ว หน้านี้ใช้เครื่องมือที่สั้นกว่า คือไล่ทุก<strong>เซตย่อย (subset)</strong> ด้วยตัวเลขธรรมดาหนึ่งตัวที่เรียกว่า <strong>bitmask</strong> และไล่ทุกลำดับด้วย <code>next_permutation</code> จากบทที่ 16 ทั้งสองแบบไม่ต้องเขียน recursion เลย</p>
+
+      <h2 id="bitmask">ตัวเลขหนึ่งตัวแทนเซตย่อยหนึ่งชุด</h2>
+
+      <p>ของ n ชิ้น แต่ละชิ้นเลือกหรือไม่เลือก ถ้าเขียน 1 แทนเลือก 0 แทนไม่เลือก เซตย่อยหนึ่งชุดก็คือสตริงฐานสองยาว n แบบในหน้า 9.5 และสตริงฐานสองก็คือตัวเลขในหน้า 12.3 นั่นเอง ให้ bit ที่ i ของตัวเลข (นับจากขวาสุดเป็น bit ที่ 0) บอกว่าเลือกชิ้นที่ i + 1 หรือไม่ ตัวเลข 0 ถึง 2<sup>n</sup> - 1 จึงแทนเซตย่อยทุกชุดพอดี ชุดละหนึ่งตัวเลข ไม่ขาดไม่ซ้ำ ตารางนี้คือของ 3 ชิ้น</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>mask</th><th>ฐานสอง (bit 2 1 0)</th><th>เลือกชิ้น</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td><code>000</code></td><td>ไม่เลือกอะไร</td></tr>
+            <tr><td>1</td><td><code>001</code></td><td>1</td></tr>
+            <tr><td>2</td><td><code>010</code></td><td>2</td></tr>
+            <tr><td>3</td><td><code>011</code></td><td>1 2</td></tr>
+            <tr><td>4</td><td><code>100</code></td><td>3</td></tr>
+            <tr><td>5</td><td><code>101</code></td><td>1 3</td></tr>
+            <tr><td>6</td><td><code>110</code></td><td>2 3</td></tr>
+            <tr><td>7</td><td><code>111</code></td><td>1 2 3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ดูว่า mask เลือกชิ้นที่ i + 1 ไหม ก็คือดู bit ที่ i ด้วย <code>(mask &gt;&gt; i) &amp; 1</code> ตามตารางในหน้า 12.3 ส่วนจำนวนเซตย่อยทั้งหมด 2<sup>n</sup> เขียนเป็น <code>1 &lt;&lt; n</code></p>
+
+      <h2 id="prizes">เลือกของรางวัลให้ใช้คูปองคุ้มที่สุด</h2>
+
+      <p>น้องได้คูปองแลกของรางวัลมูลค่า B บาท ใช้แลกของกี่ชิ้นก็ได้ แต่ราคารวมห้ามเกิน B และไม่ได้เงินทอน ร้านมีของ n ชิ้น ราคาไม่เท่ากัน ควรเลือกชิ้นไหนบ้างให้ราคารวมมากที่สุด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="prizes"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    long long budget;
+    cin &gt;&gt; n &gt;&gt; budget;
+    vector&lt;long long&gt; price(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; price[i];
+    }
+    long long best = -1;
+    int best_mask = 0;
+    for (int mask = 0; mask &lt; (1 &lt;&lt; n); mask++) { // (1)!
+        long long total = 0;
+        for (int i = 0; i &lt; n; i++) {
+            if ((mask &gt;&gt; i) &amp; 1) { // (2)!
+                total += price[i];
+            }
+        }
+        if (total &lt;= budget &amp;&amp; total &gt; best) {
+            best = total;
+            best_mask = mask; // (3)!
+        }
+    }
+    cout &lt;&lt; "best " &lt;&lt; best &lt;&lt; '\n';
+    cout &lt;&lt; "items";
+    for (int i = 0; i &lt; n; i++) {
+        if ((best_mask &gt;&gt; i) &amp; 1) {
+            cout &lt;&lt; ' ' &lt;&lt; i + 1;
+        }
+    }
+    cout &lt;&lt; '\n';
+    cout &lt;&lt; "count " &lt;&lt; __builtin_popcount(best_mask) &lt;&lt; '\n'; // (4)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ไล่ทุกเซตย่อย ตั้งแต่ไม่เลือกอะไรเลย (0) ถึงเลือกทุกชิ้น (2<sup>n</sup> - 1) ใส่วงเล็บรอบ <code>1 &lt;&lt; n</code> ให้อ่านง่าย</li>
+        <li>bit ที่ i เป็น 1 แปลว่าเซตนี้เลือกชิ้นที่ i + 1 รวมราคาเฉพาะชิ้นที่เลือก ตรวจหนึ่งเซตใช้งาน O(n) ทั้งหมดจึงเป็น O(2<sup>n</sup> · n)</li>
+        <li>จำทั้งตัวเลข mask ไว้ ไม่ต้องจำเป็น vector ของชิ้นที่เลือก เพราะตัวเลขตัวเดียวบอกได้ครบว่าเลือกชิ้นไหนบ้าง</li>
+        <li><code>__builtin_popcount(x)</code> นับว่า x มี bit ที่เป็น 1 กี่ตัว คือจำนวนชิ้นที่เลือก เป็นฟังก์ชันพิเศษของ GCC ใช้ได้ใน Code::Blocks และ grader ที่ใช้ GCC ทุกตัว ถ้า x เป็น <code>long long</code> ใช้ <code>__builtin_popcountll</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="prizes" data-title="ข้อมูลเข้า"><pre><code>5 100
+35 48 27 60 19
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="prizes" data-title="C:\code\prizes.exe"><pre><code>best 95
+items 1 4
+count 2
+</code></pre></div>
+      </div>
+
+      <p>คำตอบคือชิ้นที่ 1 กับ 4 ราคา 35 + 60 = 95 ถ้าเลือกแบบโลภ คือหยิบชิ้นถูกก่อนให้ได้หลายชิ้น 19 + 27 + 35 = 81 แล้วหยิบชิ้นไหนต่อก็เกินงบ ได้แค่ 81 ส่วนหยิบชิ้นแพงก่อน 60 + 35 = 95 บังเอิญถูกกับข้อมูลชุดนี้ แต่ไม่ถูกเสมอ ลองทุกเซตย่อยไม่ต้องเดาว่ากฎไหนถูก เพราะดูครบทุกแบบแล้วจริงๆ</p>
+
+      <h3 id="bitmask-vs-recursion">bitmask กับ recursion ในหน้า 9.5</h3>
+
+      <p>สองวิธีไล่เซตย่อยครบ 2<sup>n</sup> ชุดเท่ากัน bitmask สั้นกว่า ไม่มีตัวแปร global และส่งเซตย่อยทั้งชุดไปไหนก็ได้เป็นตัวเลขตัวเดียว ส่วน recursion เลือกทีละชิ้น จึงรู้ผลรวมครึ่งทางและเลิกลองต่อได้ทันทีที่เกินงบ ซึ่งเป็นพื้นฐานของการตัดกิ่งในหน้า 21.4 bitmask ทำแบบนั้นไม่ได้ ต้องสร้างเซตให้ครบก่อนแล้วค่อยตรวจ</p>
+
+      <h3 id="bitmask-time">2<sup>n</sup> ไปได้แค่ไหน</h3>
+
+      <p>รันโปรแกรม prizes กับราคาสุ่มและงบที่ใหญ่พอจะเลือกได้หลายชิ้น วัดบนเครื่องเดียวกับหน้า 21.1 แต่ละช่องคือค่ากลางของการรัน 5 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>n</th><th>2<sup>n</sup> · n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>20</td><td>2.1 × 10<sup>7</sup></td><td>0.088 วินาที</td><td>0.062 วินาที</td></tr>
+            <tr><td>22</td><td>9.2 × 10<sup>7</sup></td><td>0.396 วินาที</td><td>0.224 วินาที</td></tr>
+            <tr><td>24</td><td>4.0 × 10<sup>8</sup></td><td>1.689 วินาที</td><td>1.112 วินาที</td></tr>
+            <tr><td>25</td><td>8.4 × 10<sup>8</sup></td><td>2.797 วินาที</td><td>1.379 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>n = 20 สบาย พอถึง 24 ก็เกินหนึ่งวินาทีแล้ว ทุก n ที่เพิ่มหนึ่งทำให้งานเพิ่มเกินเท่าตัว เพราะทั้งจำนวนเซตเพิ่มเท่าตัว และแต่ละเซตต้องดูของเพิ่มอีกหนึ่งชิ้น <code>1 &lt;&lt; n</code> ที่เป็น <code>int</code> ใช้ได้ถึง n = 30 ซึ่งเลยขอบเขตที่ทันไปไกลแล้ว ไม่ต้องห่วงเรื่องล้น</p>
+
+      <h2 id="permutations">ทุกลำดับด้วย next_permutation</h2>
+
+      <p>เพื่อน n คนนั่งเรียงแถวเดียว คู่ที่สนิทกันถ้าได้นั่งติดกันจะคุยสนุก ให้คะแนนความสนุก h[i][j] ของคนที่ i กับ j เมื่อนั่งติดกัน ควรจัดลำดับที่นั่งแบบไหนให้คะแนนรวมของทุกคู่ที่นั่งติดกันมากที่สุด คำตอบหนึ่งแบบคือการเรียงสับเปลี่ยนของคน n คน ใช้ <code>next_permutation</code> ไล่ได้ครบตามที่เห็นในบทที่ 16</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="seating"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;vector&lt;int&gt;&gt; happy(n, vector&lt;int&gt;(n));
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = 0; j &lt; n; j++) {
+            cin &gt;&gt; happy[i][j];
+        }
+    }
+    vector&lt;int&gt; seat(n);
+    for (int i = 0; i &lt; n; i++) {
+        seat[i] = i; // (1)!
+    }
+    int best = -1;
+    vector&lt;int&gt; best_seat;
+    long long tried = 0;
+    do {
+        tried++;
+        int total = 0;
+        for (int i = 0; i + 1 &lt; n; i++) {
+            total += happy[seat[i]][seat[i + 1]]; // (2)!
+        }
+        if (total &gt; best) {
+            best = total;
+            best_seat = seat; // (3)!
+        }
+    } while (next_permutation(seat.begin(), seat.end()));
+    cout &lt;&lt; "tried " &lt;&lt; tried &lt;&lt; '\n';
+    cout &lt;&lt; "best " &lt;&lt; best &lt;&lt; '\n';
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; best_seat[i] + 1 &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ไล่ลำดับของ<strong>หมายเลขคน</strong> 0 ถึง n - 1 ไม่ใช่ไล่ค่าในตาราง เริ่มจาก 0 1 2 ... ซึ่งเรียงแล้ว <code>next_permutation</code> จึงพาไปครบทุกลำดับ</li>
+        <li><code>seat[i]</code> คือคนที่นั่งเก้าอี้ตัวที่ i คู่ที่ติดกันคือเก้าอี้ i กับ i + 1 ตรวจหนึ่งลำดับใช้งาน O(n) รวมเป็น O(n! · n)</li>
+        <li>กำหนด vector ให้กัน คัดลอกทั้งลำดับเก็บไว้ ถ้าเก็บแค่คะแนนจะไม่รู้ว่าลำดับไหนให้คะแนนนั้น</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="seating" data-title="ข้อมูลเข้า"><pre><code>4
+0 5 1 3
+5 0 2 8
+1 2 0 4
+3 8 4 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="seating" data-title="C:\code\seating.exe"><pre><code>tried 24
+best 17
+1 2 4 3
+</code></pre></div>
+      </div>
+
+      <p>ลองครบ 4! = 24 ลำดับ ดีที่สุดคือ 1 2 4 3 ได้ 5 + 8 + 4 = 17 ลำดับกลับหลัง 3 4 2 1 ก็ได้ 17 เท่ากัน แต่มาทีหลัง เงื่อนไข <code>total &gt; best</code> ที่ใช้มากกว่าอย่างเดียว จึงเก็บลำดับที่เจอก่อนไว้ ถ้าโจทย์ให้ตอบลำดับที่น้อยที่สุดตามพจนานุกรม แบบนี้ได้คำตอบที่ต้องการพอดี</p>
+
+      <h3 id="permutation-time">n! ไปได้แค่ไหน</h3>
+
+      <p>รันโปรแกรม seating กับตารางคะแนนสุ่ม วัดบนเครื่องเดียวกัน ค่ากลางของ 3 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>n</th><th>n!</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>8</td><td>40,320</td><td>0.019 วินาที</td><td>0.015 วินาที</td></tr>
+            <tr><td>9</td><td>362,880</td><td>0.047 วินาที</td><td>0.016 วินาที</td></tr>
+            <tr><td>10</td><td>3,628,800</td><td>0.363 วินาที</td><td>0.037 วินาที</td></tr>
+            <tr><td>11</td><td>39,916,800</td><td>4.501 วินาที</td><td>0.272 วินาที</td></tr>
+            <tr><td>12</td><td>479,001,600</td><td>79.962 วินาที</td><td>3.422 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ตารางนี้มีสองเรื่องให้จำ เรื่องแรก n! โตเร็วกว่า 2<sup>n</sup> มาก เพิ่ม n หนึ่งงานเพิ่มราว n เท่า 11 ยังทันแบบ <code>-O2</code> แต่ 12 ไม่ทันแล้ว เรื่องที่สอง ตั้งแต่ n = 10 แบบ Code::Blocks ช้ากว่าแบบ <code>-O2</code> ราว 10 ถึง 23 เท่า เพราะ <code>vector</code> กับ <code>next_permutation</code> เป็นโค้ดของ STL ที่เขียนไว้ให้ compiler ปรับ ถ้าไม่เปิด <code>-O2</code> ทุกการเข้าถึงช่องของ vector กลายเป็นการเรียกฟังก์ชันจริงๆ grader ส่วนใหญ่คอมไพล์ด้วย <code>-O2</code> จะวัดว่าโปรแกรมที่ใช้ STL ทันไหม ให้วัดแบบ <code>-O2</code></p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="compare-to-one">ตรวจ bit ด้วย == 1</h3>
+
+      <p>ในโปรแกรม prizes เปลี่ยนการตรวจ bit ทั้งสองจุด จาก <code>(mask &gt;&gt; i) &amp; 1</code> เป็นแบบนี้ ซึ่งดูเหมือนจะแปลว่าเหมือนกัน</p>
+
+      <div class="code" data-lang="cpp"><pre><code>if ((mask &amp; (1 &lt;&lt; i)) == 1) {
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือนแม้เปิด <code>-Wall -Wextra</code> ป้อนข้อมูลชุดเดิมได้</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\prizes.exe"><pre><code>best 35
+items 1
+count 1
+</code></pre></div>
+
+      <p><code>mask &amp; (1 &lt;&lt; i)</code> ไม่ได้ให้ 0 หรือ 1 แต่ให้ 0 หรือ <code>1 &lt;&lt; i</code> เช่น ถ้า bit ที่ 3 เป็น 1 จะได้ 8 ซึ่งไม่เท่ากับ 1 เงื่อนไขจึงจริงได้แค่ตอน i = 0 โปรแกรมเลยมองไม่เห็นชิ้นที่ 2 เป็นต้นไปเลย ได้คำตอบแค่ชิ้นแรก แก้ได้สองทาง ใช้ <code>(mask &gt;&gt; i) &amp; 1</code> ที่ได้ 0 หรือ 1 จริงๆ หรือเทียบกับ 0 แทน คือ <code>(mask &amp; (1 &lt;&lt; i)) != 0</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เซตย่อยของ n ชิ้นแทนด้วยตัวเลข 0 ถึง 2<sup>n</sup> - 1 bit ที่ i บอกว่าเลือกชิ้นที่ i + 1 หรือไม่ ไล่ด้วย <code>for (mask = 0; mask &lt; (1 &lt;&lt; n); mask++)</code></li>
+        <li>ตรวจ bit ด้วย <code>(mask &gt;&gt; i) &amp; 1</code> นับจำนวนชิ้นที่เลือกด้วย <code>__builtin_popcount</code></li>
+        <li>ลองทุกเซตย่อยเป็น O(2<sup>n</sup> · n) n = 20 สบาย n = 24 เริ่มเกินหนึ่งวินาที</li>
+        <li>ทุกลำดับใช้ <code>next_permutation</code> กับ vector ของหมายเลข 0 ถึง n - 1 ที่เรียงแล้ว เป็น O(n! · n) n = 11 ยังทันแบบ <code>-O2</code></li>
+        <li>โปรแกรมที่ใช้ STL ให้วัดเวลาแบบ <code>-O2</code> เพราะแบบ Code::Blocks ช้ากว่าหลายเท่า</li>
+      </ul>
+    </article>

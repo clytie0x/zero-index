@@ -328,7 +328,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "21"
 title = "บทที่ 21 brute force และ backtracking"
 summary = "ลองทุกทางอย่างเป็นระบบ และตัดทางที่ไม่มีหวังทิ้ง"
-# dir = "algo/21-brute-force"
+path = "algo/21-brute-force/index.html"
+pages = [
+  { num = "21.1", title = "นับก่อนลอง", path = "algo/21-brute-force/counting.html" },
+  { num = "21.2", title = "ทุกเซตย่อยและทุกลำดับ", path = "algo/21-brute-force/subsets-permutations.html" },
+  { num = "21.3", title = "backtracking", path = "algo/21-brute-force/backtracking.html" },
+  { num = "21.4", title = "ตัดกิ่งและ branch and bound", path = "algo/21-brute-force/pruning.html" },
+  { num = "21.5", title = "state space และ meet in the middle", path = "algo/21-brute-force/state-space.html" },
+  { num = "21.6", title = "แบบฝึกหัด", path = "algo/21-brute-force/exercises.html", exercises = "algo/21-brute-force" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

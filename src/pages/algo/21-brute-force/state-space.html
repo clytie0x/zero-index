@@ -1,0 +1,262 @@
+<article class="doc">
+      <h1>21.5 state space และ meet in the middle</h1>
+
+      <p>ทุกหน้าที่ผ่านมาสร้างคำตอบทีละช่องจนครบ แต่โจทย์อีกแบบให้สถานการณ์เริ่มต้นมา แล้วถามว่าทำการกระทำที่อนุญาตไปเรื่อยๆ จะไปถึงเป้าหมายได้ไหม เช่น ปริศนาข้ามแม่น้ำ การเทน้ำระหว่างขวด หรือการเลื่อนแผ่นป้ายตัวเลข แบบนี้เรียกว่า <strong>state space search</strong> (การค้นหาในปริภูมิสถานะ) หน้านี้สอนวิธีแทนสถานะในโปรแกรมและค้นด้วย DFS ส่วนครึ่งหลังเป็นหัวข้อเสริม <strong>meet in the middle</strong> ที่ทำให้โจทย์ N ≤ 40 ซึ่งลองครบ 2<sup>N</sup> ไม่ไหว กลายเป็นทันเวลา</p>
+
+      <h2 id="state">สถานะคืออะไร</h2>
+
+      <p><strong>สถานะ (state)</strong> คือข้อมูลที่น้อยที่สุดที่บอกสถานการณ์ตอนนี้ได้ครบ จนรู้ว่าทำอะไรต่อได้บ้าง ส่วน<strong>การเปลี่ยนสถานะ (transition)</strong> คือการกระทำหนึ่งครั้งที่พาจากสถานะหนึ่งไปอีกสถานะหนึ่ง ก่อนเขียนโค้ดต้องตอบให้ได้สามข้อ</p>
+
+      <ol>
+        <li>สถานะเก็บอะไรบ้าง และเก็บเป็นตัวแปรแบบไหน ยิ่งกะทัดรัดยิ่งดี ถ้าเก็บเป็นจำนวนเต็มตัวเดียวได้ จะจำว่าเคยมาแล้วด้วยอาเรย์ธรรมดาได้</li>
+        <li>จากสถานะหนึ่งไปสถานะไหนได้บ้าง และสถานะไหนผิดกฎ</li>
+        <li>มีสถานะทั้งหมดกี่แบบ ตัวเลขนี้คือขอบเขตของงาน แบบเดียวกับการนับก่อนลองในหน้า 21.1</li>
+      </ol>
+
+      <p>ต่างจาก backtracking ตรงที่การกระทำย้อนกลับได้ เดินวนกลับมาที่สถานะเดิมได้ จึงต้องจำว่าสถานะไหนเคยไปแล้ว ไม่อย่างนั้นจะวนไม่รู้จบ</p>
+
+      <h2 id="river">ปริศนาข้ามแม่น้ำ</h2>
+
+      <p>ชาวนา (F) พาหมาป่า (W) แพะ (G) และกะหล่ำปลี (C) อยู่ฝั่งซ้ายของแม่น้ำ เรือลำเล็กมีชาวนาพายได้คนเดียว และพาของไปได้ครั้งละไม่เกินหนึ่งอย่าง ถ้าชาวนาไม่อยู่ หมาป่ากินแพะ และแพะกินกะหล่ำปลี จะพาทุกอย่างข้ามไปฝั่งขวาได้ยังไง</p>
+
+      <p>สถานะคือแต่ละตัวอยู่ฝั่งไหน สี่ตัว ตัวละสองฝั่ง เก็บเป็น bitmask 4 bit ได้ bit ที่ 0 ถึง 3 คือ F W G C ตามลำดับ 0 คือฝั่งซ้าย 1 คือฝั่งขวา สถานะเริ่มต้นคือ 0 เป้าหมายคือ 15 (<code>1111</code>) มีสถานะทั้งหมดแค่ 16 แบบ การข้ามหนึ่งครั้งคือสลับ bit ของชาวนา กับ bit ของของที่พาไปด้วยถ้ามี ซึ่งต้องอยู่ฝั่งเดียวกับชาวนา</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="river"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const string letter = "FWGC";
+bool visited[16];
+vector&lt;int&gt; path;
+
+bool safe(int state)
+{
+    int farmer = state &amp; 1;
+    int wolf = (state &gt;&gt; 1) &amp; 1;
+    int goat = (state &gt;&gt; 2) &amp; 1;
+    int cabbage = (state &gt;&gt; 3) &amp; 1;
+    if (wolf == goat &amp;&amp; goat != farmer) {
+        return false;
+    }
+    if (goat == cabbage &amp;&amp; goat != farmer) {
+        return false;
+    }
+    return true;
+}
+
+bool dfs(int state)
+{
+    path.push_back(state);
+    if (state == 15) {
+        return true;
+    }
+    visited[state] = true; // (1)!
+    int farmer = state &amp; 1;
+    for (int k = 0; k &lt; 4; k++) {
+        if (((state &gt;&gt; k) &amp; 1) != farmer) { // (2)!
+            continue;
+        }
+        int next = state ^ 1;
+        if (k &gt; 0) {
+            next ^= 1 &lt;&lt; k; // (3)!
+        }
+        if (safe(next) &amp;&amp; !visited[next]) {
+            if (dfs(next)) {
+                return true;
+            }
+        }
+    }
+    path.pop_back();
+    return false;
+}
+
+string show(int state)
+{
+    string left, right;
+    for (int k = 0; k &lt; 4; k++) {
+        if ((state &gt;&gt; k) &amp; 1) {
+            right += letter[k];
+        } else {
+            left += letter[k];
+        }
+    }
+    if (left.empty()) {
+        left = "-";
+    }
+    if (right.empty()) {
+        right = "-";
+    }
+    return left + " | " + right;
+}
+
+int main()
+{
+    if (dfs(0)) {
+        for (int state : path) {
+            cout &lt;&lt; show(state) &lt;&lt; '\n';
+        }
+        cout &lt;&lt; "crossings " &lt;&lt; path.size() - 1 &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จดว่ามาถึงสถานะนี้แล้ว ต่างจาก <code>used</code> ใน backtracking ตรงที่ <strong>ไม่คืนสภาพ</strong> สถานะที่เคยค้นจากตรงนี้แล้วไม่เจอเป้าหมาย มาจากทางไหนก็ไม่เจอเหมือนเดิม ไม่ต้องค้นซ้ำ</li>
+        <li>k = 0 คือข้ามไปคนเดียว ผ่านเงื่อนไขนี้เสมอเพราะ bit ที่ 0 คือตัวชาวนาเอง k = 1 ถึง 3 คือพาของชิ้นที่ k ไปด้วย ซึ่งต้องอยู่ฝั่งเดียวกับชาวนา</li>
+        <li>XOR กับ 1 สลับฝั่งของชาวนา XOR กับ <code>1 &lt;&lt; k</code> สลับฝั่งของของที่พาไป ตามตารางในหน้า 12.3</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="river" data-title="C:\code\river.exe"><pre><code>FWGC | -
+WC | FG
+FWC | G
+C | FWG
+FGC | W
+G | FWC
+FG | WC
+- | FWGC
+crossings 7
+</code></pre></div>
+
+      <p>อ่านทีละบรรทัด ซ้ายของ <code>|</code> คือฝั่งซ้าย พาแพะไปก่อน กลับมาตัวเปล่า พาหมาป่าไป แล้ว<strong>พาแพะกลับมา</strong> ซึ่งเป็นจุดที่คนส่วนใหญ่คิดไม่ถึง พากะหล่ำปลีไป กลับมาตัวเปล่า แล้วพาแพะไปเป็นเที่ยวสุดท้าย</p>
+
+      <p>เพราะมี <code>visited</code> DFS จึงเข้าแต่ละสถานะไม่เกินครั้งเดียว งานรวมเป็น O(จำนวนสถานะ × จำนวนการกระทำต่อสถานะ) ข้อนี้ไม่เกิน 16 × 4 ครั้ง เล็กมาก โจทย์สถานะจึงทันหรือไม่ทันขึ้นกับว่ามีสถานะกี่แบบ ไม่ใช่ว่าต้องทำกี่ขั้นถึงเป้าหมาย</p>
+
+      <p>DFS ได้เส้นทางหนึ่งเส้น ข้อมูลชุดนี้บังเอิญได้ 7 เที่ยวซึ่งน้อยที่สุดพอดี แต่ DFS ไม่ได้รับประกันว่าได้เส้นทางที่สั้นที่สุด เพราะมันเดินลึกไปทางแรกที่เจอก่อนเสมอ ถ้าโจทย์ถามจำนวนครั้งที่น้อยที่สุด ต้องใช้ <strong>BFS บนสถานะ</strong> ซึ่งไล่สถานะทีละระดับตามจำนวนครั้ง จะเรียนในบทที่ 27 พร้อมกับ BFS บนกราฟ การแทนสถานะที่ฝึกในหน้านี้ใช้ได้ทันที</p>
+
+      <h3 id="state-ideas">แทนสถานะแบบอื่น</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>โจทย์</th><th>สถานะ</th><th>เก็บเป็น</th><th>จำนวนสถานะ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ข้ามแม่น้ำ</td><td>ฝั่งของสี่ตัว</td><td>bitmask 4 bit</td><td>16</td></tr>
+            <tr><td>เทน้ำระหว่างสองขวดจุ A และ B</td><td>น้ำในแต่ละขวด</td><td><code>visited[a][b]</code></td><td>(A + 1)(B + 1)</td></tr>
+            <tr><td>เปิดปิดไฟ n ดวง</td><td>ดวงไหนติดบ้าง</td><td>bitmask n bit</td><td>2<sup>n</sup></td></tr>
+            <tr><td>เลื่อนป้ายตัวเลข 3 × 3 ที่มีช่องว่างหนึ่งช่อง</td><td>ตำแหน่งของทุกป้าย</td><td><code>string</code> ยาว 9 กับ <code>set</code> หรือ <code>map</code> ในบทที่ 20</td><td>ไม่เกิน 9! = 362,880</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าสถานะแปลงเป็นตัวเลขเล็กๆ ไม่ได้ ใช้ <code>set</code> จำสถานะที่เคยไปแทนอาเรย์ได้ ช้ากว่าแต่ใช้ได้กับสถานะทุกแบบ</p>
+
+      <h2 id="meet-in-the-middle">meet in the middle</h2>
+
+      <p>หัวข้อนี้เป็นหัวข้อเสริม ถ้าอ่านครั้งแรกแล้วยังไม่เข้าใจ ข้ามไปก่อนได้</p>
+
+      <p>กลับมาที่การนับเซตย่อยที่ผลรวมเท่ากับ S พอดี ในหน้า 21.4 เห็นแล้วว่าเมื่อ S อยู่กลางๆ ตัดกิ่งแล้วยังเหลือเป็นร้อยล้านกล่องตั้งแต่ n = 30 ถ้า n = 40 ลองครบต้อง 2<sup>40</sup> ≈ 1.1 × 10<sup>12</sup> แบบ ไม่มีทางทัน</p>
+
+      <p>แนวคิดคือ <strong>แบ่งของเป็นสองครึ่ง</strong> ครึ่งละ 20 ชิ้น เซตย่อยหนึ่งชุดของทั้งหมดคือการเลือกเซตย่อยจากครึ่งซ้ายหนึ่งชุด กับครึ่งขวาหนึ่งชุด ผลรวมรวมกันได้ S ก็ต่อเมื่อ ผลรวมฝั่งซ้าย x บวกผลรวมฝั่งขวา y เท่ากับ S หรือ y = S - x</p>
+
+      <ol>
+        <li>หาผลรวมทุกเซตย่อยของครึ่งซ้าย ได้ 2<sup>20</sup> ค่า และของครึ่งขวาอีก 2<sup>20</sup> ค่า ด้วย bitmask ในหน้า 21.2</li>
+        <li>เรียงผลรวมของฝั่งขวา</li>
+        <li>สำหรับผลรวม x แต่ละค่าของฝั่งซ้าย นับว่าฝั่งขวามีค่า S - x กี่ตัว ด้วย <code>upper_bound</code> ลบ <code>lower_bound</code> แบบในบทที่ 19</li>
+      </ol>
+
+      <p>สองฝั่ง "เดินมาพบกันตรงกลาง" แทนที่จะลองคู่ซ้ายขวาครบ 2<sup>20</sup> × 2<sup>20</sup> คู่ ใช้งานแค่ราว 2<sup>20</sup> × 20 ทั้งตอนสร้าง ตอนเรียง และตอนค้น คือ O(2<sup>n/2</sup> · n)</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="mitm"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;long long&gt; all_sums(const vector&lt;long long&gt;&amp; items)
+{
+    int m = items.size();
+    vector&lt;long long&gt; sums(1 &lt;&lt; m);
+    for (int mask = 0; mask &lt; (1 &lt;&lt; m); mask++) { // (1)!
+        long long total = 0;
+        for (int i = 0; i &lt; m; i++) {
+            if ((mask &gt;&gt; i) &amp; 1) {
+                total += items[i];
+            }
+        }
+        sums[mask] = total;
+    }
+    return sums;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long target;
+    cin &gt;&gt; n &gt;&gt; target;
+    vector&lt;long long&gt; first_half, second_half;
+    for (int i = 0; i &lt; n; i++) {
+        long long price;
+        cin &gt;&gt; price;
+        if (i &lt; n / 2) { // (2)!
+            first_half.push_back(price);
+        } else {
+            second_half.push_back(price);
+        }
+    }
+    vector&lt;long long&gt; left = all_sums(first_half);
+    vector&lt;long long&gt; right = all_sums(second_half);
+    sort(right.begin(), right.end());
+    long long ways = 0;
+    for (long long x : left) {
+        long long need = target - x;
+        ways += upper_bound(right.begin(), right.end(), need) - lower_bound(right.begin(), right.end(), need); // (3)!
+    }
+    cout &lt;&lt; ways &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ผลรวมของทุกเซตย่อยแบบในหน้า 21.2 แต่เก็บลง vector แทนการหาค่าที่ดีที่สุด ช่องที่ mask คือผลรวมของเซตที่ mask แทน</li>
+        <li>ครึ่งซ้ายได้ n / 2 ชิ้น ครึ่งขวาได้ที่เหลือ ถ้า n เป็นเลขคี่ ฝั่งขวาจะมากกว่าหนึ่งชิ้น ยังใช้ได้ถูกต้อง</li>
+        <li>ช่วงของค่าที่เท่ากับ <code>need</code> ใน vector ที่เรียงแล้ว เริ่มที่ <code>lower_bound</code> และจบก่อน <code>upper_bound</code> ลบกันได้จำนวนตัว ถ้าไม่มีเลย สองตัวชี้ที่ตำแหน่งเดียวกัน ได้ 0</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="mitm" data-title="ข้อมูลเข้า"><pre><code>6 50
+20 15 30 10 5 25
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="mitm" data-title="C:\code\mitm.exe"><pre><code>5
+</code></pre></div>
+      </div>
+
+      <p>ได้ 5 ตรงกับห้าชุดที่โปรแกรม subset-sum ในหน้า 21.3 พิมพ์ออกมา ตารางนี้เทียบกับการลองครบ 2<sup>n</sup> แบบด้วย recursion ที่ไม่ตัดกิ่ง ราคาสุ่ม 1 ถึง 10<sup>6</sup> และ S เท่ากับครึ่งหนึ่งของผลรวม วัดบนเครื่องเดียวกับหน้า 21.1 ค่ากลางของ 3 ถึง 5 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>n</th><th>ลองครบ Code::Blocks</th><th>ลองครบ -O2</th><th>meet in the middle Code::Blocks</th><th>meet in the middle -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>30</td><td>3.674 วินาที</td><td>1.452 วินาที</td><td>0.033 วินาที</td><td>0.027 วินาที</td></tr>
+            <tr><td>32</td><td>14.098 วินาที</td><td>6.469 วินาที</td><td>0.064 วินาที</td><td>0.035 วินาที</td></tr>
+            <tr><td>34</td><td>67.688 วินาที</td><td>25.297 วินาที</td><td>0.133 วินาที</td><td>0.051 วินาที</td></tr>
+            <tr><td>40</td><td>ไม่ได้รัน</td><td>ไม่ได้รัน</td><td>0.921 วินาที</td><td>0.382 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ลองครบเพิ่มขึ้นราว 4 เท่าทุกครั้งที่ n เพิ่ม 2 ถ้าคิดต่อจาก 1.45 วินาทีที่ n = 30 ไปถึง n = 40 จะเป็นราว 1.45 × 1024 ≈ 1,500 วินาที หรือ 25 นาที ส่วน meet in the middle ที่ n = 40 ใช้ไม่ถึงครึ่งวินาที</p>
+
+      <p>meet in the middle ใช้ได้เมื่อแบ่งคำตอบเป็นสองส่วนที่ไม่ขึ้นต่อกัน แล้วรวมผลของสองส่วนด้วยการค้นในข้อมูลที่เรียงแล้วได้ ข้อเสียคือใช้หน่วยความจำ 2<sup>n/2</sup> ช่องต่อฝั่ง n = 40 คือราวหนึ่งล้านช่อง ยังสบาย แต่ถ้า n = 60 ต้องใช้ฝั่งละพันล้านช่อง หน่วยความจำไม่พอแล้ว</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-visited">ลืมเช็กว่าเคยมาแล้ว</h3>
+
+      <p>ในโปรแกรม river เปลี่ยน <code>if (safe(next) &amp;&amp; !visited[next])</code> เป็น <code>if (safe(next))</code> คอมไพล์ผ่านโดยไม่มีคำเตือน แต่พอรัน หน้าต่างดำไม่พิมพ์อะไรเลย แล้ว Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p><code>0xC00000FD</code> คือ stack overflow แบบในหน้า 9.1 ชาวนาพาแพะข้ามไป (สถานะ 5) จากนั้นตัวเลือกแรกคือข้ามกลับมาคนเดียว (สถานะ 4) แล้วตัวเลือกแรกของสถานะ 4 ก็คือข้ามกลับไปคนเดียวอีก ได้สถานะ 5 เดิม วนสองสถานะนี้ไปเรื่อยๆ ทุกรอบเรียก <code>dfs</code> ซ้อนเพิ่มอีกชั้น จน stack เต็ม การกระทำที่ย้อนกลับได้ทำให้ state space มีวงวนเสมอ ต้องจำสถานะที่เคยไปทุกครั้ง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>สถานะคือข้อมูลที่น้อยที่สุดที่บอกสถานการณ์ได้ครบ แทนให้กะทัดรัด เช่น bitmask หรือเลขไม่กี่ตัว แล้วนับว่ามีกี่แบบ</li>
+        <li>DFS บนสถานะต้องจำ <code>visited</code> และไม่คืนสภาพ ลืมเช็กแล้วจะวนจน stack overflow</li>
+        <li>DFS หาเส้นทางได้ แต่ไม่รับประกันว่าสั้นที่สุด ต้องการน้อยครั้งที่สุดใช้ BFS บนสถานะในบทที่ 27</li>
+        <li>meet in the middle แบ่งเป็นสองครึ่ง หาคำตอบทุกแบบของแต่ละครึ่ง เรียงฝั่งหนึ่ง แล้วค้นคู่ด้วย binary search ลดจาก O(2<sup>n</sup>) เป็น O(2<sup>n/2</sup> · n) ทำให้ n = 40 ทันเวลา</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>
