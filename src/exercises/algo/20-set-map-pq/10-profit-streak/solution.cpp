@@ -8,20 +8,22 @@ int main()
     int n;
     long long target;
     cin >> n >> target;
-    map<long long, int> seen;
-    seen[0] = 1;
+    map<long long, int> first_day;
+    first_day[0] = 0;
     long long prefix = 0;
-    long long answer = 0;
-    for (int i = 0; i < n; i++) {
+    int best = 0;
+    for (int i = 1; i <= n; i++) {
         long long profit;
         cin >> profit;
         prefix += profit;
-        auto it = seen.find(prefix - target);
-        if (it != seen.end()) {
-            answer += it->second;
+        auto it = first_day.find(prefix - target);
+        if (it != first_day.end()) {
+            best = max(best, i - it->second);
         }
-        seen[prefix]++;
+        if (first_day.count(prefix) == 0) {
+            first_day[prefix] = i;
+        }
     }
-    cout << answer << '\n';
+    cout << best << '\n';
     return 0;
 }

@@ -38,6 +38,8 @@ bool is_balanced(string s)
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     string s;
     while (cin &gt;&gt; s) {
         if (is_balanced(s)) {
@@ -139,7 +141,7 @@ no page to go back
 
       <p>ดูบรรทัดที่ 6 ถึง 7 ของผลลัพธ์ ตอนเปิด weather หน้าปัจจุบันคือ news จึงถูก push ไว้ back จาก weather จึงกลับไป news ไม่ใช่ sport ซึ่งตรงกับเบราว์เซอร์จริง</p>
 
-      <p>ปุ่ม <strong>undo</strong> ของโปรแกรมพิมพ์งานหรือโปรแกรมวาดรูปใช้หลักเดียวกัน ทุกครั้งที่ผู้ใช้แก้อะไร ให้ push สิ่งที่ต้องรู้เพื่อย้อนการแก้นั้น กด undo คือ pop ตัวบนสุดแล้วย้อนมัน ส่วนปุ่ม forward หรือ redo ต้องใช้ stack ตัวที่สองเก็บสิ่งที่เพิ่งย้อนไป สองงานนี้อยู่ในแบบฝึกหัด</p>
+      <p>ปุ่ม <strong>undo</strong> ของโปรแกรมพิมพ์งานหรือโปรแกรมวาดรูปใช้หลักเดียวกัน ทุกครั้งที่ผู้ใช้แก้อะไร ให้ push สิ่งที่ต้องรู้เพื่อย้อนการแก้นั้น กด undo คือ pop ตัวบนสุดแล้วย้อนมัน ส่วนปุ่ม forward หรือ redo ต้องใช้ stack ตัวที่สองเก็บสิ่งที่เพิ่งย้อนไป undo อยู่ในแบบฝึกหัดข้อ 4 และปุ่ม forward อยู่ในข้อ 5 ส่วน redo ไม่มีในแบบฝึกหัด แต่เขียนด้วยหลักเดียวกับ forward ทุกอย่าง</p>
 
       <h2 id="postfix">คำนวณ postfix</h2>
 
@@ -150,6 +152,8 @@ using namespace std;
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     stack&lt;long long&gt; values;
     string token;
     while (cin &gt;&gt; token) {
@@ -314,7 +318,7 @@ int main()
 
       <p>ดูเผินๆ โปรแกรมมีลูปซ้อนเหมือนวิธีแรก แต่ให้นับจากอีกมุมหนึ่ง ทุกวันถูก push <strong>ครั้งเดียว</strong> และถูก pop <strong>ไม่เกินครั้งเดียว</strong> เพราะ pop แล้วไม่เคยกลับเข้าไปอีก ทั้งโปรแกรมจึงมี push n ครั้ง และ pop ไม่เกิน n ครั้ง รวมไม่เกิน 2n ครั้ง ถึงบางรอบของ for จะ pop หลายตัว อย่างวันที่ 6 ที่ pop สามตัว รอบอื่นก็ pop น้อยลงชดเชยกัน งานรวมจึงโตตาม n ตรงๆ เรียกว่า O(n) ส่วนวิธีแรกเป็น O(n<sup>2</sup>)</p>
 
-      <p>วัดด้วยโปรแกรมที่สร้างข้อมูลเอง มีสองแบบ แบบ <code>random</code> ใช้ <code>rand()</code> แบบหน้า 13.3 และแบบ <code>falling</code> ที่อุณหภูมิลดลงทุกวัน ซึ่งเป็นกรณีที่แย่ที่สุดของวิธีแรก ทั้งสองวิธีอยู่ในโปรแกรมเดียวกัน และตรวจว่าได้คำตอบตรงกัน</p>
+      <p>วัดด้วยโปรแกรมที่สร้างข้อมูลเอง มีสองแบบ แบบ <code>random</code> ใช้ <code>rand()</code> แบบหน้า 13.3 และแบบ <code>falling</code> ที่อุณหภูมิลดลงทุกวัน ซึ่งเป็นกรณีแย่ที่สุดของวิธีแรก ทั้งสองวิธีอยู่ในโปรแกรมเดียวกัน และตรวจว่าได้คำตอบตรงกัน</p>
 
       <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
 using namespace std;
@@ -366,6 +370,7 @@ int main()
         }
     }
     cout &lt;&lt; "same answers: " &lt;&lt; same &lt;&lt; '\n';
+    cout &lt;&lt; fixed &lt;&lt; setprecision(3);
     cout &lt;&lt; "nested loops: " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     cout &lt;&lt; "stack: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     return 0;

@@ -6,7 +6,7 @@ long long budget;
 vector<long long> price;
 long long ways = 0;
 
-void search(int i, long long sum)
+void go(int i, long long sum)
 {
     if (i == n) {
         if (sum <= budget) {
@@ -14,8 +14,8 @@ void search(int i, long long sum)
         }
         return;
     }
-    search(i + 1, sum + price[i]);
-    search(i + 1, sum);
+    go(i + 1, sum + price[i]);
+    go(i + 1, sum);
 }
 
 int main()
@@ -25,7 +25,7 @@ int main()
     for (int i = 0; i < n; i++) {
         cin >> price[i];
     }
-    search(0, 0);
+    go(0, 0);
     cout << ways << '\n';
     return 0;
 }

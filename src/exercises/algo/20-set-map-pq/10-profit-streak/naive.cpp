@@ -12,16 +12,16 @@ int main()
     for (int i = 0; i < n; i++) {
         cin >> profit[i];
     }
-    long long answer = 0;
+    int best = 0;
     for (int l = 0; l < n; l++) {
         long long sum = 0;
         for (int r = l; r < n; r++) {
             sum += profit[r];
             if (sum == target) {
-                answer++;
+                best = max(best, r - l + 1);
             }
         }
     }
-    cout << answer << '\n';
+    cout << best << '\n';
     return 0;
 }

@@ -211,6 +211,56 @@ keys after: 7
 }
 </code></pre></div>
 
+      <h2 id="sum-k">นับช่วงที่ผลรวมเท่ากับ k ด้วย map</h2>
+
+      <p>หน้า 19.5 นับช่วงวันที่กำไรรวมเท่ากับ k ได้สองทาง ทางที่ 1 จดว่าค่าแต่ละค่าเคยเป็น prefix มาแล้วกี่ครั้งด้วยอาเรย์นับ ซึ่งใช้ได้เฉพาะเมื่อค่าอยู่ในช่วงแคบ ทางที่ 2 ใช้ได้กับค่ากว้าง แต่ต้องเรียง pair แล้วค้นสองครั้ง พอมี map แล้ว ทางที่ 1 ก็ใช้กับค่าขนาดไหนก็ได้ แค่เปลี่ยนอาเรย์นับเป็น map ไม่ต้องเลื่อนค่าติดลบด้วย <code>limit</code> และไม่ต้องเช็กว่า <code>want</code> หลุดขอบอาเรย์</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="sum-k-map"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long k;
+    cin &gt;&gt; n &gt;&gt; k;
+    map&lt;long long, int&gt; seen; // (1)!
+    long long prefix = 0;
+    seen[prefix]++; // (2)!
+    long long count = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        int profit;
+        cin &gt;&gt; profit;
+        prefix += profit;
+        auto it = seen.find(prefix - k); // (3)!
+        if (it != seen.end()) {
+            count += it-&gt;second;
+        }
+        seen[prefix]++;
+    }
+    cout &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>คีย์คือค่าของ prefix ค่าคือจำนวนครั้งที่ prefix เป็นค่านั้น ค่าติดลบหรือใหญ่ถึง 2 × 10<sup>14</sup> ก็เป็นคีย์ได้เลย</li>
+        <li>จด <code>prefix[0] = 0</code> ไว้ก่อนเริ่มเหมือนเดิม ช่วงที่เริ่มวันที่ 1 ต้องใช้ค่านี้</li>
+        <li>ถามด้วย <code>find</code> ไม่ใช่ <code>seen[prefix - k]</code> เพราะวงเล็บเหลี่ยมจะสร้างคีย์ใหม่ทุกครั้งที่ไม่เจอ ตามหัวข้อก่อน ทำให้ map โตขึ้นเกือบเท่าตัวโดยไม่ได้อะไร</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sum-k-map" data-title="ข้อมูลเข้า"><pre><code>8 5
+3 2 -1 1 5 -5 5 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sum-k-map" data-title="C:\code\sum_k.exe"><pre><code>11
+</code></pre></div>
+      </div>
+
+      <p>แต่ละวันใช้ <code>find</code> หนึ่งครั้งกับวงเล็บเหลี่ยมหนึ่งครั้ง อย่างละ O(log N) รวมเป็น O(N log N) เท่ากับทางที่ 2 แต่สั้นกว่าและไม่ต้องคิดเรื่องรอยต่อของกลุ่ม</p>
+
+      <p>ลองกับ N = 200000 วัน กำไรสุ่มตั้งแต่ -10<sup>9</sup> ถึง 10<sup>9</sup> วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 แรม 32 GB ระบบ Windows 11 คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks รันทีละโปรแกรม 6 ครั้ง ทิ้งครั้งแรก แล้วใช้ค่ากลางของ 5 ครั้งที่เหลือ นับรวมเวลาเปิดโปรแกรม แบบ <code>-O2</code> โปรแกรมนี้ใช้ 0.10 วินาที ทางที่ 2 ของหน้า 19.5 ใช้ 0.06 วินาที แบบ Code::Blocks ใช้ 0.20 กับ 0.16 วินาที map ช้ากว่าการเรียงอยู่บ้าง เพราะทุกคีย์ใหม่ต้องจองหน่วยความจำและหาที่ในต้นไม้ แต่ทั้งคู่เร็วพอสำหรับ N หลายแสน ส่วนวิธีลองทุกคู่ O(N<sup>2</sup>) ใช้ 2 วินาทีตั้งแต่ N = 100000 ตามตารางของหน้า 19.5</p>
+
       <h2 id="complexity">เร็วแค่ไหน</h2>
 
       <div class="table-wrap">

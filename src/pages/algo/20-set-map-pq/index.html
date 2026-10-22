@@ -14,7 +14,7 @@
             <tr><td><a href="set.html">20.1 set เก็บของไม่ซ้ำ</a></td><td>insert erase count find วนตามลำดับ iterator ค่าน้อยสุดมากสุด และลบตัวซ้ำเทียบกับ vector และ sort</td></tr>
             <tr><td><a href="set-search.html">20.2 ค้นหาใน set และ multiset</a></td><td>lower_bound upper_bound ของ set หาค่าที่ใกล้ที่สุด เห็นกับตาว่า <code>std::lower_bound</code> กับ set ช้ามาก และ multiset กับการลบทีละตัว</td></tr>
             <tr><td><a href="map.html">20.3 map จับคู่คีย์กับค่า</a></td><td>นับความถี่ของค่าที่ใหญ่เกินอาเรย์ map&lt;string, int&gt; นับคำที่พบบ่อยที่สุด และกับดักวงเล็บเหลี่ยมสร้างคีย์เอง</td></tr>
-            <tr><td><a href="unordered.html">20.4 unordered_map และ unordered_set</a></td><td>ตารางแฮช เร็วกว่า map แค่ไหน กรณีแย่สุดที่ช้ากว่าหลายร้อยเท่า และจับคู่ผลรวมเท่ากับ K สี่วิธี</td></tr>
+            <tr><td><a href="unordered.html">20.4 unordered_map และ unordered_set</a></td><td>ตารางแฮช เร็วกว่า map แค่ไหน กรณีแย่ที่สุดที่ช้ากว่าหลายร้อยเท่า และจับคู่ผลรวมเท่ากับ K สี่วิธี</td></tr>
             <tr><td><a href="priority-queue.html">20.5 priority_queue</a></td><td>ดึงค่ามากสุด น้อยสุดด้วย greater เก็บ pair จำลองเหตุการณ์ตามเวลา รวม k รายการ และค่ามัธยฐานด้วยสอง heap</td></tr>
           </tbody>
         </table>
@@ -24,7 +24,7 @@
 
       <ul class="task-list">
         <li><label><input type="checkbox"><span>รับตัวเลข N ตัวที่ใหญ่ถึง 10<sup>9</sup> แล้วพิมพ์จำนวนค่าที่ไม่ซ้ำ และพิมพ์ค่าที่ไม่ซ้ำตามลำดับที่เจอครั้งแรกได้</span></label></li>
-        <li><label><input type="checkbox"><span>ใช้ <code>s.lower_bound</code> กับ <code>prev</code> หาสถานีที่ใกล้ที่สุดได้ถูก รวมกรณีที่ไม่มีสถานีข้างหน้าหรือข้างหลัง และจับเวลาให้เห็นว่า <code>lower_bound(s.begin(), s.end(), x)</code> ช้ากว่าหลายร้อยเท่า</span></label></li>
+        <li><label><input type="checkbox"><span>ใช้ <code>s.lower_bound</code> กับ <code>prev</code> หาสถานีที่ใกล้ที่สุดได้ถูก รวมกรณีที่ไม่มีสถานีข้างหน้าหรือข้างหลัง และจับเวลาให้เห็นว่า <code>lower_bound(s.begin(), s.end(), x)</code> ช้ากว่าหลายพันเท่าเมื่อ N เป็นหลักหมื่น</span></label></li>
         <li><label><input type="checkbox"><span>ลบค่า 85 ออกจาก multiset <code>{60, 85, 85, 91}</code> ทีละตัวจนเหลือ 85 ตัวเดียว โดยไม่ลบหายทั้งหมด</span></label></li>
         <li><label><input type="checkbox"><span>นับคำด้วย <code>map&lt;string, int&gt;</code> แล้วตอบคำที่พบบ่อยที่สุดได้ และอธิบายได้ว่าทำไม <code>if (count[x] &gt; 0)</code> ทำให้ <code>size()</code> โตขึ้น</span></label></li>
         <li><label><input type="checkbox"><span>เขียน priority_queue แบบน้อยสุดก่อนได้โดยไม่เปิดดู และพิมพ์ค่ามัธยฐานของ <code>50 20 80 70 10 90 60</code> หลังทุกตัวด้วยสอง heap ได้ตรงกับหน้า 20.5</span></label></li>

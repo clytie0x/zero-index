@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int MAX_PRICE = 1000000;
+#define MAX_PRICE 1000000
 int before[MAX_PRICE + 1];
 
 int main()

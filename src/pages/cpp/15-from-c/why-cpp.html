@@ -15,7 +15,7 @@
           <tbody>
             <tr><td>เก็บและต่อข้อความ</td><td>อาเรย์ <code>char</code> กับ <code>strcpy</code> <code>strcat</code> <code>strcmp</code> ในบทที่ 6 ต้องจองขนาดเอง</td><td><code>string</code> ยืดได้เอง ใช้ <code>+</code> กับ <code>==</code> ได้ หน้า 15.4</td></tr>
             <tr><td>เรียงข้อมูล</td><td><code>qsort</code> กับฟังก์ชันเปรียบเทียบในบทที่ 13</td><td><code>sort</code> บรรทัดเดียว บทที่ 16</td></tr>
-            <tr><td>อาเรย์ที่ไม่รู้ขนาดล่วงหน้า</td><td><code>malloc</code> กับ <code>free</code> ที่ใช้ในบทที่ 14</td><td><code>vector</code> บทที่ 16</td></tr>
+            <tr><td>อาเรย์ที่ไม่รู้ขนาดล่วงหน้า</td><td><code>malloc</code> กับ <code>free</code> ในหน้า 10.5</td><td><code>vector</code> บทที่ 16</td></tr>
             <tr><td>stack queue deque</td><td>เขียนเองด้วยอาเรย์ในบทที่ 14</td><td>มีให้ใช้เลย บทที่ 17</td></tr>
           </tbody>
         </table>
@@ -217,10 +217,10 @@ int main()
 
       <p><code>ambiguous</code> แปลว่ากำกวม ใน <code>std</code> มีฟังก์ชันชื่อ <code>count</code> อยู่แล้ว (ใช้นับของใน <code>vector</code> ซึ่งจะได้เรียนทีหลัง) พอเราประกาศ <code>count</code> ของเราเองนอก <code>main</code> ด้วย ก็มีสองตัวที่ชื่อเหมือนกัน compiler ไม่รู้ว่าหมายถึงตัวไหน ข้อความนี้ขึ้นซ้ำอีกครั้งที่บรรทัด 15 และแต่ละครั้งตามด้วย note ยาวหลายบรรทัดที่ไล่ชื่อ <code>count</code> ทุกตัวที่เป็นไปได้ ตัวสุดท้ายในรายการคือ <code>'int count [101]'</code> ของเรา</p>
 
-      <p>ชื่อที่ชนบ่อยในโค้ดของน้อง ทดลองแล้วว่าประกาศเป็นอาเรย์นอก <code>main</code> คู่กับ <code>using namespace std;</code> แล้วคอมไพล์ไม่ผ่าน ได้แก่ <code>count</code> <code>next</code> <code>prev</code> <code>max</code> <code>size</code> <code>left</code> <code>data</code> และ <code>y1</code> สองตัวที่น่าตกใจคือ <code>next</code> กับ <code>prev</code> ที่บทที่ 14 ใช้ทำลิสต์ด้วยอาเรย์ ทางแก้มีสองทาง</p>
+      <p>ชื่อที่ชนบ่อยในโค้ดของน้อง ทดลองแล้วว่าประกาศเป็นอาเรย์นอก <code>main</code> คู่กับ <code>using namespace std;</code> แล้วคอมไพล์ไม่ผ่าน ได้แก่ <code>count</code> <code>next</code> <code>prev</code> <code>max</code> <code>size</code> <code>left</code> <code>data</code> <code>y1</code> <code>stack</code> <code>queue</code> และ <code>deque</code> ที่น่าตกใจคือ <code>next</code> <code>prev</code> <code>stack</code> <code>queue</code> และ <code>deque</code> ซึ่งบทที่ 14 ใช้เป็นชื่ออาเรย์ทั้งหมด ย้ายโค้ดบทนั้นมาเป็น C++ ตรงๆ จะคอมไพล์ไม่ผ่าน ทางแก้มีสองทาง</p>
 
       <ul>
-        <li>เปลี่ยนชื่อ เช่น <code>cnt</code> <code>freq</code> <code>nxt</code> <code>prv</code> วิธีนี้ง่ายและแน่นอนที่สุด</li>
+        <li>เปลี่ยนชื่อ เช่น <code>cnt</code> <code>freq</code> <code>nxt</code> <code>prv</code> <code>stk</code> <code>que</code> วิธีนี้ง่ายและแน่นอนที่สุด</li>
         <li>ถ้าอาเรย์ไม่ใหญ่ ประกาศไว้ใน <code>main</code> แทน ชื่อในฟังก์ชันจะบังชื่อใน <code>std</code> ให้เอง ไม่กำกวม</li>
       </ul>
 

@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int MAX_SCORE = 1000000;
+#define MAX_SCORE 1000000
 int seen[MAX_SCORE + 1];
 
 int main()

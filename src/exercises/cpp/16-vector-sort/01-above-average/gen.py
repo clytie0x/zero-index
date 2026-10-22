@@ -4,7 +4,7 @@
     python tools/make_outputs.py src/exercises/cpp/16-vector-sort/01-above-average   (รันที่รากของโปรเจกต์)
 
 ไฟล์ .out สร้างจากเฉลยด้วย tools/make_outputs.py ห้ามเขียนเอง
-ชุดที่ชื่อขึ้นต้นด้วย big มีนักเรียนแสนคนตามขอบเขตโจทย์ ไม่เก็บใน git
+ชุดที่ชื่อขึ้นต้นด้วย big มีนักเรียนแสนคนตามขอบเขตโจทย์ ไฟล์ใหญ่เกิน 300 KB จึงไม่เก็บใน git ข้อนี้ไม่มี naive
 """
 
 import random
@@ -29,13 +29,17 @@ def cases():
     yield "single", case([55])
     yield "all-zero", case([0] * 12)
     # ค่าเฉลี่ย 50.5 คนที่ได้ 50 ไม่สูงกว่า คนที่ได้ 51 สูงกว่า
-    yield "half", case([50, 51, 50, 51, 0, 100, 50, 51])
+    yield "half", case([50, 51, 50, 51, 0, 100, 51, 51])
     # มีคนเดียวที่ต่างจากคนอื่น ค่าเฉลี่ยจึงไม่ใช่จำนวนเต็ม
     yield "one-high", case([0] * 9 + [100])
     yield "one-low", case([100] * 9 + [0])
     yield "rand1", case([random.randint(40, 100) for _ in range(500)])
     yield "rand2", case([random.randint(0, 100) for _ in range(20000)])
-    yield "big1", case([random.randint(0, 100) for _ in range(100000)])
+    # แสนคน ได้ 100 ทุกคนยกเว้นคนกลางแถวที่ได้ 0 ค่าเฉลี่ยต่ำกว่า 100 นิดเดียว
+    # ทุกคนที่ได้ 100 จึงสูงกว่าค่าเฉลี่ย ข้อมูลเข้าและข้อมูลออกยาวที่สุดเท่าที่ขอบเขตยอม
+    big = [100] * 100000
+    big[50000] = 0
+    yield "big1", case(big)
 
 
 def main():

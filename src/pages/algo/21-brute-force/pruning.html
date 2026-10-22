@@ -22,7 +22,7 @@ long long target;
 vector&lt;long long&gt; weight, rest;
 long long ways = 0, nodes = 0;
 
-void search(int i, long long sum)
+void go(int i, long long sum)
 {
     nodes++;
     if (sum &gt; target) { // (1)!
@@ -32,11 +32,13 @@ void search(int i, long long sum)
         return;
     }
     if (i == n) {
-        ways++;
+        if (sum == target) { // (3)!
+            ways++;
+        }
         return;
     }
-    search(i + 1, sum + weight[i]);
-    search(i + 1, sum);
+    go(i + 1, sum + weight[i]);
+    go(i + 1, sum);
 }
 
 int main()
@@ -46,12 +48,12 @@ int main()
     for (int i = 0; i &lt; n; i++) {
         cin &gt;&gt; weight[i];
     }
-    sort(weight.rbegin(), weight.rend()); // (3)!
+    sort(weight.rbegin(), weight.rend()); // (4)!
     rest.assign(n + 1, 0);
     for (int i = n - 1; i &gt;= 0; i--) {
         rest[i] = rest[i + 1] + weight[i];
     }
-    search(0, 0);
+    go(0, 0);
     cout &lt;&lt; "ways " &lt;&lt; ways &lt;&lt; '\n';
     cout &lt;&lt; "nodes " &lt;&lt; nodes &lt;&lt; '\n';
     return 0;
@@ -59,7 +61,8 @@ int main()
 </code></pre></div>
       <ol class="anno-list">
         <li>ตัดกิ่งที่เกินไปแล้ว</li>
-        <li>ตัดกิ่งที่ไม่มีทางถึง <code>rest[i]</code> คือน้ำหนักรวมของกล่องที่ i ถึง n - 1 พอ i = n ค่านี้เป็น 0 สองบรรทัดนี้จึงรับประกันว่าถึงบรรทัด <code>ways++</code> ได้ก็ต่อเมื่อผลรวมเท่ากับ S พอดี</li>
+        <li>ตัดกิ่งที่ไม่มีทางถึง <code>rest[i]</code> คือน้ำหนักรวมของกล่องที่ i ถึง n - 1</li>
+        <li>พอ i = n ค่า <code>rest[n]</code> เป็น 0 สองบรรทัดก่อนหน้าจึงบังคับให้ผลรวมเท่ากับ S พอดีอยู่แล้ว แต่ยังตรวจซ้ำตรงนี้ไว้ เพื่อให้ถอดการตัดกิ่งออกทีละอย่างได้โดยคำตอบไม่เพี้ยน</li>
         <li>เรียงจากหนักไปเบา <code>rbegin</code> กับ <code>rend</code> คือไล่ vector จากท้ายมาหัว การเรียงไม่ทำให้คำตอบเปลี่ยน แต่กล่องหนักที่ถูกตัดสินใจก่อนทำให้ผลรวมเกินเร็วขึ้น กิ่งจึงถูกตัดใกล้ราก</li>
       </ol>
 
@@ -162,7 +165,7 @@ long long bound(int i, long long time_left, long long score)
     return score;
 }
 
-void search(int i, long long time_left, long long score)
+void go(int i, long long time_left, long long score)
 {
     nodes++;
     best = max(best, score); // (3)!
@@ -170,9 +173,9 @@ void search(int i, long long time_left, long long score)
         return;
     }
     if (song[i].length &lt;= time_left) {
-        search(i + 1, time_left - song[i].length, score + song[i].score); // (5)!
+        go(i + 1, time_left - song[i].length, score + song[i].score); // (5)!
     }
-    search(i + 1, time_left, score);
+    go(i + 1, time_left, score);
 }
 
 int main()
@@ -183,14 +186,14 @@ int main()
         cin &gt;&gt; song[i].length &gt;&gt; song[i].score;
     }
     sort(song.begin(), song.end(), better_ratio);
-    search(0, limit_time, 0);
+    go(0, limit_time, 0);
     cout &lt;&lt; "best " &lt;&lt; best &lt;&lt; '\n';
     cout &lt;&lt; "nodes " &lt;&lt; nodes &lt;&lt; '\n';
     return 0;
 }
 </code></pre></div>
       <ol class="anno-list">
-        <li>เทียบคะแนนต่อนาที a.score / a.length กับ b.score / b.length โดยคูณไขว้แทนการหาร จึงไม่ต้องใช้ทศนิยม และไม่มีปัญหาปัดเศษ</li>
+        <li>เทียบคะแนนต่อนาที a.score / a.length กับ b.score / b.length โดยคูณไขว้แทนการหาร จึงไม่ต้องใช้ทศนิยม และไม่มีปัญหาปัดเศษ ฟังก์ชันนี้ใช้แทน lambda ได้ คือส่งแค่ชื่อ <code>better_ratio</code> ให้ <code>sort</code> เป็นตัวที่สาม แบบที่หน้า 16.3 บอกไว้และแบบที่ส่งชื่อฟังก์ชันให้ <code>qsort</code> ในหน้า 13.4 ฟังก์ชันต้องคืน <code>true</code> เมื่อ a ต้องมาก่อน b ตามกติกาเดียวกับ lambda</li>
         <li>เพลงที่ใส่ไม่พอดี ใส่แค่ <code>time_left</code> นาที ได้คะแนนตามสัดส่วน การหารปัดเศษลงไม่ทำให้ค่าประมาณต่ำกว่าความจริง เพราะคะแนนจริงเป็นจำนวนเต็ม และไม่เกินค่าก่อนปัดอยู่แล้ว</li>
         <li>เพลงที่เลือกมาถึงตรงนี้เป็นเพลย์ลิสต์ที่ใช้ได้จริงแล้ว ไม่ต้องรอถึงชั้นล่างสุด เทียบกับ <code>best</code> ได้เลย</li>
         <li>ตัดกิ่งเมื่อค่าประมาณที่ดีที่สุดของกิ่งนี้ไม่มากกว่าที่มีอยู่ ใช้ <code>&lt;=</code> เพราะเท่ากันก็ไม่ได้ดีขึ้น</li>

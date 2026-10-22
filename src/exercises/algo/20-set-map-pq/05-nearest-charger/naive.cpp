@@ -7,26 +7,26 @@ int main()
     cin.tie(nullptr);
     int q;
     cin >> q;
-    vector<int> stations;
+    vector<int> chargers;
     for (int i = 0; i < q; i++) {
         char op;
         int x;
         cin >> op >> x;
         if (op == '+') {
-            stations.push_back(x);
+            chargers.push_back(x);
         } else if (op == '-') {
-            for (int j = 0; j < (int)stations.size(); j++) {
-                if (stations[j] == x) {
-                    stations[j] = stations.back();
-                    stations.pop_back();
+            for (int j = 0; j < (int)chargers.size(); j++) {
+                if (chargers[j] == x) {
+                    chargers[j] = chargers.back();
+                    chargers.pop_back();
                     break;
                 }
             }
-        } else if (stations.empty()) {
+        } else if (chargers.empty()) {
             cout << -1 << '\n';
         } else {
             int best = INT_MAX;
-            for (int s : stations) {
+            for (int s : chargers) {
                 best = min(best, abs(s - x));
             }
             cout << best << '\n';

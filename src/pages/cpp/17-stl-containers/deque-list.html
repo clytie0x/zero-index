@@ -107,6 +107,8 @@ using namespace std;
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int q;
     cin &gt;&gt; q;
     deque&lt;int&gt; patients;
@@ -181,6 +183,7 @@ int main()
     }
     clock_t end = clock();
     cout &lt;&lt; v[0] &lt;&lt; ' ' &lt;&lt; d[0] &lt;&lt; '\n';
+    cout &lt;&lt; fixed &lt;&lt; setprecision(3);
     cout &lt;&lt; "vector: " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     cout &lt;&lt; "deque: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     return 0;
@@ -254,6 +257,8 @@ using namespace std;
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n, q;
     cin &gt;&gt; n &gt;&gt; q;
     list&lt;int&gt; line;
@@ -301,7 +306,7 @@ L 2
 </code></pre></div>
       </div>
 
-      <p>ผลตรงกับหน้า 14.3 โปรแกรมบทที่ 14 ยาว 43 บรรทัด อันนี้ 34 บรรทัด สั้นลงไม่มากเท่า deque เพราะต้องดูแล iterator เอง ในการแข่งขัน list ถูกใช้น้อยกว่า stack queue deque มาก คนแข่งส่วนใหญ่เขียน <code>prev[]</code> กับ <code>next[]</code> แบบหน้า 14.3 ซึ่งเข้าใจง่ายกว่าและไม่ต้องจำชนิดยาวๆ ให้รู้จัก list ไว้พออ่านโค้ดคนอื่นออก</p>
+      <p>ผลตรงกับหน้า 14.3 โปรแกรมบทที่ 14 ยาว 43 บรรทัด อันนี้ 34 บรรทัด สั้นลงไม่มากเท่า deque เพราะต้องดูแล iterator เอง ในการแข่งขัน list ถูกใช้น้อยกว่า stack queue deque มาก คนแข่งส่วนใหญ่เขียน <code>prev[]</code> กับ <code>next[]</code> แบบหน้า 14.3 (ใน C++ ต้องเปลี่ยนชื่อเป็น <code>prv</code> กับ <code>nxt</code> เพราะชนกับชื่อใน <code>std</code> ตามหน้า 15.1) ซึ่งเข้าใจง่ายกว่าและไม่ต้องจำชนิดยาวๆ ให้รู้จัก list ไว้พออ่านโค้ดคนอื่นออก</p>
 
       <h2 id="break-it">ลองทำให้พัง</h2>
 
@@ -309,7 +314,7 @@ L 2
 
       <p>วงเล็บปีกกาหลัง <code>=</code> ใส่ค่าเริ่มต้นให้ deque ได้เหมือน <code>vector</code></p>
 
-      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+      <div class="code" data-lang="cpp" data-linenums data-allow-warnings data-test="deque-sign-compare"><pre><code>#include &lt;bits/stdc++.h&gt;
 using namespace std;
 
 int main()
@@ -320,6 +325,11 @@ int main()
     }
     return 0;
 }
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="deque-sign-compare" data-title="C:\code\scores.exe"><pre><code>70
+85
+90
 </code></pre></div>
 
       <div class="code" data-lang="gcc"><pre><code>scores.cpp:7:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::deque&lt;int&gt;::size_type' {aka 'long long unsigned int'} [-Wsign-compare]

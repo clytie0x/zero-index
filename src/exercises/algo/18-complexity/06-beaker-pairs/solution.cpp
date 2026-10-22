@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int MAX_VOLUME = 1000000;
+#define MAX_VOLUME 1000000
 long long how_many[MAX_VOLUME + 1];
 
 int main()

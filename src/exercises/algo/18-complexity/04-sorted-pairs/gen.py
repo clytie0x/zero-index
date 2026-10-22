@@ -11,7 +11,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 random.seed(1804)
-MAX_P = 10**9
+MAX_P = 2 * 10**9
 
 
 def case(k, prices):

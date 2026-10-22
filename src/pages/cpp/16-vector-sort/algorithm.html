@@ -10,6 +10,8 @@ using namespace std;
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     vector&lt;int&gt; queue_number = {1, 2, 3, 4, 5};
     reverse(queue_number.begin(), queue_number.end());
     for (int i = 0; i &lt; (int)queue_number.size(); i++) {
@@ -37,7 +39,7 @@ noon yes
 </code></pre></div>
       </div>
 
-      <p><code>reverse</code> แก้ลำดับในตัวเองเลย ไม่ได้สร้างอันใหม่ ถ้ายังอยากเก็บของเดิมไว้ ต้องคัดลอกก่อนแบบบรรทัดที่ 13 คำที่อ่านกลับหลังแล้วเหมือนเดิมเรียกว่า palindrome เทียบกับหน้า 6.5 ที่ต้องเขียนลูปสองตัวชี้เข้าหากันเอง</p>
+      <p><code>reverse</code> แก้ลำดับในตัวเองเลย ไม่ได้สร้างอันใหม่ ถ้ายังอยากเก็บของเดิมไว้ ต้องคัดลอกก่อนแบบบรรทัดที่ 15 คำที่อ่านกลับหลังแล้วเหมือนเดิมเรียกว่า palindrome เทียบกับหน้า 6.5 ที่ต้องเขียนลูปสองตัวชี้เข้าหากันเอง</p>
 
       <h2 id="min-max-element">max_element และ min_element</h2>
 
@@ -295,7 +297,7 @@ int main()
 
       <h3 id="unique-unsorted">แบบที่ 2 unique โดยไม่เรียงก่อน</h3>
 
-      <div class="code" data-lang="cpp" data-linenums data-test="unique-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+      <div class="code" data-lang="cpp" data-linenums data-allow-warnings data-test="unique-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
 using namespace std;
 
 int main()
@@ -313,6 +315,15 @@ int main()
       <div class="code" data-lang="output" data-for="unique-bug" data-title="C:\code\unique.exe"><pre><code>7
 7
 </code></pre></div>
+
+      <p>โปรแกรมนี้คอมไพล์ผ่าน แต่ Code::Blocks ขึ้นคำเตือนที่บรรทัดที่ 10 (ตามด้วยอีกหกบรรทัดที่ชี้ว่า <code>unique</code> ประกาศไว้ตรงไหนในไฟล์ของ STL จบด้วย <code>note: declared here</code>)</p>
+
+      <div class="code" data-lang="gcc"><pre><code>unique.cpp:10:11: warning: ignoring return value of '_FIter std::unique(_FIter, _FIter) [with _FIter = __gnu_cxx::__normal_iterator&lt;int*, vector&lt;int&gt; &gt;]', declared with attribute 'nodiscard' [-Wunused-result]
+   10 |     unique(again.begin(), again.end());
+      |     ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p><code>nodiscard</code> คือป้ายที่ STL ติดไว้กับฟังก์ชันที่ค่าที่คืนสำคัญจนห้ามทิ้ง <code>ignoring return value</code> แปลว่าเราทิ้งค่านั้นไป คำเตือนนี้ชี้บั๊กที่สองข้างล่างให้ตรงๆ อ่านคำเตือนทุกครั้งก่อนรัน ส่วนบรรทัดที่ 7 ไม่มีคำเตือน เพราะ compiler ไม่รู้ว่าข้อมูลยังไม่ได้เรียง</p>
 
       <p>ผิดสองแบบ บรรทัดที่ 7 ไม่ได้เรียงก่อน <code>unique</code> ตัดเฉพาะค่าซ้ำที่<strong>อยู่ติดกัน</strong> ซึ่งในข้อมูลนี้ไม่มีเลย ได้ 7 ทั้งที่ทะเบียนต่างกันมีแค่ 4 คัน บรรทัดที่ 10 เรียงแล้วแต่ลืม <code>erase</code> ค่าที่ไม่ซ้ำถูกย้ายไปต้น vector แล้วจริง แต่ <code>size()</code> ยังเป็น 7 ถ้าเอาไปวนลูปต่อจะเจอค่าที่ไม่ใช้แล้วปนอยู่ท้าย vector</p>
 

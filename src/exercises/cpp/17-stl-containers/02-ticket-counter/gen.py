@@ -44,7 +44,7 @@ def cases():
     yield "huge-tickets", case(10**15, ["JOIN Nam 1000000000", "JOIN Pim 999999999", "COUNT", "SELL", "SELL",
                                         "COUNT", "LAST"])
     # ขอมากกว่าตั๋วที่เหลือมาก
-    yield "big-request", case(5, ["JOIN Ton 1000000000", "JOIN Jane 3", "SELL", "SELL", "COUNT"])
+    yield "huge-request", case(5, ["JOIN Ton 1000000000", "JOIN Jane 3", "SELL", "SELL", "COUNT"])
     # ตั๋วหมดพอดีกับคนสุดท้าย
     yield "exact", case(9, ["JOIN Bank 2", "JOIN Gun 3", "JOIN Fern 4", "SELL", "SELL", "SELL", "COUNT"])
     # แถวว่างแล้วมีคนมาใหม่ LAST ต้องเป็นคนใหม่

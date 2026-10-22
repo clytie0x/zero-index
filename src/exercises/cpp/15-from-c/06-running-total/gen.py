@@ -5,6 +5,7 @@
 
 ไฟล์ .out สร้างจากเฉลยด้วย tools/make_outputs.py ห้ามเขียนเอง
 ชุดที่ชื่อขึ้นต้นด้วย big มี N = 10^6 ตั้งใจให้ naive.cpp ที่ใช้ cin cout แบบปกติกับ endl ไม่ทัน 1 วินาที
+แต่ละบรรทัดของผลลัพธ์มีสองจำนวน คือยอดสะสมกับยอดสะสมที่ต่ำที่สุดจนถึงรายการนั้น
 """
 
 import random
@@ -26,6 +27,10 @@ def cases():
     # ยอดสะสมเกิน int ตั้งแต่รายการที่สาม จับคนที่ใช้ int เก็บยอด
     yield "over-int", case([LIMIT, LIMIT, LIMIT, -LIMIT, -LIMIT, -LIMIT, -LIMIT])
     yield "zeros", case([0] * 10)
+    # ยอดเป็นบวกตลอด ค่าต่ำสุดคือยอดหลังรายการแรก จับคนที่ตั้งค่าต่ำสุดเริ่มต้นเป็น 0
+    yield "all-positive", case([7, 3, 12, 1, 9, 4])
+    # ยอดต่ำสุดอยู่ท้ายสุด และต่ำกว่าขอบล่างของ int จับคนที่เก็บค่าต่ำสุดเป็น int
+    yield "lowest-last", case([5] + [-LIMIT] * 4)
     # ติดลบจนต่ำกว่าขอบล่างของ int
     yield "deep-negative", case([-LIMIT] * 5 + [LIMIT] * 5)
     yield "rand1", case([random.randint(-1000, 1000) for _ in range(1000)])

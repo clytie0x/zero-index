@@ -13,7 +13,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 random.seed(1709)
 
-LIMIT = 10**9
+LIMIT = 2 * 10**9
 
 
 def case(k, values):
@@ -27,7 +27,7 @@ def cases():
     yield "k-one", case(1, [random.randint(-50, 50) for _ in range(300)])
     # K = N มีช่วงเดียว
     yield "k-full", case(500, [random.randint(-LIMIT, LIMIT) for _ in range(500)])
-    # ค่าสุดขั้วสลับกัน คำตอบ 2 × 10^9 เกิน int
+    # ค่าสุดขั้วสลับกัน คำตอบ 4 × 10^9 เกิน int
     yield "extremes", case(2, [LIMIT, -LIMIT, LIMIT, -LIMIT, 0, LIMIT, LIMIT])
     yield "all-equal", case(7, [-42] * 300)
     yield "falling", case(25, list(range(1000, 0, -1)))

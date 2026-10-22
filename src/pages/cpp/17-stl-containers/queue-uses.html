@@ -14,6 +14,8 @@ using namespace std;
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n, quantum;
     cin &gt;&gt; n &gt;&gt; quantum;
     queue&lt;pair&lt;string, int&gt;&gt; line;
@@ -257,6 +259,7 @@ int main()
         }
     }
     cout &lt;&lt; "same answers: " &lt;&lt; same &lt;&lt; '\n';
+    cout &lt;&lt; fixed &lt;&lt; setprecision(3);
     cout &lt;&lt; "nested loops: " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     cout &lt;&lt; "deque: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     return 0;

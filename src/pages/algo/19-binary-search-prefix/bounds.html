@@ -1,7 +1,7 @@
 <article class="doc">
       <h1>19.2 lower_bound upper_bound และ equal_range</h1>
 
-      <p>บทที่ 16 ใช้ <code>lower_bound</code> หาตำแหน่งในข้อมูลที่เรียงแล้วมาบ้าง หน้านี้เปิดดูข้างใน <code>lower_bound</code> คือฟังก์ชัน <code>first_at_least</code> ในหน้า 19.1 ทุกประการ <code>upper_bound</code> คือ <code>first_greater</code> ส่วน <code>equal_range</code> คืนทั้งสองค่าพร้อมกัน พอรู้ว่าแต่ละตัวหารอยต่อของเงื่อนไขอะไร ก็เลือกใช้ได้ถูกตัว ไม่ต้องลองผิดลองถูกว่าต้องบวกหรือลบหนึ่ง แล้วเอาไปใช้นับค่าในช่วง และค้นบนผลรวมสะสมได้</p>
+      <p>หน้า 16.5 สอนวิธีใช้ <code>lower_bound</code> กับ <code>upper_bound</code> ไปแล้ว ทั้งความหมายของสองตัวและกฎนับจำนวนค่าด้วยการลบตำแหน่ง หน้านี้ไม่ทวนซ้ำ แต่เปิดดูข้างใน <code>lower_bound</code> คือฟังก์ชัน <code>first_at_least</code> ในหน้า 19.1 ทุกประการ <code>upper_bound</code> คือ <code>first_greater</code> ส่วน <code>equal_range</code> คืนทั้งสองค่าพร้อมกัน พอรู้ว่าแต่ละตัวหารอยต่อของเงื่อนไขอะไร ก็เลือกใช้ได้ถูกตัว ไม่ต้องลองผิดลองถูกว่าต้องบวกหรือลบหนึ่ง แล้วเอาไปใช้นับค่าในช่วง และค้นบนผลรวมสะสมได้</p>
 
       <h2 id="inside">ข้างในคือรอยต่อ</h2>
 
@@ -80,11 +80,7 @@ count = 3
 
       <p>ร้านค้ามีสินค้า N ชิ้น ลูกค้าถามว่ามีสินค้าราคาตั้งแต่ a ถึง b บาทกี่ชิ้น ราคาสูงได้ถึง 10<sup>9</sup> จึงใช้อาเรย์นับแบบหน้า 5.3 ไม่ได้ ให้เรียงราคาก่อนครั้งเดียว แล้วตอบแต่ละคำถามด้วยรอยต่อสองจุด</p>
 
-      <ul>
-        <li><code>lower_bound(a)</code> คือจำนวนชิ้นที่ราคา <strong>น้อยกว่า a</strong></li>
-        <li><code>upper_bound(b)</code> คือจำนวนชิ้นที่ราคา <strong>ไม่เกิน b</strong></li>
-        <li>ลบกันได้จำนวนชิ้นที่ราคาตั้งแต่ a ถึง b รวมทั้งสองขอบ</li>
-      </ul>
+      <p>ของใหม่คือขอบสองข้างเป็นคนละค่า ใช้กฎนับจากหน้า 16.5 คนละข้อ index ของ <code>lower_bound(a)</code> คือจำนวนชิ้นที่ราคา<strong>น้อยกว่า a</strong> และ index ของ <code>upper_bound(b)</code> คือจำนวนชิ้นที่ราคา<strong>ไม่เกิน b</strong> ลบกันได้จำนวนชิ้นที่ราคาตั้งแต่ a ถึง b รวมทั้งสองขอบ</p>
 
       <div class="code" data-lang="cpp" data-linenums data-test="price-range"><pre><code>#include &lt;bits/stdc++.h&gt;
 using namespace std;

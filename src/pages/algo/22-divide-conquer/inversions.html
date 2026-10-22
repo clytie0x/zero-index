@@ -99,6 +99,8 @@ long long count_inversions(vector&lt;int&gt; &amp;a, vector&lt;int&gt; &amp;temp
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n;
     cin &gt;&gt; n;
     vector&lt;int&gt; height(n);
@@ -146,15 +148,15 @@ swaps = 14
             <tr><th>วิธี</th><th>N</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
           </thead>
           <tbody>
-            <tr><td rowspan="2">ลูปซ้อน O(N<sup>2</sup>)</td><td>10,000</td><td>0.236 วินาที</td><td>0.134 วินาที</td></tr>
-            <tr><td>100,000</td><td>29.239 วินาที (5 ครั้งอยู่ระหว่าง 26.0 ถึง 36.1)</td><td>14.513 วินาที</td></tr>
+            <tr><td rowspan="2">ลูปซ้อน O(N<sup>2</sup>)</td><td>10,000</td><td>0.191 วินาที</td><td>0.067 วินาที</td></tr>
+            <tr><td>100,000</td><td>20.354 วินาที</td><td>9.069 วินาที</td></tr>
             <tr><td rowspan="2">merge sort O(N log N)</td><td>100,000</td><td>0.024 วินาที</td><td>0.009 วินาที</td></tr>
             <tr><td>1,000,000</td><td>0.388 วินาที</td><td>0.107 วินาที</td></tr>
           </tbody>
         </table>
       </div>
 
-      <p>ที่ N เป็นแสนทั้งสองวิธีได้ 2494295369 คู่เท่ากัน ซึ่งเกิน <code>int</code> ไปแล้วจริงๆ ลูปซ้อนใช้เวลาเกินสิบวินาทีแม้เปิด <code>-O2</code> ส่วน merge sort นับล้านตัวได้ในหนึ่งในสิบวินาที</p>
+      <p>ที่ N เป็นแสนทั้งสองวิธีได้ 2494295369 คู่เท่ากัน ซึ่งเกิน <code>int</code> ไปแล้วจริงๆ ลูปซ้อนใช้เวลาเกือบสิบวินาทีแม้เปิด <code>-O2</code> ส่วน merge sort นับล้านตัวได้ในหนึ่งในสิบวินาที แถวลูปซ้อนวัดใหม่พร้อมกับหน้า 18.2 ที่ N = 10<sup>4</sup> ได้ใกล้กัน แต่ที่ N = 10<sup>5</sup> หน้า 18.2 ได้ราว 13 วินาที เพราะหน้านั้นสร้างข้อมูลด้วย <code>rand()</code> ซึ่งมีค่าซ้ำกันมาก ข้อมูลต่างกัน เวลาของโปรแกรมเดียวกันก็ต่างกันได้</p>
 
       <h2 id="other-conditions">นับเงื่อนไขอื่นข้ามครึ่ง</h2>
 

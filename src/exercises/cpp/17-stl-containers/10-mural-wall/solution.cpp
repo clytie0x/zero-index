@@ -24,7 +24,9 @@ int main()
         }
         boards.push(i);
     }
-    boards = stack<int>();
+    while (!boards.empty()) {
+        boards.pop();
+    }
     for (int i = n - 1; i >= 0; i--) {
         while (!boards.empty() && height[boards.top()] >= height[i]) {
             boards.pop();

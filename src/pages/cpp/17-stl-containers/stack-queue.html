@@ -245,6 +245,7 @@ int main()
     }
     clock_t end = clock();
     cout &lt;&lt; "sum = " &lt;&lt; sum &lt;&lt; '\n';
+    cout &lt;&lt; fixed &lt;&lt; setprecision(3);
     cout &lt;&lt; "array: " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     cout &lt;&lt; "stack: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     return 0;
@@ -312,7 +313,9 @@ int main()
       <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
 </code></pre></div>
 
-      <p><code>0xC0000005</code> คือรหัสของ Windows ที่แปลว่าโปรแกรมไปอ่านหน่วยความจำที่ไม่ใช่ของมัน <code>top()</code> ไม่ได้ตรวจว่ามีของหรือเปล่า มันแค่ไปอ่านช่องที่ควรเป็นตัวบนสุด ซึ่งไม่มีอยู่จริง ส่งให้ grader จะได้ผล runtime error เรียก <code>front()</code> หรือ <code>back()</code> ของ queue ว่างก็พังแบบเดียวกัน</p>
+      <p><code>0xC0000005</code> คือรหัสของ Windows ที่แปลว่าโปรแกรมไปอ่านหน่วยความจำที่ไม่ใช่ของมัน <code>top()</code> ไม่ได้ตรวจว่ามีของหรือเปล่า มันแค่ไปอ่านช่องที่ควรเป็นตัวบนสุด ซึ่งไม่มีอยู่จริง ส่งให้ grader จะได้ผล runtime error</p>
+
+      <p>queue ว่างก็ผิดแบบเดียวกัน แต่อาการไม่เหมือนกันทุกครั้ง บนเครื่องที่เขียนเอกสารนี้ เรียก <code>back()</code> ของ queue ว่างพังด้วยรหัส <code>0xC0000005</code> เกือบทุกครั้ง ส่วน <code>front()</code> ไม่พัง แต่พิมพ์ค่าขยะที่เปลี่ยนทุกครั้งที่รัน เช่น <code>-845817440</code> แล้วจบด้วย <code>Process returned 0 (0x0)</code> เหมือนไม่มีอะไรผิด ผลแบบนี้ขึ้นกับเครื่อง เครื่องอื่นอาจพังหรือไม่พังก็ได้ แบบที่ไม่พังอันตรายกว่า เพราะคำตอบผิดเงียบๆ</p>
 
       <h3 id="pop-empty">แบบที่ 3 pop ตอน stack ว่าง</h3>
 
@@ -360,7 +363,7 @@ empty = 0
       |                   ^
 </code></pre></div>
 
-      <p><code>no match for 'operator[]'</code> แปลว่าชนิดนี้ไม่มีวงเล็บเหลี่ยมให้ใช้ ถ้าลองวนด้วย <code>for (int x : plates)</code> จะได้ error ยาวหลายสิบบรรทัด บรรทัดแรกคือ <code>no matching function for call to 'begin(std::stack&lt;int&gt;&amp;)'</code> ซึ่งแปลว่าวนไม่ได้เหมือนกัน ถ้าต้องดูของข้างล่าง ให้เปลี่ยนไปใช้ <code>vector</code> หรือ <code>deque</code></p>
+      <p><code>no match for 'operator[]'</code> แปลว่าชนิดนี้ไม่มีวงเล็บเหลี่ยมให้ใช้ ถ้าลองวนด้วย <code>for (int x : plates)</code> จะได้ error ยาวกว่าร้อยบรรทัด (114 บรรทัดเมื่อคอมไพล์ด้วย <code>-Wall</code> บนเครื่องที่เขียนเอกสารนี้) บรรทัดแรกคือ <code>no matching function for call to 'begin(std::stack&lt;int&gt;&amp;)'</code> ซึ่งแปลว่าวนไม่ได้เหมือนกัน ถ้าต้องดูของข้างล่าง ให้เปลี่ยนไปใช้ <code>vector</code> หรือ <code>deque</code></p>
 
       <h2 id="summary">สรุป</h2>
 

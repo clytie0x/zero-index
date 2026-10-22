@@ -208,7 +208,7 @@ passed = 3
 
       <h2 id="push-back-speed">push_back เร็วแค่ไหน</h2>
 
-      <p>vector ต้องคอยยืดตัวเอง จึงน่าสงสัยว่าช้ากว่าอาเรย์ไหม วัดด้วย <code>clock()</code> แบบหน้า 4.5 เติมเลข 0 ถึง n - 1 ลงไปทีละตัว แล้วพิมพ์เวลาเป็นมิลลิวินาที (ms) ที่ต้องพิมพ์ช่องสุดท้ายด้วยก็เพื่อยืนยันว่าเติมครบจริง</p>
+      <p>vector ต้องคอยยืดตัวเอง จึงน่าสงสัยว่าช้ากว่าอาเรย์ไหม วัดด้วย <code>clock()</code> แบบหน้า 4.5 เติมเลข 0 ถึง n - 1 ลงไปทีละตัว แล้วพิมพ์เวลาเป็นวินาที ทศนิยม 3 ตำแหน่ง ที่ต้องพิมพ์ช่องสุดท้ายด้วยก็เพื่อยืนยันว่าเติมครบจริง</p>
 
       <div class="code" data-lang="cpp" data-linenums data-annotate><pre><code>#include &lt;bits/stdc++.h&gt;
 using namespace std;
@@ -223,24 +223,25 @@ int main()
         v.push_back(i); // (2)!
     }
     clock_t end = clock();
-    cout &lt;&lt; "n = " &lt;&lt; n &lt;&lt; ", last = " &lt;&lt; v[n - 1] &lt;&lt; ", time = " &lt;&lt; (end - start) * 1000 / CLOCKS_PER_SEC &lt;&lt; " ms\n"; // (3)!
+    cout &lt;&lt; fixed &lt;&lt; setprecision(3);
+    cout &lt;&lt; "n = " &lt;&lt; n &lt;&lt; ", last = " &lt;&lt; v[n - 1] &lt;&lt; ", time = " &lt;&lt; (double)(end - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n"; // (3)!
     return 0;
 }
 </code></pre></div>
       <ol class="anno-list">
         <li>แบบ <code>vector(n)</code> เปลี่ยนเป็น <code>vector&lt;int&gt; v(n);</code> แบบ <code>reserve</code> เพิ่มบรรทัด <code>v.reserve(n);</code> ต่อจากบรรทัดนี้ ส่วนแบบอาเรย์ลบบรรทัดนี้ แล้วประกาศ <code>int a[10000000];</code> ไว้นอก <code>main</code></li>
-        <li>แบบ <code>vector(n)</code> เปลี่ยนเป็น <code>v[i] = i;</code> แบบอาเรย์เปลี่ยนเป็น <code>a[i] = i;</code> และบรรทัดที่ 14 พิมพ์ <code>a[n - 1]</code> แทน</li>
-        <li><code>clock()</code> นับเป็นหน่วยย่อย <code>CLOCKS_PER_SEC</code> หน่วยต่อวินาที คูณ 1000 ก่อนหารจึงได้มิลลิวินาทีเป็นจำนวนเต็ม</li>
+        <li>แบบ <code>vector(n)</code> เปลี่ยนเป็น <code>v[i] = i;</code> แบบอาเรย์เปลี่ยนเป็น <code>a[i] = i;</code> และบรรทัดที่ 15 พิมพ์ <code>a[n - 1]</code> แทน</li>
+        <li><code>clock()</code> นับเป็นหน่วยย่อย <code>CLOCKS_PER_SEC</code> หน่วยต่อวินาที แปลงเป็น <code>double</code> ก่อนหารจึงได้วินาทีเป็นทศนิยม แล้วพิมพ์ 3 ตำแหน่งด้วย <code>fixed</code> กับ <code>setprecision(3)</code> จากหน้า 15.2</li>
       </ol>
 
       <div class="io">
         <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>10000000
 </code></pre></div>
-        <div class="code" data-lang="output" data-title="C:\code\fill.exe"><pre><code>n = 10000000, last = 9999999, time = 54 ms
+        <div class="code" data-lang="output" data-title="C:\code\fill.exe"><pre><code>n = 10000000, last = 9999999, time = 0.076 seconds
 </code></pre></div>
       </div>
 
-      <p>วัดบนเครื่องเดียวกับหน้า 13.3 คือโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 เสียบสายชาร์จ โหมดพลังงาน Balanced คอมไพล์ด้วย g++ 14.2 ของ Code::Blocks ทั้งแบบ Code::Blocks (<code>-Wall</code> อย่างเดียว) และแบบ <code>-O2</code> รันแต่ละช่อง 5 ครั้ง ตารางเป็นค่ากลาง หน่วยเป็นมิลลิวินาที</p>
+      <p>วัดบนเครื่องเดียวกับหน้า 13.3 คือโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 เสียบสายชาร์จ โหมดพลังงาน Balanced คอมไพล์ด้วย g++ 14.2 ของ Code::Blocks ทั้งแบบ Code::Blocks (<code>-Wall</code> อย่างเดียว) และแบบ <code>-O2</code> รันแต่ละช่อง 12 ครั้ง ทิ้งครั้งแรก ตารางเป็นค่ากลางของ 11 ครั้งที่เหลือ หน่วยเป็นวินาที ระหว่างวัดเครื่องมีงานอื่นรันอยู่ด้วย ตัวเลขของแต่ละรอบจึงแกว่งได้ราวหนึ่งในสาม</p>
 
       <div class="table-wrap">
         <table>
@@ -248,24 +249,24 @@ int main()
             <tr><th>วิธีเติม</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
           </thead>
           <tbody>
-            <tr><td>อาเรย์ global</td><td>1,000,000</td><td>1</td><td>1</td></tr>
-            <tr><td>อาเรย์ global</td><td>10,000,000</td><td>15</td><td>11</td></tr>
-            <tr><td><code>vector(n)</code> แล้วใช้ <code>[]</code></td><td>1,000,000</td><td>2</td><td>0</td></tr>
-            <tr><td><code>vector(n)</code> แล้วใช้ <code>[]</code></td><td>10,000,000</td><td>19</td><td>4</td></tr>
-            <tr><td><code>push_back</code></td><td>1,000,000</td><td>5</td><td>1</td></tr>
-            <tr><td><code>push_back</code></td><td>10,000,000</td><td>54</td><td>13</td></tr>
-            <tr><td><code>reserve</code> แล้ว <code>push_back</code></td><td>1,000,000</td><td>4</td><td>0</td></tr>
-            <tr><td><code>reserve</code> แล้ว <code>push_back</code></td><td>10,000,000</td><td>48</td><td>5</td></tr>
+            <tr><td>อาเรย์ global</td><td>1,000,000</td><td>0.002</td><td>0.002</td></tr>
+            <tr><td>อาเรย์ global</td><td>10,000,000</td><td>0.026</td><td>0.022</td></tr>
+            <tr><td><code>vector(n)</code> แล้วใช้ <code>[]</code></td><td>1,000,000</td><td>0.003</td><td>0.001</td></tr>
+            <tr><td><code>vector(n)</code> แล้วใช้ <code>[]</code></td><td>10,000,000</td><td>0.029</td><td>0.007</td></tr>
+            <tr><td><code>push_back</code></td><td>1,000,000</td><td>0.011</td><td>0.002</td></tr>
+            <tr><td><code>push_back</code></td><td>10,000,000</td><td>0.076</td><td>0.016</td></tr>
+            <tr><td><code>reserve</code> แล้ว <code>push_back</code></td><td>1,000,000</td><td>0.005</td><td>0.000</td></tr>
+            <tr><td><code>reserve</code> แล้ว <code>push_back</code></td><td>10,000,000</td><td>0.053</td><td>0.006</td></tr>
           </tbody>
         </table>
       </div>
 
-      <p>0 แปลว่าน้อยกว่าที่ <code>clock()</code> วัดได้ อ่านตารางได้สามเรื่อง</p>
+      <p>0.000 แปลว่าน้อยกว่าที่ <code>clock()</code> วัดได้ อ่านตารางได้สามเรื่อง</p>
 
       <ol>
         <li><strong>ทุกวิธีเร็วพอ</strong> สิบล้านตัว ช้าที่สุดก็ไม่ถึงหนึ่งในสิบวินาที โจทย์ส่วนใหญ่มีข้อมูลไม่เกินล้านตัว <code>push_back</code> ไม่ใช่ตัวที่ทำให้เกินเวลา</li>
-        <li><strong>แบบ Code::Blocks <code>push_back</code> ช้ากว่าอาเรย์ราว 3.6 เท่า</strong> (54 กับ 15 มิลลิวินาทีที่สิบล้านตัว) เพราะไม่ได้เปิด <code>-O2</code> ทุก <code>push_back</code> จึงเป็นการเรียกฟังก์ชันจริงๆ พอเปิด <code>-O2</code> ซึ่ง grader ใช้ ส่วนต่างเหลือแค่ไม่กี่มิลลิวินาที</li>
-        <li><strong><code>reserve</code> ช่วยได้นิดหน่อย</strong> แบบ <code>-O2</code> จาก 13 เหลือ 5 มิลลิวินาที ใช้เมื่อรู้จำนวนล่วงหน้าแต่อยากใช้ <code>push_back</code></li>
+        <li><strong>แบบ Code::Blocks <code>push_back</code> ช้ากว่าอาเรย์ราว 3 เท่า</strong> (0.076 กับ 0.026 วินาทีที่สิบล้านตัว) เพราะไม่ได้เปิด <code>-O2</code> ทุก <code>push_back</code> จึงเป็นการเรียกฟังก์ชันจริงๆ พอเปิด <code>-O2</code> ซึ่ง grader ใช้ ส่วนต่างเหลือแค่ไม่กี่มิลลิวินาที</li>
+        <li><strong><code>reserve</code> ช่วยได้นิดหน่อย</strong> แบบ <code>-O2</code> จาก 0.016 เหลือ 0.006 วินาที ใช้เมื่อรู้จำนวนล่วงหน้าแต่อยากใช้ <code>push_back</code></li>
       </ol>
 
       <h3 id="capacity">ทำไม push_back ไม่ช้า</h3>
@@ -348,7 +349,8 @@ int main()
         }
     }
     clock_t end = clock();
-    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; ", time = " &lt;&lt; (end - start) * 1000 / CLOCKS_PER_SEC &lt;&lt; " ms\n";
+    cout &lt;&lt; fixed &lt;&lt; setprecision(3);
+    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; ", time = " &lt;&lt; (double)(end - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
     return 0;
 }
 </code></pre></div>
@@ -356,7 +358,7 @@ int main()
       <div class="io">
         <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>200
 </code></pre></div>
-        <div class="code" data-lang="output" data-title="C:\code\neighbors.exe"><pre><code>total = 159200, time = 5338 ms
+        <div class="code" data-lang="output" data-title="C:\code\neighbors.exe"><pre><code>total = 159200, time = 5.088 seconds
 </code></pre></div>
       </div>
 
@@ -365,7 +367,7 @@ int main()
       <div class="code" data-lang="cpp"><pre><code>int cell(const vector&lt;vector&lt;int&gt;&gt; &amp;grid, int r, int c)
 </code></pre></div>
 
-      <p>วัดบนเครื่องและวิธีเดียวกับตารางข้างบน ค่ากลางของ 5 ครั้ง หน่วยเป็นมิลลิวินาที</p>
+      <p>วัดบนเครื่องเดียวกับตารางข้างบน รันแต่ละช่อง 6 ครั้ง ทิ้งครั้งแรก ตารางเป็นค่ากลางของ 5 ครั้งที่เหลือ หน่วยเป็นวินาที</p>
 
       <div class="table-wrap">
         <table>
@@ -373,10 +375,10 @@ int main()
             <tr><th>หัวฟังก์ชัน</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>vector&lt;vector&lt;int&gt;&gt; grid</code></td><td>100</td><td>551</td><td>307</td></tr>
-            <tr><td><code>vector&lt;vector&lt;int&gt;&gt; grid</code></td><td>200</td><td>5338</td><td>2138</td></tr>
-            <tr><td><code>const vector&lt;vector&lt;int&gt;&gt; &amp;grid</code></td><td>100</td><td>0</td><td>0</td></tr>
-            <tr><td><code>const vector&lt;vector&lt;int&gt;&gt; &amp;grid</code></td><td>200</td><td>1</td><td>0</td></tr>
+            <tr><td><code>vector&lt;vector&lt;int&gt;&gt; grid</code></td><td>100</td><td>0.494</td><td>0.271</td></tr>
+            <tr><td><code>vector&lt;vector&lt;int&gt;&gt; grid</code></td><td>200</td><td>5.088</td><td>1.986</td></tr>
+            <tr><td><code>const vector&lt;vector&lt;int&gt;&gt; &amp;grid</code></td><td>100</td><td>0.000</td><td>0.000</td></tr>
+            <tr><td><code>const vector&lt;vector&lt;int&gt;&gt; &amp;grid</code></td><td>200</td><td>0.001</td><td>0.000</td></tr>
           </tbody>
         </table>
       </div>

@@ -99,6 +99,8 @@ using namespace std;
 
 int main()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
     vector&lt;int&gt; run;
     int meters;
     while (cin &gt;&gt; meters &amp;&amp; meters != 0) {
@@ -126,7 +128,7 @@ int main()
 </code></pre></div>
       </div>
 
-      <p>บรรทัดที่ 8 ใช้ <code>cin &gt;&gt; meters</code> เป็นเงื่อนไขแบบหน้า 15.2 เป็นจริงเมื่ออ่านตัวเลขได้ และเป็นเท็จเมื่อข้อมูลหมด ลูปจึงหยุดทั้งตอนเจอ 0 และตอนข้อมูลหมดโดยไม่มี 0 ปิดท้าย</p>
+      <p>บรรทัดที่ 10 ใช้ <code>cin &gt;&gt; meters</code> เป็นเงื่อนไขแบบหน้า 15.2 เป็นจริงเมื่ออ่านตัวเลขได้ และเป็นเท็จเมื่อข้อมูลหมด ลูปจึงหยุดทั้งตอนเจอ 0 และตอนข้อมูลหมดโดยไม่มี 0 ปิดท้าย</p>
 
       <h2 id="sized">สร้างพร้อมขนาดและค่าเริ่มต้น</h2>
 
@@ -245,6 +247,8 @@ terminate called after throwing an instance of 'std::out_of_range'
             <tr><td><code>v.pop_back()</code></td><td>ลบช่องสุดท้ายทิ้ง vector สั้นลงหนึ่งช่อง</td></tr>
             <tr><td><code>v.empty()</code></td><td>เป็นจริงถ้าไม่มีสักช่อง</td></tr>
             <tr><td><code>v.clear()</code></td><td>ลบทุกช่อง เหลือ 0 ช่อง</td></tr>
+            <tr><td><code>v.resize(n)</code></td><td>เปลี่ยนขนาดเป็น n ช่อง ถ้ายาวขึ้น ช่องที่เพิ่มมาเป็น 0 ถ้าสั้นลง ช่องท้ายที่เกินถูกตัดทิ้ง ช่องที่เหลือค่าเดิม</td></tr>
+            <tr><td><code>v.assign(n, x)</code></td><td>ทิ้งของเดิมทั้งหมด แล้วให้เหลือ n ช่องที่เป็น x ทุกช่อง เหมือนสร้างใหม่ด้วย <code>vector&lt;int&gt; v(n, x);</code> ใช้กับ vector ที่ประกาศไว้แล้ว เช่น ตัวแปร global ที่รู้ขนาดหลังอ่านข้อมูล</td></tr>
           </tbody>
         </table>
       </div>
@@ -260,6 +264,10 @@ int main()
     cout &lt;&lt; score.size() &lt;&lt; ' ' &lt;&lt; score.back() &lt;&lt; '\n';
     score.clear();
     cout &lt;&lt; score.size() &lt;&lt; ' ' &lt;&lt; score.empty() &lt;&lt; '\n';
+    score.resize(3);
+    cout &lt;&lt; score.size() &lt;&lt; ' ' &lt;&lt; score[2] &lt;&lt; '\n';
+    score.assign(2, 50);
+    cout &lt;&lt; score.size() &lt;&lt; ' ' &lt;&lt; score[0] &lt;&lt; ' ' &lt;&lt; score[1] &lt;&lt; '\n';
     return 0;
 }
 </code></pre></div>
@@ -267,6 +275,8 @@ int main()
       <div class="code" data-lang="output" data-for="more" data-title="C:\code\more.exe"><pre><code>72 64
 2 85
 0 1
+3 0
+2 50 50
 </code></pre></div>
 
       <p><code>empty()</code> คืน <code>bool</code> <code>cout</code> พิมพ์จริงเป็น 1 และเท็จเป็น 0 ระวัง <code>front()</code> <code>back()</code> และ <code>pop_back()</code> กับ vector ที่ว่าง ไม่มีช่องให้หยิบ ผลเหมือนใช้ index เกินขอบ ให้เช็ก <code>empty()</code> ก่อนเสมอ</p>
@@ -447,7 +457,17 @@ int main()
 }
 </code></pre></div>
 
-      <p>ถ้า <code>score</code> มีข้อมูล ลูปทำงานถูก แต่ถ้า <code>score</code> ว่าง ขอบบนกลายเป็นเลขยี่สิบหลัก ลูปจึงเข้าไปอ่าน <code>score[0]</code> ทั้งที่ไม่มีช่องนั้น บนเครื่องที่เขียนเอกสารนี้โปรแกรมพังทันทีด้วย <code>0xC0000005</code> แบบเดียวกับแบบที่ 2 ทางแก้คือ cast เป็น <code>int</code> ก่อนลบ แบบบรรทัดที่ 8 ของโปรแกรมข้างบน ซึ่งได้ -1 ตามที่คิด และนี่คือเหตุผลที่ตัวอย่าง running เขียน <code>(int)run.size() - 1</code></p>
+      <p>ถ้า <code>score</code> มีข้อมูล ลูปทำงานถูก แต่ถ้า <code>score</code> ว่าง ขอบบนกลายเป็นเลขยี่สิบหลัก ลูปจึงเข้าไปอ่าน <code>score[0]</code> ทั้งที่ไม่มีช่องนั้น บนเครื่องที่เขียนเอกสารนี้ เมื่อขนาดมาจากข้อมูลเข้าแล้วป้อน 0 โปรแกรมพังทันทีด้วย <code>0xC0000005</code> แบบเดียวกับแบบที่ 2 ทั้งแบบ Code::Blocks และแบบ <code>-O2</code> แต่ถ้า compiler รู้ตั้งแต่ตอนคอมไพล์ว่า vector ว่าง เช่น ประกาศ <code>vector&lt;int&gt; score;</code> แล้ววนลูปนี้ทันที แบบ <code>-O2</code> จะมีคำเตือนเพิ่มมาอีกชุด</p>
+
+      <div class="code" data-lang="gcc"><pre><code>empty.cpp:9:32: warning: iteration 2147483647 invokes undefined behavior [-Waggressive-loop-optimizations]
+    9 |         if (score[i] &gt; score[i + 1]) {
+      |                              ~~^~~
+empty.cpp:8:23: note: within this loop
+    8 |     for (int i = 0; i &lt; score.size() - 1; i++) {
+      |                     ~~^~~~~~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p>คำเตือนนี้บอกว่า <code>i</code> จะถูกบวกจนเกินค่ามากสุดของ <code>int</code> ซึ่งเป็นพฤติกรรมที่มาตรฐานไม่กำหนด compiler จึงปรับลูปไปตามใจ บนเครื่องที่เขียนเอกสารนี้โปรแกรมแบบ <code>-O2</code> นั้นไม่จบเลย รอห้าวินาทีก็ยังทำงานอยู่ ส่วนแบบ Code::Blocks พังด้วย <code>0xC0000005</code> เหมือนเดิม ผลต่างกันตามแฟล็กแบบนี้เป็นอาการของ undefined behavior ทางแก้คือ cast เป็น <code>int</code> ก่อนลบ แบบบรรทัดที่ 8 ของโปรแกรมข้างบน ซึ่งได้ -1 ตามที่คิด และนี่คือเหตุผลที่ตัวอย่าง running เขียน <code>(int)run.size() - 1</code></p>
 
       <h2 id="summary">สรุป</h2>
 

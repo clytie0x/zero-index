@@ -7,24 +7,24 @@ int main()
     cin.tie(nullptr);
     int q;
     cin >> q;
-    set<int> stations;
+    multiset<int> chargers;
     for (int i = 0; i < q; i++) {
         char op;
         int x;
         cin >> op >> x;
         if (op == '+') {
-            stations.insert(x);
+            chargers.insert(x);
         } else if (op == '-') {
-            stations.erase(x);
-        } else if (stations.empty()) {
+            chargers.erase(chargers.find(x));
+        } else if (chargers.empty()) {
             cout << -1 << '\n';
         } else {
             int best = INT_MAX;
-            auto it = stations.lower_bound(x);
-            if (it != stations.end()) {
+            auto it = chargers.lower_bound(x);
+            if (it != chargers.end()) {
                 best = min(best, *it - x);
             }
-            if (it != stations.begin()) {
+            if (it != chargers.begin()) {
                 best = min(best, x - *prev(it));
             }
             cout << best << '\n';

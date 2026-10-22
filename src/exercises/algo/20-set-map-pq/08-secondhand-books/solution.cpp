@@ -20,7 +20,7 @@ int main()
         if (it == books.begin()) {
             cout << -1 << '\n';
         } else {
-            --it;
+            it = prev(it);
             cout << *it << '\n';
             books.erase(it);
         }

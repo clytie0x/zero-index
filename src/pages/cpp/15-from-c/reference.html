@@ -331,7 +331,7 @@ int main()
       <ol class="anno-list">
         <li>ใน C++ ชื่อ struct ใช้เป็นชื่อชนิดได้เลย ไม่ต้องมี <code>typedef</code> และไม่ต้องเขียน <code>struct Node</code> เต็มๆ ข้างในก็ได้</li>
         <li>ขออาเรย์ <code>int</code> ขนาด <code>n</code> ช่อง แทน <code>(int *)malloc(n * sizeof(int))</code></li>
-        <li>ขอ node หนึ่งตัว แทน <code>(Node *)malloc(sizeof(Node))</code> ในหน้า 14.1</li>
+        <li>ขอ node หนึ่งตัว แทน <code>malloc(sizeof(Node))</code> ในหน้า 14.1 ซึ่งถ้าย้ายมาเป็น C++ ต้องเติม cast เป็น <code>(Node *)malloc(sizeof(Node))</code> ตามหน้า 15.1</li>
         <li>คืน node ที่ได้จาก <code>new</code> ทีละตัว แทน <code>free</code></li>
         <li>ของที่ขอเป็นอาเรย์ด้วย <code>new ... [n]</code> ต้องคืนด้วย <code>delete[]</code> มีวงเล็บเหลี่ยม</li>
       </ol>

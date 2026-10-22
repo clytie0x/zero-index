@@ -21,7 +21,7 @@ long long optimistic_rest(int teacher)
     return sum;
 }
 
-void search(int teacher, long long total)
+void go(int teacher, long long total)
 {
     if (teacher == n) {
         best = min(best, total);
@@ -33,7 +33,7 @@ void search(int teacher, long long total)
     for (int duty : cheapest_first[teacher]) {
         if (!taken[duty]) {
             taken[duty] = true;
-            search(teacher + 1, total + cost[teacher][duty]);
+            go(teacher + 1, total + cost[teacher][duty]);
             taken[duty] = false;
         }
     }
@@ -60,7 +60,7 @@ int main()
         });
     }
     taken.assign(n, false);
-    search(0, 0);
+    go(0, 0);
     cout << best << '\n';
     return 0;
 }
