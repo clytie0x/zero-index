@@ -424,7 +424,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "29"
 title = "บทที่ 29 MST และ union-find"
 summary = "ต้นไม้แผ่ทั่วที่มีน้ำหนักน้อยสุด Kruskal Prim"
-# dir = "algo/29-mst"
+path = "algo/29-mst/index.html"
+pages = [
+  { num = "29.1", title = "union-find", path = "algo/29-mst/union-find.html" },
+  { num = "29.2", title = "นับกลุ่ม ขนาดกลุ่ม และตรวจวงจร", path = "algo/29-mst/groups-cycles.html" },
+  { num = "29.3", title = "spanning tree และ Kruskal", path = "algo/29-mst/kruskal.html" },
+  { num = "29.4", title = "Prim และเลือกใช้ให้เหมาะกับกราฟ", path = "algo/29-mst/prim.html" },
+  { num = "29.5", title = "โจทย์ที่ซ่อน MST", path = "algo/29-mst/patterns.html" },
+  { num = "29.6", title = "แบบฝึกหัด", path = "algo/29-mst/exercises.html", exercises = "algo/29-mst" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

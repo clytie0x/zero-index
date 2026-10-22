@@ -1,0 +1,275 @@
+<article class="doc">
+      <h1>29.4 Prim และเลือกใช้ให้เหมาะกับกราฟ</h1>
+
+      <p>Kruskal มองทั้งกราฟพร้อมกัน หยิบเส้นที่ถูกที่สุดจากตรงไหนก็ได้ ต้นไม้จึงงอกออกมาเป็นหลายกลุ่มแล้วค่อยรวมกัน อีกวิธีที่ได้ MST เหมือนกันคือ <strong>Prim</strong> ซึ่งปลูกต้นไม้ต้นเดียวจากโหนดเริ่มต้น แล้วขยายออกไปทีละโหนด โครงของโปรแกรมเหมือน Dijkstra ในบทที่ 28 แทบทุกบรรทัด หน้านี้เขียน Prim สองแบบ แบบใช้ priority_queue สำหรับกราฟทั่วไป กับแบบ O(N<sup>2</sup>) ที่ไม่ต้องเก็บเส้นเชื่อมเลย สำหรับกราฟที่ทุกคู่โหนดมีเส้นถึงกัน แล้วสรุปว่าโจทย์แบบไหนควรใช้วิธีไหน</p>
+
+      <h2 id="idea">ปลูกต้นไม้จากโหนดเดียว</h2>
+
+      <p>เริ่มจากต้นไม้ที่มีโหนด 1 โหนดเดียว ทุกรอบดูเส้นเชื่อมทุกเส้นที่ปลายข้างหนึ่งอยู่ในต้นไม้ และอีกข้างอยู่นอกต้นไม้ หยิบเส้นที่ถูกที่สุด แล้วดึงโหนดปลายนอกเข้ามาในต้นไม้ ทำจนครบ N โหนด</p>
+
+      <p>เหตุผลที่ถูกเหมือนกับ Kruskal ในหน้า 29.3 ข้อพิสูจน์ตรงนั้นใช้แค่ว่า เส้น e ที่หยิบ ถูกที่สุดในบรรดาเส้นที่ข้ามออกจากกลุ่ม A ของโหนดหนึ่ง ถ้า MST ต้นไหนไม่มี e ก็แลกเส้น f ที่ข้ามออกจาก A บนทางเดียวกันกับ e ได้โดยไม่แพงขึ้น สำหรับ Prim กลุ่ม A ก็คือต้นไม้ที่ปลูกมาถึงตอนนั้น และ e คือเส้นที่ถูกที่สุดที่ข้ามออกจาก A ตามนิยามของ Prim พอดี</p>
+
+      <h2 id="priority-queue">Prim ด้วย priority_queue</h2>
+
+      <p>ถ้าทุกรอบไล่ดูเส้นเชื่อมทั้งหมดเพื่อหาเส้นที่ถูกที่สุดที่ข้ามออกไป ต้องไล่ M เส้น N รอบ เป็น O(NM) ใช้ priority_queue แบบหยิบค่าน้อยก่อนจากหน้า 20.5 ช่วยจำเส้นที่ข้ามออกไปแทน ทุกครั้งที่ดึงโหนด v เข้าต้นไม้ ใส่เส้นทุกเส้นของ v ที่ไปหาโหนดนอกต้นไม้ลงไปเป็นคู่ (น้ำหนัก, โหนดปลาย) แล้วหยิบคู่ที่น้ำหนักน้อยที่สุดออกมา</p>
+
+      <p>เส้นที่ใส่ไว้นานแล้วอาจไม่ข้ามออกจากต้นไม้แล้ว เพราะโหนดปลายถูกดึงเข้ามาทางเส้นอื่นไปก่อน แทนที่จะตามไปลบออกจากคิว ให้ตรวจตอนหยิบออกมา ถ้าโหนดปลายอยู่ในต้นไม้แล้วก็ทิ้งไป แบบเดียวกับการข้ามระยะเก่าใน Dijkstra</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="prim"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back(make_pair(v, w));
+        adj[v].push_back(make_pair(u, w));
+    }
+    vector&lt;bool&gt; in_tree(n + 1, false);
+    priority_queue&lt;pair&lt;int, int&gt;, vector&lt;pair&lt;int, int&gt;&gt;, greater&lt;pair&lt;int, int&gt;&gt;&gt; pq; // (1)!
+    pq.push(make_pair(0, 1)); // (2)!
+    long long total = 0;
+    int added = 0;
+    while (!pq.empty()) {
+        auto [w, v] = pq.top();
+        pq.pop();
+        if (in_tree[v]) { // (3)!
+            cout &lt;&lt; "skip " &lt;&lt; v &lt;&lt; " w=" &lt;&lt; w &lt;&lt; '\n';
+            continue;
+        }
+        in_tree[v] = true;
+        total += w;
+        added++;
+        cout &lt;&lt; "add " &lt;&lt; v &lt;&lt; " w=" &lt;&lt; w &lt;&lt; '\n';
+        for (auto [to, cost] : adj[v]) {
+            if (!in_tree[to]) { // (4)!
+                pq.push(make_pair(cost, to));
+            }
+        }
+    }
+    if (added == n) {
+        cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    } else {
+        cout &lt;&lt; "not connected" &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บคู่ (น้ำหนัก, โหนด) ให้ <code>greater</code> เรียงตามน้ำหนักก่อน และหยิบตัวน้อยที่สุดออกมาก่อน</li>
+        <li>โหนดเริ่มต้นเข้าต้นไม้ด้วยน้ำหนัก 0 ไม่มีเส้นไหนพามันเข้ามา จะเริ่มที่โหนดไหนก็ได้ MST มีน้ำหนักเท่ากัน</li>
+        <li>คู่เก่าที่โหนดปลายเข้าต้นไม้ไปแล้ว ทิ้งไป ไม่นับน้ำหนัก</li>
+        <li>ไม่ต้องใส่เส้นที่ไปหาโหนดในต้นไม้ เพราะไม่ได้ข้ามออกไปไหน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="prim" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 4
+1 3 3
+2 3 2
+2 4 5
+3 4 7
+3 5 6
+4 5 1
+4 6 8
+5 6 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="prim" data-title="C:\code\prim.exe"><pre><code>add 1 w=0
+add 3 w=3
+add 2 w=2
+skip 2 w=4
+add 4 w=5
+add 5 w=1
+skip 5 w=6
+skip 4 w=7
+add 6 w=8
+skip 6 w=9
+total = 19
+</code></pre></div>
+      </div>
+
+      <p>ใช้กราฟเดียวกับหน้า 29.3 ได้ 19 เท่ากัน แต่ลำดับที่หยิบต่างจาก Kruskal Prim ดึง 3 เข้ามาก่อนด้วยเส้น 1-3 ราคา 3 แม้เส้น 4-5 ราคา 1 จะถูกกว่า เพราะตอนนั้น 4 กับ 5 ยังไม่ได้ติดกับต้นไม้ที่ปลูกจาก 1 ส่วนบรรทัด <code>skip 2 w=4</code> คือคู่ของเส้น 1-2 ที่ใส่ไว้ตอนดึง 1 เข้ามา แต่ 2 เข้าต้นไม้ไปก่อนแล้วผ่าน 3 ด้วยราคา 2</p>
+
+      <p>ทุกเส้นถูกใส่ลงคิวไม่เกินหนึ่งครั้ง คือตอนดึงปลายข้างแรกเข้าต้นไม้ พอดึงปลายข้างที่สองเข้ามา ปลายข้างแรกอยู่ในต้นไม้แล้วจึงไม่ใส่ซ้ำ คิวจึงมีของไม่เกิน M + 1 ชิ้น ใส่และหยิบแต่ละครั้งเป็น O(log M) ทั้งหมดเป็น O(M log M) เท่ากับ Kruskal ถ้า <code>added</code> ไม่ถึง N แปลว่ากราฟไม่ต่อถึงกัน</p>
+
+      <h2 id="dense">กราฟที่ทุกคู่มีเส้นถึงกัน</h2>
+
+      <p>โรงเรียนมีอาคาร N หลัง อยากเดินสายแลนให้ทุกอาคารต่อถึงกัน สายเดินตามทางเดินที่เป็นตารางตั้งฉาก สายระหว่างอาคารที่พิกัด (x<sub>1</sub>, y<sub>1</sub>) กับ (x<sub>2</sub>, y<sub>2</sub>) ยาว |x<sub>1</sub> - x<sub>2</sub>| + |y<sub>1</sub> - y<sub>2</sub>| เมตร ทุกคู่อาคารเดินสายถึงกันได้ กราฟจึงมีเส้นเชื่อม N(N - 1)/2 เส้น N = 5000 ก็มีถึง 12.5 ล้านเส้น Kruskal ต้องสร้างและเรียงทุกเส้น Prim ด้วย priority_queue ก็ต้องใส่เส้นลงคิวเป็นล้านๆ ครั้ง</p>
+
+      <p>กราฟแบบนี้เรียกว่า <strong>กราฟหนาแน่น (dense graph)</strong> M ใกล้ N<sup>2</sup> ใช้ Prim อีกแบบที่ไม่เก็บเส้นเชื่อมเลย ให้ <code>best[v]</code> คือราคาของเส้นที่ถูกที่สุดที่ต่อโหนด v นอกต้นไม้เข้ากับต้นไม้ ทุกรอบไล่หาโหนดนอกต้นไม้ที่ <code>best</code> น้อยที่สุด O(N) ดึงเข้ามา แล้วคำนวณระยะจากโหนดใหม่ไปหาโหนดนอกต้นไม้ทุกตัว ปรับ <code>best</code> ให้น้อยลงถ้าทำได้ อีก O(N) ทำ N รอบ รวมเป็น O(N<sup>2</sup>) ซึ่งเท่ากับจำนวนเส้นเชื่อม จึงเร็วที่สุดเท่าที่เป็นไปได้สำหรับกราฟที่ต้องดูทุกเส้น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="prim-dense"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; x(n), y(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; x[i] &gt;&gt; y[i];
+    }
+    vector&lt;long long&gt; best(n, LLONG_MAX); // (1)!
+    vector&lt;int&gt; link(n, -1); // (2)!
+    vector&lt;bool&gt; in_tree(n, false);
+    best[0] = 0;
+    long long total = 0;
+    for (int step = 0; step &lt; n; step++) {
+        int v = -1;
+        for (int i = 0; i &lt; n; i++) { // (3)!
+            if (!in_tree[i] &amp;&amp; (v == -1 || best[i] &lt; best[v])) {
+                v = i;
+            }
+        }
+        in_tree[v] = true;
+        total += best[v];
+        if (link[v] != -1) {
+            cout &lt;&lt; "cable " &lt;&lt; link[v] &lt;&lt; "-" &lt;&lt; v &lt;&lt; " length " &lt;&lt; best[v] &lt;&lt; '\n';
+        }
+        for (int i = 0; i &lt; n; i++) {
+            long long d = abs(x[v] - x[i]) + abs(y[v] - y[i]);
+            if (!in_tree[i] &amp;&amp; d &lt; best[i]) { // (4)!
+                best[i] = d;
+                link[i] = v;
+            }
+        }
+    }
+    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ยังไม่มีเส้นไหนต่อถึงต้นไม้ ให้เป็นค่าที่มากที่สุดของ <code>long long</code> ซึ่งไม่มีระยะจริงไหนเกิน</li>
+        <li>จำว่าค่า <code>best[v]</code> ได้มาจากเส้นที่ต่อกับโหนดไหน เพื่อพิมพ์ว่าเดินสายจากไหนไปไหน ถ้าโจทย์ถามแค่ผลรวม ไม่ต้องมีอาเรย์นี้</li>
+        <li>หาโหนดนอกต้นไม้ที่ต่อเข้าต้นไม้ได้ถูกที่สุด ลูปนี้แทน priority_queue</li>
+        <li>เส้นจาก v ไปหา i ถูกกว่าเส้นที่ดีที่สุดเดิมของ i ก็จำเส้นใหม่</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="prim-dense" data-title="ข้อมูลเข้า"><pre><code>5
+0 0
+2 2
+3 0
+5 4
+1 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="prim-dense" data-title="C:\code\lan.exe"><pre><code>cable 0-2 length 3
+cable 2-1 length 3
+cable 1-4 length 4
+cable 1-3 length 5
+total = 15
+</code></pre></div>
+      </div>
+
+      <p>อาคารใช้หมายเลข 0 ถึง N - 1 ตามลำดับที่อ่าน อาคาร 0 ที่ (0, 0) เข้าต้นไม้ก่อน อาคาร 2 ที่ (3, 0) ห่าง 3 เมตรเป็นตัวแรกที่ดึงเข้ามา จากนั้นอาคาร 1 ที่ (2, 2) ห่างจากอาคาร 2 ไป 1 + 2 = 3 เมตร ส่วนอาคาร 4 กับ 3 ต่อจากอาคาร 1 ทั้งคู่ เพราะใกล้อาคาร 1 กว่าอาคารอื่นที่อยู่ในต้นไม้แล้ว สายรวม 15 เมตร โปรแกรมเก็บแค่อาเรย์ไม่กี่ตัวขนาด N ไม่ได้เก็บเส้นเชื่อมสักเส้น</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 29.1 รันแต่ละแบบ 5 รอบ จับเวลาตั้งแต่อ่านข้อมูลเสร็จจนได้คำตอบ ตารางแรกเป็นกราฟสุ่มชุดเดียวกับหน้า 29.3 ซึ่ง M ประมาณ 2 ถึง 5 เท่าของ N เรียกว่า <strong>กราฟเบาบาง (sparse graph)</strong> วิธีตรงไปตรงมาคือ Prim ที่ทุกรอบไล่ดูเส้นทั้ง M เส้นหาเส้นที่ถูกที่สุดที่ข้ามออกจากต้นไม้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">N = 10<sup>4</sup> M = 5 × 10<sup>4</sup></td><td>Prim ไล่ทุกเส้นทุกรอบ O(NM)</td><td>22.5 วินาที</td><td>1.97 วินาที</td></tr>
+            <tr><td>Kruskal</td><td>0.029 วินาที</td><td>0.003 วินาที</td></tr>
+            <tr><td>Prim ด้วย priority_queue</td><td>0.040 วินาที</td><td>0.011 วินาที</td></tr>
+            <tr><td rowspan="2">N = 10<sup>5</sup> M = 2 × 10<sup>5</sup></td><td>Kruskal</td><td>0.121 วินาที</td><td>0.013 วินาที</td></tr>
+            <tr><td>Prim ด้วย priority_queue</td><td>0.194 วินาที</td><td>0.077 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ตารางที่สองเป็นอาคาร N หลังพิกัดสุ่ม 0 ถึง 10<sup>6</sup> ระยะแบบเดินตามตาราง ทุกคู่มีเส้นถึงกัน Kruskal กับ Prim แบบ priority_queue ต้องสร้างเส้นจากพิกัดทั้ง N(N - 1)/2 เส้นก่อน คอลัมน์สุดท้ายคือหน่วยความจำสูงสุดที่ Windows รายงานตอน N = 5000 แบบ <code>-O2</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>N = 2000<br>Code::Blocks</th><th>N = 2000<br><code>-O2</code></th><th>N = 5000<br>Code::Blocks</th><th>N = 5000<br><code>-O2</code></th><th>หน่วยความจำ N = 5000</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Kruskal ทุกคู่</td><td>1.50 วินาที</td><td>0.188 วินาที</td><td>11.2 วินาที</td><td>1.05 วินาที</td><td>148 MB</td></tr>
+            <tr><td>Prim ด้วย priority_queue</td><td>1.42 วินาที</td><td>0.411 วินาที</td><td>15.2 วินาที</td><td>3.49 วินาที</td><td>134 MB</td></tr>
+            <tr><td>Prim แบบ O(N<sup>2</sup>)</td><td>0.158 วินาที</td><td>0.010 วินาที</td><td>0.968 วินาที</td><td>0.044 วินาที</td><td>5 MB</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กราฟเบาบาง Kruskal กับ Prim แบบ priority_queue เร็วพอๆ กัน ต่างกันไม่ถึงสิบเท่าและเร็วกว่าหนึ่งวินาทีมาก เลือกแบบที่เขียนแล้วไม่พลาดได้เลย แต่กราฟหนาแน่น Kruskal กับ Prim แบบ priority_queue ทั้งช้าและกินหน่วยความจำเป็นร้อยเมกะไบต์ ซึ่งเกินขีดจำกัดของหลายโจทย์ ส่วนแบบ O(N<sup>2</sup>) ที่ <code>-O2</code> เร็วกว่าสองวิธีนั้นราว 20 ถึง 80 เท่า และแทบไม่ใช้หน่วยความจำ สังเกตว่าแบบ Code::Blocks ของแบบ O(N<sup>2</sup>) ที่ N = 5000 ใช้เกือบหนึ่งวินาที ช้ากว่า <code>-O2</code> ราวยี่สิบเท่า เพราะลูปในสุดคำนวณระยะ 12.5 ล้านครั้ง ซึ่ง <code>-O2</code> ทำให้เร็วขึ้นได้มาก grader ใช้ <code>-O2</code> จึงไม่ต้องกังวล</p>
+
+      <h2 id="which-one">เลือกใช้อะไร</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ลักษณะโจทย์</th><th>ใช้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ให้เส้นเชื่อมมาเป็นรายการ M ไม่เกินราวล้าน</td><td>Kruskal สั้นที่สุด และใช้ union-find ตัวเดิมได้</td></tr>
+            <tr><td>มีเส้นบังคับ ถามคอขวด หรือต้องดูลำดับที่กลุ่มรวมกัน แบบหน้า 29.5</td><td>Kruskal เพราะไล่เส้นตามน้ำหนักและรู้ว่ากลุ่มไหนรวมกันตอนไหน</td></tr>
+            <tr><td>มี adjacency list อยู่แล้ว เช่น ข้อเดียวกันต้องใช้ Dijkstra ด้วย</td><td>Prim ด้วย priority_queue</td></tr>
+            <tr><td>ทุกคู่มีเส้นถึงกัน น้ำหนักคำนวณจากพิกัดหรือสูตร N ไม่เกินราวหมื่น</td><td>Prim แบบ O(N<sup>2</sup>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="max-heap">แบบที่ 1 ลืม greater</h3>
+
+      <p>ในโปรแกรม prim ประกาศคิวเป็น <code>priority_queue&lt;pair&lt;int, int&gt;&gt; pq;</code> ซึ่งสั้นกว่า แล้วป้อนข้อมูลเข้าชุดเดิม</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\prim.exe"><pre><code>add 1 w=0
+add 2 w=4
+add 4 w=5
+add 6 w=8
+add 5 w=9
+add 3 w=7
+skip 3 w=6
+skip 3 w=3
+skip 3 w=2
+skip 5 w=1
+total = 33
+</code></pre></div>
+
+      <p>คอมไพล์ผ่าน ไม่มีคำเตือน ได้ 33 ซึ่งเป็นต้นไม้ที่ใช้ 1-2 2-4 4-6 5-6 และ 3-4 ต้นเดียวกับต้นราคา 33 ในหน้า 29.3 ไม่ใช่เรื่องบังเอิญ priority_queue ปกติหยิบค่ามากสุดก่อนตามหน้า 20.5 Prim จึงหยิบเส้นที่แพงที่สุดที่ข้ามออกไปทุกรอบ ได้ spanning tree ที่น้ำหนักรวม <strong>มากที่สุด</strong> ของกราฟนี้ ถ้าโจทย์ต้องการแบบนั้นจริง ก็ใช้ได้ ซึ่งจะเจอในหน้า 29.5</p>
+
+      <h3 id="no-visited-check">แบบที่ 2 ไม่ทิ้งคู่เก่า</h3>
+
+      <p>ในโปรแกรม prim ลบสี่บรรทัดที่ตรวจ <code>if (in_tree[v])</code> ตอนหยิบออกมา</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\prim.exe"><pre><code>add 1 w=0
+add 3 w=3
+add 2 w=2
+add 2 w=4
+add 4 w=5
+add 5 w=1
+add 4 w=5
+add 5 w=6
+add 4 w=7
+add 6 w=8
+add 6 w=8
+add 6 w=8
+add 6 w=9
+add 6 w=9
+not connected
+</code></pre></div>
+
+      <p>โหนด 6 ถูกดึงเข้าต้นไม้ห้าครั้ง <code>added</code> นับได้ 14 ไม่เท่ากับ N โปรแกรมจึงบอกว่า <code>not connected</code> ทั้งที่กราฟต่อถึงกันหมด ถ้าพิมพ์ <code>total</code> แทน จะได้ผลรวมที่นับเส้นซ้ำไปหลายเส้น คู่เก่าในคิวยังอยู่เสมอ เพราะเราไม่ได้ลบมันตอนโหนดปลายเข้าต้นไม้ การตรวจตอนหยิบออกมาจึงขาดไม่ได้</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>Prim ปลูกต้นไม้จากโหนดเดียว หยิบเส้นที่ถูกที่สุดที่ข้ามออกจากต้นไม้ทุกรอบ ถูกต้องด้วยเหตุผลเดียวกับ Kruskal</li>
+        <li>Prim ด้วย priority_queue แบบ <code>greater</code> ใส่คู่ (น้ำหนัก, โหนด) ตอนหยิบให้ทิ้งคู่ที่โหนดอยู่ในต้นไม้แล้ว ใช้เวลา O(M log M)</li>
+        <li>กราฟที่ทุกคู่มีเส้นถึงกัน ใช้ Prim แบบ O(N<sup>2</sup>) กับอาเรย์ <code>best</code> ไม่ต้องเก็บเส้นเชื่อม</li>
+        <li>กราฟเบาบางใช้ Kruskal หรือ Prim ก็ได้ กราฟหนาแน่นใช้ Prim แบบ O(N<sup>2</sup>) โจทย์ที่ต้องดูลำดับการรวมกลุ่มใช้ Kruskal</li>
+        <li>ลืม <code>greater</code> ได้ maximum spanning tree และลืมทิ้งคู่เก่าได้โหนดซ้ำ</li>
+      </ul>
+    </article>

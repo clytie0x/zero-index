@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 29 MST และ union-find</h1>
+
+      <p>จบบทนี้ น้องจะมี union-find ที่รวมกลุ่มและตอบว่าสองคนอยู่กลุ่มเดียวกันไหมได้ในเวลาเกือบคงที่ ใช้นับกลุ่ม หาขนาดกลุ่ม และตรวจว่าเส้นเชื่อมเส้นไหนทำให้เกิดวงจร แล้วใช้มันหา minimum spanning tree ด้วย Kruskal พร้อมเหตุผลว่าทำไม greedy นี้ถึงถูก และหาด้วย Prim ทั้งแบบ priority_queue และแบบ O(N<sup>2</sup>) สำหรับกราฟที่ทุกคู่มีเส้นถึงกัน ปิดท้ายด้วยรูปแบบที่โจทย์ค่าย 2 และ TOI ชอบซ่อน MST ไว้ เช่น ต่อทุกเมืองให้ถึงกันด้วยต้นทุนน้อยที่สุด มีถนนที่ต้องสร้างแน่นอน มีทางเลือกที่ไม่ใช่เส้นเชื่อม และคำถามเรื่องเส้นที่แย่ที่สุดบนเส้นทาง</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="union-find.html">29.1 union-find</a></td><td>เก็บกลุ่มเป็นต้นไม้ path compression union by size เวลาจริงบนข้อมูลที่ทำให้ต้นไม้ยาว และ recursion ที่พังเมื่อต้นไม้สูงเกิน</td></tr>
+            <tr><td><a href="groups-cycles.html">29.2 นับกลุ่ม ขนาดกลุ่ม และตรวจวงจร</a></td><td>ตอบคำถามแบบออนไลน์ นับกลุ่ม ขนาดกลุ่ม เทียบกับ BFS ทุกคำถาม และหาเส้นที่ปิดวงจรในกราฟไม่มีทิศทาง</td></tr>
+            <tr><td><a href="kruskal.html">29.3 spanning tree และ Kruskal</a></td><td>spanning tree กับ MST Kruskal ด้วยการเรียงกับ union-find และพิสูจน์ด้วย exchange argument</td></tr>
+            <tr><td><a href="prim.html">29.4 Prim และเลือกใช้ให้เหมาะกับกราฟ</a></td><td>Prim ด้วย priority_queue Prim แบบ O(N<sup>2</sup>) สำหรับกราฟหนาแน่น และเลือกระหว่าง Kruskal กับ Prim จากเวลาและหน่วยความจำที่วัดจริง</td></tr>
+            <tr><td><a href="patterns.html">29.5 โจทย์ที่ซ่อน MST</a></td><td>ดูให้ออกว่าเป็น MST เส้นบังคับ โหนดสมมติ maximum spanning tree และคอขวด</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>เขียน union-find ที่มีทั้ง path compression และ union by size เองโดยไม่เปิดดู ป้อนข้อมูลเข้าของโปรแกรม groups-size ในหน้า 29.1 แล้วได้ <code>parent: 1 1 1 3 5 5 5 8</code></span></label></li>
+        <li><label><input type="checkbox"><span>สร้างข้อมูลเส้นตรงแสนคน ป้อนให้โปรแกรม groups-compress แบบ Code::Blocks จนเห็น <code>0xC00000FD</code> แล้วป้อนข้อมูลเดียวกันให้ groups-size จนผ่าน</span></label></li>
+        <li><label><input type="checkbox"><span>รันโปรแกรม cycle-check ในหน้า 29.2 แล้วคำนวณจำนวนเส้นที่ปิดวงจรด้วยมือจากสูตร M - (N - C) ได้ 2 ตรงกับโปรแกรม</span></label></li>
+        <li><label><input type="checkbox"><span>เขียน Kruskal ได้ 19 กับกราฟหมู่บ้านหกแห่งในหน้า 29.3 และอธิบายด้วยคำพูดของตัวเองได้ว่าทำไมแลก 4-6 ออกแล้วใส่ 4-5 แทน ทำให้ต้นราคา 33 เหลือ 26</span></label></li>
+        <li><label><input type="checkbox"><span>ลบ <code>greater</code> ออกจากโปรแกรม prim จนได้ 33 และบอกได้ว่าโจทย์แบบไหนต้องใช้ Prim แบบ O(N<sup>2</sup>) แทน Kruskal</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 6 ข้อจาก 8 ข้อ รวมข้อ 5 ถึง 8 ซึ่งต้องมองให้ออกว่าซ่อน MST หรือคอขวด อย่างน้อย 2 ข้อ</span></label></li>
+      </ul>
+    </article>

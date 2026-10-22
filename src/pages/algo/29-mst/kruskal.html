@@ -1,0 +1,294 @@
+<article class="doc">
+      <h1>29.3 spanning tree และ Kruskal</h1>
+
+      <p>อำเภอหนึ่งมีหมู่บ้าน N แห่ง และมีแนวถนนที่สร้างได้ M แนว แต่ละแนวมีราคา งบมีจำกัด จึงอยากเลือกสร้างแค่บางเส้น ให้ทุกหมู่บ้านไปมาหากันได้ และราคารวมน้อยที่สุด โจทย์แบบนี้ซ่อนอยู่ในข้อสอบค่าย 2 และ TOI หลายรูปแบบ ทั้งวางท่อ เดินสายไฟ ต่อสายแลน หน้านี้นิยามสิ่งที่ต้องหาให้ชัด คือ minimum spanning tree แล้วหามันด้วย Kruskal ซึ่งเป็น greedy ที่ใช้ union-find จากหน้า 29.1 และพิสูจน์ว่าทำไม greedy นี้ถึงถูก ด้วย exchange argument จากบทที่ 23</p>
+
+      <h2 id="spanning-tree">spanning tree</h2>
+
+      <p>ภาพนี้คือหมู่บ้าน 6 แห่ง กับแนวถนน 9 แนว ตัวเลขบนเส้นคือราคาเป็นล้านบาท กราฟที่เส้นเชื่อมมีตัวเลขกำกับแบบนี้เรียกว่า <strong>กราฟถ่วงน้ำหนัก (weighted graph)</strong> ตัวเลขเรียกว่า <strong>น้ำหนัก (weight)</strong> แบบเดียวกับกราฟในบทที่ 28</p>
+
+<figure>
+        <svg viewBox="0 0 600 290" width="600" style="max-width:100%;height:auto" role="img" aria-label="กราฟหมู่บ้าน 6 แห่ง ถนน 9 เส้น 1-2 ยาว 4 1-3 ยาว 3 2-3 ยาว 2 2-4 ยาว 5 3-4 ยาว 7 3-5 ยาว 6 4-5 ยาว 1 4-6 ยาว 8 และ 5-6 ยาว 9">
+          <line x1="70" y1="150" x2="200" y2="50" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="70" y1="150" x2="200" y2="250" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="200" y1="50" x2="200" y2="250" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="200" y1="50" x2="380" y2="50" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="200" y1="250" x2="380" y2="50" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="200" y1="250" x2="380" y2="250" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="380" y1="50" x2="380" y2="250" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="380" y1="50" x2="520" y2="150" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="380" y1="250" x2="520" y2="150" style="stroke:var(--line-strong);stroke-width:2"/>
+          <text x="122" y="92" text-anchor="end" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">4</text>
+          <text x="122" y="222" text-anchor="end" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">3</text>
+          <text x="188" y="156" text-anchor="end" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">2</text>
+          <text x="290" y="38" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">5</text>
+          <text x="306" y="164" text-anchor="start" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">7</text>
+          <text x="290" y="274" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">6</text>
+          <text x="392" y="156" text-anchor="start" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">1</text>
+          <text x="462" y="92" text-anchor="start" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">8</text>
+          <text x="462" y="222" text-anchor="start" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">9</text>
+          <circle cx="70" cy="150" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="70" y="156" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">1</text>
+          <circle cx="200" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="200" y="56" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">2</text>
+          <circle cx="200" cy="250" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="200" y="256" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">3</text>
+          <circle cx="380" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="380" y="56" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">4</text>
+          <circle cx="380" cy="250" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="380" y="256" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">5</text>
+          <circle cx="520" cy="150" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="520" y="156" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">6</text>
+        </svg>
+      </figure>
+
+      <p>ถ้าเลือกถนนชุดหนึ่งแล้วทุกหมู่บ้านไปถึงกันได้ ชุดที่ถูกที่สุดจะไม่มีวงจรเลย เพราะถ้ามีวงจร ตัดเส้นใดก็ได้บนวงจรนั้นทิ้ง หมู่บ้านก็ยังไปถึงกันได้ผ่านส่วนที่เหลือของวงจร และราคาไม่เพิ่ม ชุดเส้นที่ต่อทุกโหนดถึงกันและไม่มีวงจร คือต้นไม้ที่ครอบคลุมทุกโหนด เรียกว่า <strong>spanning tree</strong> (ต้นไม้แผ่ทั่ว) และจากหน้า 29.2 ต้นไม้ที่มี N โหนดมีเส้นเชื่อม N - 1 เส้นพอดี กราฟนี้มีหลาย spanning tree เช่นต้นนี้</p>
+
+<figure>
+        <svg viewBox="0 0 600 315" width="600" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้แผ่ทั่วที่ใช้ถนน 1-2 2-4 3-4 4-6 และ 5-6 รวม 33">
+          <line x1="70" y1="150" x2="200" y2="50" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="70" y1="150" x2="200" y2="250" style="stroke:var(--line);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="200" y1="50" x2="200" y2="250" style="stroke:var(--line);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="200" y1="50" x2="380" y2="50" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="200" y1="250" x2="380" y2="50" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="200" y1="250" x2="380" y2="250" style="stroke:var(--line);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="380" y1="50" x2="380" y2="250" style="stroke:var(--line);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="380" y1="50" x2="520" y2="150" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="380" y1="250" x2="520" y2="150" style="stroke:var(--brand);stroke-width:5"/>
+          <text x="122" y="92" text-anchor="end" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">4</text>
+          <text x="122" y="222" text-anchor="end" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">3</text>
+          <text x="188" y="156" text-anchor="end" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">2</text>
+          <text x="290" y="38" text-anchor="middle" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">5</text>
+          <text x="306" y="164" text-anchor="start" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">7</text>
+          <text x="290" y="274" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">6</text>
+          <text x="392" y="156" text-anchor="start" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">1</text>
+          <text x="462" y="92" text-anchor="start" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">8</text>
+          <text x="462" y="222" text-anchor="start" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">9</text>
+          <circle cx="70" cy="150" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="70" y="156" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">1</text>
+          <circle cx="200" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="200" y="56" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">2</text>
+          <circle cx="200" cy="250" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="200" y="256" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">3</text>
+          <circle cx="380" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="380" y="56" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">4</text>
+          <circle cx="380" cy="250" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="380" y="256" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">5</text>
+          <circle cx="520" cy="150" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="520" y="156" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">6</text>
+          <text x="300" y="300" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-text);font-size:14px">ใช้ 1-2 2-4 3-4 4-6 5-6 รวม 4 + 5 + 7 + 8 + 9 = 33</text>
+        </svg>
+      </figure>
+
+      <p>spanning tree ที่น้ำหนักรวมน้อยที่สุด เรียกว่า <strong>minimum spanning tree</strong> หรือ <strong>MST</strong> ของกราฟนี้คือต้นนี้ ราคา 19</p>
+
+<figure>
+        <svg viewBox="0 0 600 315" width="600" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้แผ่ทั่วที่น้อยที่สุด ใช้ถนน 4-5 2-3 1-3 2-4 และ 4-6 รวม 19">
+          <line x1="70" y1="150" x2="200" y2="50" style="stroke:var(--line);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="70" y1="150" x2="200" y2="250" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="200" y1="50" x2="200" y2="250" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="200" y1="50" x2="380" y2="50" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="200" y1="250" x2="380" y2="50" style="stroke:var(--line);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="200" y1="250" x2="380" y2="250" style="stroke:var(--line);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="380" y1="50" x2="380" y2="250" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="380" y1="50" x2="520" y2="150" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="380" y1="250" x2="520" y2="150" style="stroke:var(--line);stroke-width:2;stroke-dasharray:5 5"/>
+          <text x="122" y="92" text-anchor="end" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">4</text>
+          <text x="122" y="222" text-anchor="end" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">3</text>
+          <text x="188" y="156" text-anchor="end" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">2</text>
+          <text x="290" y="38" text-anchor="middle" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">5</text>
+          <text x="306" y="164" text-anchor="start" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">7</text>
+          <text x="290" y="274" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">6</text>
+          <text x="392" y="156" text-anchor="start" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">1</text>
+          <text x="462" y="92" text-anchor="start" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">8</text>
+          <text x="462" y="222" text-anchor="start" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">9</text>
+          <circle cx="70" cy="150" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="70" y="156" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">1</text>
+          <circle cx="200" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="200" y="56" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">2</text>
+          <circle cx="200" cy="250" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="200" y="256" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">3</text>
+          <circle cx="380" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="380" y="56" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">4</text>
+          <circle cx="380" cy="250" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="380" y="256" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">5</text>
+          <circle cx="520" cy="150" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="520" y="156" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">6</text>
+          <text x="300" y="300" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-text);font-size:14px">ใช้ 4-5 2-3 1-3 2-4 4-6 รวม 1 + 2 + 3 + 5 + 8 = 19</text>
+        </svg>
+      </figure>
+
+      <p>ลองทุก spanning tree ไม่ไหว กราฟที่ทุกคู่โหนดมีเส้นเชื่อมกันมี spanning tree ถึง N<sup>N-2</sup> ต้น (สูตรของ Cayley) N = 10 ก็มีร้อยล้านต้นแล้ว N = 20 มีราว 2.6 × 10<sup>23</sup> ต้น ต้องมีวิธีที่ฉลาดกว่านั้น</p>
+
+      <h2 id="kruskal">Kruskal</h2>
+
+      <p>Kruskal คิดแบบ greedy ตรงๆ <strong>เรียงเส้นเชื่อมจากเบาไปหนัก แล้วไล่หยิบทีละเส้น ถ้าเส้นนั้นไม่ทำให้เกิดวงจรกับเส้นที่หยิบไว้แล้ว ก็หยิบ ถ้าทำให้เกิดวงจรก็ข้าม</strong> คำถามว่า "ทำให้เกิดวงจรไหม" คือคำถามของหน้า 29.2 พอดี เส้น a-b ทำให้เกิดวงจรเมื่อ a กับ b อยู่กลุ่มเดียวกันแล้ว ซึ่ง <code>unite</code> ตอบได้พร้อมรวมให้ในตัว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="kruskal"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; parent, group_size;
+
+int find_root(int x)
+{
+    if (parent[x] == x) {
+        return x;
+    }
+    parent[x] = find_root(parent[x]);
+    return parent[x];
+}
+
+bool unite(int a, int b)
+{
+    int root_a = find_root(a);
+    int root_b = find_root(b);
+    if (root_a == root_b) {
+        return false;
+    }
+    if (group_size[root_a] &lt; group_size[root_b]) {
+        swap(root_a, root_b);
+    }
+    parent[root_b] = root_a;
+    group_size[root_a] += group_size[root_b];
+    return true;
+}
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;tuple&lt;int, int, int&gt;&gt; edges(m);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        edges[i] = make_tuple(w, u, v); // (1)!
+    }
+    sort(edges.begin(), edges.end());
+    parent.resize(n + 1);
+    group_size.assign(n + 1, 1);
+    for (int i = 1; i &lt;= n; i++) {
+        parent[i] = i;
+    }
+    long long total = 0; // (2)!
+    int used = 0;
+    for (auto [w, u, v] : edges) {
+        if (unite(u, v)) { // (3)!
+            total += w;
+            used++;
+            cout &lt;&lt; "take " &lt;&lt; u &lt;&lt; "-" &lt;&lt; v &lt;&lt; " w=" &lt;&lt; w &lt;&lt; '\n';
+        } else {
+            cout &lt;&lt; "skip " &lt;&lt; u &lt;&lt; "-" &lt;&lt; v &lt;&lt; " w=" &lt;&lt; w &lt;&lt; '\n';
+        }
+    }
+    if (used == n - 1) { // (4)!
+        cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    } else {
+        cout &lt;&lt; "not connected" &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บน้ำหนักไว้ช่องแรกของ tuple <code>sort</code> จึงเรียงตามน้ำหนักก่อนตามหน้า 16.4 น้ำหนักเท่ากันค่อยเรียงตามโหนด</li>
+        <li>N เป็นแสนและน้ำหนักถึง 10<sup>9</sup> ผลรวมถึงราว 10<sup>14</sup> เกิน <code>int</code></li>
+        <li>รวมได้ แปลว่าสองปลายอยู่คนละกลุ่ม เส้นนี้ไม่ทำให้เกิดวงจร หยิบได้</li>
+        <li>หยิบได้ N - 1 เส้นแปลว่าต่อครบทุกหมู่บ้าน ถ้าได้น้อยกว่านั้น กราฟเดิมก็ไม่ได้ต่อถึงกันตั้งแต่แรก ไม่มี spanning tree</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="kruskal" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 4
+1 3 3
+2 3 2
+2 4 5
+3 4 7
+3 5 6
+4 5 1
+4 6 8
+5 6 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="kruskal" data-title="C:\code\kruskal.exe"><pre><code>take 4-5 w=1
+take 2-3 w=2
+take 1-3 w=3
+skip 1-2 w=4
+take 2-4 w=5
+skip 3-5 w=6
+skip 3-4 w=7
+take 4-6 w=8
+skip 5-6 w=9
+total = 19
+</code></pre></div>
+      </div>
+
+      <p>4-5 2-3 1-3 เป็นสามเส้นที่ถูกที่สุด หยิบได้ทั้งหมด เส้นถัดไปคือ 1-2 ราคา 4 แต่ 1 กับ 2 ไปถึงกันได้แล้วผ่าน 3 จึงข้าม 2-4 ราคา 5 ต่อกลุ่ม {1, 2, 3} เข้ากับกลุ่ม {4, 5} ได้ จากนั้น 3-5 กับ 3-4 อยู่ในกลุ่มใหญ่เดียวกันแล้วทั้งคู่ ข้าม 4-6 พาหมู่บ้าน 6 เข้ามาเป็นเส้นที่ห้า ครบ N - 1 = 5 เส้น รวม 19 ตรงกับภาพข้างบน</p>
+
+      <p>ถ้าอยากให้เร็วขึ้นอีกนิด หยุดลูปได้ทันทีที่หยิบครบ N - 1 เส้น เพราะเส้นที่เหลือต้องถูกข้ามทั้งหมดแน่นอน แต่ไม่ได้เปลี่ยนความซับซ้อน งานที่หนักที่สุดคือการเรียง O(M log M) ส่วนการไล่เส้นทั้งหมดด้วย union-find ใช้ O(M α(N)) Kruskal ทั้งหมดจึงเป็น O(M log M)</p>
+
+      <h2 id="why-greedy">ทำไมหยิบเส้นที่ถูกที่สุดก่อนถึงถูก</h2>
+
+      <p>บทที่ 23 สอนว่า greedy ต้องพิสูจน์เสมอ เพราะหลายโจทย์ที่ greedy ดูน่าจะถูกกลับผิด เครื่องมือที่ใช้คือ <strong>exchange argument</strong> สมมติว่ามีคำตอบที่ดีที่สุดที่ต่างจากของ greedy แล้วแสดงว่าแลกชิ้นส่วนให้เหมือน greedy ได้ทีละชิ้นโดยไม่แย่ลง ใช้กับ Kruskal ได้แบบนี้</p>
+
+      <p>ให้ T เป็น MST ต้นหนึ่งที่เหมือนกับเส้นที่ Kruskal หยิบได้มากที่สุด ถ้าทุกเส้นที่ Kruskal หยิบอยู่ใน T ด้วย ก็จบ เพราะทั้งสองมี N - 1 เส้นเท่ากัน จึงเป็นต้นเดียวกัน ถ้าไม่ใช่ ให้ e เป็นเส้นแรกที่ Kruskal หยิบแต่ไม่อยู่ใน T สมมติ e ต่อโหนด a กับ b และตอนที่ Kruskal หยิบ e ให้ A คือกลุ่มของ a ซึ่งไม่มี b อยู่</p>
+
+      <ol>
+        <li>T เป็นต้นไม้ จึงมีทางเดินจาก a ไป b ในต้น T ทางนี้เริ่มใน A แต่จบนอก A จึงต้องมีเส้น f บนทางนี้ที่ข้ามจากในกลุ่ม A ออกไปนอกกลุ่ม</li>
+        <li>f ไม่ใช่เส้นที่ Kruskal หยิบไว้แล้ว เพราะเส้นที่หยิบแล้วทุกเส้นอยู่ภายในกลุ่มใดกลุ่มหนึ่งเสมอ ไม่มีเส้นไหนข้ามกลุ่ม</li>
+        <li>Kruskal ยังไม่เคยพิจารณา f เพราะกลุ่มมีแต่รวมกันใหญ่ขึ้น ถ้าตอนนี้ปลายทั้งสองของ f อยู่คนละกลุ่ม ตอนก่อนหน้าก็ต้องอยู่คนละกลุ่ม ถ้าเคยพิจารณา f ไปแล้ว Kruskal ต้องหยิบมันไว้ ขัดกับข้อ 2</li>
+        <li>Kruskal พิจารณาจากเบาไปหนัก f ยังไม่ถูกพิจารณา จึงหนักไม่น้อยกว่า e</li>
+      </ol>
+
+      <p>แลกกัน เอา f ออกจาก T แล้วใส่ e แทน เรียกต้นใหม่ว่า T' เอา f ออก ต้น T ขาดเป็นสองท่อน โดย a กับ b อยู่คนละท่อน เพราะ f อยู่บนทางเดียวที่เชื่อมสองตัวนี้ ใส่ e กลับเข้าไปก็ต่อสองท่อนนั้นเข้าหากัน T' จึงเป็น spanning tree ที่มีน้ำหนักรวมเท่ากับของ T ลบ f บวก e ซึ่งไม่มากกว่า T T' จึงเป็น MST ด้วย แต่เหมือนเส้นของ Kruskal มากกว่า T อีกหนึ่งเส้น ขัดกับที่เลือก T มาให้เหมือนมากที่สุดแล้ว กรณีนี้จึงเกิดไม่ได้ ต้นที่ Kruskal ได้คือ MST</p>
+
+      <p>ลองกับตัวเลขจริง ให้ T คือต้นราคา 33 เส้นแรกที่ Kruskal หยิบคือ 4-5 ซึ่งไม่อยู่ใน T ตอนนั้นกลุ่มของ 4 คือ {4} คนเดียว ทางจาก 4 ไป 5 ในต้น T คือ 4-6-5 เส้นที่ข้ามออกจาก {4} คือ 4-6 ราคา 8 แลก 4-6 ออก ใส่ 4-5 ราคา 1 ได้ต้นใหม่ราคา 33 - 8 + 1 = 26 ทำแบบนี้ไปเรื่อยๆ จะไปจบที่ 19 ถ้ามีหลายเส้นน้ำหนักเท่ากัน MST อาจมีได้หลายต้น Kruskal ได้ต้นใดต้นหนึ่ง แต่น้ำหนักรวมเท่ากันเสมอ</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วิธีตรงไปตรงมาของการถามว่า "a กับ b ไปถึงกันแล้วหรือยัง" ก่อนมี union-find คือ BFS บนเส้นที่หยิบไว้แล้ว ซึ่งเป็นป่าที่มีไม่เกิน N - 1 เส้น ทุกเส้นที่พิจารณาต้อง BFS หนึ่งรอบ O(N) รวมเป็น O(MN) วัดบนเครื่องเดียวกับหน้า 29.1 กราฟสุ่มที่ต่อถึงกันหมด น้ำหนักสุ่ม 1 ถึง 10<sup>9</sup> จับเวลาตั้งแต่เรียงจนได้คำตอบ รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">N = 10<sup>4</sup> M = 5 × 10<sup>4</sup></td><td>Kruskal ตรวจด้วย BFS</td><td>6.7 วินาที</td><td>1.4 วินาที</td></tr>
+            <tr><td>Kruskal กับ union-find</td><td>0.029 วินาที</td><td>0.003 วินาที</td></tr>
+            <tr><td rowspan="2">N = 10<sup>5</sup> M = 2 × 10<sup>5</sup></td><td>Kruskal ตรวจด้วย BFS</td><td>ไม่ได้วัด</td><td>137 วินาที (รันครั้งเดียว)</td></tr>
+            <tr><td>Kruskal กับ union-find</td><td>0.121 วินาที</td><td>0.013 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้อมูลชุดที่สองมี N กับ M มากขึ้นสิบเท่ากับสี่เท่า งานของการตรวจด้วย BFS มากขึ้นราว 40 เท่า แต่เวลาจริงเพิ่มเกือบร้อยเท่า มากกว่าที่ Big O บอกไว้อีก แบบ Code::Blocks ไม่ได้วัด เพราะที่ N = 10<sup>4</sup> ก็ช้ากว่า <code>-O2</code> ราวห้าเท่าแล้ว ส่วน Kruskal กับ union-find เวลาส่วนใหญ่คือการเรียง ซึ่ง <code>sort</code> แบบ Code::Blocks ช้ากว่า <code>-O2</code> ราวสิบเท่า แต่ยังเร็วมากอยู่ดี</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="tuple-order">แบบที่ 1 เก็บ tuple ผิดลำดับ</h3>
+
+      <p>ในโปรแกรม kruskal เก็บเส้นเป็น <code>make_tuple(u, v, w)</code> ตามลำดับที่อ่านเข้ามา และแตกเป็น <code>auto [u, v, w]</code> ให้ตรงกัน คอมไพล์ผ่านโดยไม่มีคำเตือน ป้อนข้อมูลเข้าชุดเดิม</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\kruskal.exe"><pre><code>take 1-2 w=4
+take 1-3 w=3
+skip 2-3 w=2
+take 2-4 w=5
+skip 3-4 w=7
+take 3-5 w=6
+skip 4-5 w=1
+take 4-6 w=8
+skip 5-6 w=9
+total = 26
+</code></pre></div>
+
+      <p>ได้ 26 แทน 19 <code>sort</code> เรียงตามช่องแรกของ tuple ซึ่งตอนนี้คือหมายเลขโหนด เส้นจึงถูกพิจารณาตามเลขหมู่บ้าน ไม่ใช่ตามราคา 4-5 ราคา 1 ถูกข้าม เพราะมาทีหลังจนทั้งสองปลายถึงกันแล้ว ผลที่ได้ยังเป็น spanning tree ที่ถูกต้อง หยิบครบ 5 เส้น ไม่มีวงจร แค่ไม่ใช่ต้นที่ถูกที่สุด ถ้าโปรแกรมพิมพ์คำตอบที่ดูสมเหตุสมผลแบบนี้ ต้องตรวจด้วยมือกับตัวอย่างเล็กๆ ทุกครั้ง</p>
+
+      <h3 id="int-total">แบบที่ 2 เก็บผลรวมใน int</h3>
+
+      <p>เปลี่ยน <code>long long total</code> เป็น <code>int total</code> แล้วป้อนหมู่บ้าน 4 แห่งที่มีถนนราคาเส้นละ 10<sup>9</sup></p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>4 3
+1 2 1000000000
+2 3 1000000000
+3 4 1000000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\kruskal.exe"><pre><code>take 1-2 w=1000000000
+take 2-3 w=1000000000
+take 3-4 w=1000000000
+total = -1294967296
+</code></pre></div>
+      </div>
+
+      <p>ราคาแต่ละเส้นอยู่ใน <code>int</code> ได้ แต่ผลรวมสามเส้นคือ 3 × 10<sup>9</sup> เกิน <code>int</code> ล้นเป็นค่าติดลบตามหน้า 1.3 ราคารวมของ N - 1 เส้นใหญ่ได้ถึง (N - 1) เท่าของเส้นที่แพงที่สุด ให้คำนวณจากขอบเขตก่อนเขียนทุกครั้ง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>spanning tree คือชุดเส้นที่ต่อทุกโหนดถึงกันโดยไม่มีวงจร มี N - 1 เส้นพอดี MST คือต้นที่น้ำหนักรวมน้อยที่สุด</li>
+        <li>Kruskal เรียงเส้นจากเบาไปหนัก หยิบเส้นที่สองปลายอยู่คนละกลุ่มของ union-find ข้ามเส้นที่อยู่กลุ่มเดียวกัน ใช้เวลา O(M log M)</li>
+        <li>พิสูจน์ด้วย exchange argument MST ที่ต่างจาก Kruskal แลกเส้น f บนทางระหว่างสองปลายของ e กับเส้น e ได้โดยไม่แพงขึ้น</li>
+        <li>หยิบได้ไม่ครบ N - 1 เส้นแปลว่ากราฟไม่ต่อถึงกัน</li>
+        <li>เก็บน้ำหนักไว้ช่องแรกของ tuple และเก็บผลรวมด้วย <code>long long</code></li>
+      </ul>
+    </article>

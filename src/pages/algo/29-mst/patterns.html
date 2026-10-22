@@ -1,0 +1,502 @@
+<article class="doc">
+      <h1>29.5 โจทย์ที่ซ่อน MST</h1>
+
+      <p>โจทย์จริงแทบไม่เคยเขียนว่า "จงหา minimum spanning tree" แต่เล่าเป็นเรื่องวางท่อ เดินสายไฟ เปิดถนน หรือรถบรรทุกข้ามสะพาน และมักบิดจาก MST ธรรมดาไปนิดหนึ่ง เช่น มีบางเส้นที่ต้องใช้แน่นอน มีทางเลือกที่ไม่ใช่เส้นเชื่อม หรือไม่ได้ถามผลรวมแต่ถามเส้นที่หนักที่สุด หน้านี้รวมรูปแบบที่เจอบ่อย ทุกแบบแก้ด้วย Kruskal จากหน้า 29.3 ที่ปรับนิดเดียว</p>
+
+      <h2 id="spot-it">ดูยังไงว่าเป็น MST</h2>
+
+      <p>ถามตัวเองสามข้อ ถ้าตอบใช่ทั้งสามข้อ มักเป็น MST</p>
+
+      <ol>
+        <li>ต้องทำให้ทุกจุดไปถึงกันได้ ไม่ได้ถามเส้นทางจากจุดหนึ่งไปอีกจุดหนึ่ง</li>
+        <li>จะเชื่อมแบบไหนก็ได้ ขอแค่ไปถึงกัน ไม่สนว่าเดินอ้อมไกลแค่ไหน</li>
+        <li>ต้นทุนคือผลรวมของเส้นที่เลือก หรือเส้นที่แย่ที่สุดในบรรดาที่เลือก</li>
+      </ol>
+
+      <p>ข้อ 2 คือสิ่งที่แยก MST ออกจากเส้นทางสั้นสุดในบทที่ 28 ในกราฟของหน้า 29.3 ทางสั้นสุดจากหมู่บ้าน 1 ไป 4 คือ 1-2-4 ยาว 4 + 5 = 9 แต่ใน MST ราคา 19 ทางจาก 1 ไป 4 คือ 1-3-2-4 ยาว 3 + 2 + 5 = 10 MST ทำให้ทั้งเครือข่ายถูกที่สุด ไม่ได้ทำให้แต่ละคู่ใกล้กันที่สุด ถ้าโจทย์สนใจระยะเดินทางของผู้ใช้ถนน ก็ไม่ใช่ MST</p>
+
+      <h2 id="forced-edges">เส้นที่ต้องใช้แน่นอน</h2>
+
+      <p>เทศบาลเซ็นสัญญาสร้างถนนบางเส้นไปแล้ว ยกเลิกไม่ได้ ต้องจ่ายแน่นอน ที่เหลือให้เลือกจากแนวถนนอื่นให้ทุกหมู่บ้านไปถึงกันด้วยราคารวมน้อยที่สุด วิธีคือ <strong>รวมกลุ่มตามเส้นบังคับให้หมดก่อน แล้วค่อยทำ Kruskal กับเส้นที่เหลือตามปกติ</strong> หลังรวมเส้นบังคับแล้ว แต่ละกลุ่มทำตัวเหมือนหมู่บ้านใหญ่หมู่บ้านเดียว Kruskal กับเส้นที่เหลือจึงหา MST ของหมู่บ้านใหญ่เหล่านั้น ด้วยเหตุผลเดียวกับหน้า 29.3 ถนนที่มีอยู่แล้วฟรีก็คือเส้นบังคับที่ราคาเป็น 0</p>
+
+      <p>ข้อมูลเข้าบรรทัดแรกคือ N K M ตามด้วยเส้นบังคับ K บรรทัด และแนวถนนให้เลือก M บรรทัด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="forced"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; parent, group_size;
+
+int find_root(int x)
+{
+    if (parent[x] == x) {
+        return x;
+    }
+    parent[x] = find_root(parent[x]);
+    return parent[x];
+}
+
+bool unite(int a, int b)
+{
+    int root_a = find_root(a);
+    int root_b = find_root(b);
+    if (root_a == root_b) {
+        return false;
+    }
+    if (group_size[root_a] &lt; group_size[root_b]) {
+        swap(root_a, root_b);
+    }
+    parent[root_b] = root_a;
+    group_size[root_a] += group_size[root_b];
+    return true;
+}
+
+int main()
+{
+    int n, k, m;
+    cin &gt;&gt; n &gt;&gt; k &gt;&gt; m;
+    parent.resize(n + 1);
+    group_size.assign(n + 1, 1);
+    for (int i = 1; i &lt;= n; i++) {
+        parent[i] = i;
+    }
+    long long total = 0;
+    int groups = n;
+    for (int i = 0; i &lt; k; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        total += w; // (1)!
+        if (unite(u, v)) {
+            groups--;
+        }
+        cout &lt;&lt; "must build " &lt;&lt; u &lt;&lt; "-" &lt;&lt; v &lt;&lt; " w=" &lt;&lt; w &lt;&lt; '\n';
+    }
+    vector&lt;tuple&lt;int, int, int&gt;&gt; edges(m);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        edges[i] = make_tuple(w, u, v);
+    }
+    sort(edges.begin(), edges.end());
+    for (auto [w, u, v] : edges) {
+        if (unite(u, v)) {
+            total += w;
+            groups--;
+            cout &lt;&lt; "take " &lt;&lt; u &lt;&lt; "-" &lt;&lt; v &lt;&lt; " w=" &lt;&lt; w &lt;&lt; '\n';
+        }
+    }
+    if (groups == 1) { // (2)!
+        cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    } else {
+        cout &lt;&lt; "impossible" &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เส้นบังคับต้องจ่ายทุกเส้น แม้มันจะปิดวงจรกับเส้นบังคับเส้นอื่นก็ตาม แต่จำนวนกลุ่มลดเฉพาะเมื่อรวมได้จริง</li>
+        <li>ตรวจว่าต่อครบด้วยจำนวนกลุ่ม ไม่ใช่นับจำนวนเส้น ดูเหตุผลในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="forced" data-title="ข้อมูลเข้า"><pre><code>5 2 6
+1 2 6
+3 4 5
+1 3 2
+2 3 3
+2 4 4
+4 5 1
+3 5 7
+1 5 8
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="forced" data-title="C:\code\forced.exe"><pre><code>must build 1-2 w=6
+must build 3-4 w=5
+take 4-5 w=1
+take 1-3 w=2
+total = 14
+</code></pre></div>
+      </div>
+
+      <p>ถ้าไม่มีเส้นบังคับ MST ของกราฟนี้คือ 4-5 1-3 2-3 2-4 ราคา 10 แต่ 1-2 กับ 3-4 ต้องสร้าง ราคา 11 แล้ว เหลือแค่ต่อหมู่บ้าน 5 ด้วย 4-5 กับต่อกลุ่ม {1, 2} เข้ากับ {3, 4, 5} ด้วย 1-3 ที่ถูกที่สุด รวม 14</p>
+
+      <h2 id="virtual-node">ทางเลือกที่ไม่ใช่เส้นเชื่อม</h2>
+
+      <p>หมู่บ้าน N แห่งต้องมีน้ำประปาทุกแห่ง หมู่บ้าน i ขุดบ่อของตัวเองได้ในราคา c<sub>i</sub> หรือวางท่อจากหมู่บ้านอื่นที่มีน้ำแล้ว ท่อแต่ละแนวมีราคา หมู่บ้านไหนจะได้น้ำจากบ่อของใครก็ได้ ขอแค่ต่อท่อถึงหมู่บ้านที่มีบ่อสักแห่ง</p>
+
+      <p>โจทย์นี้ดูไม่เหมือน MST เพราะขุดบ่อไม่ใช่เส้นเชื่อม และไม่ต้องต่อทุกหมู่บ้านถึงกัน แต่ถ้าสร้าง <strong>โหนดสมมติ</strong> หมายเลข 0 แทน "แหล่งน้ำใต้ดิน" แล้วมองการขุดบ่อที่หมู่บ้าน i เป็นเส้นเชื่อม 0-i ราคา c<sub>i</sub> ทุกแผนที่ใช้ได้จะกลายเป็นชุดเส้นที่ต่อทุกหมู่บ้านถึงโหนด 0 เพราะทุกหมู่บ้านต่อท่อไปถึงหมู่บ้านที่มีบ่อ และหมู่บ้านที่มีบ่อต่อถึงโหนด 0 แผนที่ถูกที่สุดจึงเป็น MST ของกราฟ N + 1 โหนดนี้</p>
+
+<figure>
+        <svg viewBox="0 0 600 300" width="600" style="max-width:100%;height:auto" role="img" aria-label="โหนด 0 ต่อกับหมู่บ้าน 1 ถึง 4 ด้วยค่าขุดบ่อ 5 4 9 3 ท่อ 1-2 ยาว 3 2-3 ยาว 2 3-4 ยาว 6 และ 1-4 ยาว 8 เส้นที่เลือกคือขุดบ่อที่ 2 และ 4 กับท่อ 1-2 และ 2-3 รวม 12">
+          <line x1="300" y1="45" x2="110" y2="200" style="stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="300" y1="45" x2="240" y2="200" style="stroke:var(--brand);stroke-width:5"/>
+          <line x1="300" y1="45" x2="370" y2="200" style="stroke:var(--line-strong);stroke-width:2;stroke-dasharray:5 5"/>
+          <line x1="300" y1="45" x2="500" y2="200" style="stroke:var(--brand);stroke-width:5"/>
+          <text x="195" y="120" text-anchor="end" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">5</text>
+          <text x="262" y="120" text-anchor="end" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">4</text>
+          <text x="338" y="120" text-anchor="start" style="fill:var(--muted);font-family:var(--font-code);font-size:16px">9</text>
+          <text x="405" y="120" text-anchor="start" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">3</text>
+          <line x1="110" y1="200" x2="240" y2="200" style="stroke:var(--brand);stroke-width:5"/>
+          <text x="175" y="190" text-anchor="middle" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">3</text>
+          <line x1="240" y1="200" x2="370" y2="200" style="stroke:var(--brand);stroke-width:5"/>
+          <text x="305" y="190" text-anchor="middle" style="fill:var(--brand-text);font-family:var(--font-code);font-size:16px">2</text>
+          <line x1="370" y1="200" x2="500" y2="200" style="stroke:var(--line-strong);stroke-width:2"/>
+          <text x="435" y="190" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">6</text>
+          <path d="M110 220 Q 305 310 500 220" style="fill:none;stroke:var(--line-strong);stroke-width:2"/>
+          <text x="305" y="278" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">8</text>
+          <circle cx="300" cy="45" r="20" style="fill:var(--surface);stroke:var(--brand);stroke-width:2;stroke-dasharray:5 4"/><text x="300" y="51" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">0</text>
+          <text x="330" y="50" text-anchor="start" style="fill:var(--brand-text);font-family:var(--font-text);font-size:14px">โหนด 0 แทนบ่อ</text>
+          <circle cx="110" cy="200" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="110" y="206" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">1</text>
+          <circle cx="240" cy="200" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="240" y="206" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">2</text>
+          <circle cx="370" cy="200" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="370" y="206" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">3</text>
+          <circle cx="500" cy="200" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="500" y="206" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">4</text>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="wells"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; parent, group_size;
+
+int find_root(int x)
+{
+    if (parent[x] == x) {
+        return x;
+    }
+    parent[x] = find_root(parent[x]);
+    return parent[x];
+}
+
+bool unite(int a, int b)
+{
+    int root_a = find_root(a);
+    int root_b = find_root(b);
+    if (root_a == root_b) {
+        return false;
+    }
+    if (group_size[root_a] &lt; group_size[root_b]) {
+        swap(root_a, root_b);
+    }
+    parent[root_b] = root_a;
+    group_size[root_a] += group_size[root_b];
+    return true;
+}
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;tuple&lt;int, int, int&gt;&gt; edges;
+    for (int i = 1; i &lt;= n; i++) {
+        int cost;
+        cin &gt;&gt; cost;
+        edges.push_back(make_tuple(cost, 0, i)); // (1)!
+    }
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        edges.push_back(make_tuple(w, u, v));
+    }
+    sort(edges.begin(), edges.end());
+    parent.resize(n + 1);
+    group_size.assign(n + 1, 1);
+    for (int i = 0; i &lt;= n; i++) { // (2)!
+        parent[i] = i;
+    }
+    long long total = 0;
+    for (auto [w, u, v] : edges) {
+        if (unite(u, v)) {
+            total += w;
+            if (u == 0) {
+                cout &lt;&lt; "well at " &lt;&lt; v &lt;&lt; " cost " &lt;&lt; w &lt;&lt; '\n';
+            } else {
+                cout &lt;&lt; "pipe " &lt;&lt; u &lt;&lt; "-" &lt;&lt; v &lt;&lt; " cost " &lt;&lt; w &lt;&lt; '\n';
+            }
+        }
+    }
+    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ขุดบ่อที่หมู่บ้าน i คือเส้นจากโหนดสมมติ 0 ไป i</li>
+        <li>เริ่มที่ 0 ด้วย เพราะโหนด 0 อยู่ใน union-find ด้วย <code>parent</code> ขนาด n + 1 ช่องจึงพอดีกับโหนด 0 ถึง n</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="wells" data-title="ข้อมูลเข้า"><pre><code>4 4
+5 4 9 3
+1 2 3
+2 3 2
+3 4 6
+1 4 8
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="wells" data-title="C:\code\wells.exe"><pre><code>pipe 2-3 cost 2
+well at 4 cost 3
+pipe 1-2 cost 3
+well at 2 cost 4
+total = 12
+</code></pre></div>
+      </div>
+
+      <p>ขุดบ่อสองแห่งคือที่ 4 กับที่ 2 แล้ววางท่อ 2-3 กับ 1-2 รวม 12 หมู่บ้าน 3 ไม่ขุดบ่อเองเพราะราคา 9 แพงกว่าท่อจาก 2 มาก ส่วนหมู่บ้าน 4 ขุดบ่อราคา 3 ถูกกว่าท่อ 3-4 ราคา 6 กราฟนี้มี 5 โหนด MST จึงมี 4 เส้นพอดี เทคนิคโหนดสมมติใช้ได้ทุกครั้งที่โจทย์ให้ "ทางเลือกเดี่ยว" ที่แต่ละจุดทำเองได้ เช่น ติดโซลาร์เซลล์เอง หรือตั้งเสาสัญญาณเอง</p>
+
+      <h2 id="maximum">maximum spanning tree</h2>
+
+      <p>ถ้าโจทย์อยากได้ spanning tree ที่น้ำหนักรวม <strong>มากที่สุด</strong> เช่น เลือกสายเชื่อมที่ความจุรวมมากที่สุด ใช้ Kruskal แบบเดิม เปลี่ยนแค่เรียงจากหนักไปเบา</p>
+
+      <div class="code" data-lang="cpp"><pre><code>sort(edges.begin(), edges.end(), greater&lt;tuple&lt;int, int, int&gt;&gt;());
+</code></pre></div>
+
+      <p>exchange argument ในหน้า 29.3 ใช้ได้เหมือนเดิม แค่กลับทิศของการเปรียบเทียบทุกจุด อีกวิธีคือคูณน้ำหนักทุกเส้นด้วย -1 แล้วหา MST ธรรมดา ได้ต้นเดียวกัน ส่วน Prim ในหน้า 29.4 ที่ใช้ priority_queue แบบหยิบมากสุดก่อน ก็ได้ maximum spanning tree ราคา 33 พอดี</p>
+
+      <h2 id="bottleneck">เส้นที่แย่ที่สุด</h2>
+
+      <p>โจทย์อีกกลุ่มไม่ได้ถามผลรวม แต่ถามเส้นที่แย่ที่สุดในบรรดาที่ใช้ เรียกว่า <strong>คอขวด (bottleneck)</strong> ใช้ลำดับการรวมของ Kruskal ตอบได้ทันที ไม่ต้องหาผลรวมเลย</p>
+
+      <h3 id="earliest-day">วันแรกที่ทุกเมืองไปถึงกัน</h3>
+
+      <p>ถนน M เส้นกำลังก่อสร้าง ถนนเส้นที่ i เปิดใช้ได้ตั้งแต่วันที่ d<sub>i</sub> ถามว่าวันแรกที่ทุกเมืองไปมาหากันได้คือวันไหน คำตอบคือวัน d ที่น้อยที่สุดที่ถนนซึ่งเปิดภายในวัน d ต่อทุกเมืองถึงกัน เปิดถนนตามลำดับวันแบบ Kruskal แล้วหยุดทันทีที่เหลือกลุ่มเดียว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="all-connected"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; parent, group_size;
+
+int find_root(int x)
+{
+    if (parent[x] == x) {
+        return x;
+    }
+    parent[x] = find_root(parent[x]);
+    return parent[x];
+}
+
+bool unite(int a, int b)
+{
+    int root_a = find_root(a);
+    int root_b = find_root(b);
+    if (root_a == root_b) {
+        return false;
+    }
+    if (group_size[root_a] &lt; group_size[root_b]) {
+        swap(root_a, root_b);
+    }
+    parent[root_b] = root_a;
+    group_size[root_a] += group_size[root_b];
+    return true;
+}
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;tuple&lt;int, int, int&gt;&gt; roads(m);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, day;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; day;
+        roads[i] = make_tuple(day, u, v);
+    }
+    sort(roads.begin(), roads.end());
+    parent.resize(n + 1);
+    group_size.assign(n + 1, 1);
+    for (int i = 1; i &lt;= n; i++) {
+        parent[i] = i;
+    }
+    int groups = n;
+    for (auto [day, u, v] : roads) {
+        if (unite(u, v)) {
+            groups--;
+            cout &lt;&lt; "day " &lt;&lt; day &lt;&lt; ": " &lt;&lt; u &lt;&lt; "-" &lt;&lt; v &lt;&lt; " groups=" &lt;&lt; groups &lt;&lt; '\n';
+            if (groups == 1) { // (1)!
+                cout &lt;&lt; "all connected on day " &lt;&lt; day &lt;&lt; '\n';
+                return 0;
+            }
+        }
+    }
+    cout &lt;&lt; "never" &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ถนนที่เพิ่งรวมได้คือเส้นที่ทำให้เหลือกลุ่มเดียว วันของมันคือคำตอบ ก่อนวันนี้ถนนที่เปิดแล้วยังต่อไม่ครบ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="all-connected" data-title="ข้อมูลเข้า"><pre><code>5 7
+1 2 3
+2 3 10
+3 4 4
+4 5 12
+1 3 7
+2 5 15
+1 4 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="all-connected" data-title="C:\code\all_connected.exe"><pre><code>day 3: 1-2 groups=4
+day 4: 3-4 groups=3
+day 7: 1-3 groups=2
+day 12: 4-5 groups=1
+all connected on day 12
+</code></pre></div>
+      </div>
+
+      <p>คำตอบ 12 คือน้ำหนักของเส้นที่หนักที่สุดใน MST เมื่อใช้วันเป็นน้ำหนัก ความจริงข้อนี้ใช้ได้ทั่วไป MST คือ spanning tree ที่เส้นหนักที่สุดเบาที่สุดด้วย ถ้าโจทย์ถามว่า "ต่อให้ครบทุกจุด โดยให้เส้นที่ยาวที่สุดสั้นที่สุด" ก็ตอบด้วยเส้นสุดท้ายที่ Kruskal หยิบ</p>
+
+      <h3 id="heaviest-truck">รถบรรทุกที่หนักที่สุด</h3>
+
+      <p>ถนนแต่ละเส้นมีสะพานที่รับน้ำหนักได้ไม่เกินค่าหนึ่ง อยากขนของจากเมือง a ไปเมือง b ด้วยรถคันเดียวที่หนักที่สุด รถผ่านถนนเส้นไหนได้ก็ต่อเมื่อหนักไม่เกินที่สะพานเส้นนั้นรับได้ เส้นทางหนึ่งรับรถได้หนักเท่ากับถนนที่รับได้น้อยที่สุดบนเส้นทางนั้น ต้องหาเส้นทางที่ค่านี้มากที่สุด</p>
+
+      <p>เปิดถนนจากที่รับน้ำหนักได้มากไปน้อย ทันทีที่ a กับ b อยู่กลุ่มเดียวกัน ถนนที่เพิ่งเปิดคือคำตอบ เพราะตอนนี้มีเส้นทางจาก a ไป b ที่ทุกถนนรับได้อย่างน้อยเท่าถนนเส้นนี้ ส่วนก่อนเปิดเส้นนี้ ถนนที่แข็งแรงกว่าทั้งหมดยังพา a ไปถึง b ไม่ได้ จึงไม่มีเส้นทางไหนดีกว่า เส้นทางที่ได้คือเส้นทางบน maximum spanning tree</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="truck"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; parent, group_size;
+
+int find_root(int x)
+{
+    if (parent[x] == x) {
+        return x;
+    }
+    parent[x] = find_root(parent[x]);
+    return parent[x];
+}
+
+bool unite(int a, int b)
+{
+    int root_a = find_root(a);
+    int root_b = find_root(b);
+    if (root_a == root_b) {
+        return false;
+    }
+    if (group_size[root_a] &lt; group_size[root_b]) {
+        swap(root_a, root_b);
+    }
+    parent[root_b] = root_a;
+    group_size[root_a] += group_size[root_b];
+    return true;
+}
+
+int main()
+{
+    int n, m, from, to;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; from &gt;&gt; to;
+    vector&lt;tuple&lt;int, int, int&gt;&gt; roads(m);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, limit;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; limit;
+        roads[i] = make_tuple(limit, u, v);
+    }
+    sort(roads.begin(), roads.end(), greater&lt;tuple&lt;int, int, int&gt;&gt;()); // (1)!
+    parent.resize(n + 1);
+    group_size.assign(n + 1, 1);
+    for (int i = 1; i &lt;= n; i++) {
+        parent[i] = i;
+    }
+    for (auto [limit, u, v] : roads) {
+        unite(u, v);
+        cout &lt;&lt; "open " &lt;&lt; u &lt;&lt; "-" &lt;&lt; v &lt;&lt; " limit " &lt;&lt; limit &lt;&lt; '\n';
+        if (find_root(from) == find_root(to)) { // (2)!
+            cout &lt;&lt; "heaviest truck = " &lt;&lt; limit &lt;&lt; '\n';
+            return 0;
+        }
+    }
+    cout &lt;&lt; "no route" &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เรียงจากรับได้มากไปน้อย แบบ maximum spanning tree</li>
+        <li>เพิ่งไปถึงกันด้วยถนนเส้นนี้ ถนนเส้นนี้รับได้น้อยที่สุดบนเส้นทางที่ดีที่สุด</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="truck" data-title="ข้อมูลเข้า"><pre><code>6 8 1 6
+1 2 12
+1 3 30
+2 4 25
+3 4 8
+3 5 15
+4 6 20
+5 6 18
+2 3 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="truck" data-title="C:\code\truck.exe"><pre><code>open 1-3 limit 30
+open 2-4 limit 25
+open 4-6 limit 20
+open 5-6 limit 18
+open 3-5 limit 15
+heaviest truck = 15
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดแรกคือ N M a b เส้นทาง 1-3-5-6 ผ่านถนนที่รับได้ 30 15 และ 18 จึงรับรถได้ 15 ส่วน 1-2-4-6 ผ่านถนนที่รับได้ 12 25 และ 20 รับรถได้แค่ 12 ถ้าโจทย์ถามหลายคู่ หรือถามว่ารถหนัก w ไปจาก a ถึง b ได้ไหมหลายครั้ง ให้เรียงคำถามตามน้ำหนักรถ แล้วเปิดถนนไปพร้อมกับตอบคำถาม ซึ่งเป็นแบบฝึกหัดท้ายบท</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วิธีตรงไปตรงมาของวันแรกที่ทุกเมืองไปถึงกัน คือเปิดถนนตามลำดับวัน แล้ว BFS จากเมือง 1 หลังเปิดทุกเส้น ดูว่าไปถึงครบทุกเมืองหรือยัง แต่ละครั้งเป็น O(N + M) รวมเป็น O(M(N + M)) วัดบนเครื่องเดียวกับหน้า 29.1 กราฟสุ่มชุดเดียวกับหน้า 29.3 ใช้น้ำหนักเป็นวัน จับเวลาตั้งแต่เรียงถนนจนได้คำตอบ รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">N = 10<sup>4</sup> M = 5 × 10<sup>4</sup></td><td>BFS หลังเปิดทุกเส้น</td><td>23 วินาที (5 รอบอยู่ระหว่าง 22 ถึง 25)</td><td>3.9 วินาที</td></tr>
+            <tr><td>union-find</td><td>0.029 วินาที</td><td>0.003 วินาที</td></tr>
+            <tr><td>N = 10<sup>5</sup> M = 2 × 10<sup>5</sup></td><td>union-find</td><td>0.129 วินาที</td><td>0.016 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>BFS หนึ่งรอบเดินทั่วทุกเมืองที่ไปถึงได้ และต้องทำใหม่ทุกครั้งที่เปิดถนน ทั้งที่ถนนเส้นเดียวเปลี่ยนกลุ่มไปนิดเดียว union-find ทำงานเฉพาะส่วนที่เปลี่ยน เวลาที่เหลือเกือบทั้งหมดคือการเรียงถนนตามวัน ข้อมูลชุดใหญ่จึงใช้ไม่ถึงหนึ่งในห้าวินาทีแม้แบบ Code::Blocks</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="count-edges">แบบที่ 1 นับเส้นแทนนับกลุ่ม</h3>
+
+      <p>ในโปรแกรม forced ใช้ตัวนับ <code>used</code> แทน <code>groups</code> นับเส้นบังคับทุกเส้นเข้าไปด้วย แล้วหยุด Kruskal ทันทีที่ <code>used == n - 1</code> ตามที่หน้า 29.3 บอกว่า spanning tree มี N - 1 เส้น ป้อนเส้นบังคับสามเส้นที่ต่อหมู่บ้าน 1 2 3 เป็นวง</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>5 3 3
+1 2 3
+2 3 4
+3 1 5
+3 4 2
+4 5 6
+1 5 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\forced.exe"><pre><code>must build 1-2 w=3
+must build 2-3 w=4
+must build 3-1 w=5
+take 3-4 w=2
+total = 14
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ 20 ต้องหยิบ 4-5 ด้วย ไม่งั้นหมู่บ้าน 5 ไม่มีถนนเลย เส้นบังคับสามเส้นเป็นวงจร มีแค่สองเส้นที่ช่วยรวมกลุ่มจริง แต่ถูกนับเป็นสามเส้น ตัวนับจึงถึง 4 เร็วกว่าที่ควรไปหนึ่งเส้น ผลที่ได้ไม่ใช่ต้นไม้ จำนวนเส้นเท่ากับ N - 1 ใช้บอกว่าต่อครบได้เฉพาะเมื่อไม่มีเส้นไหนปิดวงจร ถ้าโจทย์มีเส้นบังคับ ให้นับจำนวนกลุ่มแทน</p>
+
+      <h3 id="wrong-direction">แบบที่ 2 เรียงผิดทาง</h3>
+
+      <p>ในโปรแกรม truck ลืมใส่ <code>greater</code> ให้ <code>sort</code> เรียงจากน้อยไปมากตามปกติ ป้อนข้อมูลเข้าชุดเดิม</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\truck.exe"><pre><code>open 3-4 limit 8
+open 2-3 limit 9
+open 1-2 limit 12
+open 3-5 limit 15
+open 5-6 limit 18
+heaviest truck = 18
+</code></pre></div>
+
+      <p>ได้ 18 ซึ่งเกินคำตอบจริงคือ 15 ถ้าขับรถหนัก 18 ตันไปจริง ไม่ว่าจะไปทางไหนก็ต้องข้ามสะพานที่รับได้ไม่ถึง 18 เรียงจากน้อยไปมาก โปรแกรมเปิดถนนที่อ่อนที่สุดก่อน จนเมือง 1 กับ 6 ถึงกัน ค่าที่ได้คือ <strong>ถนนที่แข็งแรงที่สุด</strong> บนเส้นทางที่ถนนแข็งแรงที่สุดมีค่าน้อยที่สุด ซึ่งเป็นคำตอบของคำถามกลับด้าน ทั้งสองแบบใช้โค้ดเดียวกัน ต่างกันแค่ทิศของการเรียง ก่อนเขียนให้ถามตัวเองว่าต้องการให้เส้นที่แย่ที่สุดมีค่ามาก หรือมีค่าน้อย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ต้องต่อทุกจุดถึงกัน ต่อแบบไหนก็ได้ และต้นทุนคือผลรวมหรือเส้นที่แย่ที่สุด มักเป็น MST ถ้าสนใจระยะทางระหว่างคู่ เป็นเส้นทางสั้นสุด</li>
+        <li>เส้นบังคับ รวมกลุ่มก่อนแล้วค่อย Kruskal และตรวจว่าครบด้วยจำนวนกลุ่ม</li>
+        <li>ทางเลือกที่แต่ละจุดทำเองได้ ใช้โหนดสมมติต่อกับทุกจุด</li>
+        <li>maximum spanning tree เรียงจากหนักไปเบา</li>
+        <li>เส้นที่หนักที่สุดใน MST คือคอขวดที่ดีที่สุด เปิดเส้นตามลำดับแล้วหยุดเมื่อถึงกันก็ได้คำตอบของคำถามคอขวด ระวังทิศของการเรียง</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

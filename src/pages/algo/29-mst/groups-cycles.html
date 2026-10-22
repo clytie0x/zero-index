@@ -1,0 +1,339 @@
+<article class="doc">
+      <h1>29.2 นับกลุ่ม ขนาดกลุ่ม และตรวจวงจร</h1>
+
+      <p>union-find ในหน้า 29.1 ตอบได้แค่ว่าสองคนอยู่กลุ่มเดียวกันไหม แต่โจทย์มักถามต่อ เช่น ตอนนี้มีกี่กลุ่ม กลุ่มของคนนี้มีกี่คน กลุ่มที่ใหญ่ที่สุดมีกี่คน หรือถนนเส้นนี้ทำให้เกิดทางวนหรือเปล่า คำถามเหล่านี้ตอบได้ด้วยตัวแปรเพิ่มอีกสองสามตัว โดยไม่ทำให้ช้าลง หน้านี้รวมทุกอย่างไว้ในโปรแกรมเดียว แล้วเทียบกับการเดินกราฟด้วย BFS ของบทที่ 27 ว่าเมื่อไรควรใช้อะไร</p>
+
+      <h2 id="village">โจทย์ถนนในหมู่บ้าน</h2>
+
+      <p>หมู่บ้านมีบ้าน N หลัง ยังไม่มีถนนเลย เทศบาลสร้างถนนทีละเส้น ถนนวิ่งได้สองทาง ระหว่างนั้นมีคนถามเข้ามา คำสั่งมีสามแบบ</p>
+
+      <ul>
+        <li><code>road a b</code> สร้างถนนระหว่างบ้าน a กับบ้าน b แล้วพิมพ์ว่าตอนนี้บ้านแบ่งเป็นกี่กลุ่มที่ไปมาหากันได้ และกลุ่มใหญ่สุดมีกี่หลัง</li>
+        <li><code>same a b</code> จากบ้าน a ขับรถไปบ้าน b ได้หรือยัง</li>
+        <li><code>size a</code> จากบ้าน a ขับไปได้กี่หลัง นับบ้าน a ด้วย</li>
+      </ul>
+
+      <p>กลุ่มของบ้านที่ไปมาหากันได้ก็คือส่วนเชื่อมต่อ (connected component) ของกราฟในบทที่ 27 ถนนหนึ่งเส้นคือคำสั่ง <code>join</code> ในหน้า 29.1 สิ่งที่ต้องเพิ่มมีสามอย่าง</p>
+
+      <ul>
+        <li><strong>จำนวนกลุ่ม</strong> เริ่มที่ N เพราะทุกหลังอยู่กลุ่มของตัวเอง ทุกครั้งที่ <code>unite</code> รวมสองกลุ่มที่ต่างกันได้จริง จำนวนกลุ่มลดลงหนึ่งพอดี ถ้าสองบ้านอยู่กลุ่มเดียวกันอยู่แล้ว จำนวนไม่เปลี่ยน <code>unite</code> จึงคืนค่า <code>bool</code> บอกว่ารวมจริงหรือไม่</li>
+        <li><strong>ขนาดกลุ่ม</strong> มีอยู่แล้วใน <code>group_size</code> ที่ใช้ทำ union by size แต่ค่าที่ถูกต้องอยู่ที่หัวหน้าเท่านั้น ต้องอ่าน <code>group_size[find_root(a)]</code></li>
+        <li><strong>กลุ่มใหญ่สุด</strong> กลุ่มมีแต่รวมกันใหญ่ขึ้น ไม่เคยแยก ขนาดใหญ่สุดจึงเปลี่ยนได้เฉพาะตอนรวม เทียบกับขนาดของกลุ่มที่เพิ่งรวมเสร็จก็พอ</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="village"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; parent, group_size;
+int groups, largest;
+
+int find_root(int x)
+{
+    if (parent[x] == x) {
+        return x;
+    }
+    parent[x] = find_root(parent[x]);
+    return parent[x];
+}
+
+bool unite(int a, int b)
+{
+    int root_a = find_root(a);
+    int root_b = find_root(b);
+    if (root_a == root_b) {
+        return false; // (1)!
+    }
+    if (group_size[root_a] &lt; group_size[root_b]) {
+        swap(root_a, root_b);
+    }
+    parent[root_b] = root_a;
+    group_size[root_a] += group_size[root_b];
+    groups--; // (2)!
+    largest = max(largest, group_size[root_a]); // (3)!
+    return true;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    parent.resize(n + 1);
+    group_size.assign(n + 1, 1);
+    for (int i = 1; i &lt;= n; i++) {
+        parent[i] = i;
+    }
+    groups = n;
+    largest = 1;
+    for (int k = 0; k &lt; q; k++) {
+        string op;
+        cin &gt;&gt; op;
+        if (op == "road") {
+            int a, b;
+            cin &gt;&gt; a &gt;&gt; b;
+            unite(a, b);
+            cout &lt;&lt; "groups=" &lt;&lt; groups &lt;&lt; " largest=" &lt;&lt; largest &lt;&lt; '\n';
+        } else if (op == "same") {
+            int a, b;
+            cin &gt;&gt; a &gt;&gt; b;
+            cout &lt;&lt; (find_root(a) == find_root(b) ? "yes" : "no") &lt;&lt; '\n';
+        } else {
+            int a;
+            cin &gt;&gt; a;
+            cout &lt;&lt; "size of " &lt;&lt; a &lt;&lt; " = " &lt;&lt; group_size[find_root(a)] &lt;&lt; '\n'; // (4)!
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อยู่กลุ่มเดียวกันอยู่แล้ว ไม่ต้องทำอะไร และบอกคนเรียกว่าไม่ได้รวม</li>
+        <li>มาถึงบรรทัดนี้ได้ก็ต่อเมื่อเป็นสองกลุ่มที่ต่างกันจริง จำนวนกลุ่มจึงลดลงหนึ่ง</li>
+        <li><code>group_size[root_a]</code> คือขนาดของกลุ่มที่เพิ่งรวมเสร็จ</li>
+        <li>อ่านขนาดที่หัวหน้าของ a ไม่ใช่ที่ a</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="village" data-title="ข้อมูลเข้า"><pre><code>7 10
+road 1 2
+road 3 4
+road 2 3
+size 4
+road 1 4
+road 5 6
+same 1 6
+road 4 6
+same 1 6
+size 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="village" data-title="C:\code\village.exe"><pre><code>groups=6 largest=2
+groups=5 largest=2
+groups=4 largest=4
+size of 4 = 4
+groups=4 largest=4
+groups=3 largest=4
+no
+groups=2 largest=6
+yes
+size of 7 = 1
+</code></pre></div>
+      </div>
+
+      <p>ถนน 1-2 3-4 และ 2-3 ทำให้บ้าน 1 ถึง 4 เป็นกลุ่มเดียวกันขนาด 4 ถนน 1-4 ต่อสองบ้านที่ไปถึงกันได้อยู่แล้ว จำนวนกลุ่มจึงยังเป็น 4 เหมือนเดิม ถนนเส้นนี้ไม่ได้ช่วยให้ไปที่ใหม่ได้ แค่ทำให้เกิดทางวน ซึ่งเป็นเรื่องของหัวข้อตรวจวงจรข้างล่าง บ้าน 7 ไม่มีถนนเลย จึงอยู่กลุ่มขนาด 1 จนจบ ทุกคำสั่งใช้เวลาเท่ากับ find ไม่กี่ครั้ง ซึ่งเกือบคงที่ตามหน้า 29.1</p>
+
+      <h2 id="bfs-or-union-find">BFS หรือ union-find</h2>
+
+      <p>บทที่ 27 หาส่วนเชื่อมต่อด้วย BFS หรือ DFS ได้ใน O(N + M) สองวิธีนี้ไม่ได้แข่งกัน แต่เหมาะกับโจทย์คนละแบบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>โจทย์</th><th>ใช้</th><th>เหตุผล</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ให้เส้นเชื่อมมาครบก่อน แล้วค่อยถาม</td><td>BFS หรือ DFS ครั้งเดียว หรือ union-find ก็ได้</td><td>เดินกราฟครั้งเดียวติดป้ายหมายเลขกลุ่มให้ทุกโหนด แล้วตอบทุกคำถามจากป้าย</td></tr>
+            <tr><td>เส้นเชื่อมทยอยเพิ่ม มีคำถามแทรก</td><td>union-find</td><td>กลุ่มเปลี่ยนหลังทุกเส้น ป้ายที่ติดไว้ใช้ไม่ได้อีก BFS ต้องเดินใหม่ทุกครั้งที่ถาม</td></tr>
+            <tr><td>ต้องรู้เส้นทาง ระยะทาง หรือลำดับที่ไปถึง</td><td>BFS หรือ DFS</td><td>union-find รู้แค่ว่าอยู่กลุ่มเดียวกันไหม ไม่รู้ว่าไปทางไหน</td></tr>
+            <tr><td>มีการลบเส้นเชื่อม</td><td>ไม่ใช่ union-find แบบนี้</td><td>union-find รวมได้อย่างเดียว แยกกลุ่มกลับไม่ได้</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">ถ้ามีแต่การลบ ให้ทำย้อนหลัง</p>
+        <p>โจทย์บางข้อเริ่มจากกราฟเต็ม แล้วลบเส้นทีละเส้นพร้อมถามแทรก ถ้าอ่านคำสั่งทั้งหมดได้ก่อนตอบ ให้เริ่มจากกราฟหลังลบครบแล้ว แล้วทำคำสั่งจากท้ายมาหัว การลบเมื่อมองย้อนหลังก็คือการเพิ่ม ซึ่ง union-find ทำได้ เก็บคำตอบไว้ในอาเรย์แล้วพิมพ์กลับด้านตอนจบ วิธีนี้เรียกว่าทำแบบ <strong>ออฟไลน์ (offline)</strong> คือรู้คำถามทั้งหมดก่อนตอบ</p>
+      </div>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 29.1 บ้าน N หลัง สร้างถนน N เส้นระหว่างบ้านสุ่ม และถามว่าสองบ้านสุ่มไปถึงกันได้ไหม N ครั้ง ถนนกับคำถามสลับกันแบบสุ่ม วิธีตรงไปตรงมาเก็บถนนเป็น adjacency list แล้ว BFS จากบ้าน a ทุกครั้งที่ถาม หยุดทันทีที่เจอบ้าน b ส่วนอีกวิธีคือโปรแกรม village ที่ตัดส่วนพิมพ์ออก จับเวลาเฉพาะช่วงทำคำสั่ง รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">10<sup>4</sup></td><td>BFS ทุกคำถาม</td><td>0.462 วินาที</td><td>0.176 วินาที</td></tr>
+            <tr><td>union-find</td><td>0.001 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td rowspan="2">10<sup>5</sup></td><td>BFS ทุกคำถาม</td><td>65 วินาที (5 รอบอยู่ระหว่าง 56 ถึง 78)</td><td>25 วินาที (5 รอบอยู่ระหว่าง 22 ถึง 32)</td></tr>
+            <tr><td>union-find</td><td>0.008 วินาที</td><td>0.003 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถนนสุ่มจำนวนเท่ากับบ้าน ทำให้บ้านส่วนใหญ่รวมเป็นกลุ่มใหญ่กลุ่มเดียว แต่สองบ้านสุ่มอยู่คนละกลุ่มเป็นส่วนมาก ข้อมูลชุดแสนหลังตอบ yes แค่ 16009 ครั้งจากแสนคำถาม คำถามที่ตอบ no ทำให้ BFS ต้องเดินทั่วกลุ่มของ a จนหมดก่อนจะรู้ว่าไม่เจอ งานต่อคำถามจึงโตตาม N และงานรวมโตราว N<sup>2</sup> ข้อมูลใหญ่ขึ้นสิบเท่า BFS ช้าลงราว 140 เท่าทั้งสองแบบ ส่วน union-find ยังใช้ไม่ถึงหนึ่งในร้อยวินาที</p>
+
+      <h2 id="cycle">ตรวจวงจรในกราฟไม่มีทิศทาง</h2>
+
+      <p>ถนน 1-4 ในโปรแกรม village ไม่ได้รวมกลุ่มใหม่ เพราะบ้าน 1 กับ 4 ไปถึงกันได้อยู่แล้วผ่าน 2 กับ 3 พอเพิ่มถนนเส้นนี้ ก็เกิดทางวน 1-2-3-4-1 ขึ้น เรียกทางที่ออกจากโหนดหนึ่งแล้ววนกลับมาที่เดิมโดยไม่ใช้เส้นซ้ำว่า <strong>วงจร (cycle)</strong> หลักคิดคือ</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">เส้นที่ปิดวงจร</p>
+        <p>ใส่เส้นเชื่อมทีละเส้น ถ้าเส้น a-b ต่อสองโหนดที่อยู่กลุ่มเดียวกันอยู่แล้ว แปลว่ามีทางจาก a ไป b อยู่ก่อน เส้นใหม่จึงปิดทางนั้นเป็นวงจร ถ้าไม่มีเส้นไหนเป็นแบบนี้เลย กราฟก็ไม่มีวงจร</p>
+      </div>
+
+      <p><code>unite</code> ที่คืน <code>false</code> คือสัญญาณนี้พอดี โปรแกรมนี้อ่านเส้นเชื่อมของกราฟ แล้วบอกว่าเส้นไหนปิดวงจรบ้าง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="cycle-check"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; parent, group_size;
+
+int find_root(int x)
+{
+    if (parent[x] == x) {
+        return x;
+    }
+    parent[x] = find_root(parent[x]);
+    return parent[x];
+}
+
+bool unite(int a, int b)
+{
+    int root_a = find_root(a);
+    int root_b = find_root(b);
+    if (root_a == root_b) {
+        return false;
+    }
+    if (group_size[root_a] &lt; group_size[root_b]) {
+        swap(root_a, root_b);
+    }
+    parent[root_b] = root_a;
+    group_size[root_a] += group_size[root_b];
+    return true;
+}
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    parent.resize(n + 1);
+    group_size.assign(n + 1, 1);
+    for (int i = 1; i &lt;= n; i++) {
+        parent[i] = i;
+    }
+    int extra = 0;
+    for (int i = 1; i &lt;= m; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+        if (!unite(a, b)) { // (1)!
+            cout &lt;&lt; "edge " &lt;&lt; i &lt;&lt; " (" &lt;&lt; a &lt;&lt; ", " &lt;&lt; b &lt;&lt; ") closes a cycle" &lt;&lt; '\n';
+            extra++;
+        }
+    }
+    cout &lt;&lt; "edges that close a cycle: " &lt;&lt; extra &lt;&lt; '\n';
+    cout &lt;&lt; (extra == 0 ? "forest" : "has a cycle") &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>รวมไม่ได้เพราะอยู่กลุ่มเดียวกันแล้ว เส้นนี้จึงปิดวงจร ถ้ารวมได้ <code>unite</code> ก็รวมให้ในบรรทัดเดียวกัน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="cycle-check" data-title="ข้อมูลเข้า"><pre><code>6 7
+1 2
+2 3
+4 5
+3 1
+5 6
+6 4
+2 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="cycle-check" data-title="C:\code\cycle_check.exe"><pre><code>edge 4 (3, 1) closes a cycle
+edge 6 (6, 4) closes a cycle
+edges that close a cycle: 2
+has a cycle
+</code></pre></div>
+      </div>
+
+<figure>
+        <svg viewBox="0 0 600 260" width="600" style="max-width:100%;height:auto" role="img" aria-label="กราฟ 6 โหนด เส้นที่ 1 ถึง 7 คือ 1-2 2-3 4-5 3-1 5-6 6-4 และ 2-5 เส้นที่ 4 กับ 6 เป็นเส้นประ เพราะต่อสองโหนดที่ไปถึงกันได้อยู่แล้ว">
+          <line x1="70" y1="70" x2="210" y2="70" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="210" y1="70" x2="140" y2="190" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="530" y1="70" x2="390" y2="70" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="140" y1="190" x2="70" y2="70" style="stroke:var(--warning);stroke-width:3;stroke-dasharray:7 5"/>
+          <line x1="390" y1="70" x2="460" y2="190" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="460" y1="190" x2="530" y2="70" style="stroke:var(--warning);stroke-width:3;stroke-dasharray:7 5"/>
+          <line x1="210" y1="70" x2="390" y2="70" style="stroke:var(--line-strong);stroke-width:2"/>
+          <text x="140" y="58" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-code);font-size:13px">#1</text>
+          <text x="186" y="140" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-code);font-size:13px">#2</text>
+          <text x="460" y="58" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-code);font-size:13px">#3</text>
+          <text x="94" y="140" text-anchor="middle" style="fill:var(--warning);font-family:var(--font-code);font-size:13px">#4</text>
+          <text x="436" y="140" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-code);font-size:13px">#5</text>
+          <text x="506" y="140" text-anchor="middle" style="fill:var(--warning);font-family:var(--font-code);font-size:13px">#6</text>
+          <text x="300" y="58" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-code);font-size:13px">#7</text>
+          <circle cx="70" cy="70" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="70" y="76" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">1</text>
+          <circle cx="210" cy="70" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="210" y="76" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">2</text>
+          <circle cx="140" cy="190" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="140" y="196" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">3</text>
+          <circle cx="390" cy="70" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="390" y="76" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">5</text>
+          <circle cx="530" cy="70" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="530" y="76" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">4</text>
+          <circle cx="460" cy="190" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/><text x="460" y="196" text-anchor="middle" style="fill:var(--ink);font-family:var(--font-code);font-size:16px">6</text>
+          <text x="300" y="240" text-anchor="middle" style="fill:var(--muted);font-family:var(--font-text);font-size:14px">เส้นประคือเส้นที่ 4 และ 6 ซึ่งปิดวงจร</text>
+        </svg>
+      </figure>
+
+      <p>เส้นที่ 4 ต่อ 3 กับ 1 ซึ่งถึงกันอยู่แล้วผ่าน 2 เส้นที่ 6 ต่อ 6 กับ 4 ซึ่งถึงกันอยู่แล้วผ่าน 5 ส่วนเส้นที่ 7 ต่อสองสามเหลี่ยมที่ยังไม่ถึงกัน จึงไม่ปิดวงจร แม้จะมาทีหลังสุดก็ตาม สังเกตว่าเส้นที่ถูกรายงานขึ้นกับลำดับที่ใส่ ถ้าสลับให้เส้น 3-1 มาก่อนเส้น 2-3 เส้นที่ถูกรายงานจะเป็น 2-3 แทน แต่จำนวนเส้นที่ปิดวงจรเท่าเดิมเสมอ เพราะ</p>
+
+      <div class="code" data-lang="text"><pre><code>จำนวนเส้นที่ปิดวงจร = M - (N - C)
+</code></pre></div>
+
+      <p>เมื่อ C คือจำนวนกลุ่มตอนจบ ทุกเส้นที่รวมกลุ่มได้ทำให้จำนวนกลุ่มลดลงหนึ่ง จาก N ลงมาเหลือ C จึงมีเส้นที่รวมได้ N - C เส้นพอดี เส้นที่เหลือปิดวงจรทั้งหมด ตัวอย่างนี้ได้ 7 - (6 - 1) = 2 ผลที่ตามมาอีกข้อคือ กราฟที่มี N โหนด ต่อถึงกันหมด และไม่มีวงจร ต้องมีเส้นเชื่อม N - 1 เส้นพอดี ซึ่งก็คือต้นไม้ที่จะใช้ในหน้า 29.3</p>
+
+      <p>เส้นที่ต่อโหนดกับตัวเอง เช่น <code>2 2</code> และเส้นที่ซ้ำกับเส้นเดิม ถูกนับเป็นเส้นที่ปิดวงจรด้วย ลองป้อน <code>3 3</code> ตามด้วยเส้น <code>1 2</code> <code>2 2</code> <code>1 2</code> โปรแกรมรายงานเส้นที่ 2 และ 3 ถ้าโจทย์นับแบบอื่นต้องอ่านให้ดี</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">ใช้กับกราฟมีทิศทางไม่ได้</p>
+        <p>union-find ไม่รู้จักทิศของเส้น กราฟมีทิศทาง 1→2 1→3 2→3 ไม่มีวงจร เพราะไม่มีทางเดินตามลูกศรกลับมาที่เดิมได้ แต่โปรแกรมนี้รายงานว่าเส้นที่ 3 ปิดวงจร การหาวงจรในกราฟมีทิศทางต้องใช้ DFS ซึ่งเกี่ยวกับ topological sort ในบทที่ 30</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-same-check">แบบที่ 1 ไม่เช็กว่าอยู่กลุ่มเดียวกันแล้ว</h3>
+
+      <p>ในโปรแกรม village ลบสามบรรทัดที่คืน <code>false</code> เมื่อ <code>root_a == root_b</code> ออก เพราะคิดว่าต่อหัวหน้ากับตัวเองก็ไม่เสียหาย ป้อนข้อมูลเข้าชุดเดิม</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\village.exe"><pre><code>groups=6 largest=2
+groups=5 largest=2
+groups=4 largest=4
+size of 4 = 4
+groups=3 largest=8
+groups=2 largest=8
+no
+groups=1 largest=10
+yes
+size of 7 = 1
+</code></pre></div>
+
+      <p>ถนน 1-4 ทำให้จำนวนกลุ่มลดจาก 4 เป็น 3 และกลุ่มใหญ่สุดกลายเป็น 8 หลัง ทั้งที่หมู่บ้านมีแค่ 7 หลัง ตอนจบโปรแกรมบอกว่าเหลือกลุ่มเดียว แต่บ้าน 7 ยังไม่มีถนนเลย <code>parent[root_b] = root_a</code> ที่หัวหน้าเป็นคนเดียวกันไม่ทำให้ต้นไม้เสีย แต่ <code>group_size[root_a] += group_size[root_b]</code> บวกกลุ่มเข้ากับตัวเองจนขนาดเป็นสองเท่า และ <code>groups--</code> นับการรวมที่ไม่ได้เกิดขึ้นจริง ชุดทดสอบที่ไม่มีถนนซ้ำหรือถนนที่ทำให้วนจะผ่าน แล้วตกในชุดที่มี</p>
+
+      <h3 id="size-not-root">แบบที่ 2 อ่านขนาดที่ตัวเองแทนที่หัวหน้า</h3>
+
+      <p>ในโปรแกรม village เปลี่ยน <code>group_size[find_root(a)]</code> เป็น <code>group_size[a]</code></p>
+
+      <div class="code" data-lang="output" data-title="C:\code\village.exe"><pre><code>groups=6 largest=2
+groups=5 largest=2
+groups=4 largest=4
+size of 4 = 1
+groups=4 largest=4
+groups=3 largest=4
+no
+groups=2 largest=6
+yes
+size of 7 = 1
+</code></pre></div>
+
+      <p><code>size 4</code> ได้ 1 แทนที่จะเป็น 4 บ้าน 4 ไม่ใช่หัวหน้า ค่าใน <code>group_size[4]</code> คือขนาดของกลุ่มตอนที่ 4 ยังเป็นหัวหน้าอยู่ ซึ่งค้างไว้ตั้งแต่ก่อนรวม ส่วน <code>size 7</code> บังเอิญถูก เพราะ 7 เป็นหัวหน้าของตัวเอง ทดสอบด้วยคนที่ไม่ใช่หัวหน้าเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>จำนวนกลุ่มเริ่มที่ N และลดลงหนึ่งทุกครั้งที่ <code>unite</code> รวมได้จริง ให้ <code>unite</code> คืน <code>bool</code></li>
+        <li>ขนาดกลุ่มอ่านที่หัวหน้า <code>group_size[find_root(x)]</code> กลุ่มใหญ่สุดอัปเดตตอนรวม</li>
+        <li>เส้นเชื่อมทยอยเพิ่มและมีคำถามแทรก ใช้ union-find ถ้าต้องรู้เส้นทางหรือระยะทาง ใช้ BFS หรือ DFS</li>
+        <li>เส้น a-b ที่ a กับ b อยู่กลุ่มเดียวกันแล้วคือเส้นที่ปิดวงจร มีทั้งหมด M - (N - C) เส้น ใช้ได้กับกราฟไม่มีทิศทางเท่านั้น</li>
+        <li>union-find แยกกลุ่มไม่ได้ ถ้าโจทย์มีแต่การลบและรู้คำสั่งทั้งหมดก่อน ให้ทำย้อนหลัง</li>
+      </ul>
+    </article>
