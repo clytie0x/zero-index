@@ -1,4 +1,4 @@
 title = "เส้นทางรถนำเที่ยว"
-level = 2
+level = 1
 time_limit = 1
 hint = '''<p>Dijkstra แบบ priority_queue พร้อมจด <code>parent[v] = u</code> ทุกครั้งที่ผ่อนสำเร็จ แบบหน้า 28.3 จบแล้วเดินย้อนจากจุด N ตาม <code>parent</code> จนถึงจุด 1 แล้ว <code>reverse</code> ก่อนพิมพ์ ระยะรวมเกิน <code>int</code> ได้ และถ้าไปไม่ถึงให้พิมพ์ -1 บรรทัดเดียว ไม่ต้องพิมพ์บรรทัดที่สอง</p>'''

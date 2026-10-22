@@ -9,19 +9,20 @@ int main()
     cin >> n >> q;
     vector<long long> guests_on(n + 1, 0);
     for (int k = 0; k < q; k++) {
-        int type;
-        cin >> type;
+        int type, l, r;
+        cin >> type >> l >> r;
         if (type == 1) {
-            int l, r;
             long long guests;
-            cin >> l >> r >> guests;
+            cin >> guests;
             for (int night = l; night <= r; night++) {
                 guests_on[night] += guests;
             }
         } else {
-            int night;
-            cin >> night;
-            cout << guests_on[night] << '\n';
+            long long total = 0;
+            for (int night = l; night <= r; night++) {
+                total += guests_on[night];
+            }
+            cout << total << '\n';
         }
     }
     return 0;

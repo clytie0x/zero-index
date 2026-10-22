@@ -29,7 +29,7 @@ def cases():
     # สองช่วงได้ 6 เท่ากัน ช่วงแรกเริ่มเร็วกว่า
     yield "tie-later", build([1, 5, -10, 6, -20, 2, 4])
     # ต่อด้วยช่วงผลรวม 0 ได้เท่ากัน ต้องตอบช่วงที่จบเร็วกว่า
-    yield "tie-zero-tail", build([4, -4, 0, 3, -3])
+    yield "tie-zero-tail", build([5, -2, 2, 0, -7, 3])
     # ช่วงก่อนหน้าผลรวม 0 ต้องต่อ เพื่อให้เริ่มเร็วที่สุด
     yield "tie-zero-head", build([2, -2, 5, -1])
     yield "all-positive", build([TOP] * 50)

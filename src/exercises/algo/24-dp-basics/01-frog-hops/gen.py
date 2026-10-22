@@ -3,8 +3,9 @@
     python gen.py
     python tools/make_outputs.py src/exercises/algo/24-dp-basics/01-frog-hops   (รันที่รากของโปรเจกต์)
 
-naive.cpp เป็น recursion ตรงๆ ที่แตกสามกิ่ง ชุดที่ไม่ได้ขึ้นต้นด้วย big จึงมี N ไม่เกิน 30
-ชุดที่ชื่อขึ้นต้นด้วย big มี N เกือบล้าน ซึ่ง recursion ตรงๆ ไม่ทัน และคำตอบจริงเกิน 1000000007 มาก
+naive.cpp เติมตารางใหม่ทุกคำถาม ถูกแต่ใช้เวลา Q × N
+ชุดที่ชื่อขึ้นต้นด้วย big มีแสนคำถาม N ถึงล้าน ซึ่ง naive.cpp ไม่ทัน และคำตอบจริงเกิน 1000000007 มาก
+far-last มีคำถามที่ไกลที่สุดอยู่ท้ายสุด วิธีที่สร้างตารางตามขนาดของคำถามแรกจะอ่านเกินตาราง
 """
 
 import random
@@ -14,19 +15,21 @@ HERE = Path(__file__).resolve().parent
 random.seed(2401)
 
 
+def build(queries):
+    return f"{len(queries)}\n" + " ".join(map(str, queries))
+
+
 def cases():
-    yield "sample1", "4"
-    yield "sample2", "6"
-    yield "one", "1"
-    yield "two", "2"
-    yield "three", "3"
-    yield "thirty", "30"
-    yield "rand1", str(random.randint(10, 20))
-    yield "rand2", str(random.randint(21, 29))
-    yield "big1", "1000000"
-    yield "big2", str(random.randint(900000, 999999))
-    # ไฟล์เล็ก แต่ recursion ตรงๆ ต้องเรียกราว 10^16 ครั้ง ไม่ทันโดยไม่ต้องพังเพราะ stack
-    yield "big3", "60"
+    yield "sample1", build([4, 6, 1])
+    yield "sample2", build([3, 3])
+    yield "one", build([1])
+    yield "small-all", build(list(range(1, 31)))
+    yield "far-last", build([5, 2, 40, 7, 1000])
+    yield "rand1", build([random.randint(1, 30) for _ in range(20)])
+    yield "rand2", build([random.randint(1, 1000000) for _ in range(50)])
+    yield "max-once", build([1000000])
+    yield "big1", build([random.randint(900000, 1000000) for _ in range(100000)])
+    yield "big2", build([1000000] * 100000)
 
 
 def main():

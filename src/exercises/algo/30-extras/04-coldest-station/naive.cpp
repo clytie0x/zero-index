@@ -17,11 +17,13 @@ int main()
         if (type == 1) {
             temperature[a] = b;
         } else {
-            int lowest = temperature[a];
+            int station = a;
             for (int i = a + 1; i <= b; i++) {
-                lowest = min(lowest, temperature[i]);
+                if (temperature[i] < temperature[station]) {
+                    station = i;
+                }
             }
-            cout << lowest << '\n';
+            cout << temperature[station] << ' ' << station << '\n';
         }
     }
     return 0;

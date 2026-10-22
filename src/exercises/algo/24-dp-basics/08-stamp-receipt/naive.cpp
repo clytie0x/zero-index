@@ -5,7 +5,7 @@ vector<int> prices;
 vector<int> chosen;
 bool found = false;
 
-void search(int left, int max_index, int stamps_left)
+void try_stamps(int left, int max_index, int stamps_left)
 {
     if (found) {
         return;
@@ -20,7 +20,7 @@ void search(int left, int max_index, int stamps_left)
     for (int i = max_index; i < (int)prices.size(); i++) {
         if (prices[i] <= left) {
             chosen.push_back(prices[i]);
-            search(left - prices[i], i, stamps_left - 1);
+            try_stamps(left - prices[i], i, stamps_left - 1);
             if (found) {
                 return;
             }
@@ -39,7 +39,7 @@ int main()
     }
     sort(prices.rbegin(), prices.rend());
     for (int k = 1; k <= target; k++) {
-        search(target, 0, k);
+        try_stamps(target, 0, k);
         if (found) {
             cout << k << '\n';
             for (int i = 0; i < k; i++) {

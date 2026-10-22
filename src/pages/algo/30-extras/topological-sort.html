@@ -214,14 +214,14 @@ vector&lt;int&gt; state; // (1)!
 vector&lt;int&gt; finished;
 bool has_cycle = false;
 
-void visit(int v)
+void dfs(int v)
 {
     state[v] = 1;
     for (int next : graph[v]) {
         if (state[next] == 1) { // (2)!
             has_cycle = true;
         } else if (state[next] == 0) {
-            visit(next);
+            dfs(next);
         }
     }
     state[v] = 2;
@@ -241,7 +241,7 @@ int main()
     }
     for (int v = 1; v &lt;= n; v++) {
         if (state[v] == 0) {
-            visit(v);
+            dfs(v);
         }
     }
     if (has_cycle) {
@@ -285,7 +285,7 @@ order: 2 3 1 6 4 5
 
       <div class="adm adm-warning" role="note">
         <p class="adm-title">DFS ลึกเท่าทางที่ยาวที่สุด</p>
-        <p>ฟังก์ชัน <code>visit</code> เรียกตัวเองลึกเท่ากับทางเดินที่ยาวที่สุดในกราฟ หน้า 26.3 วัดไว้ว่า recursion ลึกราวสองหมื่นหกพันชั้นก็เริ่มพังบนเครื่องน้องแล้ว กราฟที่เป็นสายตรงแสนจุดทำให้โปรแกรมนี้พังแน่นอน ดูได้ในส่วนลองทำให้พัง ถ้าโจทย์มีจุดเป็นแสน ใช้ Kahn ซึ่งไม่มี recursion เลยจะปลอดภัยกว่า</p>
+        <p>ฟังก์ชัน <code>dfs</code> เรียกตัวเองลึกเท่ากับทางเดินที่ยาวที่สุดในกราฟ หน้า 26.3 วัดไว้ว่า recursion ลึกราวสองหมื่นหกพันชั้นก็เริ่มพังบนเครื่องน้องแล้ว กราฟที่เป็นสายตรงแสนจุดทำให้โปรแกรมนี้พังแน่นอน ดูได้ในส่วนลองทำให้พัง ถ้าโจทย์มีจุดเป็นแสน ใช้ Kahn ซึ่งไม่มี recursion เลยจะปลอดภัยกว่า</p>
       </div>
 
       <h2 id="dp-on-dag">DP บน DAG</h2>

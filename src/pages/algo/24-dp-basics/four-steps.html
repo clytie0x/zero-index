@@ -151,7 +151,7 @@ int main()
 </code></pre></div>
       </div>
 
-      <p>ได้เลขบวกสิบเก้าหลักที่ดูน่าเชื่อ แต่คำตอบจริงคือ 573147844013817084101 ยาว 21 หลัก ล้น <code>long long</code> ไปตั้งแต่ขั้นที่ 92 ตามที่หน้า 9.3 เจอกับ <code>fib(93)</code> ล้นแล้ววนกลับมาเป็นบวกได้ จึงสังเกตไม่ออกถ้าไม่คำนวณขนาดก่อน โจทย์นับวิธีจึงสั่งให้ตอบเป็นเศษจากการหารด้วย 1000000007 ตามหน้า 12.1 และใช้กฎเดียวกัน คือเก็บแค่เศษตั้งแต่ระหว่างทาง</p>
+      <p>ได้เลขบวกสิบเก้าหลักที่ดูน่าเชื่อ แต่คำตอบจริงคือ 573147844013817084101 ยาว 21 หลัก ล้น <code>long long</code> ไปตั้งแต่ขั้นที่ 92 แบบเดียวกับ <code>fib(93)</code> ในหน้า 9.3 ตอนนั้นยังได้ค่าติดลบให้เห็นว่าผิด แต่ครั้งนี้บวกต่อไปอีกหลายขั้นจนค่าที่ล้นวนกลับมาเป็นบวก จึงสังเกตไม่ออกถ้าไม่คำนวณขนาดก่อน โจทย์นับวิธีจึงสั่งให้ตอบเป็นเศษจากการหารด้วย 1000000007 ตามหน้า 12.1 และใช้กฎเดียวกัน คือเก็บแค่เศษตั้งแต่ระหว่างทาง</p>
 
       <div class="code" data-lang="cpp" data-linenums data-annotate data-test="stairs-mod"><pre><code>#include &lt;bits/stdc++.h&gt;
 using namespace std;
@@ -259,7 +259,48 @@ int main()
 
       <p>N × K เพิ่มสิบเท่า เวลาก็เพิ่มราวสิบเท่าตาม ประมาณจาก N × K แล้วเทียบกับหลักในหน้า 18.2 ได้เลยตั้งแต่ก่อนเขียน แถวสุดท้ายแบบ <code>-O2</code> เร็วกว่าที่คาด เพราะลูปบวกต่อเนื่องเป็นงานที่ compiler เร่งได้มาก แต่ถ้า N เพิ่มเป็นสิบล้านก็เกินแน่นอน</p>
 
-      <p>เทียบกับ recursion ตรงๆ ของโจทย์บันได ซึ่งเรียก <code>count_ways(i - 1) + count_ways(i - 2)</code> โดยไม่จด บันได 30 ขั้นใช้ 0.075 วินาทีแบบ Code::Blocks และ 0.004 วินาทีแบบ <code>-O2</code> บันได 40 ขั้นใช้ 11.215 วินาที (5 รอบอยู่ระหว่าง 9.773 ถึง 11.653) กับ 0.864 วินาที ส่วนแบบตารางเดินบันไดล้านขั้นในแถวแรกเสร็จในราวหนึ่งในร้อยวินาที</p>
+      <p>เทียบกับ recursion ตรงๆ ของโจทย์บันไดที่ไม่จดคำตอบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="stairs-recursion"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;char&gt; broken;
+
+long long count_ways(int i)
+{
+    if (broken[i]) {
+        return 0;
+    }
+    if (i &lt;= 1) {
+        return 1;
+    }
+    return count_ways(i - 1) + count_ways(i - 2);
+}
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    broken = vector&lt;char&gt;(n + 1, false);
+    for (int j = 0; j &lt; k; j++) {
+        int step;
+        cin &gt;&gt; step;
+        broken[step] = true;
+    }
+    cout &lt;&lt; count_ways(n) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="stairs-recursion" data-title="ข้อมูลเข้า"><pre><code>10 2
+4 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="stairs-recursion" data-title="C:\code\stairs_recursion.exe"><pre><code>6
+</code></pre></div>
+      </div>
+
+      <p>ได้ 6 ตรงกับตาราง จับเวลาเฉพาะการเรียก <code>count_ways(n)</code> ด้วย <code>clock()</code> แบบหน้า 9.3 รันแบบละ 5 ครั้ง บันได 30 ขั้นใช้ 0.005 วินาทีแบบ Code::Blocks และ 0.001 วินาทีแบบ <code>-O2</code> บันได 40 ขั้นใช้ 0.800 วินาที (5 รอบอยู่ระหว่าง 0.721 ถึง 0.968) กับ 0.172 วินาที ส่วนแบบตารางเดินบันไดล้านขั้นในแถวแรกเสร็จในราวหนึ่งในร้อยวินาที โปรแกรมนี้เก็บขั้นพังเป็น <code>vector&lt;char&gt;</code> ไม่ใช่ <code>vector&lt;bool&gt;</code> แบบโปรแกรม broken-stairs เพราะ recursion อ่าน <code>broken[i]</code> ทุกครั้งที่เรียก สามร้อยกว่าล้านครั้ง ถ้าใช้ <code>vector&lt;bool&gt;</code> บันได 40 ขั้นแบบ Code::Blocks ช้าลงเป็น 5.245 วินาที ตามเหตุผลในหน้า 23.4</p>
 
       <h2 id="break-it">ลองทำให้พัง</h2>
 

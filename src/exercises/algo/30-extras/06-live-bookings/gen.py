@@ -3,8 +3,9 @@
     python gen.py
     python tools/make_outputs.py src/exercises/algo/30-extras/06-live-bookings   (รันที่รากของโปรเจกต์)
 
-ชุดที่ชื่อขึ้นต้นด้วย big มีสองแสนคืนและสองแสนเหตุการณ์ การจองแต่ละครั้งยาวเกือบทั้งช่วง
+ชุดที่ชื่อขึ้นต้นด้วย big มีสองแสนคืนและสองแสนเหตุการณ์ การจองและคำถามแต่ละครั้งยาวเกือบทั้งช่วง
 ตั้งใจให้วิธีบวกทีละคืนใน naive.cpp ไม่ทัน
+over-int มีผลรวมเกิน int และ one-night ถามช่วงยาวหนึ่งคืน จับคนที่ตอบแค่จำนวนแขกคืน r
 last-night จองถึงคืนสุดท้าย ถ้าลบที่ r + 1 โดยไม่ระวังจะเขียนเลยขอบ
 """
 
@@ -14,7 +15,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 random.seed(3006)
 
-TOP = 10**9
+TOP = 10000
 
 
 def build(n, events):
@@ -32,22 +33,26 @@ def random_events(n, q, top, wide):
                 l, r = sorted((random.randint(1, n), random.randint(1, n)))
             events.append((1, l, r, random.randint(1, top)))
         else:
-            events.append((2, random.randint(1, n)))
+            if wide:
+                events.append((2, random.randint(1, 50), random.randint(n - 50, n)))
+            else:
+                l, r = sorted((random.randint(1, n), random.randint(1, n)))
+                events.append((2, l, r))
     return events
 
 
 def cases():
-    yield "sample1", build(7, [(1, 2, 4, 3), (2, 3), (1, 1, 2, 5), (2, 2), (2, 5), (1, 3, 3, 4), (2, 3), (2, 4)])
-    yield "single", build(1, [(2, 1), (1, 1, 1, 9), (2, 1), (1, 1, 1, 1), (2, 1)])
-    yield "ask-first", build(5, [(2, 1), (2, 5), (1, 1, 5, 2), (2, 3)])
-    yield "last-night", build(6, [(1, 4, 6, 7), (1, 6, 6, 1), (2, 6), (2, 5), (2, 3), (1, 1, 6, 2), (2, 6)])
-    yield "one-night", build(5, [(1, 3, 3, 8), (2, 2), (2, 3), (2, 4), (1, 1, 1, 5), (2, 1), (2, 2)])
-    yield "over-int", build(4, [(1, 1, 4, TOP)] * 5 + [(2, 1), (2, 4), (1, 2, 3, TOP), (2, 2)])
+    yield "sample1", build(7, [(1, 2, 4, 3), (2, 3, 3), (1, 1, 2, 5), (2, 1, 7), (2, 2, 5), (1, 3, 3, 4), (2, 3, 4), (2, 5, 7)])
+    yield "single", build(1, [(2, 1, 1), (1, 1, 1, 9), (2, 1, 1), (1, 1, 1, 1), (2, 1, 1)])
+    yield "ask-first", build(5, [(2, 1, 5), (2, 5, 5), (1, 1, 5, 2), (2, 2, 4)])
+    yield "last-night", build(6, [(1, 4, 6, 7), (1, 6, 6, 1), (2, 6, 6), (2, 5, 6), (2, 1, 3), (1, 1, 6, 2), (2, 1, 6)])
+    yield "one-night", build(5, [(1, 3, 3, 8), (2, 2, 2), (2, 3, 3), (2, 4, 4), (1, 1, 1, 5), (2, 1, 1), (2, 1, 2)])
+    yield "over-int", build(100000, [(1, 1, 100000, TOP)] * 5 + [(2, 1, 100000), (2, 100000, 100000), (1, 2, 99999, TOP), (2, 2, 99999)])
     yield "rand1", build(15, random_events(15, 40, 9, False))
     yield "rand2", build(3000, random_events(3000, 3000, TOP, False))
     n = 200000
     yield "big1", build(n, random_events(n, n, TOP, True))
-    yield "big2", build(n, [(1, 1, n, random.randint(1, 1000)) for _ in range(n // 2)] + [(2, random.randint(1, n)) for _ in range(n // 2)])
+    yield "big2", build(n, [(1, 1, n, random.randint(1, 1000)) for _ in range(n // 2)] + [(2, 1, random.randint(n - 100, n)) for _ in range(n // 2)])
 
 
 def main():

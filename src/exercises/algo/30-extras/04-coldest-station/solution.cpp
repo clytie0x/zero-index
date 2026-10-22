@@ -2,12 +2,12 @@
 using namespace std;
 
 int n;
-vector<int> tree;
+vector<pair<int, int>> tree;
 
 void update(int node, int left, int right, int pos, int value)
 {
     if (left == right) {
-        tree[node] = value;
+        tree[node] = {value, pos};
         return;
     }
     int mid = (left + right) / 2;
@@ -19,10 +19,10 @@ void update(int node, int left, int right, int pos, int value)
     tree[node] = min(tree[2 * node], tree[2 * node + 1]);
 }
 
-int query(int node, int left, int right, int from, int to)
+pair<int, int> query(int node, int left, int right, int from, int to)
 {
     if (to < left || right < from) {
-        return INT_MAX;
+        return {INT_MAX, INT_MAX};
     }
     if (from <= left && right <= to) {
         return tree[node];
@@ -37,7 +37,7 @@ int main()
     cin.tie(nullptr);
     int q;
     cin >> n >> q;
-    tree.assign(4 * n, INT_MAX);
+    tree.assign(4 * n, {INT_MAX, INT_MAX});
     for (int i = 1; i <= n; i++) {
         int t;
         cin >> t;
@@ -49,7 +49,8 @@ int main()
         if (type == 1) {
             update(1, 1, n, a, b);
         } else {
-            cout << query(1, 1, n, a, b) << '\n';
+            pair<int, int> coldest = query(1, 1, n, a, b);
+            cout << coldest.first << ' ' << coldest.second << '\n';
         }
     }
     return 0;

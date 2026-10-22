@@ -2,16 +2,16 @@
 using namespace std;
 
 int n;
-vector<long long> tree;
+vector<long long> change_tree, weighted_tree;
 
-void add(int i, long long delta)
+void add(vector<long long> &tree, int i, long long delta)
 {
     for (; i <= n; i += i & -i) {
         tree[i] += delta;
     }
 }
 
-long long prefix_sum(int i)
+long long prefix_sum(const vector<long long> &tree, int i)
 {
     long long total = 0;
     for (; i > 0; i -= i & -i) {
@@ -20,28 +20,38 @@ long long prefix_sum(int i)
     return total;
 }
 
+void add_change(int night, long long delta)
+{
+    if (night > n) {
+        return;
+    }
+    add(change_tree, night, delta);
+    add(weighted_tree, night, delta * night);
+}
+
+long long guest_nights_up_to(int x)
+{
+    return (x + 1) * prefix_sum(change_tree, x) - prefix_sum(weighted_tree, x);
+}
+
 int main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
     int q;
     cin >> n >> q;
-    tree.assign(n + 2, 0);
+    change_tree.assign(n + 1, 0);
+    weighted_tree.assign(n + 1, 0);
     for (int k = 0; k < q; k++) {
-        int type;
-        cin >> type;
+        int type, l, r;
+        cin >> type >> l >> r;
         if (type == 1) {
-            int l, r;
             long long guests;
-            cin >> l >> r >> guests;
-            add(l, guests);
-            if (r + 1 <= n) {
-                add(r + 1, -guests);
-            }
+            cin >> guests;
+            add_change(l, guests);
+            add_change(r + 1, -guests);
         } else {
-            int night;
-            cin >> night;
-            cout << prefix_sum(night) << '\n';
+            cout << guest_nights_up_to(r) - guest_nights_up_to(l - 1) << '\n';
         }
     }
     return 0;
