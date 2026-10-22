@@ -1,0 +1,461 @@
+<article class="doc">
+      <h1>26.5 binary heap</h1>
+
+      <p>หน้า 20.5 ใช้ priority_queue หยิบค่ามากสุดออกมาได้ทุกเมื่อ และบอกว่าข้างในคือ heap ที่เก็บอยู่ใน vector ธรรมดาโดยไม่มี pointer เลย หน้านี้เขียน heap เองทีละขั้น ใส่ หยิบออก สร้าง heap จากอาเรย์ทั้งก้อนใน O(N) และเรียงข้อมูลด้วย heap sort แล้ววัดเทียบกับ priority_queue และ <code>sort</code> รู้ข้างในแล้ว จะใช้ priority_queue ได้มั่นใจขึ้น และเขียนเองได้ในโจทย์ที่ต้องดูหรือแก้ของข้างในซึ่ง priority_queue ไม่ยอมให้ทำ</p>
+
+      <h2 id="heap-rule">ต้นไม้ที่เก็บในอาเรย์</h2>
+
+      <p><strong>binary heap</strong> คือ binary tree ที่มีสองกฎ</p>
+
+      <ol>
+        <li><strong>รูปร่าง</strong> ทุกชั้นเต็มยกเว้นชั้นล่างสุด และชั้นล่างสุดเติมจากซ้ายไปขวาไม่เว้นช่อง ต้นไม้แบบนี้เรียกว่า complete binary tree</li>
+        <li><strong>ลำดับ</strong> ทุกโหนดมีค่ามากกว่าหรือเท่ากับลูกของมัน ค่ามากสุดจึงอยู่ที่รากเสมอ เรียกว่า max-heap ถ้ากลับเป็นน้อยกว่าหรือเท่ากับ จะได้ min-heap แบบ priority_queue ที่ใช้ <code>greater</code></li>
+      </ol>
+
+      <p>กฎข้อ 2 อ่อนกว่ากฎของ BST มาก บอกแค่ว่าพ่อไม่น้อยกว่าลูก ไม่ได้บอกว่าลูกซ้ายกับลูกขวาใครมากกว่า heap จึงค้นหาค่าใดๆ ไม่ได้เร็ว แต่บอกค่ามากสุดได้ทันที และกฎข้อ 1 ทำให้เก็บในอาเรย์ได้พอดี ไล่โหนดทีละชั้นจากซ้ายไปขวาใส่ช่อง 1 2 3 ไปเรื่อยๆ โดยไม่ใช้ช่อง 0</p>
+
+      <figure>
+        <svg viewBox="0 0 520 290" width="520" style="max-width:100%;height:auto" role="img" aria-label="max-heap 5 โหนด รากคือ 90 ที่ช่อง 1 ลูกคือ 70 ที่ช่อง 2 กับ 20 ที่ช่อง 3 ใต้ 70 มี 40 ที่ช่อง 4 กับ 60 ที่ช่อง 5 ข้างล่างเป็นอาเรย์ 90 70 20 40 60 ช่อง 1 ถึง 5">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="260" y1="40" x2="170" y2="105"/>
+            <line x1="260" y1="40" x2="350" y2="105"/>
+            <line x1="170" y1="105" x2="120" y2="170"/>
+            <line x1="170" y1="105" x2="220" y2="170"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="260" cy="40" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="260" y="46" style="fill:var(--ink)">90</text>
+            <circle cx="170" cy="105" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="170" y="111" style="fill:var(--ink)">70</text>
+            <circle cx="350" cy="105" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="350" y="111" style="fill:var(--ink)">20</text>
+            <circle cx="120" cy="170" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="120" y="176" style="fill:var(--ink)">40</text>
+            <circle cx="220" cy="170" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="220" y="176" style="fill:var(--ink)">60</text>
+            <rect x="110" y="225" width="60" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="170" y="225" width="60" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="230" y="225" width="60" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="290" y="225" width="60" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="350" y="225" width="60" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="140" y="251" style="fill:var(--ink)">90</text>
+            <text x="200" y="251" style="fill:var(--ink)">70</text>
+            <text x="260" y="251" style="fill:var(--ink)">20</text>
+            <text x="320" y="251" style="fill:var(--ink)">40</text>
+            <text x="380" y="251" style="fill:var(--ink)">60</text>
+          </g>
+          <g style="font-family:var(--font-code);font-size:12px;fill:var(--muted)" text-anchor="middle">
+            <text x="290" y="30">1</text>
+            <text x="145" y="95">2</text>
+            <text x="375" y="95">3</text>
+            <text x="95" y="160">4</text>
+            <text x="245" y="160">5</text>
+            <text x="140" y="285">1</text>
+            <text x="200" y="285">2</text>
+            <text x="260" y="285">3</text>
+            <text x="320" y="285">4</text>
+            <text x="380" y="285">5</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>เมื่อเริ่มที่ช่อง 1 ทุกโหนดหาพ่อและลูกได้ด้วยเลขคณิตล้วนๆ ไม่ต้องเก็บ pointer เลย</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ของโหนดช่อง i</th><th>อยู่ช่อง</th><th>ตัวอย่างในภาพ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ลูกซ้าย</td><td><code>2 * i</code></td><td>ลูกซ้ายของ 70 (ช่อง 2) อยู่ช่อง 4 คือ 40</td></tr>
+            <tr><td>ลูกขวา</td><td><code>2 * i + 1</code></td><td>ลูกขวาของ 70 อยู่ช่อง 5 คือ 60</td></tr>
+            <tr><td>พ่อ</td><td><code>i / 2</code> (หารปัดเศษทิ้ง)</td><td>พ่อของ 60 (ช่อง 5) อยู่ช่อง 2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ช่องที่ <code>2 * i</code> เกินจำนวนของในฮีปแปลว่าไม่มีลูก heap N ตัวสูง log<sub>2</sub> N ปัดลงเสมอเพราะทุกชั้นเต็ม ล้านตัวสูงแค่ 19 ต่างจาก BST ที่ความสูงขึ้นกับลำดับที่ใส่ heap เอียงไม่ได้เลย เพราะกฎรูปร่างบังคับไว้</p>
+
+      <h2 id="push-pop">ใส่และหยิบออก</h2>
+
+      <p><strong>ใส่</strong> ค่าใหม่ไปต่อท้ายอาเรย์ ซึ่งคือช่องว่างซ้ายสุดของชั้นล่าง กฎรูปร่างยังถูก แต่ค่าใหม่อาจมากกว่าพ่อ ให้สลับกับพ่อไปเรื่อยๆ จนพ่อไม่น้อยกว่ามัน หรือมันขึ้นไปถึงราก เรียกว่า <strong>sift up</strong> (ลอยขึ้น)</p>
+
+      <p><strong>หยิบออก</strong> ค่ามากสุดอยู่ที่ช่อง 1 แต่ถ้าลบช่อง 1 ทิ้งต้นไม้จะขาดราก วิธีที่รักษากฎรูปร่างไว้คือเอาตัวท้ายสุดของอาเรย์มาวางที่ช่อง 1 แทน แล้วลดขนาดลงหนึ่ง ตัวที่ขึ้นมาเป็นรากมักเล็กเกินไป ให้สลับกับ<strong>ลูกตัวที่มากกว่า</strong>ไปเรื่อยๆ จนไม่น้อยกว่าลูกทั้งสอง หรือลงไปถึงใบ เรียกว่า <strong>sift down</strong> (จมลง) ต้องเป็นลูกตัวที่มากกว่า เพราะมันจะขึ้นมาเป็นพ่อของลูกอีกตัว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="heap"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; heap = {0}; // (1)!
+
+void sift_up(int i)
+{
+    while (i &gt; 1 &amp;&amp; heap[i / 2] &lt; heap[i]) { // (2)!
+        swap(heap[i / 2], heap[i]);
+        i /= 2;
+    }
+}
+
+void sift_down(int i)
+{
+    int n = (int)heap.size() - 1;
+    while (2 * i &lt;= n) {
+        int child = 2 * i;
+        if (child + 1 &lt;= n &amp;&amp; heap[child + 1] &gt; heap[child]) { // (3)!
+            child++;
+        }
+        if (heap[i] &gt;= heap[child]) { // (4)!
+            break;
+        }
+        swap(heap[i], heap[child]);
+        i = child;
+    }
+}
+
+void push(int x)
+{
+    heap.push_back(x);
+    sift_up((int)heap.size() - 1);
+}
+
+int pop()
+{
+    int top = heap[1];
+    heap[1] = heap.back(); // (5)!
+    heap.pop_back();
+    if (heap.size() &gt; 1) {
+        sift_down(1);
+    }
+    return top;
+}
+
+void show()
+{
+    cout &lt;&lt; "heap:";
+    for (int i = 1; i &lt; (int)heap.size(); i++) {
+        cout &lt;&lt; ' ' &lt;&lt; heap[i];
+    }
+    cout &lt;&lt; '\n';
+}
+
+int main()
+{
+    int q;
+    cin &gt;&gt; q;
+    for (int k = 0; k &lt; q; k++) {
+        char op;
+        cin &gt;&gt; op;
+        if (op == '+') {
+            int x;
+            cin &gt;&gt; x;
+            push(x);
+            cout &lt;&lt; "push " &lt;&lt; x &lt;&lt; '\n';
+        } else {
+            cout &lt;&lt; "pop " &lt;&lt; pop() &lt;&lt; '\n';
+        }
+        show();
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใส่ 0 ไว้ที่ช่อง 0 ก่อน ของจริงเริ่มที่ช่อง 1 จำนวนของในฮีปจึงเป็น <code>heap.size() - 1</code></li>
+        <li>ตราบใดที่ยังไม่ใช่รากและพ่อน้อยกว่า สลับแล้วขึ้นไปหนึ่งชั้น</li>
+        <li>เริ่มที่ลูกซ้าย ถ้ามีลูกขวาและลูกขวามากกว่า เปลี่ยนไปใช้ลูกขวา</li>
+        <li>ไม่น้อยกว่าลูกที่มากที่สุดแล้ว กฎลำดับถูกทั้งต้น หยุดได้</li>
+        <li>เอาตัวท้ายมาแทนราก แล้วตัดช่องท้ายทิ้ง ถ้าฮีปเหลือตัวเดียว ตัวท้ายก็คือรากเอง พอ <code>pop_back</code> ฮีปจะว่าง จึงต้องตรวจขนาดก่อนเรียก <code>sift_down</code> โปรแกรมนี้ไม่ได้ตรวจว่าฮีปว่างก่อนหยิบ ข้อมูลเข้าต้องไม่สั่งหยิบตอนว่าง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="heap" data-title="ข้อมูลเข้า"><pre><code>8
++ 40
++ 70
++ 20
++ 90
++ 60
+-
++ 80
+-
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="heap" data-title="C:\code\heap.exe"><pre><code>push 40
+heap: 40
+push 70
+heap: 70 40
+push 20
+heap: 70 40 20
+push 90
+heap: 90 70 20 40
+push 60
+heap: 90 70 20 40 60
+pop 90
+heap: 70 60 20 40
+push 80
+heap: 80 70 20 40 60
+pop 80
+heap: 70 60 20 40
+</code></pre></div>
+      </div>
+
+      <p>ไล่ตามทีละบรรทัด</p>
+
+      <ul>
+        <li>ใส่ 70 ต่อท้ายที่ช่อง 2 พ่อคือ 40 น้อยกว่า จึงสลับ 70 ขึ้นเป็นราก</li>
+        <li>ใส่ 90 ที่ช่อง 4 พ่อคือช่อง 2 ซึ่งเป็น 40 สลับขึ้นมา แล้วพ่อตัวใหม่คือ 70 ที่ช่อง 1 สลับอีกครั้ง 90 จึงขึ้นเป็นราก ได้ภาพข้างบนหลังใส่ 60</li>
+        <li>หยิบ 90 ออก เอา 60 ที่อยู่ท้ายมาไว้ที่ราก ลูกคือ 70 กับ 20 สลับกับ 70 ที่มากกว่า แล้วลูกตัวเดียวที่เหลือคือ 40 ไม่มากกว่า 60 จึงหยุด</li>
+      </ul>
+
+      <p>ทั้ง sift up และ sift down เดินไม่เกินความสูงของต้นไม้ ใส่และหยิบออกจึงเป็น O(log N) ดูค่ามากสุดคือดูช่อง 1 เป็น O(1) ตรงกับตารางเวลาของ priority_queue ในหน้า 20.5 ทุกบรรทัด เพราะเป็นสิ่งเดียวกัน</p>
+
+      <h3 id="push-pop-timing">เทียบกับการไล่หาค่ามากสุด</h3>
+
+      <p>วิธีตรงไปตรงมาคือเก็บค่าไว้ใน vector เฉยๆ ใส่คือ <code>push_back</code> ซึ่งเป็น O(1) หยิบค่ามากสุดคือไล่หาทั้ง vector ซึ่งเป็น O(N) วัดบนเครื่องเดียวกับหน้า 19.1 แบบ <code>-O2</code> ค่าสุ่มเข้ามา N ตัว ทุกครั้งที่เข้ามาครบสองตัวหยิบค่ามากสุดออกหนึ่งตัว พอเข้าครบแล้วหยิบที่เหลือออกจนหมด รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>ไล่หาใน vector</th><th>heap ที่เขียนเอง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>100,000</td><td>1.011 วินาที</td><td>0.008 วินาที</td></tr>
+            <tr><td>200,000</td><td>4.025 วินาที</td><td>0.018 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>ไม่ได้วัด</td><td>0.107 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วิธีไล่หาช้าลงสี่เท่าเมื่อ N เพิ่มสองเท่า ตามรูปของ O(N<sup>2</sup>) ล้านตัวคงใช้เป็นนาที ส่วน heap เป็น O(N log N)</p>
+
+      <h2 id="build-heap">สร้าง heap จากอาเรย์ทั้งก้อนใน O(N)</h2>
+
+      <p>ถ้ามีค่าครบ N ตัวอยู่ในอาเรย์แล้ว จะใส่ทีละตัวก็ได้ ใช้เวลา O(N log N) แต่มีวิธีที่เร็วกว่า มองอาเรย์ทั้งก้อนเป็นต้นไม้ที่รูปร่างถูกแล้ว แต่ลำดับยังมั่ว ใบทุกใบเป็น heap ขนาดหนึ่งตัวที่ถูกอยู่แล้ว ไล่จากโหนดสุดท้ายที่มีลูก ซึ่งคือช่อง N / 2 ย้อนขึ้นไปถึงช่อง 1 แล้ว sift down ทีละโหนด ตอนที่ทำโหนด i ต้นไม้ย่อยของลูกทั้งสองเป็น heap แล้ว sift down จึงทำให้ต้นไม้ย่อยของ i เป็น heap ด้วย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="build"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+void sift_down(vector&lt;int&gt; &amp;a, int i, int n)
+{
+    while (2 * i &lt;= n) {
+        int child = 2 * i;
+        if (child + 1 &lt;= n &amp;&amp; a[child + 1] &gt; a[child]) {
+            child++;
+        }
+        if (a[i] &gt;= a[child]) {
+            break;
+        }
+        swap(a[i], a[child]);
+        i = child;
+    }
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n + 1);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    for (int i = n / 2; i &gt;= 1; i--) { // (1)!
+        sift_down(a, i, n);
+        cout &lt;&lt; "after " &lt;&lt; i &lt;&lt; ':';
+        for (int j = 1; j &lt;= n; j++) {
+            cout &lt;&lt; ' ' &lt;&lt; a[j];
+        }
+        cout &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ช่องที่มากกว่า N / 2 ไม่มีลูก เพราะลูกซ้ายของมันอยู่ที่ช่องเกิน N จึงข้ามใบทั้งหมดไปเลย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="build" data-title="ข้อมูลเข้า"><pre><code>8
+30 50 10 80 20 70 60 40
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="build" data-title="C:\code\build.exe"><pre><code>after 4: 30 50 10 80 20 70 60 40
+after 3: 30 50 70 80 20 10 60 40
+after 2: 30 80 70 50 20 10 60 40
+after 1: 80 50 70 40 20 10 60 30
+</code></pre></div>
+      </div>
+
+      <p>ช่อง 4 คือ 80 มากกว่าลูกตัวเดียวคือ 40 อยู่แล้ว ไม่เปลี่ยน ช่อง 3 คือ 10 สลับกับ 70 ช่อง 2 คือ 50 สลับกับ 80 สุดท้ายช่อง 1 คือ 30 จมลงสามชั้น สลับกับ 80 แล้วกับ 50 แล้วกับ 40 จนไปอยู่ช่อง 8 ซึ่งเป็นใบ</p>
+
+      <p>ทำไมเป็น O(N) โหนดครึ่งหนึ่งเป็นใบซึ่งไม่ต้องทำอะไร โหนดอีกหนึ่งในสี่อยู่เหนือใบหนึ่งชั้น จมได้ไม่เกิน 1 ชั้น หนึ่งในแปดจมได้ไม่เกิน 2 ชั้น ไล่ไปเรื่อยๆ รวมแล้ว N/4 × 1 + N/8 × 2 + N/16 × 3 + ... ซึ่งไม่เกิน N โหนดที่จมได้ลึกมีน้อย โหนดที่มีเยอะจมได้ตื้น ต่างจากการใส่ทีละตัวที่ตัวท้ายๆ ซึ่งมีเยอะที่สุดอาจต้องลอยขึ้นไปถึงราก วัดบนเครื่องเดียวกัน <code>-O2</code> นับจำนวนครั้งที่สลับด้วย รันแบบละ 5 รอบ เวลาเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>ข้อมูล</th><th>ใส่ทีละตัว</th><th>sift down จากช่อง N / 2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1,000,000</td><td>สุ่ม</td><td>สลับ 1,278,336 ครั้ง 0.012 วินาที</td><td>สลับ 743,250 ครั้ง 0.009 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>เรียงจากน้อยไปมาก</td><td>สลับ 17,951,445 ครั้ง 0.017 วินาที</td><td>สลับ 999,988 ครั้ง 0.003 วินาที</td></tr>
+            <tr><td>10,000,000</td><td>สุ่ม</td><td>สลับ 12,813,155 ครั้ง 0.121 วินาที</td><td>สลับ 7,439,982 ครั้ง 0.100 วินาที</td></tr>
+            <tr><td>10,000,000</td><td>เรียงจากน้อยไปมาก</td><td>สลับ 213,222,809 ครั้ง 0.203 วินาที</td><td>สลับ 9,999,986 ครั้ง 0.036 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้อมูลเรียงจากน้อยไปมากเป็นกรณีแย่ที่สุดของการใส่ทีละตัว เพราะทุกตัวใหม่มากกว่าทุกตัวที่มีจึงลอยขึ้นถึงราก จำนวนครั้งที่สลับเป็นราว N log<sub>2</sub> N ส่วนวิธี sift down สลับไม่เกิน N ครั้งตามที่คิดไว้ แม้แต่กรณีแย่ที่สุด ข้อมูลสุ่มทั้งสองวิธีใกล้กัน เพราะค่าที่ใส่ทีละตัวส่วนใหญ่ลอยขึ้นไม่กี่ชั้น</p>
+
+      <h2 id="heap-sort">heap sort</h2>
+
+      <p>สร้าง max-heap แล้วหยิบค่ามากสุดออก N - 1 ครั้งก็ได้ค่าเรียงจากมากไปน้อย ทำในอาเรย์เดิมได้เลยโดยไม่ต้องมีอาเรย์ที่สอง ทุกครั้งที่หยิบ สลับรากกับตัวท้ายของฮีป ค่ามากสุดจะไปอยู่ท้ายสุด ซึ่งเป็นตำแหน่งที่มันควรอยู่ในอาเรย์ที่เรียงแล้ว แล้วถือว่าฮีปสั้นลงหนึ่งช่อง ส่วนท้ายอาเรย์ค่อยๆ กลายเป็นส่วนที่เรียงแล้ว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="heap-sort"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+void sift_down(vector&lt;int&gt; &amp;a, int i, int n)
+{
+    while (2 * i &lt;= n) {
+        int child = 2 * i;
+        if (child + 1 &lt;= n &amp;&amp; a[child + 1] &gt; a[child]) {
+            child++;
+        }
+        if (a[i] &gt;= a[child]) {
+            break;
+        }
+        swap(a[i], a[child]);
+        i = child;
+    }
+}
+
+void heap_sort(vector&lt;int&gt; &amp;a, int n)
+{
+    for (int i = n / 2; i &gt;= 1; i--) {
+        sift_down(a, i, n);
+    }
+    for (int last = n; last &gt;= 2; last--) {
+        swap(a[1], a[last]); // (1)!
+        sift_down(a, 1, last - 1); // (2)!
+        cout &lt;&lt; "heap:";
+        for (int j = 1; j &lt; last; j++) {
+            cout &lt;&lt; ' ' &lt;&lt; a[j];
+        }
+        cout &lt;&lt; " | sorted:";
+        for (int j = last; j &lt;= n; j++) {
+            cout &lt;&lt; ' ' &lt;&lt; a[j];
+        }
+        cout &lt;&lt; '\n';
+    }
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n + 1);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    heap_sort(a, n);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ค่ามากสุดของฮีปไปอยู่ช่อง <code>last</code> ซึ่งเป็นช่องสุดท้ายที่ยังไม่เรียง</li>
+        <li>ฮีปตอนนี้คือช่อง 1 ถึง <code>last - 1</code> ตัวที่เพิ่งมาอยู่ที่รากจมลงในฮีปที่สั้นลง ส่วนช่อง <code>last</code> ไม่ถูกแตะอีก</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="heap-sort" data-title="ข้อมูลเข้า"><pre><code>8
+30 50 10 80 20 70 60 40
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="heap-sort" data-title="C:\code\heap_sort.exe"><pre><code>heap: 70 50 60 40 20 10 30 | sorted: 80
+heap: 60 50 30 40 20 10 | sorted: 70 80
+heap: 50 40 30 10 20 | sorted: 60 70 80
+heap: 40 20 30 10 | sorted: 50 60 70 80
+heap: 30 20 10 | sorted: 40 50 60 70 80
+heap: 20 10 | sorted: 30 40 50 60 70 80
+heap: 10 | sorted: 20 30 40 50 60 70 80
+</code></pre></div>
+      </div>
+
+      <p>สร้างฮีปเป็น O(N) หยิบออก N - 1 ครั้งครั้งละ O(log N) รวมเป็น O(N log N) ทุกกรณี ไม่มีข้อมูลแบบไหนทำให้ช้าลง และไม่ต้องใช้อาเรย์เพิ่ม วัดเทียบกับ <code>sort</code> และการใส่ทุกตัวลง priority_queue แบบน้อยสุดก่อนแล้วหยิบออกจนหมด บนเครื่องเดียวกัน <code>-O2</code> ค่าสุ่ม 5 รอบ ค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>heap sort ที่เขียนเอง</th><th>priority_queue</th><th><code>sort</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1,000,000</td><td>0.161 วินาที</td><td>0.166 วินาที</td><td>0.078 วินาที</td></tr>
+            <tr><td>10,000,000</td><td>2.959 วินาที</td><td>2.352 วินาที</td><td>0.885 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>heap sort กับ priority_queue ใช้เวลาระดับเดียวกัน เพราะทำงานแบบเดียวกัน ส่วน <code>sort</code> เร็วกว่าสองถึงสามเท่า ถ้าแค่อยากเรียงข้อมูล ใช้ <code>sort</code> เหมือนเดิม heap sort มีค่าตรงที่เป็นตัวอย่างที่ชัดที่สุดของการใช้ heap และเป็นวิธีเรียง O(N log N) ที่เขียนเองได้สั้นที่สุดวิธีหนึ่ง ส่วน merge sort กับ quick sort อยู่ในบทที่ 22</p>
+
+      <h2 id="vs-priority-queue">เขียนเองหรือใช้ priority_queue</h2>
+
+      <p>ปกติให้ใช้ priority_queue เขียนสั้นกว่าและผิดยากกว่า heap ที่เขียนเองมีประโยชน์เมื่อต้องการสิ่งที่ priority_queue ไม่ยอมให้ทำ</p>
+
+      <ul>
+        <li>ดูของข้างใน เช่น โจทย์ถามว่าหลังทำคำสั่งชุดหนึ่งแล้วอาเรย์ของ heap หน้าตาเป็นอย่างไร ซึ่งเป็นแบบฝึกหัดข้อ 6</li>
+        <li>สร้างจากข้อมูลทั้งก้อนใน O(N) priority_queue ก็ทำได้ถ้าส่งช่วงของ vector ให้ตอนประกาศ เช่น <code>priority_queue&lt;int&gt; pq(v.begin(), v.end());</code> แต่ต้องรู้ว่ามีวิธีนี้</li>
+        <li>แก้ค่าของตัวที่อยู่ตรงกลางแล้วให้มันลอยขึ้นหรือจมลง ซึ่งต้องรู้ว่าแต่ละค่าอยู่ช่องไหน priority_queue ไม่บอกตำแหน่ง</li>
+      </ul>
+
+      <p>ใน <code>&lt;algorithm&gt;</code> ยังมี <code>make_heap</code> <code>push_heap</code> <code>pop_heap</code> และ <code>sort_heap</code> ที่ทำงานเดียวกับหน้านี้บน vector ที่เริ่มจากช่อง 0 สูตรลูกและพ่อจึงต่างจากหน้านี้ไปหนึ่ง ดูในส่วนลองทำให้พัง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="always-left">แบบที่ 1 จมลงทางลูกซ้ายเสมอ</h3>
+
+      <p>ในโปรแกรม heap ลบสามบรรทัดที่เลือกลูกขวาเมื่อลูกขวามากกว่า ให้ <code>sift_down</code> เทียบกับลูกซ้ายอย่างเดียว ข้อมูลเข้าชุดแรกยังได้ผลถูกทุกบรรทัด เพราะบังเอิญลูกซ้ายมากกว่าทุกครั้ง ลองชุดนี้</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>10
++ 30
++ 10
++ 50
++ 20
+-
+-
+-
++ 40
+-
+-
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\heap.exe"><pre><code>push 30
+heap: 30
+push 10
+heap: 30 10
+push 50
+heap: 50 10 30
+push 20
+heap: 50 20 30 10
+pop 50
+heap: 20 10 30
+pop 20
+heap: 30 10
+pop 30
+heap: 10
+push 40
+heap: 40 10
+pop 40
+heap: 10
+pop 10
+heap:
+</code></pre></div>
+      </div>
+
+      <p>หยิบได้ 50 แล้ว 20 แล้ว 30 ทั้งที่ 30 มากกว่า 20 หลังหยิบ 50 ตัวท้ายคือ 10 ขึ้นมาเป็นราก ลูกคือ 20 กับ 30 โปรแกรมดูแค่ลูกซ้าย สลับ 10 กับ 20 แล้วหยุด 20 ขึ้นเป็นรากทั้งที่ลูกขวาของมันคือ 30 กฎลำดับเสียไปแล้วแต่ไม่มีอะไรเตือน บั๊กแบบนี้ผ่านชุดทดสอบเล็กๆ ได้ง่าย ทดสอบ heap ทุกครั้งด้วยการหยิบออกจนหมดแล้วดูว่าได้ค่าเรียงจริงไหม</p>
+
+      <h3 id="zero-based">แบบที่ 2 เริ่มที่ช่อง 0 แต่ใช้สูตรของช่อง 1</h3>
+
+      <p>ถ้าเก็บรากไว้ที่ช่อง 0 ลูกของรากตามสูตร <code>2 * i</code> คือช่อง 0 ซึ่งก็คือตัวมันเอง <code>sift_down</code> ที่รากจะเทียบรากกับตัวเอง เห็นว่าไม่น้อยกว่าแล้วหยุดทันที ค่าที่ถูกเอาขึ้นมาวางที่รากหลังหยิบออกจะค้างอยู่ตรงนั้นไม่จมลงเลย ถ้าเริ่มที่ช่อง 0 สูตรต้องเป็น ลูกซ้าย <code>2 * i + 1</code> ลูกขวา <code>2 * i + 2</code> และพ่อ <code>(i - 1) / 2</code> ให้เลือกแบบใดแบบหนึ่งแล้วใช้ทั้งโปรแกรม เอกสารนี้ใช้ช่อง 1 เพราะสูตรสั้นกว่า</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>max-heap คือ complete binary tree ที่พ่อไม่น้อยกว่าลูก เก็บในอาเรย์เริ่มช่อง 1 ลูกอยู่ช่อง <code>2i</code> กับ <code>2i + 1</code> พ่ออยู่ช่อง <code>i / 2</code></li>
+        <li>ใส่คือต่อท้ายแล้ว sift up หยิบออกคือเอาตัวท้ายมาแทนรากแล้ว sift down กับลูกตัวที่มากกว่า ทั้งสองเป็น O(log N)</li>
+        <li>สร้าง heap จากอาเรย์ทั้งก้อนด้วย sift down จากช่อง N / 2 ลงมาถึงช่อง 1 ใช้ O(N) สลับไม่เกิน N ครั้ง</li>
+        <li>heap sort สร้างฮีปแล้วสลับรากไปไว้ท้ายซ้ำๆ เป็น O(N log N) ทุกกรณี แต่ <code>sort</code> เร็วกว่าในทางปฏิบัติ</li>
+        <li>priority_queue คือ heap แบบนี้ ใช้มันเป็นหลัก เขียนเองเมื่อต้องดูหรือแก้ของข้างใน</li>
+      </ul>
+    </article>

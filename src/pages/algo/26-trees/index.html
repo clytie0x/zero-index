@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 26 tree BST และ heap</h1>
+
+      <p>จบบทนี้ น้องจะอ่านต้นไม้จากข้อมูลเข้าได้ทุกรูปแบบที่โจทย์ใช้บ่อย ทั้งพ่อของแต่ละโหนดและลูกซ้ายลูกขวา ท่องต้นไม้ได้ทั้ง preorder inorder postorder และทีละชั้น คำนวณขนาด ความสูง ผลรวมของต้นไม้ย่อย และเส้นผ่านศูนย์กลางได้ใน O(N) โดยไม่พังเมื่อชุดทดสอบเป็นต้นไม้เส้นตรงสองแสนโหนด ซึ่งเป็นกับดักที่ทำให้โปรแกรมที่ถูกทุกบรรทัดได้ runtime error นอกจากนี้จะเขียน binary search tree และ binary heap ได้เองตั้งแต่ต้น เห็นกับตาว่าต้นไม้ค้นหาที่เขียนเองเอียงจนช้ากว่า set พันเท่าได้อย่างไร ทำไม set ในบทที่ 20 ไม่เป็นแบบนั้น และ priority_queue ข้างในทำงานอย่างไร โจทย์ผังองค์กร สายตระกูล เส้นทางในหมู่บ้าน และโจทย์ที่ต้องจำลองโครงสร้างข้อมูลตามกติกาที่กำหนด ในค่าย 2 และ TOI ใช้ทุกเรื่องในบทนี้</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="tree.html">26.1 ต้นไม้และการเก็บในโปรแกรม</a></td><td>ราก ลูก ใบ ความลึก ความสูง binary tree เก็บด้วย pointer ด้วยอาเรย์ลูกซ้ายขวา และด้วยรายชื่อลูก อ่านพ่อของแต่ละโหนดและหาราก</td></tr>
+            <tr><td><a href="traversal.html">26.2 ท่องต้นไม้</a></td><td>preorder inorder postorder ของต้นไม้นิพจน์ ท่องทีละชั้นด้วย queue ขนาดและความสูงของต้นไม้ย่อย และเส้นผ่านศูนย์กลาง</td></tr>
+            <tr><td><a href="deep.html">26.3 ต้นไม้ลึกกับ stack ที่เขียนเอง</a></td><td>recursion พังที่ความลึกราวสองหมื่นห้าพัน preorder และ inorder ด้วย stack และ postorder ด้วยการย้อนลำดับ</td></tr>
+            <tr><td><a href="bst.html">26.4 binary search tree</a></td><td>ใส่ ค้นหา inorder ได้ค่าเรียง ลบสามกรณี ต้นไม้เอียงเมื่อใส่ข้อมูลที่เรียงแล้ว และ red-black tree ใน set</td></tr>
+            <tr><td><a href="heap.html">26.5 binary heap</a></td><td>heap ในอาเรย์ sift up sift down สร้าง heap ใน O(N) heap sort และเทียบกับ priority_queue</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>อ่านพ่อของแต่ละโหนด <code>0 1 1 2 2 3 1 5 7</code> แล้วพิมพ์ทีละชั้นได้ <code>1</code> <code>2 3 7</code> <code>4 5 6 9</code> <code>8</code> และหาเส้นผ่านศูนย์กลางได้ 5 โดยไม่เปิดดูหน้า 26.2</span></label></li>
+        <li><label><input type="checkbox"><span>ท่องต้นไม้นิพจน์ในหน้า 26.2 แบบ postorder ได้ <code>8 2 5 * + 6 4 - /</code> และอธิบายได้ว่าทำไม inorder ที่ไม่มีวงเล็บให้ค่าผิด</span></label></li>
+        <li><label><input type="checkbox"><span>ป้อนต้นไม้เส้นตรงแสนโหนดให้โปรแกรม count-size ในหน้า 26.3 จนเห็น <code>0xC00000FD</code> แล้วเขียนใหม่ด้วย stack กับการย้อนลำดับจนได้ <code>size 100000</code></span></label></li>
+        <li><label><input type="checkbox"><span>เขียน BST ที่ใส่ <code>165 152 176 149 158 171 180</code> แล้วลบ 149 152 165 ตามลำดับ ได้ preorder <code>171 158 176 180</code> และใส่ 1 ถึง 7 เรียงกันแล้ววัดความสูงได้ 6</span></label></li>
+        <li><label><input type="checkbox"><span>สร้าง heap จาก <code>30 50 10 80 20 70 60 40</code> ด้วย sift down จากช่อง N / 2 ได้ <code>80 50 70 40 20 10 60 30</code> แล้วเรียงด้วย heap sort ได้ถูก</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ รวมข้อที่มีชุดทดสอบเป็นต้นไม้เส้นตรงสองแสนโหนดอย่างน้อย 3 ข้อ</span></label></li>
+      </ul>
+    </article>

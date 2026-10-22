@@ -371,7 +371,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "26"
 title = "บทที่ 26 tree BST และ heap"
 summary = "โครงสร้างแบบต้นไม้ การท่องต้นไม้ และ heap"
-# dir = "algo/26-trees"
+path = "algo/26-trees/index.html"
+pages = [
+  { num = "26.1", title = "ต้นไม้และการเก็บในโปรแกรม", path = "algo/26-trees/tree.html" },
+  { num = "26.2", title = "ท่องต้นไม้", path = "algo/26-trees/traversal.html" },
+  { num = "26.3", title = "ต้นไม้ลึกกับ stack ที่เขียนเอง", path = "algo/26-trees/deep.html" },
+  { num = "26.4", title = "binary search tree", path = "algo/26-trees/bst.html" },
+  { num = "26.5", title = "binary heap", path = "algo/26-trees/heap.html" },
+  { num = "26.6", title = "แบบฝึกหัด", path = "algo/26-trees/exercises.html", exercises = "algo/26-trees" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

@@ -1,0 +1,368 @@
+<article class="doc">
+      <h1>26.3 ต้นไม้ลึกกับ stack ที่เขียนเอง</h1>
+
+      <p>โปรแกรมในหน้า 26.2 สั้นและถูกต้อง แต่ทุกตัวใช้ recursion ที่ลึกเท่าความสูงของต้นไม้ หน้า 9.1 วัดไว้ว่า <code>sum_to</code> ลึกได้ราวสี่หมื่นสามพันชั้นก่อน stack จะเต็ม ส่วนโจทย์ต้นไม้ในค่าย 2 และ TOI มีโหนดเป็นแสน และชุดทดสอบมักมีต้นไม้ที่เป็นเส้นตรงยาวทั้งต้น หน้านี้วัดว่าโปรแกรมท่องต้นไม้ลึกได้กี่ชั้นจริง แล้วเปลี่ยนเป็นลูปที่ใช้ stack ของเราเอง ซึ่งลึกเท่าไรก็ไม่พัง</p>
+
+      <h2 id="how-deep">ลึกได้กี่ชั้น</h2>
+
+      <p>โปรแกรมนี้นับขนาดของต้นไม้ย่อยแบบหน้า 26.2 ตัดให้เหลือแค่พิมพ์รากกับขนาดของทั้งต้น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="count-size"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; children[1000001]; // (1)!
+int subtree_size[1000001];
+
+void count_size(int v)
+{
+    subtree_size[v] = 1;
+    for (int c : children[v]) {
+        count_size(c);
+        subtree_size[v] += subtree_size[c];
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    int root = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        int p;
+        cin &gt;&gt; p;
+        if (p == 0) {
+            root = i;
+        } else {
+            children[p].push_back(i);
+        }
+    }
+    count_size(root);
+    cout &lt;&lt; "root " &lt;&lt; root &lt;&lt; " size " &lt;&lt; subtree_size[root] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อาเรย์ของ vector ประกาศไว้นอก <code>main</code> ล้านช่อง จะได้ใช้ข้อมูลชุดใหญ่ทดลองได้ vector ว่างแต่ละตัวกิน 24 byte รวมราว 24 MB ซึ่งอยู่นอก stack จึงไม่ติดขีดจำกัด 2 MB ของตัวแปรใน <code>main</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-size" data-title="ข้อมูลเข้า"><pre><code>9
+0 1 1 2 2 3 1 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-size" data-title="C:\code\count_size.exe"><pre><code>root 1 size 9
+</code></pre></div>
+      </div>
+
+      <p>ป้อนต้นไม้เส้นตรง N โหนด โหนด 1 เป็นราก และพ่อของโหนด v คือ v - 1 การเรียก <code>count_size</code> จะลึก N ชั้น บนเครื่องที่ทดลอง รันจาก PowerShell ค่า 25,000 ถึง 29,000 ค่าละ 10 ครั้ง ค่าอื่นค่าละ 3 ครั้ง ได้ผลดังนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>25,000</td><td>ผ่านทั้ง 10 ครั้ง</td><td>ผ่านทั้ง 10 ครั้ง</td></tr>
+            <tr><td>26,000</td><td>พังทั้ง 10 ครั้ง</td><td>พัง 7 ครั้ง ผ่าน 3 ครั้ง</td></tr>
+            <tr><td>27,000 ถึง 50,000</td><td>พังทุกครั้ง</td><td>พังทุกครั้ง</td></tr>
+            <tr><td>100,000 200,000 และ 1,000,000</td><td>พังทุกครั้ง</td><td>พังทุกครั้ง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทุกครั้งที่พังได้</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p>stack overflow เหมือนหน้า 9.1 ลึกได้ราวสองหมื่นห้าพันชั้น น้อยกว่า <code>sum_to</code> ที่ได้สี่หมื่นสามพัน เพราะแต่ละชั้นต้องจำมากกว่า ทั้งโหนดปัจจุบัน และตำแหน่งที่วนลูกไปถึงแล้ว stack ราว 2 MB หารด้วยสองหมื่นหกพันชั้น ได้ชั้นละราว 80 byte และต่างจาก <code>sum_to</code> ที่ <code>-O2</code> ทำให้ลึกได้เป็นร้อยล้าน ตัวนี้แบบ <code>-O2</code> พังที่ความลึกเกือบเท่ากับแบบ Code::Blocks</p>
+
+      <p>โจทย์ต้นไม้ส่วนใหญ่ให้ N ถึงแสนหรือสองแสน ถ้าชุดทดสอบมีเส้นตรงยาวขนาดนั้น โปรแกรมแบบนี้ได้ runtime error แน่นอน grader บางที่ตั้ง stack ไว้ใหญ่กว่าเครื่องเรา บางที่ไม่ อย่าเสี่ยง ใช้หลักเดียวกับหน้า 9.1 คือ recursion ที่ลึกได้ถึงหลักหมื่นชั้นขึ้นไปให้เขียนเป็นลูป</p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">ขยาย stack ในเครื่องตัวเอง</p>
+        <p>GCC บน Windows ขอ stack ใหญ่ขึ้นได้ด้วยแฟล็ก <code>-Wl,--stack,268435456</code> (256 MB) บนเครื่องที่ทดลอง คอมไพล์โปรแกรม count-size ด้วยแฟล็กนี้แล้วรันเส้นตรงล้านโหนดผ่าน แต่ grader ไม่ได้คอมไพล์ด้วยแฟล็กของเรา ใช้ได้แค่ตอนทดลองในเครื่อง โปรแกรมที่ส่งต้องไม่พึ่งมัน</p>
+      </div>
+
+      <h2 id="own-stack">preorder ด้วย stack ของเราเอง</h2>
+
+      <p>recursion ทำงานได้เพราะ call stack จำไว้ว่ายังมีโหนดไหนค้างอยู่ ถ้าเราจำเองใน <code>stack&lt;int&gt;</code> จากบทที่ 17 ซึ่งเก็บของไว้ในหน่วยความจำที่ขอระหว่างรันเหมือน vector ก็ไม่ติดขีดจำกัด 2 MB อีกต่อไป</p>
+
+      <p>เริ่มด้วยใส่รากลง stack แล้ววน หยิบโหนดบนสุดออกมา จดไว้ แล้วใส่ลูกของมันลง stack ลูกที่ใส่ทีหลังจะถูกหยิบก่อน ถ้าอยากได้ลำดับเดียวกับ preorder แบบ recursion ที่ไปลูกตัวแรกก่อน ต้องใส่ลูกจากตัวสุดท้ายย้อนมาหาตัวแรก</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="stack-preorder"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;vector&lt;int&gt;&gt; children(n + 1);
+    int root = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        int p;
+        cin &gt;&gt; p;
+        if (p == 0) {
+            root = v;
+        } else {
+            children[p].push_back(v);
+        }
+    }
+    vector&lt;int&gt; order;
+    stack&lt;int&gt; waiting;
+    waiting.push(root);
+    while (!waiting.empty()) {
+        int v = waiting.top(); // (1)!
+        waiting.pop();
+        order.push_back(v);
+        for (int i = (int)children[v].size() - 1; i &gt;= 0; i--) { // (2)!
+            waiting.push(children[v][i]);
+        }
+    }
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            cout &lt;&lt; ' ';
+        }
+        cout &lt;&lt; order[i];
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>โหนดบนสุดของ stack คือโหนดที่ recursion จะไปเป็นตัวถัดไป หยิบออกแล้วจดได้เลย</li>
+        <li>วนจากลูกตัวสุดท้ายย้อนกลับ ลูกตัวแรกจึงอยู่บนสุดและถูกหยิบก่อน ต้อง cast <code>size()</code> เป็น <code>int</code> ก่อนลบ 1 ไม่งั้นโหนดที่ไม่มีลูกจะได้ <code>0 - 1</code> แบบไม่มีเครื่องหมาย ซึ่งเป็นเลขใหญ่มาก</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="stack-preorder" data-title="ข้อมูลเข้า"><pre><code>9
+0 1 1 2 2 3 1 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="stack-preorder" data-title="C:\code\stack_preorder.exe"><pre><code>1 2 4 5 8 3 6 7 9
+</code></pre></div>
+      </div>
+
+      <p>ได้ 1 แล้วลงไปทั้งกิ่งของ 2 คือ 2 4 5 8 ก่อนจะไป 3 6 และ 7 9 เป็น preorder ตรงกับที่ recursion ให้ ทุกโหนดเข้าและออกจาก stack ครั้งเดียว ยังเป็น O(N) และ stack ของเราลึกได้เท่ากับหน่วยความจำที่เหลือ ต้นไม้เส้นตรงล้านโหนดก็แค่ล้านช่อง</p>
+
+      <h2 id="reverse-order">postorder ด้วยการย้อนลำดับ</h2>
+
+      <p>งานในหน้า 26.2 ส่วนใหญ่ เช่น ขนาด ความสูง ผลรวมของต้นไม้ย่อย ต้องการลำดับที่<strong>ลูกเสร็จก่อนพ่อ</strong> การเขียน postorder ด้วย stack โดยตรงต้องจำว่าแต่ละโหนดทำลูกไปถึงตัวไหนแล้ว ยุ่งกว่ามาก มีทางที่ง่ายกว่า</p>
+
+      <p>ใน preorder พ่อมาก่อนลูกเสมอ ถ้าเดินลำดับนี้<strong>ย้อนจากท้ายมาหน้า</strong> ลูกก็มาก่อนพ่อเสมอ พอถึงโหนด v ลูกทุกตัวของ v ถูกทำไปหมดแล้ว ส่งคำตอบของ v ขึ้นไปรวมที่พ่อได้ทันที โดยใช้ <code>parent</code> ที่อ่านมาอยู่แล้ว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="bottom-up"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; parent(n + 1);
+    vector&lt;vector&lt;int&gt;&gt; children(n + 1);
+    int root = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        cin &gt;&gt; parent[v];
+        if (parent[v] == 0) {
+            root = v;
+        } else {
+            children[parent[v]].push_back(v);
+        }
+    }
+    vector&lt;int&gt; order;
+    stack&lt;int&gt; waiting;
+    waiting.push(root);
+    while (!waiting.empty()) {
+        int v = waiting.top();
+        waiting.pop();
+        order.push_back(v);
+        for (int c : children[v]) { // (1)!
+            waiting.push(c);
+        }
+    }
+    vector&lt;int&gt; subtree_size(n + 1, 1), height(n + 1, 0);
+    for (int i = n - 1; i &gt;= 0; i--) { // (2)!
+        int v = order[i];
+        int p = parent[v];
+        if (p != 0) { // (3)!
+            subtree_size[p] += subtree_size[v];
+            height[p] = max(height[p], height[v] + 1);
+        }
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; "node " &lt;&lt; v &lt;&lt; " size " &lt;&lt; subtree_size[v] &lt;&lt; " height " &lt;&lt; height[v] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตรงนี้ไม่ต้องสนลำดับของพี่น้อง ขอแค่พ่อมาก่อนลูก จึงใส่ลูกตามลำดับปกติได้</li>
+        <li>เดินจากโหนดที่จดทีหลังสุดย้อนมา ใบที่ลึกที่สุดจะถูกทำก่อน รากถูกทำเป็นตัวสุดท้าย</li>
+        <li>ตอนนี้ขนาดและความสูงของ v สมบูรณ์แล้ว เพราะลูกทุกตัวของ v อยู่หลัง v ใน <code>order</code> และถูกทำไปก่อน ส่งค่าขึ้นไปบวกและเทียบที่พ่อ รากไม่มีพ่อจึงข้าม</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bottom-up" data-title="ข้อมูลเข้า"><pre><code>9
+0 1 1 2 2 3 1 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bottom-up" data-title="C:\code\bottom_up.exe"><pre><code>node 1 size 9 height 3
+node 2 size 4 height 2
+node 3 size 2 height 1
+node 4 size 1 height 0
+node 5 size 2 height 1
+node 6 size 1 height 0
+node 7 size 2 height 1
+node 8 size 1 height 0
+node 9 size 1 height 0
+</code></pre></div>
+      </div>
+
+      <p>ตรงกับโปรแกรม measure ในหน้า 26.2 ทุกบรรทัด ป้อนต้นไม้เส้นตรงล้านโหนด บรรทัดแรกได้ <code>node 1 size 1000000 height 999999</code> ไม่พัง</p>
+
+      <p>ลำดับจาก level order ในหน้า 26.2 ก็ใช้แบบเดียวกันได้ เพราะพ่อออกจากคิวก่อนลูกเสมอ ขอแค่ลำดับที่พ่อมาก่อนลูก จะได้มาจาก stack หรือ queue ก็ได้ ส่วนเส้นผ่านศูนย์กลางก็เปลี่ยนแบบเดียวกัน ตอนทำ v ให้เอา <code>height[v] + 1</code> ไปอัปเดตค่ามากสุดสองอันดับแรกของพ่อ</p>
+
+      <h3 id="smaller-parent">เมื่อพ่อมีหมายเลขน้อยกว่าลูกเสมอ</h3>
+
+      <p>บางโจทย์รับประกันว่าพ่อของโหนด v มีหมายเลขน้อยกว่า v เช่น บอกพ่อของโหนด 2 ถึง N ตามลำดับ และพ่อของโหนด v อยู่ระหว่าง 1 ถึง v - 1 กรณีนี้หมายเลขโหนดเองเป็นลำดับที่พ่อมาก่อนลูกแล้ว ไม่ต้องสร้าง <code>children</code> และไม่ต้องมี stack เลย</p>
+
+      <div class="code" data-lang="cpp"><pre><code>for (int v = n; v &gt;= 2; v--) {
+    subtree_size[parent[v]] += subtree_size[v];
+}
+</code></pre></div>
+
+      <p>อ่านขอบเขตในโจทย์ให้ดีว่ามีข้อรับประกันนี้หรือไม่ ถ้าไม่มี ห้ามใช้ลูปนี้ เพราะพ่อที่มีหมายเลขมากกว่าลูกจะถูกทำก่อนลูก แล้วได้ค่าผิดแบบในส่วนลองทำให้พัง</p>
+
+      <h2 id="timing">ช้ากว่า recursion ไหม</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 คำนวณขนาดและความสูงของทุกต้นไม้ย่อย N = 1,000,000 โหนด ต้นไม้สุ่มสูง 32 กับต้นไม้เส้นตรง จับเวลาเฉพาะส่วนที่คำนวณ ฝั่งวนด้วย stack รวมการสร้าง <code>order</code> ด้วย รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>ต้นไม้</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">recursion แบบหน้า 26.2</td><td>สุ่ม</td><td>0.257 วินาที</td><td>0.123 วินาที</td></tr>
+            <tr><td>เส้นตรง</td><td>พังด้วย <code>0xC00000FD</code></td><td>พังด้วย <code>0xC00000FD</code></td></tr>
+            <tr><td rowspan="2">stack แล้วย้อนลำดับ</td><td>สุ่ม</td><td>0.352 วินาที</td><td>0.076 วินาที</td></tr>
+            <tr><td>เส้นตรง</td><td>0.071 วินาที</td><td>0.016 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสองแบบเป็น O(N) เวลาจึงอยู่ระดับเดียวกัน แบบ <code>-O2</code> ซึ่งเป็นแบบที่ grader ใช้ วนด้วย stack เร็วกว่าเล็กน้อยด้วยซ้ำ ส่วนแบบ Code::Blocks ช้ากว่า recursion ราวหนึ่งในสาม สิ่งที่ต่างจริงคือบรรทัดเส้นตรง แบบหนึ่งพัง อีกแบบเสร็จในเวลาไม่ถึงหนึ่งในสิบวินาที</p>
+
+      <h2 id="inorder-stack">inorder ด้วย stack</h2>
+
+      <p>binary tree ที่ต้องการ inorder จริงๆ เช่น ต้นไม้ค้นหาในหน้า 26.4 ที่อาจเอียงเป็นเส้นตรง ต้องจดโหนดหลังจากทำต้นไม้ย่อยซ้ายเสร็จ เขียนด้วย stack ได้ด้วยการเลียนแบบ recursion ตรงๆ เดินลงซ้ายสุดพร้อมกับใส่ทุกโหนดที่ผ่านลง stack เพราะยังต้องกลับมาจดมัน พอไปต่อไม่ได้ หยิบโหนดบนสุดออกมาจด แล้วไปทำต้นไม้ย่อยขวาของมันด้วยวิธีเดิม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="stack-inorder"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;string&gt; token(n + 1);
+    vector&lt;int&gt; left_child(n + 1), right_child(n + 1);
+    for (int v = 1; v &lt;= n; v++) {
+        cin &gt;&gt; token[v] &gt;&gt; left_child[v] &gt;&gt; right_child[v];
+    }
+    vector&lt;string&gt; visited;
+    stack&lt;int&gt; waiting;
+    int v = 1;
+    while (v != 0 || !waiting.empty()) {
+        while (v != 0) { // (1)!
+            waiting.push(v);
+            v = left_child[v];
+        }
+        v = waiting.top(); // (2)!
+        waiting.pop();
+        visited.push_back(token[v]);
+        v = right_child[v]; // (3)!
+    }
+    for (int i = 0; i &lt; (int)visited.size(); i++) {
+        if (i &gt; 0) {
+            cout &lt;&lt; ' ';
+        }
+        cout &lt;&lt; visited[i];
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ลงซ้ายจนสุด ทุกโหนดที่ผ่านยังจดไม่ได้ เพราะต้นไม้ย่อยซ้ายของมันยังไม่เสร็จ จึงพักไว้ใน stack</li>
+        <li>โหนดบนสุดคือโหนดที่ต้นไม้ย่อยซ้ายเสร็จแล้ว ถึงตาจดมัน</li>
+        <li>ทำต้นไม้ย่อยขวาต่อ ถ้าไม่มี <code>v</code> จะเป็น 0 รอบถัดไปจึงข้ามการลงซ้าย แล้วหยิบโหนดที่พักไว้ตัวถัดไป</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="stack-inorder" data-title="ข้อมูลเข้า"><pre><code>9
+/ 2 7
++ 3 4
+8 0 0
+* 5 6
+2 0 0
+5 0 0
+- 8 9
+6 0 0
+4 0 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="stack-inorder" data-title="C:\code\stack_inorder.exe"><pre><code>8 + 2 * 5 / 6 - 4
+</code></pre></div>
+      </div>
+
+      <p>ได้บรรทัด inorder เดียวกับหน้า 26.2 ทุกโหนดเข้าและออกจาก stack ครั้งเดียว เป็น O(N)</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="push-forward">แบบที่ 1 ใส่ลูกลง stack ตามลำดับปกติ</h3>
+
+      <p>ในโปรแกรม stack-preorder เปลี่ยนลูปใส่ลูกเป็น <code>for (int i = 0; i &lt; (int)children[v].size(); i++)</code> ซึ่งดูเป็นธรรมชาติกว่า</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>9
+0 1 1 2 2 3 1 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\stack_preorder.exe"><pre><code>1 7 9 3 6 2 5 8 4
+</code></pre></div>
+      </div>
+
+      <p>ยังไปครบทุกโหนด และพ่อยังมาก่อนลูก แต่พี่น้องกลับลำดับหมด 7 มาก่อน 3 ซึ่งมาก่อน 2 เพราะลูกตัวสุดท้ายถูกใส่ทีหลังสุดจึงถูกหยิบก่อน ถ้าโจทย์ให้พิมพ์ preorder ตามลำดับลูกที่กำหนด คำตอบนี้ผิด ถ้าแค่ต้องการลำดับที่พ่อมาก่อนลูกเพื่อเอาไปย้อน แบบนี้ใช้ได้ ซึ่งก็คือที่โปรแกรม bottom-up ทำ</p>
+
+      <h3 id="forward-loop">แบบที่ 2 ไม่ย้อนลำดับ</h3>
+
+      <p>ในโปรแกรม bottom-up เปลี่ยนลูปส่งค่าขึ้นพ่อเป็น <code>for (int i = 0; i &lt; n; i++)</code></p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>9
+0 1 1 2 2 3 1 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\bottom_up.exe"><pre><code>node 1 size 4 height 1
+node 2 size 3 height 1
+node 3 size 2 height 1
+node 4 size 1 height 0
+node 5 size 2 height 1
+node 6 size 1 height 0
+node 7 size 2 height 1
+node 8 size 1 height 0
+node 9 size 1 height 0
+</code></pre></div>
+      </div>
+
+      <p>รากได้ขนาด 4 แทนที่จะเป็น 9 ลำดับใน <code>order</code> คือ <code>1 7 9 3 6 2 5 8 4</code> แบบเดียวกับผลของแบบที่ 1 พอเดินไปข้างหน้า โหนด 7 ถูกทำก่อนโหนด 9 ซึ่งเป็นลูกของมัน จึงส่งค่าเริ่มต้น 1 ขึ้นไปให้ราก<strong>ก่อน</strong>ที่ 9 จะส่งมาถึง โหนด 3 กับ 2 ก็เหมือนกัน รากจึงได้ 1 + 1 + 1 + 1 = 4 ไม่มี error ไม่มีอะไรพัง มีแต่ตัวเลขผิด กฎคือคำตอบของ v จะส่งขึ้นไปได้ก็ต่อเมื่อลูกทุกตัวของ v ส่งมาครบแล้ว ลำดับย้อนของ preorder รับประกันข้อนี้ ลำดับไปข้างหน้าไม่รับประกัน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>recursion ท่องต้นไม้บนเครื่องที่ทดลองลึกได้ราวสองหมื่นห้าพันชั้น ต้นไม้เส้นตรงแสนโหนดพังด้วย <code>0xC00000FD</code> ทั้งแบบ Code::Blocks และ <code>-O2</code></li>
+        <li>preorder ด้วย <code>stack&lt;int&gt;</code> ใส่ลูกจากตัวสุดท้ายย้อนมา จะได้ลำดับเดียวกับ recursion</li>
+        <li>งานที่ลูกต้องเสร็จก่อนพ่อ ให้เก็บลำดับที่พ่อมาก่อนลูกไว้ แล้วเดินย้อนจากท้าย ส่งค่าขึ้นไปที่ <code>parent</code></li>
+        <li>ถ้าโจทย์รับประกันว่าพ่อมีหมายเลขน้อยกว่าลูก วน v จาก N ลงมาได้เลย</li>
+        <li>inorder ด้วย stack คือลงซ้ายสุดพร้อมพักโหนดไว้ หยิบมาจด แล้วไปทางขวา</li>
+        <li>วนด้วย stack ใช้เวลา O(N) เท่ากับ recursion และไม่พังกับต้นไม้ลึกเท่าไรก็ได้</li>
+      </ul>
+    </article>

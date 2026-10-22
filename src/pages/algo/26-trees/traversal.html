@@ -1,0 +1,457 @@
+<article class="doc">
+      <h1>26.2 ท่องต้นไม้</h1>
+
+      <p>เก็บต้นไม้ได้แล้ว งานถัดไปคือไปให้ถึงทุกโหนด เรียกว่า <strong>การท่องต้นไม้ (tree traversal)</strong> อาเรย์มีลำดับเดียวคือซ้ายไปขวา แต่ต้นไม้ไปได้หลายลำดับ และลำดับที่เลือกเปลี่ยนสิ่งที่คำนวณได้ หน้านี้ดูสามลำดับของ binary tree การท่องทีละชั้นด้วย queue การคำนวณขนาด ความสูง และความลึกของทุกโหนดในรอบเดียว และปิดท้ายด้วย <strong>เส้นผ่านศูนย์กลาง (diameter)</strong> ของต้นไม้ ซึ่งเป็นโจทย์ต้นไม้ที่ออกบ่อยที่สุดข้อหนึ่ง</p>
+
+      <h2 id="expression-tree">ต้นไม้ของนิพจน์</h2>
+
+      <p>หน้า 17.3 คำนวณนิพจน์แบบ postfix ด้วย stack นิพจน์คณิตศาสตร์ทุกตัวเขียนเป็น binary tree ได้ เครื่องหมายเป็นโหนดที่มีลูกสองตัวคือตัวตั้งทางซ้ายกับทางขวา ตัวเลขเป็นใบ ภาพนี้คือ <code>(8 + 2 * 5) / (6 - 4)</code> ตัวเลขเล็กข้างวงกลมคือหมายเลขโหนด</p>
+
+      <figure>
+        <svg viewBox="0 0 580 290" width="580" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้ของนิพจน์ รากคือเครื่องหมายหาร ลูกซ้ายคือบวก ลูกขวาคือลบ ใต้บวกมี 8 กับคูณ ใต้คูณมี 2 กับ 5 ใต้ลบมี 6 กับ 4">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="300" y1="40" x2="170" y2="110"/>
+            <line x1="300" y1="40" x2="430" y2="110"/>
+            <line x1="170" y1="110" x2="100" y2="180"/>
+            <line x1="170" y1="110" x2="240" y2="180"/>
+            <line x1="430" y1="110" x2="380" y2="180"/>
+            <line x1="430" y1="110" x2="480" y2="180"/>
+            <line x1="240" y1="180" x2="190" y2="250"/>
+            <line x1="240" y1="180" x2="290" y2="250"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:18px" text-anchor="middle">
+            <circle cx="300" cy="40" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="300" y="46" style="fill:var(--ink)">/</text>
+            <circle cx="170" cy="110" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="170" y="116" style="fill:var(--ink)">+</text>
+            <circle cx="430" cy="110" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="430" y="116" style="fill:var(--ink)">-</text>
+            <circle cx="100" cy="180" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="100" y="186" style="fill:var(--ink)">8</text>
+            <circle cx="240" cy="180" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="240" y="186" style="fill:var(--ink)">*</text>
+            <circle cx="380" cy="180" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="380" y="186" style="fill:var(--ink)">6</text>
+            <circle cx="480" cy="180" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="480" y="186" style="fill:var(--ink)">4</text>
+            <circle cx="190" cy="250" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="190" y="256" style="fill:var(--ink)">2</text>
+            <circle cx="290" cy="250" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="290" y="256" style="fill:var(--ink)">5</text>
+          </g>
+          <g style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">
+            <text x="324" y="30">1</text>
+            <text x="194" y="100">2</text>
+            <text x="76" y="170">3</text>
+            <text x="264" y="170">4</text>
+            <text x="166" y="240">5</text>
+            <text x="314" y="240">6</text>
+            <text x="454" y="100">7</text>
+            <text x="356" y="170">8</text>
+            <text x="504" y="170">9</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ข้อมูลเข้าใช้แบบอาเรย์ลูกซ้ายลูกขวาจากหน้า 26.1 เพิ่มแค่ว่าแต่ละโหนดมีข้อความหนึ่งคำ บรรทัดแรกคือ N แล้วบรรทัดที่ v คือข้อความ ลูกซ้าย และลูกขวาของโหนด v รากคือโหนด 1</p>
+
+      <h2 id="three-orders">preorder inorder postorder</h2>
+
+      <p>ทุกลำดับเริ่มจากรากและทำสามอย่างเหมือนกัน คือ จดโหนดนี้ ท่องต้นไม้ย่อยซ้าย ท่องต้นไม้ย่อยขวา ต่างกันแค่ว่า<strong>จดโหนดนี้ตอนไหน</strong></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ลำดับ</th><th>ทำอะไรก่อนหลัง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>preorder</td><td>จดตัวเอง แล้วท่องซ้าย แล้วท่องขวา</td></tr>
+            <tr><td>inorder</td><td>ท่องซ้าย แล้วจดตัวเอง แล้วท่องขวา</td></tr>
+            <tr><td>postorder</td><td>ท่องซ้าย แล้วท่องขวา แล้วค่อยจดตัวเอง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>"ท่องต้นไม้ย่อยซ้าย" คือปัญหาเดิมที่เล็กลง จึงเขียนเป็น recursion แบบบทที่ 9 ได้ตรงตัว ต้นไม้ย่อยที่ว่างคือหมายเลข 0 ซึ่งเป็นกรณีฐาน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="orders"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;string&gt; token;
+vector&lt;int&gt; left_child, right_child;
+vector&lt;string&gt; visited;
+
+void preorder(int v)
+{
+    if (v == 0) { // (1)!
+        return;
+    }
+    visited.push_back(token[v]); // (2)!
+    preorder(left_child[v]);
+    preorder(right_child[v]);
+}
+
+void inorder(int v)
+{
+    if (v == 0) {
+        return;
+    }
+    inorder(left_child[v]);
+    visited.push_back(token[v]);
+    inorder(right_child[v]);
+}
+
+void postorder(int v)
+{
+    if (v == 0) {
+        return;
+    }
+    postorder(left_child[v]);
+    postorder(right_child[v]);
+    visited.push_back(token[v]);
+}
+
+void print_and_clear() // (3)!
+{
+    for (int i = 0; i &lt; (int)visited.size(); i++) {
+        if (i &gt; 0) {
+            cout &lt;&lt; ' ';
+        }
+        cout &lt;&lt; visited[i];
+    }
+    cout &lt;&lt; '\n';
+    visited.clear();
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    token.resize(n + 1);
+    left_child.resize(n + 1);
+    right_child.resize(n + 1);
+    for (int v = 1; v &lt;= n; v++) {
+        cin &gt;&gt; token[v] &gt;&gt; left_child[v] &gt;&gt; right_child[v];
+    }
+    preorder(1);
+    print_and_clear();
+    inorder(1);
+    print_and_clear();
+    postorder(1);
+    print_and_clear();
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>โหนด 0 แปลว่าไม่มีโหนด ใบมีลูกเป็น 0 ทั้งสองข้าง การเรียกลงไปที่ลูกของใบจึงจบตรงนี้</li>
+        <li>สามฟังก์ชันต่างกันแค่ตำแหน่งของบรรทัดนี้ บนสุด ตรงกลาง หรือล่างสุด</li>
+        <li>เก็บโหนดที่ไปถึงลงใน vector ก่อน แล้วค่อยพิมพ์คั่นด้วยช่องว่าง จะได้ไม่มีช่องว่างเกินท้ายบรรทัด</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="orders" data-title="ข้อมูลเข้า"><pre><code>9
+/ 2 7
++ 3 4
+8 0 0
+* 5 6
+2 0 0
+5 0 0
+- 8 9
+6 0 0
+4 0 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="orders" data-title="C:\code\orders.exe"><pre><code>/ + 8 * 2 5 - 6 4
+8 + 2 * 5 / 6 - 4
+8 2 5 * + 6 4 - /
+</code></pre></div>
+      </div>
+
+      <p>สามบรรทัดคือนิพจน์เดียวกันที่เขียนสามแบบ</p>
+
+      <ul>
+        <li><strong>postorder</strong> ได้ <code>8 2 5 * + 6 4 - /</code> คือ postfix เอาไปป้อนโปรแกรม postfix ในหน้า 17.3 ได้ 9 ซึ่งถูกต้อง เพราะ postorder คำนวณลูกทั้งสองข้างเสร็จก่อนค่อยมาถึงเครื่องหมาย เหมือน postfix ที่ตัวเลขสองตัวมาก่อนเครื่องหมายเสมอ</li>
+        <li><strong>preorder</strong> ได้เครื่องหมายมาก่อนตัวเลข เรียกว่า prefix</li>
+        <li><strong>inorder</strong> ได้นิพจน์แบบที่เราเขียนกันปกติ แต่ไม่มีวงเล็บ <code>8 + 2 * 5 / 6 - 4</code> ถ้าอ่านตามกฎคูณหารก่อนจะได้ค่าอื่น ต้นไม้ไม่ต้องใช้วงเล็บ เพราะรูปร่างของมันบอกลำดับการคำนวณอยู่แล้ว</li>
+      </ul>
+
+      <p>ทั้งสามแบบไปถึงแต่ละโหนดครั้งเดียว และเรียกฟังก์ชันกับโหนด 0 อีกไม่เกินสองครั้งต่อโหนด จึงใช้เวลา O(N) ลำดับเหล่านี้จะกลับมาอีกหลายครั้ง inorder ของต้นไม้ค้นหาในหน้า 26.4 ได้ค่าเรียงจากน้อยไปมาก และการคืนหน่วยความจำของทั้งต้นต้องใช้ postorder เพราะต้องคืนลูกก่อนพ่อ</p>
+
+      <h2 id="level-order">ท่องทีละชั้นด้วย queue</h2>
+
+      <p>preorder ดำดิ่งลงไปตามกิ่งซ้ายสุดก่อนแล้วค่อยย้อนกลับมา บางงานอยากได้โหนดเรียงตามชั้น รากก่อน แล้วทุกโหนดที่ลึก 1 แล้วทุกโหนดที่ลึก 2 เรียกว่า <strong>level order</strong> ใช้ queue จากบทที่ 17 เอารากเข้าคิว แล้ววนหยิบโหนดหน้าคิวออกมา ใส่ลูกทั้งหมดของมันต่อท้ายคิว ลูกเข้าคิวหลังทุกโหนดที่อยู่ชั้นเดียวกับพ่อเสมอ โหนดจึงออกจากคิวเรียงชั้นเอง</p>
+
+      <p>ใช้กับชมรมหุ่นยนต์ในหน้า 26.1 ที่อ่านเป็นพ่อของแต่ละโหนด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="levels"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;vector&lt;int&gt;&gt; children(n + 1);
+    int root = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        int p;
+        cin &gt;&gt; p;
+        if (p == 0) {
+            root = v;
+        } else {
+            children[p].push_back(v);
+        }
+    }
+    vector&lt;int&gt; depth(n + 1, 0);
+    queue&lt;int&gt; waiting;
+    waiting.push(root);
+    int current_level = -1; // (1)!
+    while (!waiting.empty()) {
+        int v = waiting.front();
+        waiting.pop();
+        if (depth[v] != current_level) {
+            if (current_level != -1) {
+                cout &lt;&lt; '\n';
+            }
+            current_level = depth[v];
+            cout &lt;&lt; "level " &lt;&lt; current_level &lt;&lt; ':';
+        }
+        cout &lt;&lt; ' ' &lt;&lt; v;
+        for (int c : children[v]) {
+            depth[c] = depth[v] + 1; // (2)!
+            waiting.push(c);
+        }
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จำว่ากำลังพิมพ์ชั้นไหนอยู่ เจอโหนดที่ลึกกว่านั้นเมื่อไรแปลว่าขึ้นชั้นใหม่ ให้ขึ้นบรรทัดใหม่</li>
+        <li>ความลึกของลูกคือความลึกของพ่อบวกหนึ่ง และพ่อออกจากคิวก่อนลูกเสมอ ตอนที่ลูกถูกใช้ ความลึกจึงถูกตั้งไว้แล้ว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="levels" data-title="ข้อมูลเข้า"><pre><code>9
+0 1 1 2 2 3 1 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="levels" data-title="C:\code\levels.exe"><pre><code>level 0: 1
+level 1: 2 3 7
+level 2: 4 5 6 9
+level 3: 8
+</code></pre></div>
+      </div>
+
+      <p>ตรงกับภาพในหน้า 26.1 ทุกชั้น ทุกโหนดเข้าคิวและออกจากคิวครั้งเดียว และดูรายชื่อลูกของตัวเองครั้งเดียว รวมเป็น O(N) การเดินแบบนี้มีชื่อว่า <strong>BFS</strong> (breadth-first search) บนต้นไม้ บทที่ 27 จะใช้ BFS กับกราฟทั่วไปที่เดินวนกลับมาโหนดเดิมได้ ซึ่งต้องมีวิธีกันการเข้าคิวซ้ำเพิ่ม ส่วนต้นไม้ที่เดินจากพ่อลงหาลูกอย่างเดียวไม่มีทางไปเจอโหนดเดิมซ้ำ</p>
+
+      <h3 id="level-timing">เร็วกว่าการเดินขึ้นแค่ไหน</h3>
+
+      <p>หน้า 26.1 หาความลึกด้วยการเดินจากทุกโหนดขึ้นไปหาราก level order ได้ความลึกของทุกโหนดมาในตัว ลองวัดทั้งสองวิธีกับต้นไม้ N = 100000 โหนดสองแบบ แบบแรกสุ่มพ่อของแต่ละโหนด ได้ต้นไม้สูงแค่ 25 แบบที่สองเป็นเส้นตรงสูง 99999 วัดบนเครื่องเดียวกับหน้า 19.1 จับเวลาเฉพาะส่วนที่หาความลึก ไม่นับการอ่านข้อมูล ฝั่ง level order นับการสร้างรายชื่อลูกด้วย รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>ต้นไม้</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">เดินขึ้นจากทุกโหนด</td><td>สุ่ม สูง 25</td><td>0.009 วินาที</td><td>0.003 วินาที</td></tr>
+            <tr><td>เส้นตรง สูง 99999</td><td>12.855 วินาที</td><td>8.575 วินาที</td></tr>
+            <tr><td rowspan="2">level order</td><td>สุ่ม สูง 25</td><td>0.030 วินาที</td><td>0.029 วินาที</td></tr>
+            <tr><td>เส้นตรง สูง 99999</td><td>0.016 วินาที</td><td>0.008 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กับต้นไม้สุ่ม วิธีเดินขึ้นเร็วกว่าด้วยซ้ำ เพราะแต่ละโหนดเดินแค่ราวสิบก้าว และไม่ต้องสร้างรายชื่อลูก แต่กับเส้นตรง วิธีเดินขึ้นต้องเดินราว 5 × 10<sup>9</sup> ก้าว ช้ากว่าพันเท่า ถ้าลองแค่กับข้อมูลสุ่ม จะไม่มีทางรู้เลยว่าวิธีนี้ช้า ชุดทดสอบของโจทย์ต้นไม้แทบทุกข้อมีต้นไม้เส้นตรงยาวอยู่ด้วย เพราะเป็นกรณีที่ต้นไม้ลึกที่สุด ก่อนส่ง ให้ลองโปรแกรมกับเส้นตรงยาวทุกครั้ง</p>
+
+      <h2 id="counting">นับขนาดและความสูงด้วย recursion</h2>
+
+      <p>หลายคำถามเกี่ยวกับต้นไม้ย่อยของทุกโหนด เช่น ใต้แต่ละคนมีลูกน้องรวมกี่คน หรือทางลงไปถึงใบที่ไกลที่สุดยาวเท่าไร คำตอบของโหนดหนึ่งสร้างจากคำตอบของลูก</p>
+
+      <ul>
+        <li>ขนาดของต้นไม้ย่อย v คือ 1 บวกขนาดของต้นไม้ย่อยของลูกทุกตัว</li>
+        <li>ความสูงของ v คือ 0 ถ้าเป็นใบ ไม่งั้นคือความสูงมากสุดของลูกบวก 1</li>
+        <li>ผลรวมของค่าในต้นไม้ย่อย v คือค่าของ v บวกผลรวมของต้นไม้ย่อยของลูกทุกตัว</li>
+      </ul>
+
+      <p>ต้องรู้คำตอบของลูกก่อนพ่อ จึงเป็นลำดับแบบ postorder เรียกตัวเองกับลูกให้ครบก่อน แล้วค่อยรวม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="measure"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;vector&lt;int&gt;&gt; children;
+vector&lt;int&gt; subtree_size, height;
+
+void measure(int v)
+{
+    subtree_size[v] = 1;
+    height[v] = 0;
+    for (int c : children[v]) {
+        measure(c); // (1)!
+        subtree_size[v] += subtree_size[c];
+        height[v] = max(height[v], height[c] + 1); // (2)!
+    }
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    children.resize(n + 1);
+    subtree_size.resize(n + 1);
+    height.resize(n + 1);
+    int root = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        int p;
+        cin &gt;&gt; p;
+        if (p == 0) {
+            root = v;
+        } else {
+            children[p].push_back(v);
+        }
+    }
+    measure(root);
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; "node " &lt;&lt; v &lt;&lt; " size " &lt;&lt; subtree_size[v] &lt;&lt; " height " &lt;&lt; height[v] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>หลังบรรทัดนี้ <code>subtree_size[c]</code> และ <code>height[c]</code> ถูกต้องแล้ว เพราะ <code>measure(c)</code> ทำต้นไม้ย่อยของ c เสร็จทั้งต้นก่อนกลับมา</li>
+        <li>ใบไม่เข้าลูปนี้เลย ความสูงจึงค้างอยู่ที่ 0 ตามที่ตั้งไว้</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="measure" data-title="ข้อมูลเข้า"><pre><code>9
+0 1 1 2 2 3 1 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="measure" data-title="C:\code\measure.exe"><pre><code>node 1 size 9 height 3
+node 2 size 4 height 2
+node 3 size 2 height 1
+node 4 size 1 height 0
+node 5 size 2 height 1
+node 6 size 1 height 0
+node 7 size 2 height 1
+node 8 size 1 height 0
+node 9 size 1 height 0
+</code></pre></div>
+      </div>
+
+      <p>โหนด 2 มีขนาด 4 คือตัวเองกับ 4 5 8 และสูง 2 จากทางลง 2 ไป 5 ไป 8 ตรงกับตารางคำศัพท์ในหน้า 26.1 ทุกโหนดถูกเรียกครั้งเดียว ใช้เวลา O(N) ถ้าทำแบบตรงไปตรงมาคือนับลูกหลานของแต่ละโหนดแยกกัน ต้นไม้เส้นตรงจะเป็น O(N<sup>2</sup>) เหมือนการเดินขึ้น</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">recursion ลึกเท่าความสูงของต้นไม้</p>
+        <p><code>measure</code> ลึกลงไปหนึ่งชั้นต่อหนึ่งระดับของต้นไม้ ต้นไม้ที่เป็นเส้นตรงยาวหลายหมื่นโหนดจะทำให้ stack เต็มแบบหน้า 9.1 หน้า 26.3 วัดว่าลึกได้แค่ไหน และเปลี่ยนเป็นลูปที่ไม่พังกับต้นไม้ลึกเท่าไรก็ได้ โปรแกรมในหน้านี้ใช้ได้เมื่อรู้ว่าต้นไม้ไม่ลึก</p>
+      </div>
+
+      <h2 id="diameter">เส้นผ่านศูนย์กลางของต้นไม้</h2>
+
+      <p>เส้นผ่านศูนย์กลางคือจำนวนเส้นของทางที่ยาวที่สุดระหว่างสองโหนดใดๆ ในต้นไม้ เช่น หมู่บ้านต่อกันด้วยถนนเป็นต้นไม้ อยากรู้ว่าสองหมู่บ้านที่ไกลกันที่สุดห่างกันกี่ช่วงถนน ในชมรมหุ่นยนต์ ทางจาก 8 ขึ้นไป 5 2 1 แล้วลงไป 7 9 ยาว 5 เส้น ไม่มีทางไหนยาวกว่านี้</p>
+
+      <p>ทางทุกทางในต้นไม้มี<strong>จุดสูงสุด</strong>หนึ่งโหนด คือโหนดที่ใกล้รากที่สุดบนทางนั้น จากจุดสูงสุดทางจะลงไปทางลูกไม่เกินสองตัว ถ้าเดาว่า v เป็นจุดสูงสุด ทางที่ยาวที่สุดคือลงไปทางลูกที่ลึกที่สุดสองตัว ความยาวคือ (ความสูงของลูกตัวแรก + 1) + (ความสูงของลูกตัวที่สอง + 1) ลองให้ทุกโหนดเป็นจุดสูงสุดแล้วเอาค่ามากสุด ระหว่างคำนวณความสูงในลำดับ postorder ก็ได้ข้อมูลครบพอดี</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="diameter"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;vector&lt;int&gt;&gt; children;
+vector&lt;int&gt; height;
+int diameter = 0;
+
+void measure(int v)
+{
+    int longest = 0, second = 0;
+    for (int c : children[v]) {
+        measure(c);
+        int down = height[c] + 1; // (1)!
+        if (down &gt; longest) {
+            second = longest;
+            longest = down;
+        } else if (down &gt; second) {
+            second = down;
+        }
+    }
+    height[v] = longest;
+    diameter = max(diameter, longest + second); // (2)!
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    children.resize(n + 1);
+    height.resize(n + 1);
+    int root = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        int p;
+        cin &gt;&gt; p;
+        if (p == 0) {
+            root = v;
+        } else {
+            children[p].push_back(v);
+        }
+    }
+    measure(root);
+    cout &lt;&lt; "diameter " &lt;&lt; diameter &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ทางที่ลงจาก v ผ่านลูก c ยาวเท่ากับเส้นจาก v ไป c หนึ่งเส้น บวกความสูงของ c เก็บค่ามากสุดสองอันดับแรกไว้ใน <code>longest</code> กับ <code>second</code> ถ้า v มีลูกตัวเดียว <code>second</code> เป็น 0 คือทางลงไปข้างเดียว</li>
+        <li>ทางที่มี v เป็นจุดสูงสุดยาว <code>longest + second</code> เทียบกับคำตอบที่ดีที่สุดที่เจอมา</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="diameter" data-title="ข้อมูลเข้า"><pre><code>9
+0 1 1 2 2 3 1 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="diameter" data-title="C:\code\diameter.exe"><pre><code>diameter 5
+</code></pre></div>
+      </div>
+
+      <p>ทุกโหนดถูกเรียกครั้งเดียว และดูลูกแต่ละตัวครั้งเดียว ทั้งหมดเป็น O(N) วิธีตรงไปตรงมาคือหาระยะจากทุกโหนดไปทุกโหนด ซึ่งเป็น O(N<sup>2</sup>) แบบฝึกหัดข้อ 8 เป็นโจทย์แบบนี้ที่ถนนแต่ละเส้นยาวไม่เท่ากัน</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-base-case">แบบที่ 1 ลืมกรณีฐานของโหนด 0</h3>
+
+      <p>ในโปรแกรม orders ลบสามบรรทัด <code>if (v == 0)</code> ออกจาก <code>inorder</code> เพราะคิดว่าทุกโหนดมีลูกอยู่แล้ว คอมไพล์ด้วย <code>-Wall</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>orders.cpp:18:6: warning: infinite recursion detected [-Winfinite-recursion]
+   18 | void inorder(int v)
+      |      ^~~~~~~
+orders.cpp:20:12: note: recursive call
+   20 |     inorder(left_child[v]);
+      |     ~~~~~~~^~~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p>compiler เห็นว่าทุกทางของฟังก์ชันเรียกตัวเองต่อเสมอ ไม่มีทางไหนจบ ถ้าดื้อรัน โปรแกรมพังด้วย</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p>stack overflow แบบหน้า 9.1 พอลงไปถึงใบ ใบก็เรียก <code>inorder(0)</code> ต่อ และ <code>inorder(0)</code> ก็เรียก <code>inorder(left_child[0])</code> ซึ่งคือ <code>inorder(0)</code> อีก ไม่มีวันจบ ทุกฟังก์ชันท่องต้นไม้ต้องเริ่มด้วยการตรวจว่าโหนดว่างหรือไม่ ถ้าใช้ pointer ก็ตรวจ <code>nullptr</code></p>
+
+      <h3 id="through-root">แบบที่ 2 คิดว่าทางที่ยาวที่สุดต้องผ่านราก</h3>
+
+      <p>หลายคนหาเส้นผ่านศูนย์กลางด้วยการเอาความสูงของลูกที่ลึกที่สุดสองตัว<strong>ของราก</strong>มาบวกกันเท่านั้น โปรแกรม diameter ที่แก้แบบนั้นยังได้ 5 กับชมรมหุ่นยนต์ เพราะทางที่ยาวที่สุดบังเอิญผ่านราก แต่ลองกับต้นไม้นี้ รากคือ 1 มีลูกตัวเดียวคือ 2 แล้ว 2 แตกเป็นสองกิ่งยาว</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>8
+0 1 2 2 3 4 5 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\diameter_root.exe"><pre><code>diameter 4
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ 6 ทางจาก 7 ขึ้นไป 5 3 2 แล้วลงไป 4 6 8 จุดสูงสุดของทางนี้คือโหนด 2 ไม่ใช่ราก รากมีลูกตัวเดียว ทางที่ผ่านรากจึงยาวได้แค่ 4 โปรแกรม diameter ตัวที่ถูกได้ 6 เพราะลองทุกโหนดเป็นจุดสูงสุด</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>preorder จดตัวเองก่อนลูก inorder จดระหว่างลูกซ้ายกับลูกขวา postorder จดหลังลูก ทั้งหมดเป็น O(N)</li>
+        <li>postorder ของต้นไม้นิพจน์คือ postfix งานที่ต้องรู้คำตอบของลูกก่อนพ่อ เช่น ขนาด ความสูง ผลรวมของต้นไม้ย่อย ใช้ลำดับ postorder</li>
+        <li>level order ใช้ queue ได้โหนดเรียงทีละชั้น และได้ความลึกของทุกโหนดใน O(N)</li>
+        <li>เส้นผ่านศูนย์กลางคือค่ามากสุดของ "ลูกที่ลึกที่สุดสองตัว" ของทุกโหนด ไม่ใช่แค่ของราก</li>
+        <li>ฟังก์ชันท่องต้นไม้ต้องตรวจโหนดว่างเป็นกรณีฐานเสมอ</li>
+        <li>วิธีที่เร็วกับต้นไม้สุ่มอาจช้าพันเท่ากับต้นไม้เส้นตรง ทดสอบกับเส้นตรงยาวทุกครั้ง</li>
+      </ul>
+    </article>
