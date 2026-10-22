@@ -1,0 +1,382 @@
+<article class="doc">
+      <h1>18.5 ลดความซับซ้อนและสองตัวชี้</h1>
+
+      <p>สี่หน้าที่ผ่านมาสอนให้ดูว่าวิธีไหนช้า หน้านี้ลงมือทำให้เร็วขึ้น โจทย์เดียวกันจะถูกแก้สามรอบ จาก O(N<sup>3</sup>) เป็น O(N<sup>2</sup>) แล้วเป็น O(N) โดยแต่ละรอบตัดงานที่ทำซ้ำทิ้ง แล้ววัดเวลาจริงให้เห็นว่าต่างกันแค่ไหน ปิดท้ายด้วยเทคนิค <strong>สองตัวชี้ (two pointers)</strong> ซึ่งเปลี่ยนการไล่ทุกช่วง O(N<sup>2</sup>) ให้เหลือ O(N) ในโจทย์อีกกลุ่มหนึ่ง</p>
+
+      <h2 id="problem">โจทย์ ช่วงที่กำไรมากที่สุด</h2>
+
+      <p>ร้านน้ำปั่นจดกำไรของแต่ละวันไว้ N วัน วันที่ขาดทุนจดเป็นค่าติดลบ เจ้าของร้านอยากรู้ว่าถ้าเลือกช่วงวันที่ติดกันได้หนึ่งช่วง ยาวกี่วันก็ได้แต่อย่างน้อยหนึ่งวัน กำไรรวมสูงสุดเป็นเท่าไร ต่างจากแบบฝึกหัดในบทที่ 5 ที่ความยาวช่วงถูกกำหนดมาแล้ว ข้อนี้ต้องลองทุกความยาวด้วย</p>
+
+      <p>ถ้ากำไรเป็น <code>-2 6 -1 4 -8 3 2 -5</code> ช่วง <code>6 -1 4</code> ได้ 9 มากที่สุด สังเกตว่าช่วงที่ดีที่สุดยอมรวมวันที่ขาดทุน 1 ไว้ด้วย เพราะวันถัดไปได้กลับมา 4</p>
+
+      <h2 id="cubic">วิธีที่ 1 ลองทุกช่วง บวกใหม่ทุกครั้ง</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="best-cubic"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; profit(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; profit[i];
+    }
+    long long best = profit[0];
+    for (int l = 0; l &lt; n; l++) {
+        for (int r = l; r &lt; n; r++) {
+            long long total = 0;
+            for (int k = l; k &lt;= r; k++) {
+                total += profit[k];
+            }
+            best = max(best, total);
+        }
+    }
+    cout &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="best-cubic" data-title="ข้อมูลเข้า"><pre><code>8
+-2 6 -1 4 -8 3 2 -5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="best-cubic" data-title="C:\code\best_cubic.exe"><pre><code>9
+</code></pre></div>
+      </div>
+
+      <p>l คือวันแรกของช่วง r คือวันสุดท้าย แล้ววนอีกชั้นบวกตั้งแต่ l ถึง r ลูปสามชั้นที่ทุกชั้นขึ้นกับ N เป็น O(N<sup>3</sup>) <code>best</code> เริ่มที่ <code>profit[0]</code> ไม่ใช่ 0 เพราะถ้าขาดทุนทุกวัน คำตอบต้องติดลบ ห้ามตอบ 0 ซึ่งหมายถึงไม่เลือกวันไหนเลย</p>
+
+      <h2 id="quadratic">วิธีที่ 2 ต่อยอดผลรวมเดิม</h2>
+
+      <p>ดูลูปในสุดของวิธีที่ 1 ตอน r = 5 บวกวันที่ l ถึง 5 พอ r = 6 ก็บวกวันที่ l ถึง 5 ซ้ำอีกรอบ แล้วค่อยบวกวันที่ 6 เพิ่ม ทั้งที่ผลรวมถึงวันที่ 5 เพิ่งคำนวณเสร็จ ถ้าเก็บผลรวมไว้แล้วบวกแค่วันใหม่ ลูปในสุดก็หายไป</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="best-square"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; profit(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; profit[i];
+    }
+    long long best = profit[0];
+    for (int l = 0; l &lt; n; l++) {
+        long long total = 0;
+        for (int r = l; r &lt; n; r++) {
+            total += profit[r];
+            best = max(best, total);
+        }
+    }
+    cout &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="best-square" data-title="ข้อมูลเข้า"><pre><code>8
+-2 6 -1 4 -8 3 2 -5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="best-square" data-title="C:\code\best_square.exe"><pre><code>9
+</code></pre></div>
+      </div>
+
+      <p><code>total</code> ย้ายมาอยู่นอกลูป r และเริ่มเป็น 0 ใหม่ทุกครั้งที่ l เปลี่ยน ทุกรอบของ r ทำงานแค่บวกหนึ่งครั้งกับเทียบหนึ่งครั้ง เหลือลูปสองชั้นเป็น O(N<sup>2</sup>)</p>
+
+      <h2 id="linear">วิธีที่ 3 ใช้ผลรวมสะสม</h2>
+
+      <p>ให้ P[i] คือผลรวมของ i วันแรกแบบหน้า 5.4 โดย P[0] = 0 ผลรวมของวันที่ l ถึง r (นับช่องจาก 0) คือ P[r + 1] − P[l] ถ้าตรึง r ไว้ อยากให้ผลลบนี้มากที่สุด ก็ต้องเลือก P[l] ที่ <strong>น้อยที่สุด</strong> ในบรรดา P[0] ถึง P[r] ไม่ต้องลองทุก l เลย แค่จำค่าน้อยสุดที่เคยเห็นมาไว้ในตัวแปรเดียว แล้วอัปเดตไปพร้อมกับ r</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="best-linear"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; profit(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; profit[i];
+    }
+    long long best = profit[0];
+    long long prefix = 0, lowest = 0; // (1)!
+    for (int r = 0; r &lt; n; r++) {
+        prefix += profit[r]; // (2)!
+        best = max(best, prefix - lowest); // (3)!
+        lowest = min(lowest, prefix); // (4)!
+    }
+    cout &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>prefix</code> คือ P ของวันปัจจุบัน <code>lowest</code> คือ P ที่น้อยที่สุดที่เคยเห็น เริ่มที่ P[0] = 0</li>
+        <li>ตอนนี้ <code>prefix</code> เป็น P[r + 1]</li>
+        <li>ช่วงที่ดีที่สุดที่จบวันที่ r มีผลรวม P[r + 1] ลบ P ที่น้อยที่สุดก่อนหน้า</li>
+        <li>อัปเดตทีหลังบรรทัดก่อนหน้า เพื่อไม่ให้ลบตัวเองจนได้ช่วงที่ว่างเปล่า</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="best-linear" data-title="ข้อมูลเข้า"><pre><code>8
+-2 6 -1 4 -8 3 2 -5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="best-linear" data-title="C:\code\best_linear.exe"><pre><code>9
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>r</th><th>profit[r]</th><th>prefix</th><th>prefix − lowest</th><th>best</th><th>lowest หลังอัปเดต</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>-2</td><td>-2</td><td>-2</td><td>-2</td><td>-2</td></tr>
+            <tr><td>1</td><td>6</td><td>4</td><td>6</td><td>6</td><td>-2</td></tr>
+            <tr><td>2</td><td>-1</td><td>3</td><td>5</td><td>6</td><td>-2</td></tr>
+            <tr><td>3</td><td>4</td><td>7</td><td>9</td><td>9</td><td>-2</td></tr>
+            <tr><td>4</td><td>-8</td><td>-1</td><td>1</td><td>9</td><td>-2</td></tr>
+            <tr><td>5</td><td>3</td><td>2</td><td>4</td><td>9</td><td>-2</td></tr>
+            <tr><td>6</td><td>2</td><td>4</td><td>6</td><td>9</td><td>-2</td></tr>
+            <tr><td>7</td><td>-5</td><td>-1</td><td>1</td><td>9</td><td>-2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ที่ r = 3 ได้ 7 − (−2) = 9 คือช่วงวันที่ 1 ถึง 3 (นับช่องจาก 0) ซึ่งก็คือ <code>6 -1 4</code> ลูปเดียวทำงาน O(1) ต่อรอบ รวมเป็น O(N) และไม่ต้องมีอาเรย์ P ด้วย ใช้แค่สองตัวแปร</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดด้วยวิธีเดียวกับหน้า 18.2 สร้างกำไรสุ่มตั้งแต่ −1000 ถึง 1000 ด้วย <code>rand()</code> จับเวลาเฉพาะส่วนที่คำนวณ ลูปเหมือนสามโปรแกรมข้างบนทุกบรรทัด เครื่องเดิม <code>-O2</code> ค่ากลางของ 5 ครั้ง ช่องที่บอกว่าไม่ได้รันคือรอนานเกินไป</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธีที่ 1 O(N<sup>3</sup>)</th><th>วิธีที่ 2 O(N<sup>2</sup>)</th><th>วิธีที่ 3 O(N)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1,000</td><td>0.039 วินาที</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>3,000</td><td>1.072 วินาที</td><td>0.004 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>10,000</td><td>64.044 วินาที (วัดครั้งเดียว)</td><td>0.034 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>100,000</td><td>ไม่ได้รัน</td><td>3.678 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>ไม่ได้รัน</td><td>ไม่ได้รัน</td><td>0.000 วินาที</td></tr>
+            <tr><td>10,000,000</td><td>ไม่ได้รัน</td><td>ไม่ได้รัน</td><td>0.010 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าประมาณช่องที่ไม่ได้รันจากรูปร่าง วิธีที่ 1 ที่ N = 100,000 ใช้ราว 64 × 1000 วินาที หรือเกือบ 18 ชั่วโมง วิธีที่ 2 ที่ N = 1,000,000 ใช้ราว 3.7 × 100 วินาที หรือราว 6 นาที ส่วนวิธีที่ 3 ที่ N สิบล้านยังใช้แค่หนึ่งในร้อยวินาที โจทย์ที่ให้ N ≤ 3000 ใช้วิธีที่ 2 ได้ ส่วน N ≤ 10<sup>5</sup> ขึ้นไปต้องวิธีที่ 3 ตรงกับตารางขอบเขตในหน้า 18.2</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">ทุกครั้งที่ลดความซับซ้อน ให้ถามสองข้อ</p>
+        <p>มีอะไรที่คำนวณซ้ำแล้วซ้ำอีกไหม ถ้ามี เก็บผลไว้ใช้ต่อ (วิธีที่ 2) และในลูปที่ลองทุกค่า เราต้องการแค่ค่าที่ดีที่สุดหรือเปล่า ถ้าใช่ จำค่าที่ดีที่สุดไว้ในตัวแปรเดียว ไม่ต้องลองใหม่ทุกครั้ง (วิธีที่ 3)</p>
+      </div>
+
+      <h2 id="two-pointers">สองตัวชี้</h2>
+
+      <p>อีกโจทย์หนึ่ง ร้านขนม N ร้านเรียงกันบนถนน ร้านที่ i ขายขนมชิ้นละ c<sub>i</sub> บาท ทุกราคาเป็นจำนวนเต็มบวก น้องมีเงิน S บาท อยากเดินซื้อร้านละหนึ่งชิ้นจากร้านที่อยู่ติดกันหนึ่งช่วง ซื้อได้มากที่สุดกี่ร้าน หรือก็คือหาช่วงที่ยาวที่สุดที่ผลรวมไม่เกิน S</p>
+
+      <p>วิธีตรงไปตรงมาคือลองทุกจุดเริ่ม l แล้วขยาย r ไปจนเงินไม่พอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="window-naive"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long budget;
+    cin &gt;&gt; n &gt;&gt; budget;
+    vector&lt;int&gt; cost(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; cost[i];
+    }
+    int best = 0;
+    for (int l = 0; l &lt; n; l++) {
+        long long total = 0;
+        for (int r = l; r &lt; n; r++) {
+            total += cost[r];
+            if (total &gt; budget) {
+                break;
+            }
+            best = max(best, r - l + 1);
+        }
+    }
+    cout &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="window-naive" data-title="ข้อมูลเข้า"><pre><code>8 12
+4 2 7 1 3 5 2 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="window-naive" data-title="C:\code\window_naive.exe"><pre><code>4
+</code></pre></div>
+      </div>
+
+      <p>มี <code>break</code> ก็จริง แต่ถ้า S ใหญ่จนช่วงยาวเป็นครึ่งหนึ่งของถนน แต่ละ l ต้องขยายไปราว N/2 ร้าน กรณีแย่ที่สุดยังเป็น O(N<sup>2</sup>)</p>
+
+      <p>ข้อสังเกตที่ทำให้เร็วขึ้นคือ ราคาเป็นบวกทุกตัว ถ้าช่วง l ถึง r ใช้เงินไม่เกิน S ช่วงที่เริ่มหลัง l แล้วจบที่ r ก็ใช้เงินน้อยกว่านั้นอีก จึงไม่เกิน S แน่นอน แปลว่าเมื่อ r ขยับไปทางขวา จุดเริ่มที่ใช้ได้ซึ่งอยู่ซ้ายสุดไม่มีวันถอยกลับไปทางซ้าย เราจึงใช้ตัวชี้สองตัว <code>l</code> กับ <code>r</code> ที่เดินไปทางขวาทางเดียวกันทั้งคู่ ขยาย r ทีละร้าน ถ้าเงินเกินก็เลื่อน l ตามมาจนเงินพอ</p>
+
+      <figure>
+        <svg viewBox="0 0 640 176" width="640" style="max-width:100%;height:auto" role="img" aria-label="ราคาขนมแปดร้าน 4 2 7 1 3 5 2 6 ช่วงที่ครอบด้วยเส้นประคือร้านที่ 3 ถึง 6 ราคา 1 3 5 2 รวม 11 ไม่เกิน 12 ลูกศร l ชี้ร้านที่ 3 ลูกศร r ชี้ร้านที่ 6">
+          <g style="font-family:var(--font-code)">
+          <rect x="194" y="46" width="232" height="68" rx="10" style="fill:var(--accent-soft);stroke:var(--brand);stroke-width:2;stroke-dasharray:6 4"/>
+          <rect x="34" y="52" width="48" height="56" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <text x="58.0" y="84" text-anchor="middle" style="fill:var(--ink);font-size:18px">4</text>
+          <text x="58.0" y="36" text-anchor="middle" style="fill:var(--muted);font-size:12px">0</text>
+          <rect x="90" y="52" width="48" height="56" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <text x="114.0" y="84" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+          <text x="114.0" y="36" text-anchor="middle" style="fill:var(--muted);font-size:12px">1</text>
+          <rect x="146" y="52" width="48" height="56" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <text x="170.0" y="84" text-anchor="middle" style="fill:var(--ink);font-size:18px">7</text>
+          <text x="170.0" y="36" text-anchor="middle" style="fill:var(--muted);font-size:12px">2</text>
+          <rect x="202" y="52" width="48" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <text x="226.0" y="84" text-anchor="middle" style="fill:var(--ink);font-size:18px">1</text>
+          <text x="226.0" y="36" text-anchor="middle" style="fill:var(--muted);font-size:12px">3</text>
+          <rect x="258" y="52" width="48" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <text x="282.0" y="84" text-anchor="middle" style="fill:var(--ink);font-size:18px">3</text>
+          <text x="282.0" y="36" text-anchor="middle" style="fill:var(--muted);font-size:12px">4</text>
+          <rect x="314" y="52" width="48" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <text x="338.0" y="84" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+          <text x="338.0" y="36" text-anchor="middle" style="fill:var(--muted);font-size:12px">5</text>
+          <rect x="370" y="52" width="48" height="56" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <text x="394.0" y="84" text-anchor="middle" style="fill:var(--ink);font-size:18px">2</text>
+          <text x="394.0" y="36" text-anchor="middle" style="fill:var(--muted);font-size:12px">6</text>
+          <rect x="426" y="52" width="48" height="56" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <text x="450.0" y="84" text-anchor="middle" style="fill:var(--ink);font-size:18px">6</text>
+          <text x="450.0" y="36" text-anchor="middle" style="fill:var(--muted);font-size:12px">7</text>
+          <path d="M226.0,130 l-7,12 h14 z" style="fill:var(--brand)"/>
+          <text x="226.0" y="162" text-anchor="middle" style="fill:var(--brand-text);font-size:16px;font-weight:600">l</text>
+          <path d="M394.0,130 l-7,12 h14 z" style="fill:var(--brand)"/>
+          <text x="394.0" y="162" text-anchor="middle" style="fill:var(--brand-text);font-size:16px;font-weight:600">r</text>
+          </g>
+          <text x="486" y="86" style="font-family:var(--font-text);font-size:14px;fill:var(--ink-2)">รวม 11 ไม่เกิน 12</text>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="window-two"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long budget;
+    cin &gt;&gt; n &gt;&gt; budget;
+    vector&lt;int&gt; cost(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; cost[i];
+    }
+    int best = 0;
+    long long total = 0;
+    int l = 0;
+    for (int r = 0; r &lt; n; r++) {
+        total += cost[r];
+        while (total &gt; budget) {
+            total -= cost[l];
+            l++;
+        }
+        best = max(best, r - l + 1);
+    }
+    cout &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="window-two" data-title="ข้อมูลเข้า"><pre><code>8 12
+4 2 7 1 3 5 2 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="window-two" data-title="C:\code\window_two.exe"><pre><code>4
+</code></pre></div>
+      </div>
+
+      <p>มี <code>while</code> ซ้อนอยู่ใน <code>for</code> ดูเหมือน O(N<sup>2</sup>) แต่ให้นับว่า <code>l++</code> ทำได้กี่ครั้ง l เริ่มที่ 0 เพิ่มทีละหนึ่ง ไม่เคยลดลง และไม่เกิน N ทั้งโปรแกรมจึงเลื่อน l รวมกันไม่เกิน N ครั้ง ส่วน r เลื่อน N ครั้ง งานรวมไม่เกิน 2N เป็น O(N) การนับแบบนี้คือดูว่าตัวแปรเดินไปได้ไกลแค่ไหนตลอดทั้งโปรแกรม แทนที่จะคูณรอบของลูปนอกกับลูปใน</p>
+
+      <p>วัดแบบเดียวกับตารางข้างบน ราคาสุ่ม 1 ถึง 100 บาท S = 25N ทำให้ช่วงที่ดีที่สุดยาวราวครึ่งหนึ่งของ N</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>ลองทุกจุดเริ่ม</th><th>สองตัวชี้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1,000</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>10,000</td><td>0.026 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>100,000</td><td>2.596 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>ไม่ได้รัน</td><td>0.004 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>สองตัวชี้ใช้ได้เมื่อมีสมบัติว่า ถ้าช่วงหนึ่งใช้ได้ ช่วงที่อยู่ข้างในก็ใช้ได้ด้วย เช่น ผลรวมไม่เกิน S เมื่อทุกค่าเป็นบวก หรือไม่มีค่าซ้ำในช่วง ถ้าไม่มีสมบัตินี้ วิธีนี้ให้คำตอบผิด ดูได้ในส่วนลองทำให้พัง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="negative-window">สองตัวชี้กับค่าติดลบ</h3>
+
+      <p>ถ้าบางร้านมีโปรโมชันคืนเงิน ราคาติดลบได้ ลองป้อนข้อมูลนี้ให้โปรแกรม window-two โดยไม่แก้อะไร</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="window-negative"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long budget;
+    cin &gt;&gt; n &gt;&gt; budget;
+    vector&lt;int&gt; cost(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; cost[i];
+    }
+    int best = 0;
+    long long total = 0;
+    int l = 0;
+    for (int r = 0; r &lt; n; r++) {
+        total += cost[r];
+        while (total &gt; budget) {
+            total -= cost[l];
+            l++;
+        }
+        best = max(best, r - l + 1);
+    }
+    cout &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="window-negative" data-title="ข้อมูลเข้า"><pre><code>4 3
+2 5 -6 2
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="window-negative" data-title="C:\code\window_two.exe"><pre><code>2
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ 4 เพราะซื้อครบทั้งสี่ร้านใช้เงิน 2 + 5 − 6 + 2 = 3 บาทพอดี แต่โปรแกรมตอบ 2 ตอน r = 1 ผลรวม 7 เกิน 3 ลูป <code>while</code> จึงทิ้งร้าน 0 และร้าน 1 ไปถาวร ทั้งที่ร้าน 2 จะคืนเงิน 6 บาทในรอบถัดไป ข้อสังเกตที่ว่าจุดเริ่มไม่มีวันถอยไม่จริงอีกแล้วเมื่อมีค่าติดลบ ไม่มี error ไม่มี warning ชุดทดสอบที่มีแต่ค่าบวกก็ผ่านหมด ก่อนใช้สองตัวชี้ต้องตรวจขอบเขตของค่าในโจทย์ทุกครั้ง ถ้าโจทย์มีค่าติดลบ ต้องใช้วิธีอื่นที่ซับซ้อนกว่านี้</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ลดความซับซ้อนด้วยการตัดงานที่ทำซ้ำ เก็บผลรวมไว้ต่อยอดลด O(N<sup>3</sup>) เป็น O(N<sup>2</sup>) จำค่าที่ดีที่สุดไว้ลด O(N<sup>2</sup>) เป็น O(N)</li>
+        <li>ช่วงกำไรสูงสุดใช้ผลรวมสะสมลบค่าน้อยสุดที่เคยเห็น ทำได้ใน O(N) N สิบล้านใช้ 0.010 วินาทีบนเครื่องที่เขียนเอกสารนี้</li>
+        <li>สองตัวชี้ใช้กับโจทย์หาช่วงที่ ถ้าช่วงใช้ได้ ช่วงข้างในก็ใช้ได้ ตัวชี้ทั้งสองเดินไปทางเดียว รวมไม่เกิน 2N ก้าว</li>
+        <li>นับความซับซ้อนของ while ในสองตัวชี้ ให้นับว่าตัวแปรเดินได้ไกลแค่ไหนทั้งโปรแกรม ไม่ใช่คูณรอบลูป</li>
+        <li>ค่าติดลบทำให้สองตัวชี้แบบผลรวมผิด ตรวจขอบเขตของค่าก่อนใช้</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

@@ -283,7 +283,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "18"
 title = "บทที่ 18 ความซับซ้อนของเวลา"
 summary = "Big O ประมาณเวลารันจากขอบเขตโจทย์ ก่อนเริ่มเขียน"
-# dir = "algo/18-complexity"
+path = "algo/18-complexity/index.html"
+pages = [
+  { num = "18.1", title = "นับการทำงานและ Big O", path = "algo/18-complexity/big-o.html" },
+  { num = "18.2", title = "ขอบเขตโจทย์กับเวลาจริง", path = "algo/18-complexity/limits.html" },
+  { num = "18.3", title = "วิเคราะห์ลูปและ recursion", path = "algo/18-complexity/analyze.html" },
+  { num = "18.4", title = "STL และหน่วยความจำ", path = "algo/18-complexity/stl-memory.html" },
+  { num = "18.5", title = "ลดความซับซ้อนและสองตัวชี้", path = "algo/18-complexity/faster.html" },
+  { num = "18.6", title = "แบบฝึกหัด", path = "algo/18-complexity/exercises.html", exercises = "algo/18-complexity" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

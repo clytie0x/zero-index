@@ -1,0 +1,355 @@
+<article class="doc">
+      <h1>18.3 วิเคราะห์ลูปและ recursion</h1>
+
+      <p>หน้า 18.1 นับจำนวนการทำงานของโปรแกรมเดียวอย่างละเอียด ในการแข่งขันจริงไม่มีเวลานับทีละรอบแบบนั้น ต้องมองโครงของโค้ดแล้วบอก Big O ได้ในไม่กี่วินาที หน้านี้รวมรูปแบบที่เจอบ่อย ได้แก่ลูปซ้อน ลูปที่ตัวแปรคูณสองหรือหารสอง และ recursion แบบง่าย ทุกแบบมีโปรแกรมที่นับรอบจริงให้เทียบกับที่คิด</p>
+
+      <h2 id="rules">กฎสามข้อ</h2>
+
+      <ol>
+        <li><strong>ทำต่อกัน ให้บวก แล้วเก็บตัวที่ใหญ่ที่สุด</strong> อ่านข้อมูล O(N) ตามด้วย <code>sort</code> O(N log N) ตามด้วยลูปไล่ทุกคู่ O(N<sup>2</sup>) รวมเป็น O(N + N log N + N<sup>2</sup>) ซึ่งก็คือ O(N<sup>2</sup>) ส่วนที่ช้าที่สุดเป็นตัวตัดสิน</li>
+        <li><strong>ซ้อนกัน ให้คูณ</strong> ลูปนอก N รอบ ทุกรอบมีลูปใน M รอบ รวมเป็น O(NM) เช่น เดินทุกช่องของตาราง R แถว C คอลัมน์ในบทที่ 7 เป็น O(RC)</li>
+        <li><strong>มี if else ให้คิดฝั่งที่แย่กว่า</strong> เพราะเราวิเคราะห์กรณีแย่ที่สุด</li>
+      </ol>
+
+      <h2 id="nested">ลูปซ้อน</h2>
+
+      <p>โปรแกรมนี้ไม่ได้ทำอะไรนอกจากนับ แต่ละตัวนับแทนลูปหนึ่งแบบ ลองทายผลของแต่ละบรรทัดก่อนดูกล่องผลลัพธ์</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="count-nested"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    long long single = 0, square = 0, pairs = 0, letters = 0;
+    for (int i = 0; i &lt; n; i++) {
+        single++;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = 0; j &lt; n; j++) {
+            square++;
+        }
+    }
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = i + 1; j &lt; n; j++) {
+            pairs++;
+        }
+    }
+    for (int i = 0; i &lt; n; i++) {
+        for (int c = 0; c &lt; 26; c++) {
+            letters++;
+        }
+    }
+    cout &lt;&lt; "single = " &lt;&lt; single &lt;&lt; '\n';
+    cout &lt;&lt; "square = " &lt;&lt; square &lt;&lt; '\n';
+    cout &lt;&lt; "pairs = " &lt;&lt; pairs &lt;&lt; '\n';
+    cout &lt;&lt; "letters = " &lt;&lt; letters &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-nested" data-title="ข้อมูลเข้า"><pre><code>1000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-nested" data-title="C:\code\count_nested.exe"><pre><code>single = 1000
+square = 1000000
+pairs = 499500
+letters = 26000
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตัวนับ</th><th>นับได้</th><th>Big O</th><th>เหตุผล</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>single</code></td><td>N</td><td>O(N)</td><td>ลูปชั้นเดียว</td></tr>
+            <tr><td><code>square</code></td><td>N<sup>2</sup></td><td>O(N<sup>2</sup>)</td><td>ลูปนอก N รอบ คูณลูปใน N รอบ</td></tr>
+            <tr><td><code>pairs</code></td><td>N(N − 1) / 2</td><td>O(N<sup>2</sup>)</td><td>ลูปในสั้นลงทีละรอบ แต่ยังเฉลี่ยราวครึ่งหนึ่งของ N</td></tr>
+            <tr><td><code>letters</code></td><td>26N</td><td>O(N)</td><td>ลูปในวน 26 รอบเสมอ ไม่ขึ้นกับ N</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แถวสุดท้ายสำคัญ <strong>ลูปซ้อนสองชั้นไม่ได้แปลว่า O(N<sup>2</sup>) เสมอ</strong> ต้องดูว่าลูปในวนกี่รอบ และจำนวนรอบนั้นขึ้นกับ N หรือไม่ ลูปในที่วนตามตัวอักษร 26 ตัว หรือวนดูช่องข้างเคียงไม่กี่ช่องแบบหน้า 7.4 เป็นแค่ค่าคงที่ ถ้ามีลูปสามชั้นที่ทุกชั้นขึ้นกับ N แบบ i &lt; j &lt; k ก็จะนับได้ N(N − 1)(N − 2) / 6 ซึ่งเป็น O(N<sup>3</sup>)</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">อย่าจับเวลาด้วยลูปที่นับเปล่าๆ</p>
+        <p>บนเครื่องที่เขียนเอกสารนี้ โปรแกรม count-nested คอมไพล์แบบ <code>-O2</code> ป้อน N = 10<sup>9</sup> ได้ <code>square = 1000000000000000000</code> ภายใน 0.558 วินาที ทั้งที่ 10<sup>18</sup> รอบไม่มีทางวนเสร็จทันในเวลาเท่านี้ แต่ถ้าคอมไพล์แบบ Code::Blocks แค่ N = 10<sup>5</sup> ก็ใช้ 6.933 วินาทีแล้ว (ค่ากลาง 5 ครั้ง นับรวมการเปิดโปรแกรม) แปลว่า <code>-O2</code> เห็นว่าลูปนี้แค่บวกหนึ่งซ้ำๆ จึงคำนวณผลด้วยสูตรแทนการวนจริง ลูปในโจทย์จริงทำงานมากกว่าบวกหนึ่ง compiler ช่วยแบบนี้ไม่ได้ ถ้าจะจับเวลา ต้องให้ลูปทำงานจริงแบบโปรแกรมในหน้า 18.2</p>
+      </div>
+
+      <h2 id="doubling">ตัวแปรคูณสองหรือหารสอง</h2>
+
+      <p>ลูปที่ตัวแปรเพิ่มทีละหนึ่งวนตามขนาดของ N แต่ลูปที่ตัวแปร <strong>คูณสอง</strong> ทุกรอบ ไปถึง N เร็วมาก 1 2 4 8 ... ถึง N ใช้ราว log<sub>2</sub> N รอบ ลูปที่ <strong>หารสอง</strong> ทุกรอบจนเหลือ 0 ก็เหมือนกัน และลูปที่หารสิบอย่างการนับหลักในหน้า 4.5 ใช้ log<sub>10</sub> N รอบ ซึ่งก็เป็น O(log N)</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="count-log"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    long long doubling = 0, root = 0, nested = 0, harmonic = 0;
+    for (int i = 1; i &lt;= n; i *= 2) {
+        doubling++;
+    }
+    for (int i = 1; i * i &lt;= n; i++) {
+        root++;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = 1; j &lt;= n; j *= 2) {
+            nested++;
+        }
+    }
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = i; j &lt;= n; j += i) {
+            harmonic++;
+        }
+    }
+    cout &lt;&lt; "doubling = " &lt;&lt; doubling &lt;&lt; '\n';
+    cout &lt;&lt; "root = " &lt;&lt; root &lt;&lt; '\n';
+    cout &lt;&lt; "nested = " &lt;&lt; nested &lt;&lt; '\n';
+    cout &lt;&lt; "harmonic = " &lt;&lt; harmonic &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-log" data-title="ข้อมูลเข้า"><pre><code>1000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-log" data-title="C:\code\count_log.exe"><pre><code>doubling = 10
+root = 31
+nested = 10000
+harmonic = 7069
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>doubling</code> i เป็น 1 2 4 ... 512 รวม 10 ค่า ตัวถัดไปคือ 1024 ซึ่งเกิน 1000 แล้ว 10 รอบคือ log<sub>2</sub> 1000 ปัดลงแล้วบวกหนึ่ง เป็น O(log N)</li>
+        <li><code>root</code> i วิ่งถึง 31 เพราะ 31 × 31 = 961 แต่ 32 × 32 = 1024 เป็น O(√N) แบบการตรวจจำนวนเฉพาะในหน้า 4.5</li>
+        <li><code>nested</code> ลูปนอก N รอบ ลูปในคูณสองทุกรอบ ใช้ 10 รอบ รวม 1000 × 10 ตามกฎข้อ 2 เป็น O(N log N)</li>
+        <li><code>harmonic</code> ลูปในกระโดดทีละ i ตอน i = 1 วน N รอบ ตอน i = 2 วน N/2 รอบ ตอน i = 3 วน N/3 รอบ รวมเป็น N/1 + N/2 + N/3 + ... + N/N ผลบวกนี้ประมาณ N คูณ log ฐาน e ของ N ซึ่ง N = 1000 ได้ราว 6908 ใกล้กับ 7069 ที่นับได้ จึงเป็น O(N log N) ไม่ใช่ O(N<sup>2</sup>) อย่างที่หน้าตาของลูปซ้อนชวนให้คิด ตะแกรงหาจำนวนเฉพาะในหน้า 12.2 ก็กระโดดแบบนี้</li>
+      </ul>
+
+      <p>จำค่า log<sub>2</sub> ของเลขกลมๆ ไว้ จะประมาณได้เร็ว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>10<sup>3</sup></th><th>10<sup>6</sup></th><th>10<sup>9</sup></th><th>10<sup>18</sup></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>log<sub>2</sub> N ประมาณ</td><td>10</td><td>20</td><td>30</td><td>60</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แม้ N ใหญ่ถึง 10<sup>18</sup> ลูปที่หารสองทุกรอบก็วนแค่ราว 60 รอบ นี่คือเหตุผลที่ binary search ในบทที่ 19 เร็วมาก</p>
+
+      <h2 id="recursion">recursion</h2>
+
+      <p>หลักของ recursion คือ <strong>เวลา = จำนวนครั้งที่เรียก × งานในแต่ละครั้ง</strong> ไม่นับงานในครั้งที่ถูกเรียกต่อ เพราะครั้งเหล่านั้นนับเป็นครั้งของตัวเองแล้ว วิธีที่ง่ายที่สุดคือวาดต้นไม้ของการเรียกแบบหน้า 9.3 แล้วนับว่ามีกี่กล่อง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="count-recursion"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long total_calls = 0, half_calls = 0, split_work = 0;
+
+long long total(int n)
+{
+    total_calls++;
+    if (n == 0) {
+        return 0;
+    }
+    return n + total(n - 1);
+}
+
+int halvings(int n)
+{
+    half_calls++;
+    if (n &lt;= 1) {
+        return 0;
+    }
+    return 1 + halvings(n / 2);
+}
+
+void split(int n)
+{
+    split_work += n;
+    if (n == 1) {
+        return;
+    }
+    split(n / 2);
+    split(n - n / 2);
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    long long sum = total(n);
+    cout &lt;&lt; "total = " &lt;&lt; sum &lt;&lt; ", calls = " &lt;&lt; total_calls &lt;&lt; '\n';
+    int times = halvings(n);
+    cout &lt;&lt; "halvings = " &lt;&lt; times &lt;&lt; ", calls = " &lt;&lt; half_calls &lt;&lt; '\n';
+    split(n);
+    cout &lt;&lt; "split work = " &lt;&lt; split_work &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-recursion" data-title="ข้อมูลเข้า"><pre><code>1024
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-recursion" data-title="C:\code\count_recursion.exe"><pre><code>total = 524800, calls = 1025
+halvings = 10, calls = 11
+split work = 11264
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>total(n)</code> เรียก <code>total(n - 1)</code> ต่อหนึ่งครั้ง ไล่ลงไปจนถึง 0 จึงเรียก N + 1 ครั้ง ครั้งละ O(1) รวมเป็น O(N) เหมือนลูปชั้นเดียว</li>
+        <li><code>halvings(n)</code> เรียกต่อด้วย n / 2 ขนาดลดลงครึ่งหนึ่งทุกครั้ง จึงเรียกแค่ log<sub>2</sub> N + 1 ครั้ง เป็น O(log N) เหมือนลูปหารสอง</li>
+        <li><code>split(n)</code> ทำงาน n หน่วย แล้วแบ่งเป็นสองครึ่งไปทำต่อ แต่ละครั้งทำงานไม่เท่ากัน ต้องดูทั้งต้นไม้</li>
+      </ul>
+
+      <figure>
+        <svg viewBox="0 0 540 272" width="540" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้ของ split(8) ชั้นบนสุดมีกล่อง 8 หนึ่งกล่อง ชั้นที่สองมีกล่อง 4 สองกล่อง ชั้นที่สามมีกล่อง 2 สี่กล่อง ชั้นล่างสุดมีกล่อง 1 แปดกล่อง ทุกชั้นรวมกันได้ 8 มี 4 ชั้น งานรวม 32">
+          <g style="font-family:var(--font-code)">
+          <line x1="240.0" y1="52" x2="130.0" y2="76" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="240.0" y1="52" x2="350.0" y2="76" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="130.0" y1="112" x2="75.0" y2="136" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="130.0" y1="112" x2="185.0" y2="136" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="350.0" y1="112" x2="295.0" y2="136" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="350.0" y1="112" x2="405.0" y2="136" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="75.0" y1="172" x2="47.5" y2="196" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="75.0" y1="172" x2="102.5" y2="196" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="185.0" y1="172" x2="157.5" y2="196" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="185.0" y1="172" x2="212.5" y2="196" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="295.0" y1="172" x2="267.5" y2="196" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="295.0" y1="172" x2="322.5" y2="196" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="405.0" y1="172" x2="377.5" y2="196" style="stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="405.0" y1="172" x2="432.5" y2="196" style="stroke:var(--line-strong);stroke-width:2"/>
+          <rect x="208.0" y="16" width="64.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="98.0" y="76" width="64.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="318.0" y="76" width="64.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="43.0" y="136" width="64.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="153.0" y="136" width="64.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="263.0" y="136" width="64.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="373.0" y="136" width="64.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="24.0" y="196" width="47.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="79.0" y="196" width="47.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="134.0" y="196" width="47.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="189.0" y="196" width="47.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="244.0" y="196" width="47.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="299.0" y="196" width="47.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="354.0" y="196" width="47.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="409.0" y="196" width="47.0" height="36" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <text x="240.0" y="40" text-anchor="middle" style="fill:var(--ink);font-size:16px">8</text>
+          <text x="478" y="40" style="fill:var(--brand-text);font-size:15px">= 8</text>
+          <text x="130.0" y="100" text-anchor="middle" style="fill:var(--ink);font-size:16px">4</text>
+          <text x="350.0" y="100" text-anchor="middle" style="fill:var(--ink);font-size:16px">4</text>
+          <text x="478" y="100" style="fill:var(--brand-text);font-size:15px">= 8</text>
+          <text x="75.0" y="160" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+          <text x="185.0" y="160" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+          <text x="295.0" y="160" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+          <text x="405.0" y="160" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+          <text x="478" y="160" style="fill:var(--brand-text);font-size:15px">= 8</text>
+          <text x="47.5" y="220" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+          <text x="102.5" y="220" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+          <text x="157.5" y="220" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+          <text x="212.5" y="220" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+          <text x="267.5" y="220" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+          <text x="322.5" y="220" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+          <text x="377.5" y="220" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+          <text x="432.5" y="220" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+          <text x="478" y="220" style="fill:var(--brand-text);font-size:15px">= 8</text>
+          </g>
+          <text x="270" y="264" text-anchor="middle" style="font-family:var(--font-text);font-size:14px;fill:var(--muted)">4 ชั้น ชั้นละ 8 รวมงาน 8 × 4 = 32</text>
+        </svg>
+      </figure>
+
+      <p>ต้นไม้ของ <code>split(8)</code> มีกล่องเยอะขึ้นเท่าตัวทุกชั้น แต่แต่ละกล่องเล็กลงครึ่งหนึ่ง งานรวมของแต่ละชั้นจึงเท่ากับ N เสมอ ส่วนจำนวนชั้นเท่ากับจำนวนครั้งที่หาร N ด้วยสองจนเหลือ 1 บวกหนึ่ง คือ log<sub>2</sub> N + 1 งานทั้งหมดจึงเป็น N × (log<sub>2</sub> N + 1) ซึ่ง N = 1024 ได้ 1024 × 11 = 11264 ตรงกับที่โปรแกรมนับ เป็น O(N log N) รูปร่างนี้คือ merge sort ที่จะเรียนในบทที่ 22</p>
+
+      <p>เทียบกับ <code>fib(n)</code> ในหน้า 9.3 ที่เรียกต่อสองครั้งเหมือนกัน แต่ขนาดลดลงแค่ 1 และ 2 ไม่ใช่ลดครึ่ง ต้นไม้จึงลึกเกือบ N ชั้นและกล่องเกือบเพิ่มเท่าตัวทุกชั้น <code>fib(40)</code> เรียกตัวเองถึง 331,160,281 ครั้งตามตารางในหน้านั้น เป็นงานแบบ exponential ใช้ O(2<sup>N</sup>) เป็นขอบบนได้ สรุปเป็นหลักจำง่ายๆ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เรียกต่อกี่ครั้ง</th><th>ขนาดที่ส่งต่อ</th><th>งานต่อครั้ง</th><th>Big O</th><th>ตัวอย่าง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>n − 1</td><td>O(1)</td><td>O(N)</td><td><code>total</code> แฟกทอเรียล</td></tr>
+            <tr><td>1</td><td>n / 2</td><td>O(1)</td><td>O(log N)</td><td><code>halvings</code> binary search</td></tr>
+            <tr><td>2</td><td>n / 2</td><td>O(n)</td><td>O(N log N)</td><td><code>split</code> merge sort</td></tr>
+            <tr><td>2</td><td>n − 1</td><td>O(1)</td><td>O(2<sup>N</sup>)</td><td>สตริงฐานสองทุกแบบ <code>fib</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="doubling-overflow">ลูปคูณสองที่ไม่จบ</h3>
+
+      <p>ลูป <code>doubling</code> ข้างบนดูปลอดภัย วนแค่ราว 30 รอบแม้ N เป็นพันล้าน ลองแยกออกมาเป็นโปรแกรมเดี่ยว แล้วป้อนค่ามากสุดของ <code>int</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    int steps = 0;
+    for (int i = 1; i &lt;= n; i *= 2) {
+        steps++;
+    }
+    cout &lt;&lt; "steps = " &lt;&lt; steps &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>2147483647
+</code></pre></div>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ โปรแกรมไม่พิมพ์อะไรเลยและไม่จบเอง ทั้งแบบ Code::Blocks และแบบ <code>-O2</code> ลองค่าอื่นพบว่า 1073741823 ยังได้ <code>steps = 30</code> แต่ 1073741824 ค้างเหมือนกัน เลขนี้คือ 2<sup>30</sup> พอ <code>i</code> เป็น 2<sup>30</sup> ซึ่งยังไม่เกิน n ลูปจึงคูณสองต่อ ได้ 2<sup>31</sup> ซึ่งเกิน <code>int</code> และล้นแบบในหน้า 1.3 การล้นของ <code>int</code> เป็น undefined behavior บนเครื่องนี้ผลที่ได้คือลูปไม่หยุดอีกเลย grader จะตัดจบแล้วให้ผล Time Limit Exceeded ทั้งที่เราคิดว่าวนแค่ 31 รอบ</p>
+
+      <p>แก้ด้วยการประกาศตัวแปรที่คูณเพิ่มเป็น <code>long long</code> ค่าจะไปถึง 2<sup>31</sup> ได้โดยไม่ล้น แล้วลูปหยุดตามปกติ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="doubling-fixed"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    int steps = 0;
+    for (long long i = 1; i &lt;= n; i *= 2) {
+        steps++;
+    }
+    cout &lt;&lt; "steps = " &lt;&lt; steps &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="doubling-fixed" data-title="ข้อมูลเข้า"><pre><code>2147483647
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="doubling-fixed" data-title="C:\code\doubling.exe"><pre><code>steps = 31
+</code></pre></div>
+      </div>
+
+      <p>กับดักเดียวกันเกิดกับ <code>i * i &lt;= n</code> ในหน้า 4.5 เมื่อไรที่ตัวแปรในลูปโตแบบคูณ ให้ถามตัวเองว่าค่าสุดท้ายก่อนลูปหยุดใหญ่แค่ไหน ไม่ใช่แค่ค่าที่ยังอยู่ในขอบเขต</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ทำต่อกันให้บวกแล้วเก็บตัวที่ใหญ่สุด ซ้อนกันให้คูณ if else ใช้ฝั่งที่แย่กว่า</li>
+        <li>ลูปในที่วนจำนวนคงที่ เช่น 26 ตัวอักษร ไม่ทำให้ Big O เพิ่ม</li>
+        <li>ตัวแปรคูณสองหรือหารสองทุกรอบ วนราว log<sub>2</sub> N รอบ 10<sup>9</sup> ได้ราว 30</li>
+        <li>ลูปในที่กระโดดทีละ i รวมได้ N/1 + N/2 + ... เป็น O(N log N)</li>
+        <li>recursion ใช้เวลาเท่ากับจำนวนครั้งที่เรียกคูณงานต่อครั้ง แบ่งครึ่งสองทางแล้วทำงาน n ต่อครั้งได้ O(N log N) ลดทีละหนึ่งสองทางได้ exponential</li>
+        <li>ตัวแปรที่คูณเพิ่มในลูปต้องใหญ่พอสำหรับค่าที่เกินขอบเขตไปหนึ่งรอบ</li>
+      </ul>
+    </article>

@@ -1,0 +1,275 @@
+<article class="doc">
+      <h1>18.4 STL และหน่วยความจำ</h1>
+
+      <p>คำสั่งของ STL และ string ที่เรียนในบทที่ 15 ถึง 17 เขียนบรรทัดเดียวก็จริง แต่บางคำสั่งมีลูปซ่อนอยู่ข้างใน ถ้าไม่รู้ว่าคำสั่งไหนใช้เวลาเท่าไร โปรแกรมที่ดูเป็น O(N) อาจกลายเป็น O(N<sup>2</sup>) โดยไม่รู้ตัว ครึ่งหลังของหน้าดูอีกลิมิตหนึ่งที่ทุกโจทย์มี คือหน่วยความจำ ซึ่งส่วนใหญ่ให้ 256 MB</p>
+
+      <h2 id="vector">vector</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่ง</th><th>เวลา</th><th>หมายเหตุ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>v[i]</code> <code>v.size()</code> <code>v.front()</code> <code>v.back()</code></td><td>O(1)</td><td></td></tr>
+            <tr><td><code>v.push_back(x)</code></td><td>O(1) โดยเฉลี่ย</td><td>บางครั้งต้องย้ายของทั้งหมด ดูข้างล่าง</td></tr>
+            <tr><td><code>v.pop_back()</code></td><td>O(1)</td><td></td></tr>
+            <tr><td><code>v.insert(v.begin() + i, x)</code> <code>v.erase(v.begin() + i)</code></td><td>O(N − i)</td><td>ทุกตัวที่อยู่หลังช่อง i ต้องเลื่อน</td></tr>
+            <tr><td><code>v.erase(v.begin())</code> <code>v.insert(v.begin(), x)</code></td><td>O(N)</td><td>เลื่อนทั้งแถว</td></tr>
+            <tr><td><code>vector&lt;int&gt; v(n)</code> <code>v.clear()</code> <code>w = v</code></td><td>O(N)</td><td>สร้าง ล้าง หรือคัดลอกทีละช่อง</td></tr>
+            <tr><td><code>sort(v.begin(), v.end())</code></td><td>O(N log N)</td><td>10<sup>6</sup> ตัวใช้ 0.064 วินาทีในหน้า 18.2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="push-back">ทำไม push_back เป็น O(1) โดยเฉลี่ย</h3>
+
+      <p>หน้า 16.2 เห็นแล้วว่า vector จองช่องไว้เผื่อมากกว่าที่ใช้ และเมื่อช่องเต็ม จะจองที่ใหม่ขนาดเป็นสองเท่าแล้วย้ายของเดิมทุกตัวไป การย้ายครั้งนั้นเป็น O(N) แต่เกิดนานๆ ครั้ง push_back N ครั้งย้ายของรวมกันแค่ 1 + 2 + 4 + ... ไปจนถึงขนาดล่าสุด ซึ่งรวมแล้วไม่ถึง 2N ตัว เฉลี่ยแล้วครั้งละไม่ถึง 2 ตัว จึงเรียกว่า O(1) โดยเฉลี่ย บนเครื่องที่เขียนเอกสารนี้แบบ <code>-O2</code> push_back 10<sup>7</sup> ตัวใช้ 0.017 วินาที และ 10<sup>8</sup> ตัวใช้ 0.145 วินาที (ค่ากลาง 5 ครั้ง วิธีวัดเหมือนหน้า 18.2)</p>
+
+      <h2 id="erase-front">กับดัก erase หัว vector</h2>
+
+      <p>ร้านขนมมีลูกค้าต่อคิว N คน ขายให้คนหัวคิวทีละคน ถ้าเก็บคิวใน vector แล้วลบคนหัวคิวด้วย <code>erase</code> โค้ดสั้นและถูก</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; line;
+    for (int i = 0; i &lt; n; i++) {
+        line.push_back(i);
+    }
+    clock_t start = clock();
+    long long served = 0;
+    while (!line.empty()) {
+        served += line.front();
+        line.erase(line.begin());
+    }
+    clock_t end = clock();
+    cout &lt;&lt; "served = " &lt;&lt; served &lt;&lt; '\n';
+    cout &lt;&lt; "time = " &lt;&lt; fixed &lt;&lt; setprecision(3) &lt;&lt; (double)(end - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p>แต่ <code>erase(line.begin())</code> ต้องเลื่อนทุกคนที่เหลือขึ้นมาหนึ่งช่อง แบบที่เห็นในหน้า 5.5 ครั้งแรกเลื่อน N − 1 ตัว ครั้งต่อไป N − 2 ตัว รวมเป็น N(N − 1) / 2 คือ O(N<sup>2</sup>) ทั้งที่ลูปมีชั้นเดียว เป็นปัญหาเดียวกับการแทรกที่หัว vector ในหน้า 17.2 แต่อยู่ฝั่งลบ เทียบกับอีกสองวิธีที่ไม่ต้องเลื่อนใคร</p>
+
+      <ul>
+        <li>ใช้ <code>queue&lt;int&gt;</code> จากบทที่ 17 เปลี่ยน <code>push_back</code> เป็น <code>push</code> และ <code>erase(line.begin())</code> เป็น <code>pop()</code></li>
+        <li>เก็บใน vector เหมือนเดิม แต่ไม่ลบจริง ใช้ตัวแปร <code>head</code> จำว่าหัวคิวอยู่ช่องไหน ขายแล้วก็ <code>head++</code></li>
+      </ul>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>vector กับ <code>erase</code> หัว</th><th>queue กับ <code>pop</code></th><th>vector กับ <code>head++</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10,000</td><td>0.001 วินาที</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>100,000</td><td>0.174 วินาที</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>200,000</td><td>0.686 วินาที</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>73.906 วินาที</td><td>0.001 วินาที</td><td>0.000 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>N สองแสนยังพอทน แต่ล้านคนใช้เวลากว่าหนึ่งนาที ถ้าต้องลบหัวแถวบ่อยๆ ให้ใช้ <code>queue</code> หรือ <code>deque</code> ซึ่งออกแบบมาให้ทำที่หัวแถวได้ใน O(1)</p>
+
+      <h2 id="containers">stack queue deque</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>โครงสร้าง</th><th>คำสั่งที่เป็น O(1)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>stack</code></td><td><code>push</code> <code>pop</code> <code>top</code> <code>size</code> <code>empty</code></td></tr>
+            <tr><td><code>queue</code></td><td><code>push</code> <code>pop</code> <code>front</code> <code>back</code> <code>size</code> <code>empty</code></td></tr>
+            <tr><td><code>deque</code></td><td><code>push_front</code> <code>push_back</code> <code>pop_front</code> <code>pop_back</code> <code>front</code> <code>back</code> <code>d[i]</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสามแบบไม่มีคำสั่งค้นหาหรือลบตรงกลาง ถ้าต้องหาว่ามีค่า x อยู่ไหม ก็ต้องไล่ทีละตัวเองเป็น O(N) โจทย์ที่ต้องค้นบ่อยๆ ใช้ <code>set</code> กับ <code>map</code> ในบทที่ 20</p>
+
+      <h2 id="string">string ต่อท้าย</h2>
+
+      <p><code>string</code> ทำงานเหมือน vector ของ <code>char</code> <code>s += c</code> และ <code>s.push_back(c)</code> ต่อท้ายตัวเดิมได้ใน O(1) โดยเฉลี่ย แต่ <code>s = s + c</code> ต่างกัน <code>s + c</code> สร้างสตริงใหม่ทั้งก้อนก่อน คัดลอกทุกตัวของ s ไปไว้ แล้วค่อยเอามาแทน s เดิม ทุกรอบจึงเป็น O(ความยาวของ s)</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    clock_t start = clock();
+    string s;
+    for (int i = 0; i &lt; n; i++) {
+        s = s + (char)('a' + i % 26);
+    }
+    clock_t end = clock();
+    cout &lt;&lt; "length = " &lt;&lt; s.size() &lt;&lt; '\n';
+    cout &lt;&lt; "time = " &lt;&lt; fixed &lt;&lt; setprecision(3) &lt;&lt; (double)(end - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p>เทียบกับแก้บรรทัดที่ 11 เป็น <code>s += (char)('a' + i % 26);</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th><code>s = s + c</code></th><th><code>s += c</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10,000</td><td>0.001 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>100,000</td><td>0.065 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>200,000</td><td>0.280 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>1,000,000</td><td>9.847 วินาที</td><td>0.001 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คำสั่งอื่นของ string ที่ต้องรู้เวลา <code>s.size()</code> เป็น O(1) ไม่ต้องนับใหม่ทุกครั้งแบบ <code>strlen</code> ในหน้า 6.4 ส่วน <code>s.substr(i, k)</code> คัดลอก k ตัวจึงเป็น O(k) และการต่อไว้ข้างหน้าอย่าง <code>s = c + s</code> เป็น O(ความยาวของ s) ทุกครั้งเหมือนกัน</p>
+
+      <h2 id="memory">หน่วยความจำ</h2>
+
+      <p>โจทย์ส่วนใหญ่จำกัดหน่วยความจำไว้ 256 MB โปรแกรมที่ใช้เกินจะถูกหยุดแม้คำตอบถูก ขนาดของข้อมูลแต่ละชนิดดูได้ด้วย <code>sizeof</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sizes"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    cout &lt;&lt; "char " &lt;&lt; (int)sizeof(char) &lt;&lt; '\n';
+    cout &lt;&lt; "bool " &lt;&lt; (int)sizeof(bool) &lt;&lt; '\n';
+    cout &lt;&lt; "int " &lt;&lt; (int)sizeof(int) &lt;&lt; '\n';
+    cout &lt;&lt; "long long " &lt;&lt; (int)sizeof(long long) &lt;&lt; '\n';
+    cout &lt;&lt; "double " &lt;&lt; (int)sizeof(double) &lt;&lt; '\n';
+    cout &lt;&lt; "pair&lt;int, int&gt; " &lt;&lt; (int)sizeof(pair&lt;int, int&gt;) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sizes" data-title="C:\code\sizes.exe"><pre><code>char 1
+bool 1
+int 4
+long long 8
+double 8
+pair&lt;int, int&gt; 8
+</code></pre></div>
+
+      <p>หน่วยความจำของอาเรย์คือจำนวนช่องคูณขนาดของหนึ่งช่องเป็น byte แล้วหารด้วย 10<sup>6</sup> ได้เป็น MB 1 MB จริงๆ คือ 1,048,576 byte การหารด้วยล้านจึงได้ตัวเลขที่เกินจริงเล็กน้อย ซึ่งปลอดภัยไว้ก่อน vector ก็คิดแบบเดียวกัน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ประกาศ</th><th>คำนวณ</th><th>ประมาณ</th><th>ใต้ 256 MB ไหม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>int a[1000000]</code></td><td>10<sup>6</sup> × 4</td><td>4 MB</td><td>สบาย</td></tr>
+            <tr><td><code>int a[10000000]</code></td><td>10<sup>7</sup> × 4</td><td>40 MB</td><td>ได้</td></tr>
+            <tr><td><code>long long a[10000000]</code></td><td>10<sup>7</sup> × 8</td><td>80 MB</td><td>ได้</td></tr>
+            <tr><td><code>int a[100000000]</code></td><td>10<sup>8</sup> × 4</td><td>400 MB</td><td>เกิน</td></tr>
+            <tr><td><code>int g[5000][5000]</code></td><td>2.5 × 10<sup>7</sup> × 4</td><td>100 MB</td><td>ได้</td></tr>
+            <tr><td><code>long long g[5000][5000]</code></td><td>2.5 × 10<sup>7</sup> × 8</td><td>200 MB</td><td>เฉียด</td></tr>
+            <tr><td><code>long long g[6000][6000]</code></td><td>3.6 × 10<sup>7</sup> × 8</td><td>288 MB</td><td>เกิน</td></tr>
+            <tr><td><code>bool g[10000][10000]</code></td><td>10<sup>8</sup> × 1</td><td>100 MB</td><td>ได้</td></tr>
+            <tr><td><code>int g[10000][10000]</code></td><td>10<sup>8</sup> × 4</td><td>400 MB</td><td>เกิน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ต้องรวมทุกอาเรย์ในโปรแกรม ไม่ใช่ดูทีละตัว และยังมีอีกลิมิตที่เจอในหน้า 5.5 คือตัวแปรที่ประกาศใน <code>main</code> ใช้ได้รวมราว 2 MB บนเครื่องน้อง อาเรย์ใหญ่จึงต้องประกาศนอก <code>main</code> ส่วน vector เก็บของไว้นอกพื้นที่ 2 MB นั้น บนเครื่องที่เขียนเอกสารนี้ <code>vector&lt;int&gt; a(10000000)</code> ใน <code>main</code> รันได้ปกติ แถว N = 10<sup>8</sup> ในตารางหน้า 18.2 ใช้ vector ขนาด 400 MB จึงวัดเวลาบนเครื่องเราได้ แต่ส่งให้ grader ที่จำกัด 256 MB ไม่ได้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="copy-vector">ส่ง vector ให้ฟังก์ชันโดยลืม &amp;</h3>
+
+      <p>ฟังก์ชันที่รับ vector แบบธรรมดา จะได้สำเนาของทั้ง vector ทุกครั้งที่ถูกเรียก ตามหลักส่งค่าแบบสำเนาในหน้า 8.2 ถ้าเรียกฟังก์ชันนั้นในลูป N รอบ งานคือ N × N</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long count_above(vector&lt;int&gt; scores, int pos)
+{
+    return scores[pos] &gt; 50 ? 1 : 0;
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; scores(n);
+    for (int i = 0; i &lt; n; i++) {
+        scores[i] = i % 101;
+    }
+    clock_t start = clock();
+    long long above = 0;
+    for (int i = 0; i &lt; n; i++) {
+        above += count_above(scores, i);
+    }
+    clock_t end = clock();
+    cout &lt;&lt; "above = " &lt;&lt; above &lt;&lt; '\n';
+    cout &lt;&lt; "time = " &lt;&lt; fixed &lt;&lt; setprecision(3) &lt;&lt; (double)(end - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p>แก้บรรทัดที่ 4 เป็น <code>long long count_above(const vector&lt;int&gt; &amp;scores, int pos)</code> ให้รับแบบ reference จากหน้า 15.5 ซึ่งไม่คัดลอกอะไรเลย ส่วน <code>const</code> บอกว่าฟังก์ชันจะไม่แก้ vector นั้น</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>รับแบบสำเนา</th><th>รับแบบ <code>const vector&lt;int&gt; &amp;</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10,000</td><td>0.005 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>100,000</td><td>0.437 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>200,000</td><td>2.440 วินาที</td><td>0.000 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ไม่มี error ไม่มี warning ผลลัพธ์ถูกทุกตัว ต่างกันแค่เครื่องหมาย <code>&amp;</code> ตัวเดียว ถ้าฟังก์ชันรับ vector string หรือ struct ใหญ่ๆ ให้ใส่ <code>&amp;</code> ไว้ก่อนเสมอ</p>
+
+      <h3 id="huge-array">ประกาศอาเรย์ตามขนาดที่คิดเอาเอง</h3>
+
+      <p>โจทย์ให้ตาราง N × N ช่อง โดยที่ N ≤ 20000 น้องประกาศอาเรย์ <code>int</code> ไว้นอก <code>main</code> ตามขอบเขต</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int grid[20000][20000];
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    for (int r = 0; r &lt; n; r++) {
+        for (int c = 0; c &lt; n; c++) {
+            grid[r][c] = r + c;
+        }
+    }
+    cout &lt;&lt; grid[n - 1][n - 1] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ผ่าน รันบนเครื่องที่เขียนเอกสารนี้ก็ผ่านทุกค่าของ n ไม่มีอะไรฟ้อง แต่ถ้าวัดหน่วยความจำ จะเห็นว่า Windows จองที่ไว้ให้ 1530 MB ตั้งแต่เปิดโปรแกรม ป้อน n = 1000 ใช้หน่วยความจำจริง 13.3 MB และป้อน n = 20000 ใช้จริง 1531.5 MB เกิน 256 MB ไปหลายเท่า ที่เครื่องเราไม่ฟ้องเพราะเครื่องมี RAM ราว 32 GB</p>
+
+      <p>คำนวณตามตารางข้างบนก่อนเขียนก็รู้แล้ว 20000 × 20000 × 4 byte คือ 1600 MB วิธีนี้ใช้ไม่ได้ตั้งแต่ต้น ต้องหาวิธีที่ไม่ต้องเก็บทั้งตาราง และอย่าวางใจว่าชุดทดสอบเล็กจะรอด grader แต่ละแบบนับหน่วยความจำต่างกัน บางแบบนับจากที่จองไว้ตั้งแต่เริ่มโปรแกรม ให้คิดจากขนาดที่ประกาศเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>vector <code>push_back</code> <code>pop_back</code> <code>v[i]</code> เป็น O(1) แต่ <code>erase</code> หรือ <code>insert</code> ที่หัวเป็น O(N)</li>
+        <li>ลบหัวแถวบ่อยๆ ใช้ <code>queue</code> หรือ <code>deque</code> หรือใช้ตัวแปร <code>head</code></li>
+        <li><code>s += c</code> เป็น O(1) โดยเฉลี่ย <code>s = s + c</code> เป็น O(N) ทุกครั้ง</li>
+        <li>ส่ง vector string หรือ struct ให้ฟังก์ชันด้วย <code>&amp;</code> ไม่อย่างนั้นคัดลอกทุกครั้งที่เรียก</li>
+        <li>หน่วยความจำคือจำนวนช่องคูณ <code>sizeof</code> หารล้านได้ MB รวมทุกอาเรย์แล้วต้องไม่เกินลิมิต ส่วนใหญ่คือ 256 MB</li>
+      </ul>
+    </article>
