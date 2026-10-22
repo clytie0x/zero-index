@@ -1,0 +1,570 @@
+<article class="doc">
+      <h1>27.1 กราฟและการเก็บในโปรแกรม</h1>
+
+      <p>โจทย์ที่พูดถึงหมู่บ้านกับถนน เพื่อนกับเพื่อน สถานีรถไฟฟ้า ทางเดินในเขาวงกต หรือการเทน้ำจากขวดหนึ่งไปอีกขวด ดูต่างกันมาก แต่ถ้าตัดเรื่องราวทิ้ง ทุกข้อเหลือแค่ของหลายชิ้นกับคู่ของที่เชื่อมกัน สิ่งนี้เรียกว่า <strong>กราฟ (graph)</strong> เรียนวิธีคิดกับกราฟครั้งเดียว ใช้ได้กับโจทย์ทุกแบบที่ว่ามา หน้านี้ทำความรู้จักกราฟ แล้วเก็บกราฟลงในโปรแกรมสองแบบ คือ adjacency matrix กับ adjacency list พร้อมวัดว่าเลือกผิดแบบแล้วเสียอะไร</p>
+
+      <h2 id="what-is-a-graph">กราฟคืออะไร</h2>
+
+      <p>กราฟประกอบด้วยสองอย่าง <strong>จุดยอด (vertex)</strong> คือของแต่ละชิ้น เช่น บ้านหนึ่งหลัง และ <strong>เส้นเชื่อม (edge)</strong> คือคู่ของจุดยอดที่เชื่อมกันโดยตรง เช่น ถนนหนึ่งเส้นระหว่างบ้านสองหลัง โจทย์มักเรียกจุดยอดว่า node และใช้ตัวอักษร V แทนจำนวนจุดยอด E แทนจำนวนเส้นเชื่อม หรือใช้ N กับ M ตามข้อมูลเข้า</p>
+
+      <p>ภาพนี้คือหมู่บ้านเล็กๆ ที่มีบ้าน 9 หลัง หมายเลข 1 ถึง 9 และถนน 9 เส้น ทุกตัวอย่างในหน้า 27.1 ถึง 27.3 ใช้กราฟนี้</p>
+
+      <figure>
+        <svg viewBox="0 0 560 220" width="560" style="max-width:100%;height:auto" role="img" aria-label="กราฟของบ้าน 9 หลัง เส้นเชื่อม 1-2 1-4 2-3 2-5 4-5 5-6 3-6 7-8 8-9 บ้าน 1 ถึง 6 เป็นกลุ่มหนึ่ง บ้าน 7 8 9 เป็นอีกกลุ่ม">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="80" y1="50" x2="160" y2="50"/>
+            <line x1="60" y1="70" x2="60" y2="140"/>
+            <line x1="200" y1="50" x2="280" y2="50"/>
+            <line x1="180" y1="70" x2="180" y2="140"/>
+            <line x1="80" y1="160" x2="160" y2="160"/>
+            <line x1="200" y1="160" x2="280" y2="160"/>
+            <line x1="300" y1="70" x2="300" y2="140"/>
+            <line x1="436" y1="61" x2="484" y2="94"/>
+            <line x1="484" y1="116" x2="436" y2="149"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="60" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="60" y="56" style="fill:var(--ink)">1</text>
+            <circle cx="180" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="180" y="56" style="fill:var(--ink)">2</text>
+            <circle cx="300" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="300" y="56" style="fill:var(--ink)">3</text>
+            <circle cx="60" cy="160" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="60" y="166" style="fill:var(--ink)">4</text>
+            <circle cx="180" cy="160" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="180" y="166" style="fill:var(--ink)">5</text>
+            <circle cx="300" cy="160" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="300" y="166" style="fill:var(--ink)">6</text>
+            <circle cx="420" cy="50" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="420" y="56" style="fill:var(--ink)">7</text>
+            <circle cx="500" cy="105" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="500" y="111" style="fill:var(--ink)">8</text>
+            <circle cx="420" cy="160" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="420" y="166" style="fill:var(--ink)">9</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px">
+            <text x="180" y="210" text-anchor="middle" style="fill:var(--muted)">กลุ่มที่ 1 บ้าน 1 ถึง 6</text>
+            <text x="460" y="210" text-anchor="middle" style="fill:var(--muted)">กลุ่มที่ 2 บ้าน 7 ถึง 9</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ตำแหน่งที่วาดไม่มีความหมาย ย้ายบ้าน 9 ไปไว้มุมซ้ายก็ยังเป็นกราฟเดิม สิ่งเดียวที่สำคัญคือใครเชื่อมกับใคร คำที่โจทย์ใช้บ่อยมีดังนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำ</th><th>ความหมาย</th><th>ในภาพ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เพื่อนบ้าน (neighbor, adjacent)</td><td>จุดยอดที่มีเส้นเชื่อมกันโดยตรง</td><td>เพื่อนบ้านของ 2 คือ 1 3 5</td></tr>
+            <tr><td>ดีกรี (degree)</td><td>จำนวนเส้นเชื่อมที่ออกจากจุดยอดนั้น</td><td>ดีกรีของ 2 คือ 3 ดีกรีของ 9 คือ 1</td></tr>
+            <tr><td>เส้นทาง (path)</td><td>ลำดับจุดยอดที่ติดกันทีละคู่ ความยาวคือจำนวนเส้นเชื่อมที่ผ่าน</td><td><code>4 5 6 3</code> ยาว 3</td></tr>
+            <tr><td>วงจร (cycle)</td><td>เส้นทางที่วนกลับมาจุดเริ่ม โดยไม่ใช้เส้นเชื่อมซ้ำ</td><td><code>1 2 5 4 1</code></td></tr>
+            <tr><td>ส่วนเชื่อมต่อ (connected component)</td><td>กลุ่มของจุดยอดที่เดินไปหากันได้ทั้งหมด</td><td>มีสองกลุ่ม คือ 1 ถึง 6 กับ 7 ถึง 9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ต้นไม้ในบทที่ 26 ก็คือกราฟแบบหนึ่ง เป็นกราฟที่ทุกจุดเดินถึงกันหมด และไม่มีวงจรเลย ต้นไม้ N จุดจึงมีเส้นเชื่อม N - 1 เส้นพอดี กลุ่มบ้าน 7 8 9 ในภาพเป็นต้นไม้ ส่วนกลุ่มบ้าน 1 ถึง 6 ไม่ใช่ เพราะมีวงจร ความต่างข้อนี้คือเหตุผลที่บทนี้ต้องมีของใหม่ที่ต้นไม้ไม่ต้องใช้ คือการจำว่าจุดไหนเคยไปแล้ว เพราะในกราฟทั่วไป เดินไปเรื่อยๆ อาจวนกลับมาที่เดิม</p>
+
+      <h2 id="kinds">กราฟสามแบบที่เจอบ่อย</h2>
+
+      <p><strong>กราฟไม่มีทิศ (undirected graph)</strong> คือแบบในภาพข้างบน ถนนจาก 1 ไป 2 ใช้ขับจาก 2 กลับมา 1 ได้ด้วย ความเป็นเพื่อนก็เป็นแบบนี้</p>
+
+      <p><strong>กราฟมีทิศ (directed graph)</strong> เส้นเชื่อมมีลูกศร ไปได้ทางเดียว เช่น ถนนเดินรถทางเดียว การติดตามในโซเชียลที่ A ติดตาม B โดย B ไม่ต้องติดตาม A ภาพนี้ไปจาก 1 ถึง 4 ได้ แต่จาก 4 ไปไหนไม่ได้เลย</p>
+
+      <figure>
+        <svg viewBox="0 0 490 210" width="490" style="max-width:100%;height:auto" role="img" aria-label="กราฟมีทิศ 5 จุด ลูกศร 1 ไป 2, 2 ไป 3, 3 ไป 1, 3 ไป 4 และ 5 ไป 4">
+          <defs><marker id="g27-oneway-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--muted)"/></marker></defs>
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="80" y1="60" x2="177" y2="60" marker-end="url(#g27-oneway-arrow)"/>
+            <line x1="189" y1="76" x2="143" y2="141" marker-end="url(#g27-oneway-arrow)"/>
+            <line x1="119" y1="144" x2="73" y2="79" marker-end="url(#g27-oneway-arrow)"/>
+            <line x1="150" y1="160" x2="267" y2="160" marker-end="url(#g27-oneway-arrow)"/>
+            <line x1="410" y1="160" x2="313" y2="160" marker-end="url(#g27-oneway-arrow)"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="60" cy="60" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="60" y="66" style="fill:var(--ink)">1</text>
+            <circle cx="200" cy="60" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="200" y="66" style="fill:var(--ink)">2</text>
+            <circle cx="130" cy="160" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="130" y="166" style="fill:var(--ink)">3</text>
+            <circle cx="290" cy="160" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="290" y="166" style="fill:var(--ink)">4</text>
+            <circle cx="430" cy="160" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="430" y="166" style="fill:var(--ink)">5</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p><strong>กราฟมีน้ำหนัก (weighted graph)</strong> เส้นเชื่อมมีตัวเลขกำกับ เช่น ความยาวถนนเป็นกิโลเมตร หรือค่าผ่านทาง ในภาพนี้ทางที่ผ่านถนนน้อยเส้นที่สุดจาก 1 ไป 4 มีสองทาง ยาวเท่ากันคือสองเส้น แต่ทาง <code>1 2 4</code> ยาว 9 กิโลเมตร สั้นกว่าทาง <code>1 3 4</code> ที่ยาว 12 กิโลเมตร</p>
+
+      <figure>
+        <svg viewBox="0 0 440 200" width="440" style="max-width:100%;height:auto" role="img" aria-label="กราฟมีน้ำหนัก 4 จุด ถนน 1-2 ยาว 7 กิโลเมตร 1-3 ยาว 3 2-4 ยาว 2 และ 3-4 ยาว 9">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="79" y1="93" x2="201" y2="47"/>
+            <line x1="79" y1="107" x2="201" y2="153"/>
+            <line x1="239" y1="47" x2="361" y2="93"/>
+            <line x1="239" y1="153" x2="361" y2="107"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="60" cy="100" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="60" y="106" style="fill:var(--ink)">1</text>
+            <circle cx="220" cy="40" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="220" y="46" style="fill:var(--ink)">2</text>
+            <circle cx="220" cy="160" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="220" y="166" style="fill:var(--ink)">3</text>
+            <circle cx="380" cy="100" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="380" y="106" style="fill:var(--ink)">4</text>
+            <text x="145" y="88" style="fill:var(--brand-text)">7</text>
+            <text x="135" y="148" style="fill:var(--brand-text)">3</text>
+            <text x="295" y="88" style="fill:var(--brand-text)">2</text>
+            <text x="305" y="148" style="fill:var(--brand-text)">9</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>บทนี้ทำงานกับกราฟที่ <strong>ไม่มีน้ำหนัก</strong> ทุกเส้นนับเป็นหนึ่งก้าวเท่ากัน ยกเว้นหัวข้อเสริม 0-1 BFS ในหน้า 27.5 ที่น้ำหนักเป็นได้แค่ 0 กับ 1 การหาทางที่สั้นที่สุดเมื่อน้ำหนักเป็นตัวเลขอะไรก็ได้ ต้องใช้วิธีของบทที่ 28</p>
+
+      <h2 id="input">ข้อมูลเข้าของโจทย์กราฟ</h2>
+
+      <p>โจทย์เกือบทุกข้อให้กราฟมาแบบเดียวกัน บรรทัดแรกมีจำนวนจุดยอด N กับจำนวนเส้นเชื่อม M แล้วตามด้วยเส้นเชื่อมบรรทัดละเส้น เป็นคู่หมายเลขจุดยอดสองจุด ถ้ามีน้ำหนักก็มีตัวเลขที่สามต่อท้าย หมายเลขจุดยอดมักเริ่มที่ 1 ไม่ใช่ 0 กราฟของหมู่บ้านในภาพเขียนได้แบบนี้</p>
+
+      <div class="code" data-lang="text"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+
+      <p>รายการเส้นเชื่อมแบบนี้เรียกว่า edge list เก็บง่าย แต่ถามว่า "บ้าน 5 มีเพื่อนบ้านเป็นใครบ้าง" แล้วต้องไล่ดูทุกเส้น งานแทบทุกอย่างในบทนี้ถามคำถามนี้ซ้ำเป็นแสนครั้ง จึงต้องแปลงให้อยู่ในรูปที่ตอบได้เร็วก่อน</p>
+
+      <h2 id="matrix">adjacency matrix</h2>
+
+      <p>วิธีแรกคือตาราง N × N ช่องแถว u คอลัมน์ v เป็น <code>true</code> ถ้า u กับ v เชื่อมกัน เรียกว่า <strong>adjacency matrix</strong> (เมทริกซ์ประชิด) ใช้อาเรย์สองมิติจากบทที่ 7 ได้ตรงๆ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="matrix"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+bool road[101][101]; // (1)!
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        road[u][v] = true;
+        road[v][u] = true; // (2)!
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        for (int v = 1; v &lt;= n; v++) {
+            cout &lt;&lt; road[u][v];
+        }
+        cout &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ประกาศนอก <code>main</code> ทุกช่องเริ่มเป็น <code>false</code> ให้เอง และไม่ติดขีดจำกัดราว 2 MB ของตัวแปรใน <code>main</code> ตามหน้า 5.5 จองไว้ 101 แถวเพราะใช้ช่อง 1 ถึง 100 ไม่ใช้ช่อง 0</li>
+        <li>ถนนวิ่งได้สองทาง จึงต้องเขียนทั้งช่อง <code>[u][v]</code> และ <code>[v][u]</code> ถ้าเป็นกราฟมีทิศ เขียนแค่ช่องแรก</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="matrix" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="matrix" data-title="C:\code\road_matrix.exe"><pre><code>010100000
+101010000
+010001000
+100010000
+010101000
+001010000
+000000010
+000000101
+000000010
+</code></pre></div>
+      </div>
+
+      <p>แถวที่ 2 คือ <code>101010000</code> มี 1 ที่คอลัมน์ 1 3 5 ตรงกับเพื่อนบ้านของบ้าน 2 ตารางสมมาตรกันตามเส้นทแยง เพราะถนนวิ่งได้สองทาง ข้อดีคือถามว่า "u กับ v เชื่อมกันไหม" ได้ใน O(1) แค่ดู <code>road[u][v]</code> ข้อเสียคือต้องจองที่ N<sup>2</sup> ช่องเสมอ แม้ถนนจะมีไม่กี่เส้น และการหาเพื่อนบ้านทั้งหมดของ u ต้องไล่ทั้งแถว N ช่อง</p>
+
+      <h2 id="list">adjacency list</h2>
+
+      <p>วิธีที่สองเก็บเฉพาะเพื่อนบ้านที่มีจริง แต่ละจุดยอดมี vector ของตัวเองหนึ่งตัว ใส่หมายเลขเพื่อนบ้านลงไป เรียกว่า <strong>adjacency list</strong> (รายการประชิด) เป็นรูปแบบเดียวกับรายชื่อสมาชิกชุมนุมในหน้า 16.2 ที่แต่ละแถวยาวไม่เท่ากัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="adj-list"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN]; // (1)!
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v); // (2)!
+        adj[v].push_back(u);
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; " (degree " &lt;&lt; adj[u].size() &lt;&lt; "):"; // (3)!
+        for (int v : adj[u]) {
+            cout &lt;&lt; ' ' &lt;&lt; v;
+        }
+        cout &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อาเรย์ของ vector แต่ละช่องเป็น vector ว่างหนึ่งตัว <code>adj[u]</code> คือรายชื่อเพื่อนบ้านของ u ตัว vector ว่างกินที่ช่องละ 24 byte ข้อมูลจริงอยู่นอก stack จึงประกาศแสนช่องได้ไม่มีปัญหา</li>
+        <li>ถนนหนึ่งเส้นเพิ่มเพื่อนบ้านให้ทั้งสองฝั่ง เส้นเชื่อม M เส้นจึงเก็บรวม 2M ตัว ถ้าเป็นกราฟมีทิศ เขียนแค่บรรทัดแรก</li>
+        <li>ดีกรีคือขนาดของรายการ ได้ทันทีด้วย <code>size()</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="adj-list" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="adj-list" data-title="C:\code\road_list.exe"><pre><code>1 (degree 2): 2 4
+2 (degree 3): 1 3 5
+3 (degree 2): 2 6
+4 (degree 2): 1 5
+5 (degree 3): 2 4 6
+6 (degree 2): 5 3
+7 (degree 1): 8
+8 (degree 2): 7 9
+9 (degree 1): 8
+</code></pre></div>
+      </div>
+
+      <p>ลำดับในรายการคือลำดับที่อ่านเข้ามา บ้าน 6 จึงเป็น <code>5 3</code> ไม่ใช่ <code>3 5</code> เพราะถนน 5-6 มาก่อนถนน 3-6 ปกติลำดับไม่มีผลกับคำตอบ ถ้าโจทย์บังคับให้ไปเพื่อนบ้านหมายเลขน้อยก่อน ให้ <code>sort</code> ทุกรายการหลังอ่านครบ ถ้าไม่อยากจองเผื่อด้วย <code>MAXN</code> ก็ใช้ <code>vector&lt;vector&lt;int&gt;&gt; adj(n + 1);</code> หลังอ่าน n ได้ ใช้งานเหมือนกันทุกอย่าง</p>
+
+      <h3 id="directed-list">กราฟมีทิศ</h3>
+
+      <p>เก็บเฉพาะทิศที่ไปได้ ตัวอย่างนี้ใช้กราฟถนนทางเดียวในภาพก่อนหน้า และนับด้วยว่ามีลูกศรกี่อันชี้เข้าแต่ละจุด เรียกว่า in-degree</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="oneway"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+int in_degree[MAXN];
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int from, to;
+        cin &gt;&gt; from &gt;&gt; to;
+        adj[from].push_back(to);
+        in_degree[to]++;
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; " in " &lt;&lt; in_degree[u] &lt;&lt; " out:";
+        for (int v : adj[u]) {
+            cout &lt;&lt; ' ' &lt;&lt; v;
+        }
+        cout &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="oneway" data-title="ข้อมูลเข้า"><pre><code>5 5
+1 2
+2 3
+3 1
+3 4
+5 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="oneway" data-title="C:\code\oneway.exe"><pre><code>1 in 1 out: 2
+2 in 1 out: 3
+3 in 1 out: 1 4
+4 in 2 out:
+5 in 0 out: 4
+</code></pre></div>
+      </div>
+
+      <p><code>adj[4]</code> ว่าง เพราะไม่มีถนนออกจาก 4 แต่มีลูกศรชี้เข้า 4 สองอัน ถ้าโจทย์ถามว่า "ใครขับมาถึงจุด 4 ได้บ้าง" รายการนี้ตอบไม่ได้ตรงๆ ต้องสร้างรายการอีกชุดที่กลับทิศทุกเส้น ซึ่งจะได้ลองในแบบฝึกหัด</p>
+
+      <h3 id="weighted-list">กราฟมีน้ำหนัก</h3>
+
+      <p>แต่ละช่องในรายการเก็บเป็น <code>pair</code> ของเพื่อนบ้านกับน้ำหนัก แล้วแตกออกด้วย structured binding ตามหน้า 16.4</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="weighted"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;pair&lt;int, int&gt;&gt; adj[MAXN];
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, km;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; km;
+        adj[u].push_back({v, km});
+        adj[v].push_back({u, km});
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; ':';
+        for (auto [v, km] : adj[u]) {
+            cout &lt;&lt; ' ' &lt;&lt; v &lt;&lt; '(' &lt;&lt; km &lt;&lt; " km)";
+        }
+        cout &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="weighted" data-title="ข้อมูลเข้า"><pre><code>4 4
+1 2 7
+1 3 3
+2 4 2
+3 4 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="weighted" data-title="C:\code\weighted.exe"><pre><code>1: 2(7 km) 3(3 km)
+2: 1(7 km) 4(2 km)
+3: 1(3 km) 4(9 km)
+4: 2(2 km) 3(9 km)
+</code></pre></div>
+      </div>
+
+      <p>รูปแบบนี้จะใช้อีกครั้งกับ 0-1 BFS ในหน้า 27.5 และใช้ทั้งบทที่ 28</p>
+
+      <h2 id="compare">เลือกแบบไหน</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>งาน</th><th>adjacency matrix</th><th>adjacency list</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>หน่วยความจำ</td><td>V<sup>2</sup> ช่อง</td><td>V + 2E ช่อง (กราฟมีทิศ V + E)</td></tr>
+            <tr><td>u กับ v เชื่อมกันไหม</td><td>O(1)</td><td>O(ดีกรีของ u) ต้องไล่ในรายการ</td></tr>
+            <tr><td>ไล่เพื่อนบ้านทั้งหมดของ u</td><td>O(V)</td><td>O(ดีกรีของ u)</td></tr>
+            <tr><td>ไล่เพื่อนบ้านของทุกจุด</td><td>O(V<sup>2</sup>)</td><td>O(V + E)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>งานในบทนี้ทั้ง DFS และ BFS ไล่เพื่อนบ้านของทุกจุดครบหนึ่งรอบ จึงเป็นแถวสุดท้ายของตาราง ใช้ adjacency list ได้ O(V + E) ส่วน adjacency matrix ได้ O(V<sup>2</sup>) เสมอไม่ว่าจะมีถนนกี่เส้น</p>
+
+      <p>เรื่องหน่วยความจำตัดสินได้เร็วกว่า โจทย์ค่าย 2 และ TOI ให้ N ถึงแสนหรือสองแสนเป็นปกติ adjacency matrix แบบ <code>bool</code> ของ N = 100000 คือ 10<sup>10</sup> byte หรือ 10 GB ขณะที่โจทย์ส่วนใหญ่จำกัดหน่วยความจำไว้ราว 256 MB ส่วนโปรแกรมที่ใช้ adjacency list ในหัวข้อถัดไป กับ N = 100000 และ M = 200000 ใช้หน่วยความจำสูงสุดทั้งโปรแกรมแค่ 13.8 MB หลักเลือกจึงง่าย</p>
+
+      <ul>
+        <li>N ไม่เกินสองสามพัน และอยากถามว่า u กับ v เชื่อมกันไหมบ่อยๆ ใช้ adjacency matrix ได้</li>
+        <li>นอกนั้นใช้ adjacency list เสมอ</li>
+      </ul>
+
+      <h2 id="timing">เร็วต่างกันแค่ไหน</h2>
+
+      <p>สถานีรถเมล์ N สถานีเชื่อมกันด้วยถนน M เส้น สถานีที่ i มีคนรอ w<sub>i</sub> คน หาสถานีที่สถานีข้างเคียงทั้งหมดรวมกันมีคนรอมากที่สุด ถ้าเท่ากันเลือกหมายเลขน้อย งานนี้คือไล่เพื่อนบ้านของทุกสถานีครบหนึ่งรอบพอดี</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bus-stops"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 200001;
+vector&lt;int&gt; adj[MAXN];
+int waiting[MAXN];
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int u = 1; u &lt;= n; u++) {
+        cin &gt;&gt; waiting[u];
+    }
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    int best = 1;
+    long long best_sum = -1;
+    for (int u = 1; u &lt;= n; u++) {
+        long long sum = 0;
+        for (int v : adj[u]) {
+            sum += waiting[v];
+        }
+        if (sum &gt; best_sum) {
+            best_sum = sum;
+            best = u;
+        }
+    }
+    cout &lt;&lt; best &lt;&lt; ' ' &lt;&lt; best_sum &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bus-stops" data-title="ข้อมูลเข้า"><pre><code>9 9
+5 3 8 2 7 1 4 6 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bus-stops" data-title="C:\code\bus_stops.exe"><pre><code>2 20
+</code></pre></div>
+      </div>
+
+      <p>สถานี 2 มีเพื่อนบ้านคือ 1 3 5 คนรอรวม 5 + 8 + 7 = 20 ฉบับ adjacency matrix ต่างกันแค่ประกาศ <code>bool road[MAXN][MAXN];</code> แทน และลูปข้างในต้องไล่ทุกสถานี</p>
+
+      <div class="code" data-lang="cpp"><pre><code>for (int v = 1; v &lt;= n; v++) {
+    if (road[u][v]) {
+        sum += waiting[v];
+    }
+}
+</code></pre></div>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 กราฟสุ่ม รันแต่ละแบบ 5 รอบโดยไม่นับรอบแรกหลังคอมไพล์ ตารางเป็นค่ากลาง เวลารวมการอ่านข้อมูลด้วย หน่วยความจำสูงสุดวัดจาก PeakWorkingSet ของทั้งโปรแกรมแบบ <code>-O2</code> ฉบับ list ประกาศ <code>MAXN</code> ไว้สองแสนช่องทุกครั้ง จึงใช้อย่างน้อยราว 10 MB แม้กราฟจะเล็ก</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>วิธี</th><th>หน่วยความจำสูงสุด</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">N = 10000, M = 50000</td><td>matrix O(N<sup>2</sup>)</td><td>139.8 MB</td><td>0.160 วินาที</td><td>0.154 วินาที</td></tr>
+            <tr><td>list O(N + M)</td><td>10.5 MB</td><td>0.050 วินาที</td><td>0.038 วินาที</td></tr>
+            <tr><td rowspan="2">N = 20000, M = 100000</td><td>matrix</td><td>386.9 MB</td><td>0.458 วินาที</td><td>0.336 วินาที</td></tr>
+            <tr><td>list</td><td>11.6 MB</td><td>0.055 วินาที</td><td>0.044 วินาที</td></tr>
+            <tr><td rowspan="2">N = 200000, M = 200000</td><td>matrix</td><td>ต้องจอง 40 GB ไม่ได้รัน</td><td>-</td><td>-</td></tr>
+            <tr><td>list</td><td>14.3 MB</td><td>0.160 วินาที</td><td>0.127 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>N เพิ่มสองเท่า matrix ช้าลงสองถึงสามเท่า และกินหน่วยความจำเกือบสามเท่า ส่วน list โตตามขนาดข้อมูลที่อ่าน ที่ N = 20000 matrix ยังทันเวลา เพราะการไล่ <code>bool</code> ที่เรียงติดกันเป็นงานที่ CPU ทำได้เร็วมาก แต่ใช้หน่วยความจำเกือบ 400 MB เกินขีดจำกัดของโจทย์ส่วนใหญ่ไปแล้ว ปัญหาจริงของ matrix จึงเป็นหน่วยความจำก่อนเวลา</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="one-direction">แบบที่ 1 ลืมใส่เส้นกลับ</h3>
+
+      <p>ในโปรแกรม adj-list ลบบรรทัด <code>adj[v].push_back(u);</code> ออก เพราะคิดว่าใส่ถนนไปแล้วหนึ่งครั้ง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="no-reverse"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; " (degree " &lt;&lt; adj[u].size() &lt;&lt; "):";
+        for (int v : adj[u]) {
+            cout &lt;&lt; ' ' &lt;&lt; v;
+        }
+        cout &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="no-reverse" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="no-reverse" data-title="C:\code\road_list.exe"><pre><code>1 (degree 2): 2 4
+2 (degree 2): 3 5
+3 (degree 1): 6
+4 (degree 1): 5
+5 (degree 1): 6
+6 (degree 0):
+7 (degree 1): 8
+8 (degree 1): 9
+9 (degree 0):
+</code></pre></div>
+      </div>
+
+      <p>คอมไพล์ผ่าน ไม่มีคำเตือน แต่กราฟกลายเป็นกราฟมีทิศโดยไม่ตั้งใจ บ้าน 6 มีดีกรี 0 ทั้งที่มีถนนสองเส้น บ้าน 2 หายเพื่อนบ้านไปหนึ่งหลัง ถ้าเอากราฟนี้ไปหาว่าบ้าน 6 ไปบ้าน 1 ได้ไหม จะได้คำตอบว่าไม่ได้ ทุกครั้งที่สร้างกราฟ ให้พิมพ์รายการของกราฟเล็กๆ ออกมาเทียบกับภาพก่อน แล้วค่อยเขียนส่วนที่เหลือ</p>
+
+      <h3 id="matrix-in-main">แบบที่ 2 ประกาศ matrix ใน main</h3>
+
+      <p>โจทย์ให้ N ไม่เกิน 2000 จึงประกาศ matrix ขนาดพอดีไว้ใน <code>main</code> พร้อมตั้งค่าเริ่มต้นเป็น 0 ด้วย <code>= {}</code></p>
+
+      <div class="code" data-lang="cpp"><pre><code>int main()
+{
+    bool road[2001][2001] = {};
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+</code></pre></div>
+
+      <p>คอมไพล์ด้วย <code>-Wall</code> ไม่มีคำเตือน แต่พอรันกับกราฟของหมู่บ้าน โปรแกรมปิดตัวทันทีโดยไม่พิมพ์อะไร</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p><code>bool</code> 2001 × 2001 ช่องคือราว 4 MB เกินที่ราว 2 MB ที่ตัวแปรใน <code>main</code> ใช้ได้ จึง stack overflow แบบเดียวกับหน้า 5.5 และ 7.1 ตั้งแต่ยังไม่ทันอ่านข้อมูล ย้ายไปประกาศนอก <code>main</code> ก็หาย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>กราฟคือจุดยอดกับเส้นเชื่อม มีแบบไม่มีทิศ มีทิศ และมีน้ำหนัก ต้นไม้คือกราฟที่ถึงกันหมดและไม่มีวงจร</li>
+        <li>adjacency matrix ตอบว่า u กับ v เชื่อมกันไหมใน O(1) แต่ใช้ที่ V<sup>2</sup> ใช้ได้เมื่อ N ไม่เกินสองสามพัน</li>
+        <li>adjacency list <code>vector&lt;int&gt; adj[MAXN]</code> ใช้ที่ V + 2E และไล่เพื่อนบ้านของทุกจุดได้ใน O(V + E) เป็นแบบที่ใช้เกือบทุกข้อ</li>
+        <li>กราฟไม่มีทิศต้องใส่ทั้ง <code>adj[u].push_back(v)</code> และ <code>adj[v].push_back(u)</code> กราฟมีน้ำหนักเก็บเป็น <code>pair</code></li>
+        <li>ประกาศกราฟนอก <code>main</code> เสมอ</li>
+      </ul>
+    </article>

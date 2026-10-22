@@ -1,0 +1,458 @@
+<article class="doc">
+      <h1>27.5 BFS บนสถานะ และ 0-1 BFS</h1>
+
+      <p>หน้า 21.5 ค้นปริศนาข้ามแม่น้ำด้วย DFS บนสถานะ และทิ้งท้ายไว้ว่า DFS ได้เส้นทาง แต่ไม่รับประกันว่าใช้ครั้งน้อยที่สุด ตอนนี้มี BFS แล้ว คำถามแบบ "ทำอย่างน้อยกี่ครั้ง" ของปริศนาเทน้ำ พลิกของ หรือเลื่อนป้าย ตอบได้ทันที เพราะสถานะก็คือจุดยอด และการกระทำหนึ่งครั้งก็คือเส้นเชื่อมหนึ่งเส้นที่ยาวเท่ากันทุกเส้น ครึ่งหลังของหน้าเป็นหัวข้อเสริม 0-1 BFS สำหรับกราฟที่บางเส้นยาว 0 บางเส้นยาว 1</p>
+
+      <h2 id="state-graph">สถานะคือจุดยอด</h2>
+
+      <p>กราฟของสถานะไม่ได้ให้มาเป็นรายการเส้นเชื่อม และไม่ต้องสร้างขึ้นมาก่อน เหมือนตารางในหน้า 27.4 ที่คำนวณเพื่อนบ้านด้วย <code>dr</code> กับ <code>dc</code> ทุกครั้ง สถานะก็คำนวณสถานะถัดไปจากการกระทำแต่ละแบบทุกครั้งที่หยิบออกจาก queue สิ่งที่ต้องเตรียมคือสามข้อเดียวกับหน้า 21.5</p>
+
+      <ol>
+        <li>สถานะเก็บเป็นอะไร ถ้าแปลงเป็นเลขช่องของอาเรย์ได้ ใช้อาเรย์เก็บระยะ ถ้าไม่ได้ ใช้ <code>map</code></li>
+        <li>จากสถานะหนึ่งไปสถานะไหนได้บ้าง</li>
+        <li>มีสถานะทั้งหมดกี่แบบ ตัวเลขนี้คูณจำนวนการกระทำต่อสถานะคือเวลาของ BFS</li>
+      </ol>
+
+      <h2 id="jugs">ตวงน้ำด้วยสองขวด</h2>
+
+      <p>มีขวดเปล่าสองใบที่ไม่มีขีดบอกปริมาตร ขวด A จุ A ลิตร ขวด B จุ B ลิตร มีก๊อกน้ำกับอ่างให้เททิ้ง ทำได้หกอย่าง เติมขวดใดขวดหนึ่งจนเต็ม เททิ้งขวดใดขวดหนึ่งจนหมด หรือเทขวดหนึ่งใส่อีกขวดจนต้นทางหมดหรือปลายทางเต็ม อยากได้น้ำ T ลิตรพอดีในขวดใบใดใบหนึ่ง ต้องทำอย่างน้อยกี่ครั้ง</p>
+
+      <p>สถานะคือน้ำในสองขวด <code>(a, b)</code> มีได้ (A + 1)(B + 1) แบบ เก็บระยะในตาราง <code>dist[a][b]</code> ได้ตรงๆ แบบตารางในหน้า 27.4 และจด <code>came_from</code> กับ <code>came_by</code> ไว้พิมพ์ขั้นตอน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="jugs"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const string action_name[6] = {"fill A", "fill B", "empty A", "empty B", "pour A into B", "pour B into A"};
+int cap_a, cap_b;
+
+pair&lt;int, int&gt; apply_action(int a, int b, int action)
+{
+    if (action == 0) {
+        return {cap_a, b};
+    }
+    if (action == 1) {
+        return {a, cap_b};
+    }
+    if (action == 2) {
+        return {0, b};
+    }
+    if (action == 3) {
+        return {a, 0};
+    }
+    if (action == 4) {
+        int moved = min(a, cap_b - b); // (1)!
+        return {a - moved, b + moved};
+    }
+    int moved = min(b, cap_a - a);
+    return {a + moved, b - moved};
+}
+
+int main()
+{
+    int target;
+    cin &gt;&gt; cap_a &gt;&gt; cap_b &gt;&gt; target;
+    vector&lt;vector&lt;int&gt;&gt; dist(cap_a + 1, vector&lt;int&gt;(cap_b + 1, -1)); // (2)!
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; came_from(cap_a + 1, vector&lt;pair&lt;int, int&gt;&gt;(cap_b + 1));
+    vector&lt;vector&lt;int&gt;&gt; came_by(cap_a + 1, vector&lt;int&gt;(cap_b + 1, -1));
+    queue&lt;pair&lt;int, int&gt;&gt; waiting;
+    dist[0][0] = 0;
+    waiting.push({0, 0});
+    int end_a = -1, end_b = -1;
+    while (!waiting.empty()) {
+        auto [a, b] = waiting.front();
+        waiting.pop();
+        if (a == target || b == target) { // (3)!
+            end_a = a;
+            end_b = b;
+            break;
+        }
+        for (int action = 0; action &lt; 6; action++) {
+            auto [na, nb] = apply_action(a, b, action);
+            if (dist[na][nb] == -1) {
+                dist[na][nb] = dist[a][b] + 1;
+                came_from[na][nb] = {a, b};
+                came_by[na][nb] = action;
+                waiting.push({na, nb});
+            }
+        }
+    }
+    if (end_a == -1) {
+        cout &lt;&lt; "impossible\n";
+        return 0;
+    }
+    vector&lt;string&gt; steps;
+    int a = end_a, b = end_b;
+    while (a != 0 || b != 0) {
+        steps.push_back(action_name[came_by[a][b]] + " -&gt; " + to_string(a) + " " + to_string(b));
+        auto [pa, pb] = came_from[a][b];
+        a = pa;
+        b = pb;
+    }
+    reverse(steps.begin(), steps.end());
+    cout &lt;&lt; "steps " &lt;&lt; steps.size() &lt;&lt; '\n';
+    for (const string &amp;s : steps) {
+        cout &lt;&lt; s &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เทได้เท่ากับน้ำที่มีในขวด A หรือที่ว่างที่เหลือในขวด B แล้วแต่อย่างไหนน้อยกว่า</li>
+        <li>สถานะเริ่มต้นคือขวดเปล่าทั้งคู่ <code>(0, 0)</code> ตารางมีขนาด (A + 1) × (B + 1) เพราะน้ำในขวด A มีได้ตั้งแต่ 0 ถึง A</li>
+        <li>เช็กตอนหยิบออก ถ้าถึงเป้าหมายแล้วหยุดได้เลย เพราะ BFS หยิบสถานะออกเรียงตามจำนวนครั้ง สถานะแรกที่ถึงเป้าหมายจึงใช้ครั้งน้อยที่สุด</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="jugs" data-title="ข้อมูลเข้า"><pre><code>9 4 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="jugs" data-title="C:\code\jugs.exe"><pre><code>steps 8
+fill A -&gt; 9 0
+pour A into B -&gt; 5 4
+empty B -&gt; 5 0
+pour A into B -&gt; 1 4
+empty B -&gt; 1 0
+pour A into B -&gt; 0 1
+fill A -&gt; 9 1
+pour A into B -&gt; 6 4
+</code></pre></div>
+      </div>
+
+      <p>ขวด 9 ลิตรกับ 4 ลิตร ตวง 6 ลิตรได้ใน 8 ครั้ง เคล็ดคือเทขวดใหญ่ลงขวดเล็กซ้ำจนเหลือเศษ 1 ลิตรไว้ในขวดเล็ก ขวดเล็กจึงรับได้อีกแค่ 3 ลิตร เติมขวดใหญ่ให้เต็มแล้วเทลงไป ขวดใหญ่จะเหลือ 9 - 3 = 6 ลิตรพอดี มีสถานะแค่ 10 × 5 = 50 แบบ แต่ละแบบลองหกการกระทำ งานรวมเป็น O(AB) ถ้าเป้าหมายไปไม่ถึง queue จะว่างโดยไม่เจอ และพิมพ์ <code>impossible</code></p>
+
+      <h3 id="jugs-timing">เทียบกับการลองทุกลำดับ</h3>
+
+      <p>วิธีจากบทที่ 21 คือลองทุกลำดับการกระทำที่ยาว k ครั้ง เริ่มจาก k = 0 แล้วเพิ่มทีละหนึ่งจนกว่าจะมีลำดับที่ถึงเป้าหมาย ได้จำนวนครั้งน้อยที่สุดเหมือนกัน แต่ต้องลองถึง 6<sup>k</sup> ลำดับ วัดบนเครื่องเดียวกับหน้า 19.1 รันแต่ละแบบ 5 รอบ ยกเว้นแถวที่คำตอบเป็น 12 ของการลองทุกลำดับรัน 3 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>A B T</th><th>คำตอบ</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>7 4 2</td><td>8 ครั้ง</td><td>ลองทุกลำดับ O(6<sup>k</sup>)</td><td>0.021 วินาที</td><td>0.023 วินาที</td></tr>
+            <tr><td>9 4 2</td><td>10 ครั้ง</td><td>ลองทุกลำดับ</td><td>0.360 วินาที</td><td>0.074 วินาที</td></tr>
+            <tr><td rowspan="2">9 5 7</td><td rowspan="2">12 ครั้ง</td><td>ลองทุกลำดับ</td><td>13.7 วินาที</td><td>2.289 วินาที</td></tr>
+            <tr><td>BFS O(AB)</td><td>0.014 วินาที</td><td>0.011 วินาที</td></tr>
+            <tr><td>19 18 9</td><td>34 ครั้ง</td><td>BFS</td><td>0.012 วินาที</td><td>0.012 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คำตอบเพิ่มสองครั้ง การลองทุกลำดับช้าลงหลายเท่าไปจนถึงหลายสิบเท่า เพราะลำดับที่ต้องลองคูณ 36 ลำดับส่วนใหญ่วนอยู่กับสถานะเดิมซ้ำแล้วซ้ำอีก เช่น เติม A แล้วเท A ทิ้ง แล้วเติม A อีก BFS ไม่เสียเวลากับลำดับพวกนี้ เพราะสถานะที่เคยไปแล้วไม่ถูกใส่ queue อีก คำตอบ 34 ครั้งที่การลองทุกลำดับต้องใช้ 6<sup>34</sup> ลำดับ BFS ยังเสร็จใน 0.012 วินาที</p>
+
+      <h2 id="string-state">สถานะที่เป็นข้อความ</h2>
+
+      <p>บางปริศนาแปลงสถานะเป็นเลขช่องของอาเรย์ได้ยาก ใช้ <code>string</code> เป็นสถานะ แล้วจำระยะด้วย <code>map&lt;string, int&gt;</code> จากบทที่ 20 แทนอาเรย์ ตัวอย่างคือกองแพนเค้กขนาดต่างกันที่เรียงสลับกันอยู่ เขียนเป็นตัวเลขจากแผ่นบนสุดลงไป ทำได้อย่างเดียวคือสอดตะหลิวใต้แผ่นที่ k จากบนแล้วพลิก แผ่นบนสุด k แผ่นจะกลับลำดับ อยากเรียงให้แผ่นเล็กอยู่บน ต้องพลิกอย่างน้อยกี่ครั้ง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="pancakes"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    string start;
+    cin &gt;&gt; start;
+    string goal = start;
+    sort(goal.begin(), goal.end());
+    map&lt;string, int&gt; flips; // (1)!
+    map&lt;string, pair&lt;string, int&gt;&gt; came_from;
+    queue&lt;string&gt; waiting;
+    flips[start] = 0;
+    waiting.push(start);
+    while (!waiting.empty()) {
+        string now = waiting.front();
+        waiting.pop();
+        if (now == goal) {
+            break;
+        }
+        for (int k = 2; k &lt;= (int)now.size(); k++) {
+            string next = now;
+            reverse(next.begin(), next.begin() + k); // (2)!
+            if (flips.count(next) == 0) { // (3)!
+                flips[next] = flips[now] + 1;
+                came_from[next] = {now, k};
+                waiting.push(next);
+            }
+        }
+    }
+    cout &lt;&lt; "flips " &lt;&lt; flips[goal] &lt;&lt; '\n';
+    vector&lt;pair&lt;int, string&gt;&gt; steps;
+    for (string s = goal; s != start; s = came_from[s].first) {
+        steps.push_back({came_from[s].second, s});
+    }
+    reverse(steps.begin(), steps.end());
+    for (auto [k, s] : steps) {
+        cout &lt;&lt; "flip top " &lt;&lt; k &lt;&lt; " -&gt; " &lt;&lt; s &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "states seen " &lt;&lt; flips.size() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ระยะของแต่ละสถานะ ถ้ายังไม่มีคีย์นั้นแปลว่ายังไม่เคยไป ไม่ต้องตั้งค่า -1 ให้ทุกสถานะล่วงหน้า</li>
+        <li>พลิก k แผ่นบนคือกลับลำดับ k ตัวแรกของสตริง ใช้ <code>reverse</code> กับช่วง <code>begin()</code> ถึง <code>begin() + k</code></li>
+        <li>เช็กว่ามีคีย์หรือยังด้วย <code>count</code> ไม่ใช่ <code>flips[next] == 0</code> เพราะวงเล็บเหลี่ยมสร้างคีย์ใหม่ค่า 0 ให้ทันทีตามหน้า 20.3 และสถานะเริ่มต้นมีระยะ 0 จริงๆ จะถูกนับว่ายังไม่เคยไป แบบเดียวกับแบบที่ 2 ในหน้า 27.3</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="pancakes" data-title="ข้อมูลเข้า"><pre><code>361524
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="pancakes" data-title="C:\code\pancakes.exe"><pre><code>flips 6
+flip top 5 -&gt; 251634
+flip top 4 -&gt; 615234
+flip top 6 -&gt; 432516
+flip top 3 -&gt; 234516
+flip top 4 -&gt; 543216
+flip top 5 -&gt; 123456
+states seen 720
+</code></pre></div>
+      </div>
+
+      <p>แพนเค้ก 6 แผ่นมีลำดับได้ 6! = 720 แบบ BFS เห็นครบทุกแบบก่อนจะถึงเป้าหมาย ใช้ 6 ครั้ง สถานะแต่ละแบบลองพลิกได้ n - 1 แบบ และทุกครั้งที่สร้างสถานะใหม่ต้องคัดลอกสตริงยาว n กับค้นใน <code>map</code> อีก O(log จำนวนสถานะ) งานรวมจึงเป็น O(n! · n · n log n!) โตเร็วมาก วัดบนเครื่องเดียวกับหน้า 19.1 รัน 5 รอบ ค่ากลางของ 8 แผ่น (40,320 สถานะ) คือ 0.073 วินาทีแบบ <code>-O2</code> และ 0.157 วินาทีแบบ Code::Blocks ส่วน 9 แผ่น (เห็น 360,997 สถานะ) ใช้ 1.291 วินาทีและ 2.249 วินาที สถานะที่เป็นสตริงกับ <code>map</code> ใช้ง่าย แต่ช้ากว่าอาเรย์หลายเท่า ก่อนเขียนให้นับจำนวนสถานะเสมอ หลักแสนยังพอไหว หลักล้านต้องหาทางแปลงสถานะเป็นตัวเลข</p>
+
+      <h2 id="zero-one-bfs">หัวข้อเสริม 0-1 BFS</h2>
+
+      <p>หัวข้อนี้เป็นหัวข้อเสริม ถ้าอ่านครั้งแรกแล้วยังไม่เข้าใจ ข้ามไปก่อนได้ บทที่ 28 จะมีวิธีที่ใช้ได้กับน้ำหนักทุกแบบ</p>
+
+      <p>ถนนบางเส้นในจังหวัดเป็นทางด่วนที่ต้องจ่ายค่าผ่านทาง บางเส้นฟรี คนขับอยากไปจากเมือง 1 ให้ผ่านด่านน้อยที่สุด ไม่สนว่าขับไกลแค่ไหน ถ้าให้ถนนฟรียาว 0 และทางด่วนยาว 1 คำถามคือระยะที่สั้นที่สุดในกราฟที่น้ำหนักมีแค่ 0 กับ 1</p>
+
+      <figure>
+        <svg viewBox="0 0 540 230" width="540" style="max-width:100%;height:auto" role="img" aria-label="ถนน 7 เส้น เส้นที่ต้องจ่ายค่าผ่านทางคือ 1-2 2-4 3-5 5-6 เส้นฟรีคือ 1-3 3-2 4-6 ซึ่งวาดเป็นเส้นหนาสีหลัก">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="78" y1="101" x2="182" y2="49"/>
+            <line x1="78" y1="119" x2="182" y2="171" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="200" y1="160" x2="200" y2="60" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="220" y1="40" x2="320" y2="40"/>
+            <line x1="220" y1="180" x2="320" y2="180"/>
+            <line x1="358" y1="49" x2="462" y2="101" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="358" y1="171" x2="462" y2="119"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="60" cy="110" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="60" y="116" style="fill:var(--ink)">1</text>
+            <circle cx="200" cy="40" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="200" y="46" style="fill:var(--ink)">2</text>
+            <circle cx="200" cy="180" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="200" y="186" style="fill:var(--ink)">3</text>
+            <circle cx="340" cy="40" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="340" y="46" style="fill:var(--ink)">4</text>
+            <circle cx="340" cy="180" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="340" y="186" style="fill:var(--ink)">5</text>
+            <circle cx="480" cy="110" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="480" y="116" style="fill:var(--ink)">6</text>
+            <text x="136" y="93" style="fill:var(--brand-text)">1</text>
+            <text x="124" y="163" style="fill:var(--brand-text)">0</text>
+            <text x="214" y="115" style="fill:var(--brand-text)">0</text>
+            <text x="270" y="59" style="fill:var(--brand-text)">1</text>
+            <text x="270" y="199" style="fill:var(--brand-text)">1</text>
+            <text x="404" y="93" style="fill:var(--brand-text)">0</text>
+            <text x="416" y="163" style="fill:var(--brand-text)">1</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px">
+            <text x="20" y="222" text-anchor="start" style="fill:var(--muted)">เส้นหนาสีหลักคือถนนฟรี ตัวเลขบนเส้นคือค่าผ่านทาง</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>BFS ธรรมดาใช้ไม่ได้ เพราะ BFS นับจำนวนเส้น ไม่ได้นับน้ำหนัก ในภาพ BFS จะให้เมือง 2 อยู่ห่าง 1 ด่าน เพราะมีถนน 1-2 ตรงๆ ทั้งที่ไปทาง 1-3-2 ไม่เสียด่านเลย วิธีแก้คือใช้ <code>deque</code> แทน queue ตามหน้า 17.2</p>
+
+      <ul>
+        <li>เดินผ่านถนนฟรี ระยะไม่เพิ่ม เมืองปลายทางควรถูกหยิบเร็วเท่ากับเมืองปัจจุบัน จึงใส่ไว้ <strong>หน้า</strong> deque</li>
+        <li>เดินผ่านทางด่วน ระยะเพิ่มหนึ่ง ใส่ไว้ <strong>ท้าย</strong> deque เหมือน BFS ปกติ</li>
+        <li>เมืองหนึ่งอาจถูกพบหลายครั้ง ครั้งแรกอาจมาทางด่วน ครั้งหลังมาทางฟรี จึงไม่จองตั้งแต่เจอครั้งแรก แต่แก้ระยะทุกครั้งที่ได้ค่าที่น้อยกว่าเดิม</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="tolls"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 200001;
+vector&lt;pair&lt;int, int&gt;&gt; adj[MAXN];
+int tolls[MAXN];
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, toll;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; toll;
+        adj[u].push_back({v, toll});
+        adj[v].push_back({u, toll});
+    }
+    fill(tolls, tolls + n + 1, INT_MAX);
+    deque&lt;int&gt; waiting;
+    tolls[1] = 0;
+    waiting.push_back(1);
+    while (!waiting.empty()) {
+        int v = waiting.front();
+        waiting.pop_front();
+        for (auto [next, toll] : adj[v]) {
+            if (tolls[v] + toll &lt; tolls[next]) { // (1)!
+                tolls[next] = tolls[v] + toll;
+                if (toll == 0) {
+                    waiting.push_front(next); // (2)!
+                } else {
+                    waiting.push_back(next);
+                }
+            }
+        }
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; (tolls[v] == INT_MAX ? -1 : tolls[v]) &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เริ่มทุกเมืองที่ <code>INT_MAX</code> แปลว่ายังไปไม่ถึง และแก้ทุกครั้งที่ได้ระยะที่น้อยกว่าเดิม ไม่ใช่แค่ครั้งแรก</li>
+        <li>ถนนฟรีใส่หน้า deque ถนนเสียเงินใส่ท้าย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="tolls" data-title="ข้อมูลเข้า"><pre><code>6 7
+1 2 1
+1 3 0
+3 2 0
+2 4 1
+3 5 1
+4 6 0
+5 6 1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="tolls" data-title="C:\code\tolls.exe"><pre><code>0 0 0 1 1 1
+</code></pre></div>
+      </div>
+
+      <p>เมือง 2 ได้ 0 ผ่านเมือง 3 เมือง 6 ได้ 1 ผ่าน <code>1 3 2 4 6</code> ซึ่งเสียแค่ด่าน 2-4 ด่านเดียว ทั้งที่ทางนี้ยาวสี่เส้น deque มีแต่เมืองระยะ d ต่อด้วยระยะ d + 1 เสมอแบบเดียวกับ queue ของ BFS เพราะเมืองที่ใส่หน้ามีระยะเท่ากับตัวที่กำลังหยิบ ส่วนเมืองที่ใส่ท้ายมีระยะมากกว่าหนึ่ง เมืองจึงออกจาก deque เรียงตามระยะ ระยะที่เมืองหนึ่งได้รับมีแค่ d หรือ d + 1 จึงถูกแก้ได้ไม่เกินสองครั้ง และใส่ deque ไม่เกินสองครั้ง งานรวมยังเป็น O(V + E)</p>
+
+      <p>กราฟที่ซ่อนอยู่ในโจทย์ตารางก็ใช้ 0-1 BFS ได้ เช่น เดินในช่องว่างฟรีแต่ต้องเคลียร์สิ่งที่ขวางทางทีละช่อง ซึ่งจะได้ลองในแบบฝึกหัด หรือเดินตามลูกศรที่พื้นฟรีแต่การเปลี่ยนไปทางอื่นเสียหนึ่งครั้ง</p>
+
+      <h3 id="zero-one-timing">เทียบกับการไล่ทีละจำนวนด่าน</h3>
+
+      <p>วิธีที่ไม่ต้องใช้ deque คือไล่ทีละ k ตั้งแต่ 0 รอบที่ k เริ่มจากทุกเมืองที่ระยะเป็น k แล้ว BFS ผ่านถนนฟรีอย่างเดียว ทุกเมืองที่ไปถึงได้ระยะ k เหมือนกัน จากนั้นทุกเมืองที่ระยะ k ให้ระยะ k + 1 กับเพื่อนบ้านทางด่วนที่ยังไม่มีระยะ ได้คำตอบถูก แต่ทุกรอบต้องไล่หาเมืองที่ระยะเป็น k จากทุกเมือง จึงเป็น O(K · (V + E)) เมื่อ K คือระยะที่มากที่สุด</p>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 ถนนสายยาวที่เมือง i ต่อกับเมือง i + 1 สลับฟรีกับเสียเงิน และมีทางด่วนเส้นสั้นๆ ที่ข้ามไปสองหรือสามเมืองอีก N/2 เส้นแบบสุ่ม ระยะมากที่สุดจึงโตตาม N รันแต่ละแบบ 5 รอบ ยกเว้นการไล่ทีละจำนวนด่านที่ N ตั้งแต่ 50000 รัน 3 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>ด่านมากที่สุด</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">20000</td><td rowspan="2">8,184</td><td>ไล่ทีละจำนวนด่าน O(K · (V + E))</td><td>0.110 วินาที</td><td>0.065 วินาที</td></tr>
+            <tr><td>0-1 BFS O(V + E)</td><td>0.030 วินาที</td><td>0.024 วินาที</td></tr>
+            <tr><td rowspan="2">50000</td><td rowspan="2">20,425</td><td>ไล่ทีละจำนวนด่าน</td><td>0.542 วินาที</td><td>0.272 วินาที</td></tr>
+            <tr><td>0-1 BFS</td><td>0.053 วินาที</td><td>0.038 วินาที</td></tr>
+            <tr><td rowspan="2">100000</td><td rowspan="2">40,882</td><td>ไล่ทีละจำนวนด่าน</td><td>1.962 วินาที</td><td>1.022 วินาที</td></tr>
+            <tr><td>0-1 BFS</td><td>0.089 วินาที</td><td>0.064 วินาที</td></tr>
+            <tr><td rowspan="2">200000</td><td rowspan="2">81,855</td><td>ไล่ทีละจำนวนด่าน</td><td>7.994 วินาที</td><td>4.002 วินาที</td></tr>
+            <tr><td>0-1 BFS</td><td>0.202 วินาที</td><td>0.140 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>N เพิ่มสองเท่า การไล่ทีละจำนวนด่านช้าลงราวสี่เท่า เพราะทั้งจำนวนรอบและงานต่อรอบโตพร้อมกัน ส่วน 0-1 BFS โตตาม N เท่านั้น</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="first-seen">แบบที่ 1 จองระยะตั้งแต่เจอครั้งแรก</h3>
+
+      <p>เขียน 0-1 BFS แบบ BFS ปกติ คือให้ระยะครั้งเดียวตอนเจอครั้งแรก แล้วบวกค่าผ่านทางเข้าไป</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="tolls-first-seen"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 200001;
+vector&lt;pair&lt;int, int&gt;&gt; adj[MAXN];
+int tolls[MAXN];
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, toll;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; toll;
+        adj[u].push_back({v, toll});
+        adj[v].push_back({u, toll});
+    }
+    fill(tolls, tolls + n + 1, -1);
+    queue&lt;int&gt; waiting;
+    tolls[1] = 0;
+    waiting.push(1);
+    while (!waiting.empty()) {
+        int v = waiting.front();
+        waiting.pop();
+        for (auto [next, toll] : adj[v]) {
+            if (tolls[next] == -1) {
+                tolls[next] = tolls[v] + toll;
+                waiting.push(next);
+            }
+        }
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; tolls[v] &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="tolls-first-seen" data-title="ข้อมูลเข้า"><pre><code>6 7
+1 2 1
+1 3 0
+3 2 0
+2 4 1
+3 5 1
+4 6 0
+5 6 1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="tolls-first-seen" data-title="C:\code\tolls.exe"><pre><code>0 1 0 2 1 2
+</code></pre></div>
+      </div>
+
+      <p>เมือง 2 ได้ 1 ทั้งที่ไปฟรีได้ เพราะตอนหยิบเมือง 1 ออกมา ถนน 1-2 อยู่ก่อนในรายการ เมือง 2 จึงถูกจองด้วยระยะ 1 ตั้งแต่ตอนนั้น พอเมือง 3 พบทางฟรีไปเมือง 2 ทีหลัง ก็แก้ไม่ได้แล้ว ความผิดลามต่อไปถึงเมือง 4 และ 6 ข้อมูลที่ถนนฟรีบังเอิญมาก่อนในรายการจะได้คำตอบถูก ชุดทดสอบส่วนใหญ่จึงผ่าน และตกเฉพาะบางชุด ซึ่งหาสาเหตุยาก เปลี่ยนแค่ queue เป็น deque ก็ยังผิดเหมือนเดิม ตราบใดที่ยังจองตั้งแต่ครั้งแรก</p>
+
+      <h3 id="push-back-only">แบบที่ 2 ใส่ท้าย deque ทุกครั้ง</h3>
+
+      <p>เห็นว่าโปรแกรม tolls แก้ระยะทุกครั้งที่ได้ค่าน้อยกว่าเดิมอยู่แล้ว จึงคิดว่าใส่หน้าหรือใส่ท้ายก็ไม่ต่างกัน แล้วใส่ท้ายทุกครั้งเหมือน queue ปกติ</p>
+
+      <div class="code" data-lang="cpp"><pre><code>if (tolls[v] + toll &lt; tolls[next]) {
+    tolls[next] = tolls[v] + toll;
+    waiting.push_back(next);
+}
+</code></pre></div>
+
+      <p>กับเมืองในภาพยังได้ <code>0 0 0 1 1 1</code> ถูกทุกตัว และกับทุกข้อมูลก็ได้คำตอบถูก เพราะทุกครั้งที่พบทางที่ดีกว่า ระยะถูกแก้และเมืองถูกใส่ queue ใหม่ แต่เมืองไม่ได้ออกจาก queue เรียงตามระยะอีกแล้ว เมืองที่ได้ระยะผิดไปก่อนจะส่งต่อระยะผิดๆ ให้เพื่อนบ้าน แล้วต้องตามแก้ซ้ำทีหลัง ลองกับถนนสายยาวชุดเดียวกับตารางก่อนหน้า นับจำนวนครั้งที่ใส่ deque วัดบนเครื่องเดียวกับหน้า 19.1 รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>ใส่ deque</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">20000</td><td>ใส่หน้าหรือท้ายตามน้ำหนัก</td><td>20,865</td><td>0.030 วินาที</td><td>0.024 วินาที</td></tr>
+            <tr><td>ใส่ท้ายทุกครั้ง</td><td>410,827</td><td>0.057 วินาที</td><td>0.029 วินาที</td></tr>
+            <tr><td rowspan="2">100000</td><td>ใส่หน้าหรือท้ายตามน้ำหนัก</td><td>104,494</td><td>0.089 วินาที</td><td>0.064 วินาที</td></tr>
+            <tr><td>ใส่ท้ายทุกครั้ง</td><td>6,655,682</td><td>0.568 วินาที</td><td>0.160 วินาที</td></tr>
+            <tr><td rowspan="2">200000</td><td>ใส่หน้าหรือท้ายตามน้ำหนัก</td><td>208,969</td><td>0.202 วินาที</td><td>0.140 วินาที</td></tr>
+            <tr><td>ใส่ท้ายทุกครั้ง</td><td>25,217,720</td><td>1.991 วินาที</td><td>0.513 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ใส่ท้ายทุกครั้งต้องใส่มากขึ้นเป็นร้อยเท่าเมื่อ N เป็นสองแสน และยิ่ง N มาก ยิ่งห่างกันมาก เพราะยิ่งถนนยาว ระยะผิดชั่วคราวก็ยิ่งลามไปได้ไกลก่อนจะถูกแก้ โปรแกรมแบบนี้ผ่านชุดทดสอบเล็กทุกชุด แล้วไปช้าที่ชุดใหญ่ ใส่ถนนฟรีไว้หน้า deque เสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>BFS บนสถานะได้จำนวนครั้งที่น้อยที่สุด สถานะคือจุดยอด การกระทำคือเส้นเชื่อม คำนวณสถานะถัดไปทุกครั้งที่หยิบออก ไม่ต้องสร้างกราฟ</li>
+        <li>เวลาของ BFS บนสถานะคือจำนวนสถานะคูณจำนวนการกระทำ นับจำนวนสถานะก่อนเขียนเสมอ</li>
+        <li>สถานะที่แปลงเป็นเลขช่องได้ใช้อาเรย์ ไม่ได้ใช้ <code>map</code> และเช็กว่ามีหรือยังด้วย <code>count</code> ไม่ใช่วงเล็บเหลี่ยม</li>
+        <li>0-1 BFS ใช้ deque เส้นยาว 0 ใส่หน้า เส้นยาว 1 ใส่ท้าย และแก้ระยะทุกครั้งที่ได้ค่าน้อยกว่าเดิม ใช้เวลา O(V + E)</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

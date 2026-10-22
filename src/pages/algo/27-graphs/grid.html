@@ -1,0 +1,524 @@
+<article class="doc">
+      <h1>27.4 DFS และ BFS บนตาราง</h1>
+
+      <p>โจทย์เขาวงกต แผนที่เกาะ ไฟลาม และหุ่นยนต์เดินในห้อง เป็นโจทย์กราฟที่พบบ่อยมากใน TOI และค่าย 2 แต่ไม่มีใครให้รายการเส้นเชื่อมมา โจทย์ให้แค่ตารางตัวอักษรแบบบทที่ 7 หน้านี้มองตารางเป็นกราฟ แล้วใช้ BFS กับ DFS จากหน้า 27.2 และ 27.3 ได้เลยโดยไม่ต้องสร้าง adjacency list หาทางที่สั้นที่สุดในเขาวงกต นับเกาะ แล้ววัดว่าทำไมการจำลองทีละนาทีแบบบทที่ 7 ไม่ทันกับตารางใหญ่</p>
+
+      <h2 id="grid-graph">ตารางคือกราฟ</h2>
+
+      <p>ให้ทุกช่องที่เดินได้เป็นจุดยอด และช่องที่ติดกันในสี่ทิศเป็นเส้นเชื่อม ตาราง R × C จึงเป็นกราฟที่มีจุดยอดไม่เกิน RC จุด และเส้นเชื่อมไม่เกิน 2RC เส้น เพื่อนบ้านของช่อง <code>(r, c)</code> ไม่ต้องเก็บไว้ที่ไหน คำนวณได้ทุกครั้งด้วยอาเรย์ทิศทาง <code>dr</code> กับ <code>dc</code> ในหน้า 7.4 ส่วนที่เปลี่ยนจากหน้า 27.3 มีสามอย่าง</p>
+
+      <ul>
+        <li><code>dist</code> เป็นตารางสองมิติ <code>vector&lt;vector&lt;int&gt;&gt;</code> ตามหน้า 16.2 แทนอาเรย์มิติเดียว</li>
+        <li>queue เก็บ <code>pair&lt;int, int&gt;</code> คือแถวกับคอลัมน์ ตอนหยิบออกแตกเป็นสองตัวแปรด้วย <code>auto [r, c]</code></li>
+        <li>เพื่อนบ้านต้องผ่านการเช็กขอบตาราง และต้องไม่ใช่กำแพง ก่อนจะดู <code>dist</code></li>
+      </ul>
+
+      <h2 id="maze">เขาวงกต</h2>
+
+      <p>หาจำนวนก้าวที่น้อยที่สุดจาก <code>S</code> ไป <code>E</code> ก้าวได้ทีละช่องในสี่ทิศ ห้ามเข้าช่อง <code>#</code> แล้ววาดเส้นทางลงบนแผนที่ด้วย <code>*</code> เส้นทางใช้แนวคิดเดียวกับ <code>parent</code> ในหน้า 27.3 แต่จดว่ามาถึงช่องนี้ด้วยทิศไหนแทน เพราะเก็บเลขทิศตัวเดียวง่ายกว่าเก็บพิกัดของพ่อสองตัว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="maze-path"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int dr[4] = {-1, 1, 0, 0};
+int dc[4] = {0, 0, -1, 1};
+
+int main()
+{
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;string&gt; grid(rows);
+    for (int r = 0; r &lt; rows; r++) {
+        cin &gt;&gt; grid[r];
+    }
+    vector&lt;vector&lt;int&gt;&gt; dist(rows, vector&lt;int&gt;(cols, -1));
+    vector&lt;vector&lt;int&gt;&gt; came_by(rows, vector&lt;int&gt;(cols, -1)); // (1)!
+    queue&lt;pair&lt;int, int&gt;&gt; waiting;
+    int goal_r = -1, goal_c = -1;
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (grid[r][c] == 'S') {
+                dist[r][c] = 0;
+                waiting.push({r, c});
+            } else if (grid[r][c] == 'E') {
+                goal_r = r;
+                goal_c = c;
+            }
+        }
+    }
+    while (!waiting.empty()) {
+        auto [r, c] = waiting.front();
+        waiting.pop();
+        for (int d = 0; d &lt; 4; d++) {
+            int nr = r + dr[d];
+            int nc = c + dc[d];
+            if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; grid[nr][nc] != '#' &amp;&amp; dist[nr][nc] == -1) {
+                dist[nr][nc] = dist[r][c] + 1;
+                came_by[nr][nc] = d; // (2)!
+                waiting.push({nr, nc});
+            }
+        }
+    }
+    if (dist[goal_r][goal_c] == -1) {
+        cout &lt;&lt; "no way out\n";
+        return 0;
+    }
+    cout &lt;&lt; "steps " &lt;&lt; dist[goal_r][goal_c] &lt;&lt; '\n';
+    int r = goal_r, c = goal_c;
+    while (grid[r][c] != 'S') {
+        int d = came_by[r][c];
+        r -= dr[d]; // (3)!
+        c -= dc[d];
+        if (grid[r][c] == '.') {
+            grid[r][c] = '*';
+        }
+    }
+    for (int i = 0; i &lt; rows; i++) {
+        cout &lt;&lt; grid[i] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>came_by[r][c]</code> คือเลขทิศ 0 ถึง 3 ที่ใช้ก้าวเข้ามาที่ช่องนี้</li>
+        <li>จดพร้อมกับให้ระยะ เหมือน <code>parent</code> ช่องหนึ่งได้ระยะครั้งเดียว จึงจดทิศครั้งเดียว</li>
+        <li>เดินถอยหลังหนึ่งก้าว คือลบทิศที่ใช้เดินเข้ามาออก แล้ววนจนถึง <code>S</code> ระหว่างทางเปลี่ยนช่อง <code>.</code> เป็น <code>*</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="maze-path" data-title="ข้อมูลเข้า"><pre><code>7 11
+###########
+#S..#.....#
+#.#.#.###.#
+#.#...#...#
+#.#####.#.#
+#.......#E#
+###########
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="maze-path" data-title="C:\code\maze.exe"><pre><code>steps 16
+###########
+#S..#.....#
+#*#.#.###.#
+#*#...#***#
+#*#####*#*#
+#*******#E#
+###########
+</code></pre></div>
+      </div>
+
+      <p>ภาพนี้คือระยะของทุกช่องที่ BFS คำนวณได้ ช่องที่ระบายพื้นคือเส้นทางที่โปรแกรมวาด</p>
+
+      <figure>
+        <svg viewBox="0 0 460 300" width="460" style="max-width:100%;height:auto" role="img" aria-label="ระยะจาก S ของทุกช่องในเขาวงกต 7 คูณ 11 ช่อง S มีระยะ 0 E มีระยะ 16 ช่องบนเส้นทางที่โปรแกรมเลือกระบายพื้นสีหลัก">
+          <g style="font-family:var(--font-code);font-size:15px" text-anchor="middle">
+            <rect x="10" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="50" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="90" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="130" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="170" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="210" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="250" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="290" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="330" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="370" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="410" y="10" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="10" y="50" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="50" y="50" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="70" y="75" style="fill:var(--brand-text)">0</text>
+            <rect x="90" y="50" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="110" y="75" style="fill:var(--ink)">1</text>
+            <rect x="130" y="50" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="150" y="75" style="fill:var(--ink)">2</text>
+            <rect x="170" y="50" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="210" y="50" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="230" y="75" style="fill:var(--ink)">8</text>
+            <rect x="250" y="50" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="270" y="75" style="fill:var(--ink)">9</text>
+            <rect x="290" y="50" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="310" y="75" style="fill:var(--ink)">10</text>
+            <rect x="330" y="50" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="350" y="75" style="fill:var(--ink)">11</text>
+            <rect x="370" y="50" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="390" y="75" style="fill:var(--ink)">12</text>
+            <rect x="410" y="50" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="10" y="90" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="50" y="90" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="70" y="115" style="fill:var(--ink)">1</text>
+            <rect x="90" y="90" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="130" y="90" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="150" y="115" style="fill:var(--ink)">3</text>
+            <rect x="170" y="90" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="210" y="90" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="230" y="115" style="fill:var(--ink)">7</text>
+            <rect x="250" y="90" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="290" y="90" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="330" y="90" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="370" y="90" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="390" y="115" style="fill:var(--ink)">13</text>
+            <rect x="410" y="90" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="10" y="130" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="50" y="130" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="70" y="155" style="fill:var(--ink)">2</text>
+            <rect x="90" y="130" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="130" y="130" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="150" y="155" style="fill:var(--ink)">4</text>
+            <rect x="170" y="130" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="190" y="155" style="fill:var(--ink)">5</text>
+            <rect x="210" y="130" width="40" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="230" y="155" style="fill:var(--ink)">6</text>
+            <rect x="250" y="130" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="290" y="130" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="310" y="155" style="fill:var(--ink)">12</text>
+            <rect x="330" y="130" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="350" y="155" style="fill:var(--ink)">13</text>
+            <rect x="370" y="130" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="390" y="155" style="fill:var(--ink)">14</text>
+            <rect x="410" y="130" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="10" y="170" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="50" y="170" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="70" y="195" style="fill:var(--ink)">3</text>
+            <rect x="90" y="170" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="130" y="170" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="170" y="170" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="210" y="170" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="250" y="170" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="290" y="170" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="310" y="195" style="fill:var(--ink)">11</text>
+            <rect x="330" y="170" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="370" y="170" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="390" y="195" style="fill:var(--ink)">15</text>
+            <rect x="410" y="170" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="10" y="210" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="50" y="210" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="70" y="235" style="fill:var(--ink)">4</text>
+            <rect x="90" y="210" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="110" y="235" style="fill:var(--ink)">5</text>
+            <rect x="130" y="210" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="150" y="235" style="fill:var(--ink)">6</text>
+            <rect x="170" y="210" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="190" y="235" style="fill:var(--ink)">7</text>
+            <rect x="210" y="210" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="230" y="235" style="fill:var(--ink)">8</text>
+            <rect x="250" y="210" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="270" y="235" style="fill:var(--ink)">9</text>
+            <rect x="290" y="210" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="310" y="235" style="fill:var(--ink)">10</text>
+            <rect x="330" y="210" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="370" y="210" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="390" y="235" style="fill:var(--brand-text)">16</text>
+            <rect x="410" y="210" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="10" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="50" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="90" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="130" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="170" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="210" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="250" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="290" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="330" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="370" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+            <rect x="410" y="250" width="40" height="40" style="fill:var(--line);stroke:var(--line-strong);stroke-width:1"/>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ทางเดินด้านบนผ่าน <code>(1, 5)</code> ก็ไปถึง <code>E</code> ใน 16 ก้าวเท่ากัน สองทางมาบรรจบกันที่ช่องเหนือ <code>E</code> สองช่อง ซึ่งได้ระยะ 14 จากทางไหนก็ได้ โปรแกรมเลือกทางที่ช่องเพื่อนบ้านถูกหยิบออกจาก queue ก่อน ลองกับเขาวงกต 5 × 7 ในหน้า 7.3 ด้วย</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>5 7
+#######
+#S..#.#
+#.#.#.#
+#...E.#
+#######
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\maze.exe"><pre><code>steps 5
+#######
+#S..#.#
+#*#.#.#
+#***E.#
+#######
+</code></pre></div>
+      </div>
+
+      <p>ทุกช่องเข้า queue ไม่เกินครั้งเดียว และแต่ละครั้งดูเพื่อนบ้านสี่ช่อง เวลาจึงเป็น O(RC) ตาราง 1000 × 1000 มีหนึ่งล้านช่อง ทำได้สบายในหนึ่งวินาที โปรแกรมแบบเดียวกันที่ตัดส่วนวาดเส้นทางออก รันกับแผนที่ 1001 × 1001 ใช้หน่วยความจำสูงสุด 10.3 MB วัดจาก PeakWorkingSet ทั้งหมดอยู่นอก stack เพราะ vector ขอหน่วยความจำระหว่างรัน</p>
+
+      <h2 id="islands">นับเกาะ</h2>
+
+      <p>แผนที่ทะเลมี <code>#</code> เป็นแผ่นดิน <code>.</code> เป็นน้ำ แผ่นดินที่ติดกันในสี่ทิศอยู่เกาะเดียวกัน ให้นับเกาะและหาขนาดของเกาะที่ใหญ่ที่สุด นี่คือการนับส่วนเชื่อมต่อในหน้า 27.2 บนตาราง ไล่ทุกช่อง เจอแผ่นดินที่ยังไม่เคยไปเมื่อไร นับเกาะเพิ่มหนึ่งแล้วเดินให้ทั่วเกาะ การเดินแบบนี้มีชื่อเรียกว่า <strong>flood fill</strong> เหมือนเทน้ำลงช่องหนึ่งแล้วน้ำไหลไปทั่วทุกช่องที่ติดกัน เขียนด้วย recursion ได้สั้นมาก</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="islands-rec"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int dr[4] = {-1, 1, 0, 0};
+int dc[4] = {0, 0, -1, 1};
+int rows, cols;
+vector&lt;string&gt; grid;
+vector&lt;vector&lt;bool&gt;&gt; seen;
+
+int fill_island(int r, int c)
+{
+    seen[r][c] = true;
+    int cells = 1;
+    for (int d = 0; d &lt; 4; d++) {
+        int nr = r + dr[d];
+        int nc = c + dc[d];
+        if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; grid[nr][nc] == '#' &amp;&amp; !seen[nr][nc]) {
+            cells += fill_island(nr, nc); // (1)!
+        }
+    }
+    return cells;
+}
+
+int main()
+{
+    cin &gt;&gt; rows &gt;&gt; cols;
+    grid.resize(rows);
+    for (int r = 0; r &lt; rows; r++) {
+        cin &gt;&gt; grid[r];
+    }
+    seen.assign(rows, vector&lt;bool&gt;(cols, false));
+    int islands = 0, largest = 0;
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (grid[r][c] == '#' &amp;&amp; !seen[r][c]) {
+                islands++;
+                int cells = fill_island(r, c);
+                cout &lt;&lt; "island " &lt;&lt; islands &lt;&lt; " starts at " &lt;&lt; r &lt;&lt; ' ' &lt;&lt; c &lt;&lt; " size " &lt;&lt; cells &lt;&lt; '\n';
+                largest = max(largest, cells);
+            }
+        }
+    }
+    cout &lt;&lt; "islands " &lt;&lt; islands &lt;&lt; " largest " &lt;&lt; largest &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ขนาดของเกาะคือช่องนี้หนึ่งช่อง บวกขนาดของส่วนที่ไปถึงได้จากเพื่อนบ้านแต่ละทิศที่ยังไม่เคยไป</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="islands-rec" data-title="ข้อมูลเข้า"><pre><code>5 9
+##....#..
+#...###..
+..#....##
+.###..#..
+.....##..
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="islands-rec" data-title="C:\code\islands.exe"><pre><code>island 1 starts at 0 0 size 3
+island 2 starts at 0 6 size 4
+island 3 starts at 2 2 size 4
+island 4 starts at 2 7 size 2
+island 5 starts at 3 6 size 3
+islands 5 largest 4
+</code></pre></div>
+      </div>
+
+      <p>ช่อง <code>(2, 7)</code> กับ <code>(3, 6)</code> แตะกันแค่มุม จึงเป็นคนละเกาะ ถ้าโจทย์นับทแยงว่าติดกันด้วย เปลี่ยน <code>dr</code> กับ <code>dc</code> เป็น 8 ทิศแบบหน้า 7.4 และวนถึง 8 ส่วนอื่นไม่ต้องแก้</p>
+
+      <h3 id="flood-depth">recursion ลึกเท่าขนาดเกาะ</h3>
+
+      <p>ฟังก์ชัน <code>fill_island</code> ลงลึกไปตามช่องที่ติดกันเรื่อยๆ เกาะที่เป็นแผ่นดินทั้งแผ่นจึงเรียกซ้อนกันเท่าจำนวนช่องของเกาะ บนเครื่องที่เขียนเอกสารนี้ ป้อนแผนที่ N × N ที่เป็นแผ่นดินทั้งหมด รันจาก PowerShell ค่าละ 10 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>แผนที่</th><th>ความลึกของ recursion</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>140 × 140</td><td>19,600 ชั้น</td><td>ผ่านทั้ง 10 ครั้ง</td><td>ผ่านทั้ง 10 ครั้ง</td></tr>
+            <tr><td>145 × 145</td><td>21,025 ชั้น</td><td>ผ่านทั้ง 10 ครั้ง</td><td>ผ่านทั้ง 10 ครั้ง</td></tr>
+            <tr><td>150 × 150</td><td>22,500 ชั้น</td><td>พังทั้ง 10 ครั้ง</td><td>พังทั้ง 10 ครั้ง</td></tr>
+            <tr><td>200 × 200 300 × 300 และ 1000 × 1000</td><td>40,000 90,000 และหนึ่งล้านชั้น</td><td>พังทุกครั้ง</td><td>พังทุกครั้ง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แผนที่แค่ 150 × 150 ก็พังด้วย <code>0xC00000FD</code> แล้ว ทั้งที่โจทย์ตารางให้ขนาดถึง 1000 × 1000 เป็นปกติ ฟังก์ชันนี้มีตัวแปร local หลายตัว แต่ละชั้นจึงกินที่มาก ลึกได้น้อยกว่าโปรแกรมในหน้า 27.2 และ <code>-O2</code> ก็ไม่ได้ช่วยเลย ให้ใช้ BFS แทน ส่วนที่เปลี่ยนจากโปรแกรมเขาวงกตมีแค่ใช้ <code>seen</code> แทน <code>dist</code> และนับช่องตอนหยิบออก</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="islands-bfs"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int dr[4] = {-1, 1, 0, 0};
+int dc[4] = {0, 0, -1, 1};
+
+int main()
+{
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;string&gt; grid(rows);
+    for (int r = 0; r &lt; rows; r++) {
+        cin &gt;&gt; grid[r];
+    }
+    vector&lt;vector&lt;bool&gt;&gt; seen(rows, vector&lt;bool&gt;(cols, false));
+    int islands = 0, largest = 0;
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (grid[r][c] != '#' || seen[r][c]) {
+                continue;
+            }
+            islands++;
+            int cells = 0;
+            queue&lt;pair&lt;int, int&gt;&gt; waiting;
+            seen[r][c] = true;
+            waiting.push({r, c});
+            while (!waiting.empty()) {
+                auto [cr, cc] = waiting.front(); // (1)!
+                waiting.pop();
+                cells++;
+                for (int d = 0; d &lt; 4; d++) {
+                    int nr = cr + dr[d];
+                    int nc = cc + dc[d];
+                    if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; grid[nr][nc] == '#' &amp;&amp; !seen[nr][nc]) {
+                        seen[nr][nc] = true;
+                        waiting.push({nr, nc});
+                    }
+                }
+            }
+            cout &lt;&lt; "island " &lt;&lt; islands &lt;&lt; " starts at " &lt;&lt; r &lt;&lt; ' ' &lt;&lt; c &lt;&lt; " size " &lt;&lt; cells &lt;&lt; '\n';
+            largest = max(largest, cells);
+        }
+    }
+    cout &lt;&lt; "islands " &lt;&lt; islands &lt;&lt; " largest " &lt;&lt; largest &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ชื่อ <code>r</code> กับ <code>c</code> ถูกใช้เป็นตัวแปรของลูปข้างนอกแล้ว ช่องที่หยิบออกมาจึงใช้ชื่อ <code>cr</code> กับ <code>cc</code> ถ้าใช้ชื่อซ้ำ ตัวข้างในจะบังตัวข้างนอกไว้ อ่านแล้วสับสนง่าย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="islands-bfs" data-title="ข้อมูลเข้า"><pre><code>5 9
+##....#..
+#...###..
+..#....##
+.###..#..
+.....##..
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="islands-bfs" data-title="C:\code\islands.exe"><pre><code>island 1 starts at 0 0 size 3
+island 2 starts at 0 6 size 4
+island 3 starts at 2 2 size 4
+island 4 starts at 2 7 size 2
+island 5 starts at 3 6 size 3
+islands 5 largest 4
+</code></pre></div>
+      </div>
+
+      <p>ได้ผลเท่าเดิมทุกบรรทัด และกับแผ่นดินทั้งแผ่น 1000 × 1000 ก็ไม่พัง เพราะ queue อยู่นอก stack ใช้ stack ของเราเองแบบหน้า 27.2 แทน queue ก็ได้ผลเท่ากัน เพราะนับเกาะไม่สนใจลำดับ</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>ก่อนรู้จัก BFS วิธีที่น้องน่าจะคิดออกคือจำลองทีละนาทีแบบเกมชีวิตในหน้า 7.4 นาทีแรกมีแค่ <code>S</code> ทุกนาทีถัดไป ทุกช่องว่างที่ติดกับช่องที่ไปถึงแล้วกลายเป็นช่องที่ไปถึง ทำจนกว่า <code>E</code> จะถูกไปถึง จำนวนนาทีคือคำตอบ หัวใจของวิธีนี้คือลูปนี้ ซึ่งสแกนทั้งตารางทุกนาที</p>
+
+      <div class="code" data-lang="cpp"><pre><code>vector&lt;string&gt; next_minute = reached;
+bool changed = false;
+for (int r = 0; r &lt; rows; r++) {
+    for (int c = 0; c &lt; cols; c++) {
+        if (reached[r][c] == '#' || reached[r][c] == 'S') {
+            continue;
+        }
+        for (int d = 0; d &lt; 4; d++) {
+            int nr = r + dr[d];
+            int nc = c + dc[d];
+            if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; reached[nr][nc] == 'S') {
+                next_minute[r][c] = 'S';
+                changed = true;
+                break;
+            }
+        }
+    }
+}
+</code></pre></div>
+
+      <p>คำตอบถูกเสมอ เพราะนาทีที่ k คือชั้นที่ k ของ BFS พอดี แต่หนึ่งนาทีใช้ O(RC) และต้องทำเท่ากับจำนวนก้าวของคำตอบ ทั้งหมดเป็น O(RC × คำตอบ) แผนที่ที่หนักที่สุดคือทางงูเลื้อย ซึ่งทางเดินเลี้ยวไปมาจนยาวราวครึ่งหนึ่งของจำนวนช่อง วัดบนเครื่องเดียวกับหน้า 19.1 แผนที่ทางงูเลื้อยขนาด N × N รันแต่ละแบบ 5 รอบ ยกเว้นการจำลองที่ N = 151 และ 201 รัน 3 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>คำตอบ</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">101</td><td rowspan="2">5,200 ก้าว</td><td>จำลองทีละนาที O(RC × คำตอบ)</td><td>0.512 วินาที</td><td>0.109 วินาที</td></tr>
+            <tr><td>BFS O(RC)</td><td>0.012 วินาที</td><td>0.018 วินาที</td></tr>
+            <tr><td>151</td><td>11,550 ก้าว</td><td>จำลองทีละนาที</td><td>2.429 วินาที</td><td>0.500 วินาที</td></tr>
+            <tr><td rowspan="2">201</td><td rowspan="2">20,400 ก้าว</td><td>จำลองทีละนาที</td><td>8.215 วินาที</td><td>1.343 วินาที</td></tr>
+            <tr><td>BFS</td><td>0.018 วินาที</td><td>0.013 วินาที</td></tr>
+            <tr><td>1001</td><td>502,000 ก้าว</td><td>BFS</td><td>0.049 วินาที</td><td>0.022 วินาที</td></tr>
+            <tr><td>2001</td><td>2,004,000 ก้าว</td><td>BFS</td><td>0.151 วินาที</td><td>0.044 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>N เพิ่มสองเท่า การจำลองช้าลงสิบกว่าเท่า เพราะทั้งจำนวนช่องและจำนวนนาทีโตเป็นสี่เท่าพร้อมกัน ที่ N = 1001 งานมากกว่าที่ N = 201 ราวหกร้อยเท่า คาดว่าแบบ <code>-O2</code> ต้องใช้ราว 14 นาที จึงไม่ได้รัน ส่วน BFS ที่ N = 1001 ใช้ไม่ถึงหนึ่งในสิบวินาที การจำลองทีละรอบยังเหมาะกับโจทย์ที่ถามว่า "ผ่านไป K นาทีแล้วเป็นยังไง" เมื่อ K น้อย แบบไฟป่าในแบบฝึกหัดบทที่ 7 แต่ถ้าถามว่า "กี่นาทีจึงถึง" ให้ใช้ BFS</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="mark-on-pop">แบบที่ 1 จดตอนหยิบออกจาก queue</h3>
+
+      <p>หน้า 27.3 บอกให้ให้ระยะตอนใส่ queue ลองฝืนดู ใช้ตาราง <code>taken</code> จดว่าช่องไหนถูกหยิบออกแล้ว จดตอนหยิบออก และใส่เพื่อนบ้านลง queue ถ้าเพื่อนบ้านยังไม่ถูกหยิบ ส่วนนี้ของโปรแกรมเป็นแบบนี้</p>
+
+      <div class="code" data-lang="cpp"><pre><code>while (!waiting.empty()) {
+    auto [r, c] = waiting.front();
+    waiting.pop();
+    taken[r][c] = true;
+    for (int d = 0; d &lt; 4; d++) {
+        int nr = r + dr[d];
+        int nc = c + dc[d];
+        if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; grid[nr][nc] != '#' &amp;&amp; !taken[nr][nc]) {
+            dist[nr][nc] = dist[r][c] + 1;
+            waiting.push({nr, nc});
+            pushes++;
+        }
+    }
+}
+</code></pre></div>
+
+      <p>ระยะที่ได้ยังถูก เพราะทุกช่องยังออกจาก queue เรียงตามชั้น แต่ช่องเดียวกันถูกใส่ซ้ำจากเพื่อนบ้านทุกตัวที่ออกจาก queue ก่อนมัน แต่ละสำเนาที่ถูกหยิบออกก็ใส่เพื่อนบ้านซ้ำอีก จำนวนสำเนาจึงทบไปเรื่อยๆ ลองกับตารางโล่ง N × N ไม่มีกำแพง <code>S</code> อยู่มุมซ้ายบน <code>E</code> อยู่มุมขวาล่าง นับจำนวนครั้งที่ใส่ queue วัดบนเครื่องเดียวกับหน้า 19.1 รัน 3 รอบ ยกเว้น N = 16 รันรอบเดียว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>ใส่ queue (จดตอนใส่)</th><th>ใส่ queue (จดตอนหยิบออก)</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>8</td><td>64</td><td>12,869</td><td>-</td><td>-</td></tr>
+            <tr><td>10</td><td>100</td><td>184,755</td><td>0.029 วินาที</td><td>0.016 วินาที</td></tr>
+            <tr><td>12</td><td>144</td><td>2,704,155</td><td>0.191 วินาที</td><td>0.042 วินาที</td></tr>
+            <tr><td>14</td><td>196</td><td>40,116,599</td><td>2.582 วินาที</td><td>0.426 วินาที</td></tr>
+            <tr><td>16</td><td>256</td><td>601,080,389</td><td>ไม่ได้รัน</td><td>6.264 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ตารางแค่ 16 × 16 ช่อง ใส่ queue หกร้อยล้านครั้ง เพิ่มขึ้นราวสิบห้าเท่าทุกครั้งที่ N เพิ่มสอง ทั้งที่แบบจดตอนใส่ใช้แค่ 256 ครั้ง โปรแกรมแบบนี้ผ่านเขาวงกตแคบๆ ในตัวอย่างได้ เพราะทางเดินกว้างหนึ่งช่องแทบไม่มีทางให้ซ้ำ แล้วไปตกเวลาเกินกับชุดทดสอบที่เป็นที่โล่ง จดตอนใส่ queue เสมอ</p>
+
+      <h3 id="dot-only">แบบที่ 2 เช็กว่าเป็นทางเดินด้วย '.'</h3>
+
+      <p>ในโปรแกรม maze-path เขียนเงื่อนไขเดินว่า <code>grid[nr][nc] == '.'</code> แทน <code>grid[nr][nc] != '#'</code> เพราะคิดว่าทางเดินคือจุด แล้วรันกับเขาวงกตเดิม</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>7 11
+###########
+#S..#.....#
+#.#.#.###.#
+#.#...#...#
+#.#####.#.#
+#.......#E#
+###########
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\maze.exe"><pre><code>no way out
+</code></pre></div>
+      </div>
+
+      <p>ช่อง <code>E</code> ไม่ใช่ <code>.</code> จึงไม่เคยถูกเดินเข้าไป ระยะของ <code>E</code> ค้างเป็น -1 โจทย์ตารางมักมีตัวอักษรพิเศษปนในแผนที่ เช่น <code>S</code> <code>E</code> ประตู หรือกุญแจ ให้เช็กสิ่งที่ <strong>ห้ามเดิน</strong> แทนการเช็กสิ่งที่เดินได้ และทดสอบกับตัวอย่างที่ <code>E</code> อยู่ติดกับ <code>S</code> ด้วย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ตารางคือกราฟที่ทุกช่องเป็นจุดยอด เพื่อนบ้านคำนวณจาก <code>dr</code> กับ <code>dc</code> ไม่ต้องสร้าง adjacency list ใช้เวลา O(RC)</li>
+        <li>BFS บนตารางใช้ <code>dist</code> สองมิติกับ queue ของ <code>pair&lt;int, int&gt;</code> จดทิศที่เดินเข้ามาเพื่อวาดเส้นทางย้อนกลับ</li>
+        <li>นับเกาะคือนับส่วนเชื่อมต่อ flood fill แบบ recursion พังตั้งแต่แผนที่ราว 150 × 150 ใช้ BFS หรือ stack ของเราเอง</li>
+        <li>การจำลองทีละนาทีให้คำตอบเท่ากับ BFS แต่ใช้ O(RC × คำตอบ) ทางงูเลื้อยทำให้ไม่ทัน</li>
+        <li>จดตอนใส่ queue ไม่ใช่ตอนหยิบออก และเช็กสิ่งที่ห้ามเดินแทนสิ่งที่เดินได้</li>
+      </ul>
+    </article>

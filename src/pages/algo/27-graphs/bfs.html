@@ -1,0 +1,606 @@
+<article class="doc">
+      <h1>27.3 BFS และระยะทางที่สั้นที่สุด</h1>
+
+      <p>DFS ในหน้า 27.2 บอกได้ว่าไปถึงไหนบ้าง แต่ไม่บอกว่าไปด้วยถนนน้อยที่สุดกี่เส้น DFS จากบ้าน 1 ไปถึงบ้าน 4 ผ่าน <code>1 2 3 6 5 4</code> ห้าเส้น ทั้งที่มีถนน 1-4 ตรงๆ เส้นเดียว โจทย์ "น้อยที่สุดกี่ก้าว" บนกราฟที่ทุกเส้นยาวเท่ากันต้องใช้ <strong>BFS (breadth-first search)</strong> หรือการค้นแบบกว้างก่อน ซึ่งเดินออกจากจุดเริ่มทีละชั้นด้วย queue จากบทที่ 17 แบบเดียวกับ level order ในหน้า 26.2 หน้านี้ต่อยอดเป็นการพิมพ์เส้นทาง BFS จากหลายจุดพร้อมกัน และการแบ่งกราฟเป็นสองฝั่ง</p>
+
+      <h2 id="layers">ไล่ทีละชั้น</h2>
+
+      <p>ให้ <code>dist[v]</code> คือจำนวนเส้นที่น้อยที่สุดจากจุดเริ่มถึง v จุดเริ่มมีระยะ 0 เพื่อนบ้านของมันมีระยะ 1 เพื่อนบ้านของพวกนั้นที่ยังไม่มีระยะ มีระยะ 2 ไปเรื่อยๆ BFS ทำแบบนี้ด้วย queue</p>
+
+      <ol>
+        <li>ตั้ง <code>dist</code> ทุกช่องเป็น -1 แปลว่ายังไปไม่ถึง ตั้งจุดเริ่มเป็น 0 แล้วใส่ queue</li>
+        <li>หยิบจุดหน้า queue ออกมาเป็น v ทุกเพื่อนบ้านที่ <code>dist</code> ยังเป็น -1 ได้ระยะ <code>dist[v] + 1</code> แล้วต่อท้าย queue</li>
+        <li>ทำข้อ 2 จน queue ว่าง</li>
+      </ol>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="bfs-dist"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+int dist[MAXN];
+
+int main()
+{
+    int n, m, start;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; start;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    fill(dist, dist + n + 1, -1); // (1)!
+    queue&lt;int&gt; waiting;
+    dist[start] = 0;
+    waiting.push(start);
+    while (!waiting.empty()) {
+        int v = waiting.front();
+        waiting.pop();
+        cout &lt;&lt; "take " &lt;&lt; v &lt;&lt; " dist " &lt;&lt; dist[v] &lt;&lt; '\n';
+        for (int next : adj[v]) {
+            if (dist[next] == -1) {
+                dist[next] = dist[v] + 1; // (2)!
+                waiting.push(next);
+            }
+        }
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; dist[v] &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>-1 ใช้แทน <code>visited</code> ได้ในตัว ระยะจริงไม่มีทางติดลบ และจุดที่ไปไม่ถึงจะเหลือ -1 จนจบ พิมพ์ออกไปตรงๆ ได้</li>
+        <li>ให้ระยะตั้งแต่ตอนใส่ queue ไม่ใช่ตอนหยิบออก แต่ละจุดจึงเข้า queue ครั้งเดียว ถ้ารอให้ระยะตอนหยิบออก จุดเดียวกันอาจถูกใส่ซ้ำจากหลายเพื่อนบ้าน หน้า 27.4 จะวัดให้เห็นว่าเสียหายแค่ไหน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bfs-dist" data-title="ข้อมูลเข้า"><pre><code>9 9 1
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bfs-dist" data-title="C:\code\bfs_dist.exe"><pre><code>take 1 dist 0
+take 2 dist 1
+take 4 dist 1
+take 3 dist 2
+take 5 dist 2
+take 6 dist 3
+0 1 2 1 2 3 -1 -1 -1
+</code></pre></div>
+      </div>
+
+      <p>ข้อมูลเข้าเหมือนกราฟของหมู่บ้าน แต่บรรทัดแรกมีจุดเริ่มต่อท้ายด้วย จุดออกจาก queue เรียงตามระยะ 0 1 1 2 2 3 ไม่มีทางสลับกัน ได้ระยะของบ้าน 4 เป็น 1 ถูกต้อง และบ้าน 7 8 9 เป็น -1 เพราะไปไม่ถึง</p>
+
+      <figure>
+        <svg viewBox="0 0 560 240" width="560" style="max-width:100%;height:auto" role="img" aria-label="BFS จากบ้าน 1 ระยะของบ้าน 1 คือ 0 บ้าน 2 กับ 4 คือ 1 บ้าน 3 กับ 5 คือ 2 บ้าน 6 คือ 3 บ้าน 7 8 9 ไปไม่ถึง เส้นที่พบจุดใหม่คือ 1-2 1-4 2-3 2-5 3-6 เป็นเส้นทึบสีหลัก">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="80" y1="50" x2="160" y2="50" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="60" y1="70" x2="60" y2="140" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="200" y1="50" x2="280" y2="50" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="180" y1="70" x2="180" y2="140" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="80" y1="160" x2="160" y2="160" style="stroke-dasharray:5 4"/>
+            <line x1="200" y1="160" x2="280" y2="160" style="stroke-dasharray:5 4"/>
+            <line x1="300" y1="70" x2="300" y2="140" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="436" y1="61" x2="484" y2="94"/>
+            <line x1="484" y1="116" x2="436" y2="149"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="60" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="60" y="56" style="fill:var(--ink)">1</text>
+            <circle cx="180" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="180" y="56" style="fill:var(--ink)">2</text>
+            <circle cx="300" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="300" y="56" style="fill:var(--ink)">3</text>
+            <circle cx="60" cy="160" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="60" y="166" style="fill:var(--ink)">4</text>
+            <circle cx="180" cy="160" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="180" y="166" style="fill:var(--ink)">5</text>
+            <circle cx="300" cy="160" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="300" y="166" style="fill:var(--ink)">6</text>
+            <circle cx="420" cy="50" r="20" style="fill:var(--surface);stroke:var(--line);stroke-width:2"/>
+            <text x="420" y="56" style="fill:var(--ink)">7</text>
+            <circle cx="500" cy="105" r="20" style="fill:var(--surface);stroke:var(--line);stroke-width:2"/>
+            <text x="500" y="111" style="fill:var(--ink)">8</text>
+            <circle cx="420" cy="160" r="20" style="fill:var(--surface);stroke:var(--line);stroke-width:2"/>
+            <text x="420" y="166" style="fill:var(--ink)">9</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px">
+            <text x="460" y="225" text-anchor="middle" style="fill:var(--muted)">ระยะ -1</text>
+          </g>
+          <g style="font-family:var(--font-text)">
+            <text x="60" y="22" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ระยะ 0</text>
+            <text x="180" y="22" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ระยะ 1</text>
+            <text x="60" y="200" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ระยะ 1</text>
+            <text x="300" y="22" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ระยะ 2</text>
+            <text x="180" y="200" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ระยะ 2</text>
+            <text x="300" y="200" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ระยะ 3</text>
+          </g>
+        </svg>
+      </figure>
+
+      <h3 id="why-shortest">ทำไมได้ระยะที่สั้นที่สุด</h3>
+
+      <p>ในทุกจังหวะ queue มีแต่จุดระยะ d ต่อด้วยจุดระยะ d + 1 เท่านั้น เพราะจุดที่ถูกต่อท้ายมีระยะมากกว่าจุดที่กำลังหยิบอยู่หนึ่งเสมอ จุดจึงออกจาก queue เรียงตามระยะ ไม่มีทางย้อน ทางที่สั้นที่สุดไปจุด x ต้องผ่านเพื่อนบ้านตัวใดตัวหนึ่งของ x เป็นจุดรองสุดท้าย ระยะที่สั้นที่สุดของ x จึงเท่ากับระยะน้อยที่สุดในบรรดาเพื่อนบ้านบวกหนึ่ง เพื่อนบ้านที่ระยะน้อยที่สุดคือตัวที่ออกจาก queue ก่อนเพื่อนบ้านตัวอื่น และเป็นตัวที่ให้ระยะ x ก่อนใคร ครั้งแรกที่ x ได้ระยะจึงเป็นระยะที่สั้นที่สุดพอดี ไล่เหตุผลนี้ทีละชั้นตั้งแต่จุดเริ่ม ก็ได้ว่าถูกทุกจุด</p>
+
+      <p>เหตุผลนี้ใช้ได้เพราะทุกเส้นยาวเท่ากัน ถ้าแต่ละเส้นยาวไม่เท่ากัน ทางที่ผ่านเส้นน้อยกว่าอาจยาวกว่าทางที่ผ่านหลายเส้น ในภาพกราฟมีน้ำหนักของหน้า 27.1 ทาง <code>1 2 4</code> กับ <code>1 3 4</code> ผ่านสองเส้นเท่ากัน BFS มองว่าไกลเท่ากัน ทั้งที่ยาว 9 กับ 12 กิโลเมตร กรณีนั้นใช้ BFS ไม่ได้ ต้องรอบทที่ 28</p>
+
+      <h3 id="complexity">เวลาที่ใช้</h3>
+
+      <p>แต่ละจุดเข้าและออกจาก queue ไม่เกินครั้งเดียว และตอนออกไล่รายการเพื่อนบ้านของตัวเองครั้งเดียว รวมเป็น <strong>O(V + E)</strong> เท่ากับ DFS และไม่มีปัญหาเรื่องความลึก เพราะไม่ได้เรียกตัวเองเลย queue ยาวได้ไม่เกิน V ช่อง</p>
+
+      <h2 id="parent">เก็บพ่อเพื่อพิมพ์เส้นทาง</h2>
+
+      <p>ถ้าโจทย์ให้พิมพ์เส้นทางด้วย ตอนที่จุด next ได้ระยะจาก v ให้จดไว้ว่า <code>parent[next] = v</code> คือมาถึง next จาก v พอ BFS จบ เดินย้อนจากปลายทางตาม <code>parent</code> ไปเรื่อยๆ จะถึงจุดเริ่ม ได้เส้นทางแบบกลับหัว แล้วกลับลำดับอีกที ข้อมูลเข้าบรรทัดแรกมีจุดเริ่มกับปลายทางต่อท้าย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="bfs-path"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+int dist[MAXN];
+int parent[MAXN];
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m, start, goal;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; start &gt;&gt; goal;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    fill(dist, dist + n + 1, -1);
+    queue&lt;int&gt; waiting;
+    dist[start] = 0;
+    parent[start] = 0;
+    waiting.push(start);
+    while (!waiting.empty()) {
+        int v = waiting.front();
+        waiting.pop();
+        for (int next : adj[v]) {
+            if (dist[next] == -1) {
+                dist[next] = dist[v] + 1;
+                parent[next] = v; // (1)!
+                waiting.push(next);
+            }
+        }
+    }
+    if (dist[goal] == -1) {
+        cout &lt;&lt; "no route\n";
+        return 0;
+    }
+    vector&lt;int&gt; route;
+    for (int v = goal; v != 0; v = parent[v]) { // (2)!
+        route.push_back(v);
+    }
+    reverse(route.begin(), route.end()); // (3)!
+    cout &lt;&lt; "roads " &lt;&lt; dist[goal] &lt;&lt; '\n';
+    for (int i = 0; i &lt; (int)route.size(); i++) {
+        cout &lt;&lt; route[i] &lt;&lt; (i + 1 == (int)route.size() ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จดพร้อมกับตอนให้ระยะ จุดหนึ่งได้ระยะครั้งเดียว พ่อจึงถูกจดครั้งเดียวด้วย</li>
+        <li>จุดเริ่มมีพ่อเป็น 0 ซึ่งไม่ใช่หมายเลขบ้าน ลูปจึงหยุดหลังใส่จุดเริ่มลงไป</li>
+        <li>ที่เก็บมาเรียงจากปลายทางไปจุดเริ่ม <code>reverse</code> จาก <code>algorithm</code> ในหน้า 16.5 กลับให้เป็นจากจุดเริ่มไปปลายทาง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bfs-path" data-title="ข้อมูลเข้า"><pre><code>9 9 4 3
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bfs-path" data-title="C:\code\route.exe"><pre><code>roads 3
+4 1 2 3
+</code></pre></div>
+      </div>
+
+      <p>จากบ้าน 4 ไปบ้าน 3 มีเส้นทางที่สั้นที่สุดสามเส้น คือ <code>4 1 2 3</code> <code>4 5 2 3</code> และ <code>4 5 6 3</code> โปรแกรมได้เส้นแรก เพราะ 1 อยู่ก่อน 5 ในรายการของบ้าน 4 จึงเข้า queue ก่อน และเป็นคนแรกที่ไปถึง 2 ถ้าสลับลำดับถนนในข้อมูลเข้า อาจได้เส้นอื่นที่ยาวเท่ากัน ถ้าโจทย์ระบุว่าต้องพิมพ์เส้นไหน เช่น เส้นที่น้อยที่สุดตามพจนานุกรม ต้องคิดเพิ่ม ซึ่งจะได้ลองในแบบฝึกหัด ถ้าไปไม่ถึง <code>dist[goal]</code> เป็น -1 ต้องเช็กก่อนเดินย้อน ป้อนจากบ้าน 1 ไปบ้าน 9</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>9 9 1 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\route.exe"><pre><code>no route
+</code></pre></div>
+      </div>
+
+      <h2 id="multi-source">BFS หลายจุดเริ่ม</h2>
+
+      <p>อำเภอมีโรงพยาบาลอยู่ในหมู่บ้าน K แห่ง อยากรู้ว่าแต่ละหมู่บ้านอยู่ห่างจากโรงพยาบาลที่ใกล้ที่สุดกี่ถนน วิธีตรงไปตรงมาคือ BFS จากโรงพยาบาลทีละแห่ง แล้วเก็บค่าน้อยสุดของแต่ละหมู่บ้าน ใช้เวลา O(K(V + E))</p>
+
+      <p>ทางที่ดีกว่าคือใส่โรงพยาบาลทุกแห่งลง queue ตั้งแต่แรก ทุกแห่งระยะ 0 แล้ว BFS ครั้งเดียว ให้นึกว่ามีจุดสมมติอีกจุดหนึ่งที่มีถนนไปหาโรงพยาบาลทุกแห่ง BFS จากจุดสมมติจะได้ชั้นแรกเป็นโรงพยาบาลทั้งหมด แล้วไล่ทีละชั้นต่อเหมือนเดิม ระยะจากจุดสมมติถึงหมู่บ้านใดๆ คือหนึ่งบวกระยะถึงโรงพยาบาลที่ใกล้ที่สุด ถ้านับชั้นของโรงพยาบาลเป็น 0 แทน 1 ก็ได้ระยะถึงโรงพยาบาลที่ใกล้ที่สุดพอดี ข้อมูลเข้ามี N M K แล้วตามด้วยหมู่บ้านที่มีโรงพยาบาล</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="hospitals"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 200001;
+vector&lt;int&gt; adj[MAXN];
+int dist[MAXN];
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m, k;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; k;
+    fill(dist, dist + n + 1, -1);
+    queue&lt;int&gt; waiting;
+    for (int i = 0; i &lt; k; i++) {
+        int hospital;
+        cin &gt;&gt; hospital;
+        dist[hospital] = 0;
+        waiting.push(hospital); // (1)!
+    }
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    while (!waiting.empty()) {
+        int v = waiting.front();
+        waiting.pop();
+        for (int next : adj[v]) {
+            if (dist[next] == -1) {
+                dist[next] = dist[v] + 1;
+                waiting.push(next);
+            }
+        }
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; dist[v] &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ทุกจุดเริ่มเข้า queue ก่อนเริ่มวน ส่วนที่เหลือของโปรแกรมเหมือน BFS จากจุดเดียวทุกบรรทัด</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="hospitals" data-title="ข้อมูลเข้า"><pre><code>9 9 2
+4 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="hospitals" data-title="C:\code\hospitals.exe"><pre><code>1 2 3 0 1 2 2 1 0
+</code></pre></div>
+      </div>
+
+      <p>โรงพยาบาลอยู่ที่บ้าน 4 กับบ้าน 9 บ้าน 3 ได้ 3 เพราะใกล้บ้าน 4 ที่สุด และไกลจากบ้าน 9 เกินจะไปถึง บ้าน 7 ได้ 2 จากบ้าน 9 งานนี้ยังเป็น O(V + E) ไม่ว่าจะมีโรงพยาบาลกี่แห่ง</p>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 กราฟสุ่ม N = 100000 M = 150000 เปลี่ยนจำนวนโรงพยาบาล K รันแต่ละแบบ 5 รอบ ยกเว้นแถวที่ K = 10000 ของวิธีทีละแห่งรัน 3 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>K</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">100</td><td>BFS ทีละแห่ง O(K(V + E))</td><td>1.938 วินาที</td><td>0.400 วินาที</td></tr>
+            <tr><td>BFS หลายจุดเริ่ม O(V + E)</td><td>0.087 วินาที</td><td>0.062 วินาที</td></tr>
+            <tr><td rowspan="2">1000</td><td>BFS ทีละแห่ง</td><td>28.5 วินาที</td><td>3.191 วินาที</td></tr>
+            <tr><td>BFS หลายจุดเริ่ม</td><td>0.074 วินาที</td><td>0.053 วินาที</td></tr>
+            <tr><td rowspan="2">10000</td><td>BFS ทีละแห่ง</td><td>234.4 วินาที</td><td>27.1 วินาที</td></tr>
+            <tr><td>BFS หลายจุดเริ่ม</td><td>0.082 วินาที</td><td>0.057 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วิธีทีละแห่งโตตามจำนวนโรงพยาบาล K เพิ่มสิบเท่าก็ช้าลงแปดถึงสิบห้าเท่า ส่วน BFS หลายจุดเริ่มแทบไม่เปลี่ยน เพราะทุกหมู่บ้านยังเข้า queue ครั้งเดียวเหมือนเดิม วิธีนี้ใช้ได้ทุกครั้งที่โจทย์ถามว่า "ใกล้อะไรสักอย่างที่ใกล้ที่สุดแค่ไหน" เช่น ไฟที่ลามจากหลายจุดพร้อมกัน หรือช่องในตารางที่ใกล้ทางออกบานใดก็ได้</p>
+
+      <h2 id="bipartite">กราฟสองฝั่ง</h2>
+
+      <p>ครูจะแบ่งนักเรียนเป็นสองทีม โดยคู่ที่ทะเลาะกันต้องอยู่คนละทีม ถ้าแต่ละคนเป็นจุดและคู่ที่ทะเลาะกันเป็นเส้นเชื่อม คำถามคือระบายสีจุดด้วยสองสีให้ทุกเส้นเชื่อมจุดต่างสีกันได้ไหม กราฟที่ทำได้เรียกว่า <strong>กราฟสองฝั่ง (bipartite graph)</strong></p>
+
+      <p>วิธีตรวจคือระบายไปเลย จุดเริ่มเป็นสี 0 เพื่อนบ้านทุกตัวต้องเป็นสี 1 เพื่อนบ้านของพวกนั้นต้องเป็นสี 0 ไม่มีทางเลือกอื่น ถ้าระหว่างทางเจอเส้นที่ปลายสองข้างได้สีเดียวกัน แปลว่าระบายไม่ได้แน่นอน เพราะทุกสีถูกบังคับมาตั้งแต่จุดเริ่ม ใช้ BFS เดินให้ครบทุกกลุ่มแบบนับส่วนเชื่อมต่อ เพราะแต่ละกลุ่มเลือกสีของจุดแรกได้อิสระ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="two-colors"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+int color[MAXN];
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    fill(color, color + n + 1, -1);
+    for (int start = 1; start &lt;= n; start++) {
+        if (color[start] != -1) {
+            continue;
+        }
+        queue&lt;int&gt; waiting;
+        color[start] = 0;
+        waiting.push(start);
+        while (!waiting.empty()) {
+            int v = waiting.front();
+            waiting.pop();
+            for (int next : adj[v]) {
+                if (color[next] == -1) {
+                    color[next] = 1 - color[v]; // (1)!
+                    waiting.push(next);
+                } else if (color[next] == color[v]) { // (2)!
+                    cout &lt;&lt; "conflict " &lt;&lt; v &lt;&lt; ' ' &lt;&lt; next &lt;&lt; '\n';
+                    return 0;
+                }
+            }
+        }
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; color[v] &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สีตรงข้ามกับ v คือ <code>1 - color[v]</code> ได้ 1 จาก 0 และได้ 0 จาก 1</li>
+        <li>เพื่อนบ้านมีสีแล้ว และเป็นสีเดียวกับ v พิมพ์คู่นั้นแล้วจบเลย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="two-colors" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="two-colors" data-title="C:\code\two_colors.exe"><pre><code>0 1 0 1 0 1 0 1 0
+</code></pre></div>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 560 230" width="560" style="max-width:100%;height:auto" role="img" aria-label="กราฟของหมู่บ้านระบายสองสี บ้าน 1 3 5 7 9 เป็นสี 0 บ้าน 2 4 6 8 เป็นสี 1 ทุกถนนเชื่อมบ้านต่างสีกัน">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="80" y1="50" x2="160" y2="50"/>
+            <line x1="60" y1="70" x2="60" y2="140"/>
+            <line x1="200" y1="50" x2="280" y2="50"/>
+            <line x1="180" y1="70" x2="180" y2="140"/>
+            <line x1="80" y1="160" x2="160" y2="160"/>
+            <line x1="200" y1="160" x2="280" y2="160"/>
+            <line x1="300" y1="70" x2="300" y2="140"/>
+            <line x1="436" y1="61" x2="484" y2="94"/>
+            <line x1="484" y1="116" x2="436" y2="149"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="60" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="60" y="56" style="fill:var(--ink)">1</text>
+            <circle cx="180" cy="50" r="20" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <text x="180" y="56" style="fill:var(--ink)">2</text>
+            <circle cx="300" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="300" y="56" style="fill:var(--ink)">3</text>
+            <circle cx="60" cy="160" r="20" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <text x="60" y="166" style="fill:var(--ink)">4</text>
+            <circle cx="180" cy="160" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="180" y="166" style="fill:var(--ink)">5</text>
+            <circle cx="300" cy="160" r="20" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <text x="300" y="166" style="fill:var(--ink)">6</text>
+            <circle cx="420" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="420" y="56" style="fill:var(--ink)">7</text>
+            <circle cx="500" cy="105" r="20" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <text x="500" y="111" style="fill:var(--ink)">8</text>
+            <circle cx="420" cy="160" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="420" y="166" style="fill:var(--ink)">9</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px">
+            <text x="20" y="215" text-anchor="start" style="fill:var(--muted)">วงพื้นสีหลักคือสี 0 วงขอบสีส้มคือสี 1</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>หมู่บ้านนี้แบ่งสองฝั่งได้ สีของแต่ละจุดคือระยะจากจุดเริ่มของกลุ่มเป็นเลขคู่หรือคี่ เทียบกับภาพในหัวข้อแรก บ้านระยะ 0 และ 2 เป็นสี 0 บ้านระยะ 1 และ 3 เป็นสี 1 ลองเพิ่มถนน 1-5 อีกเส้น บรรทัดแรกจึงเป็น <code>9 10</code></p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>9 10
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+1 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\two_colors.exe"><pre><code>conflict 2 5
+</code></pre></div>
+      </div>
+
+      <p>ถนน 1-5 ทำให้เกิดวงจร <code>1 2 5 1</code> ซึ่งยาว 3 เส้น เดินวงจรความยาวคี่ สีต้องสลับเป็นจำนวนคี่ครั้งแล้วกลับมาที่จุดเดิม ซึ่งเป็นไปไม่ได้ กราฟจึงเป็นสองฝั่งได้ก็ต่อเมื่อไม่มีวงจรความยาวคี่เลย วงจร <code>1 2 5 4 1</code> ในกราฟเดิมยาว 4 เส้นจึงไม่เป็นปัญหา ต้นไม้ไม่มีวงจร จึงเป็นกราฟสองฝั่งเสมอ</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="stack-not-queue">แบบที่ 1 ใช้ stack แทน queue</h3>
+
+      <p>ในโปรแกรม bfs-dist เปลี่ยน <code>queue&lt;int&gt;</code> เป็น <code>stack&lt;int&gt;</code> และ <code>front()</code> เป็น <code>top()</code> เพราะคิดว่ายังไงก็ไปครบทุกจุดเหมือนกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bfs-stack"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+int dist[MAXN];
+
+int main()
+{
+    int n, m, start;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; start;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    fill(dist, dist + n + 1, -1);
+    stack&lt;int&gt; waiting;
+    dist[start] = 0;
+    waiting.push(start);
+    while (!waiting.empty()) {
+        int v = waiting.top();
+        waiting.pop();
+        cout &lt;&lt; "take " &lt;&lt; v &lt;&lt; " dist " &lt;&lt; dist[v] &lt;&lt; '\n';
+        for (int next : adj[v]) {
+            if (dist[next] == -1) {
+                dist[next] = dist[v] + 1;
+                waiting.push(next);
+            }
+        }
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; dist[v] &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bfs-stack" data-title="ข้อมูลเข้า"><pre><code>9 9 1
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bfs-stack" data-title="C:\code\bfs_dist.exe"><pre><code>take 1 dist 0
+take 4 dist 1
+take 5 dist 2
+take 6 dist 3
+take 3 dist 4
+take 2 dist 1
+0 1 4 1 2 3 -1 -1 -1
+</code></pre></div>
+      </div>
+
+      <p>ไปครบทุกจุดจริง แต่บ้าน 3 ได้ระยะ 4 ทั้งที่ <code>1 2 3</code> ยาวแค่ 2 stack หยิบบ้าน 4 ที่ใส่ทีหลังออกก่อน แล้วลงลึกไป 5 ไป 6 จนไปเจอบ้าน 3 ผ่านทางยาวก่อนที่บ้าน 2 จะได้ออกจาก stack พอบ้าน 3 ได้ระยะแล้วก็ไม่ถูกแก้อีก เหตุผลเรื่องชั้นในหัวข้อแรกใช้ได้กับ queue เท่านั้น การไปครบทุกจุดใช้ stack หรือ queue ก็ได้ แต่ระยะที่สั้นที่สุดต้องใช้ queue</p>
+
+      <h3 id="zero-as-unvisited">แบบที่ 2 ใช้ 0 แทนยังไม่เคยไป</h3>
+
+      <p>ไม่อยากเรียก <code>fill</code> จึงปล่อยให้ <code>dist</code> ที่ประกาศนอก <code>main</code> เป็น 0 ทั้งหมด แล้วเช็ก <code>dist[next] == 0</code> แทน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bfs-zero"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+int dist[MAXN];
+
+int main()
+{
+    int n, m, start;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; start;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    queue&lt;int&gt; waiting;
+    dist[start] = 0;
+    waiting.push(start);
+    while (!waiting.empty()) {
+        int v = waiting.front();
+        waiting.pop();
+        cout &lt;&lt; "take " &lt;&lt; v &lt;&lt; " dist " &lt;&lt; dist[v] &lt;&lt; '\n';
+        for (int next : adj[v]) {
+            if (dist[next] == 0) {
+                dist[next] = dist[v] + 1;
+                waiting.push(next);
+            }
+        }
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; dist[v] &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bfs-zero" data-title="ข้อมูลเข้า"><pre><code>9 9 1
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bfs-zero" data-title="C:\code\bfs_dist.exe"><pre><code>take 1 dist 0
+take 2 dist 1
+take 4 dist 1
+take 1 dist 2
+take 3 dist 2
+take 5 dist 2
+take 6 dist 3
+2 1 2 1 2 3 0 0 0
+</code></pre></div>
+      </div>
+
+      <p>ผิดสองจุด บ้าน 1 ถูกหยิบออกมาสองครั้ง และระยะกลายเป็น 2 เพราะระยะที่ถูกต้องของจุดเริ่มคือ 0 ซึ่งดูเหมือนยังไม่เคยไป บ้าน 2 จึงให้ระยะบ้าน 1 ใหม่ ส่วนบ้าน 7 8 9 ที่ไปไม่ถึงได้ 0 ซึ่งอ่านแล้วเหมือนเป็นจุดเริ่ม ค่าที่ใช้แทน "ยังไม่เคยไป" ต้องเป็นค่าที่ระยะจริงเป็นไม่ได้ เช่น -1 หรือแยกเป็นอาเรย์ <code>visited</code> ต่างหาก</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>BFS ใช้ queue ให้ระยะตอนใส่ queue ได้ระยะที่สั้นที่สุดจากจุดเริ่มถึงทุกจุดในกราฟที่ทุกเส้นยาวเท่ากัน ใช้เวลา O(V + E) และไม่มีปัญหาเรื่องความลึก</li>
+        <li>จด <code>parent</code> ตอนให้ระยะ แล้วเดินย้อนจากปลายทางและกลับลำดับ ได้เส้นทางที่สั้นที่สุดหนึ่งเส้น</li>
+        <li>ใส่จุดเริ่มทั้งหมดลง queue ด้วยระยะ 0 ได้ระยะถึงจุดเริ่มที่ใกล้ที่สุดใน BFS ครั้งเดียว</li>
+        <li>ระบายสองสีด้วย BFS ถ้าเจอเส้นที่ปลายสีเดียวกันแปลว่าไม่ใช่กราฟสองฝั่ง ซึ่งเกิดเมื่อมีวงจรความยาวคี่</li>
+        <li>ใช้ stack แทน queue ได้ระยะผิด และอย่าใช้ 0 แทนยังไม่เคยไป</li>
+      </ul>
+    </article>

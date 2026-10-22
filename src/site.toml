@@ -418,7 +418,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "27"
 title = "บทที่ 27 กราฟ DFS และ BFS"
 summary = "แทนกราฟในโปรแกรม เดินกราฟ ส่วนเชื่อมต่อ และ BFS บนตาราง"
-# dir = "algo/27-graphs"
+path = "algo/27-graphs/index.html"
+pages = [
+  { num = "27.1", title = "กราฟและการเก็บในโปรแกรม", path = "algo/27-graphs/graphs.html" },
+  { num = "27.2", title = "DFS และส่วนเชื่อมต่อ", path = "algo/27-graphs/dfs.html" },
+  { num = "27.3", title = "BFS และระยะทางที่สั้นที่สุด", path = "algo/27-graphs/bfs.html" },
+  { num = "27.4", title = "DFS และ BFS บนตาราง", path = "algo/27-graphs/grid.html" },
+  { num = "27.5", title = "BFS บนสถานะ และ 0-1 BFS", path = "algo/27-graphs/state-bfs.html" },
+  { num = "27.6", title = "แบบฝึกหัด", path = "algo/27-graphs/exercises.html", exercises = "algo/27-graphs" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

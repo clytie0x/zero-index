@@ -1,0 +1,586 @@
+<article class="doc">
+      <h1>27.2 DFS และส่วนเชื่อมต่อ</h1>
+
+      <p>คำถามพื้นฐานที่สุดของกราฟคือ "จากจุดนี้ ไปถึงจุดไหนได้บ้าง" ถ้าตอบได้ ก็ตอบต่อได้ทันทีว่ากราฟแบ่งเป็นกี่กลุ่ม สองจุดอยู่กลุ่มเดียวกันไหม และกลุ่มนั้นมีวงจรหรือไม่ หน้านี้ตอบด้วย <strong>DFS (depth-first search)</strong> หรือการค้นแบบลึกก่อน ซึ่งก็คือ recursion จากบทที่ 9 กับการจดว่าไปที่ไหนมาแล้วแบบ state space ในหน้า 21.5 แล้วดูว่าทำไม DFS แบบ recursion พังกับกราฟใหญ่ และแก้ด้วย stack ของเราเอง</p>
+
+      <h2 id="idea">เดินลึกก่อน</h2>
+
+      <p>ลองนึกถึงการเดินสำรวจถ้ำที่มีทางแยกเยอะ วิธีที่ไม่หลงคือ เดินเข้าทางแรกที่ยังไม่เคยไป ไปเรื่อยๆ จนสุดทาง แล้วถอยกลับมาทางแยกล่าสุดที่ยังมีทางที่ไม่เคยไปเหลืออยู่ และทำเครื่องหมายไว้ทุกจุดที่ผ่าน จะได้ไม่เดินวนซ้ำ</p>
+
+      <p>เขียนเป็นฟังก์ชัน <code>dfs(v)</code> ได้สามบรรทัด จดว่ามาถึง v แล้ว แล้วเรียก <code>dfs</code> กับเพื่อนบ้านทุกตัวที่ยังไม่เคยไป การถอยกลับเกิดเองตอนฟังก์ชันจบ เหมือน backtracking ในบทที่ 21 แต่ต่างกันตรงที่เครื่องหมาย <strong>ไม่ลบออก</strong> ตอนถอยกลับ เพราะจุดที่สำรวจจากตรงนี้ครบแล้ว มาจากทางไหนก็ได้ผลเท่าเดิม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="dfs-order"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+bool visited[MAXN];
+
+void dfs(int v, int depth)
+{
+    visited[v] = true; // (1)!
+    cout &lt;&lt; string(2 * depth, ' ') &lt;&lt; "visit " &lt;&lt; v &lt;&lt; '\n';
+    for (int next : adj[v]) {
+        if (!visited[next]) { // (2)!
+            dfs(next, depth + 1);
+        }
+    }
+}
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    dfs(1, 0);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จดก่อนทำอย่างอื่น ถ้าย้ายไปจดหลังลูป เพื่อนบ้านจะเรียกกลับมาที่ v ซ้ำได้ระหว่างที่ v ยังไม่ถูกจด</li>
+        <li>เช็กก่อนเรียก ถ้าไม่เช็ก จะเดินไปกลับระหว่างสองบ้านไม่รู้จบ ดูในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="dfs-order" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="dfs-order" data-title="C:\code\dfs_order.exe"><pre><code>visit 1
+  visit 2
+    visit 3
+      visit 6
+        visit 5
+          visit 4
+</code></pre></div>
+      </div>
+
+      <p>ย่อหน้าเท่ากับความลึกของการเรียก จาก 1 ไป 2 ก่อน เพราะ 2 อยู่ต้นรายการของ 1 แล้วลงลึกต่อไป 3 แล้ว 6 แล้ว 5 แล้ว 4 ยาวเป็นสายเดียว พอถึง 4 เพื่อนบ้านทุกตัวถูกจดแล้ว ฟังก์ชันจึงจบทีละชั้นย้อนกลับจนถึง 1 ซึ่งตอนนั้นเพื่อนบ้านอีกตัวคือ 4 ก็ถูกจดไปแล้ว ทุกจุดที่ไปถึงได้จากบ้าน 1 จึงถูกพิมพ์ ส่วนบ้าน 7 8 9 ไม่ถูกพิมพ์ เพราะไม่มีถนนต่อจากกลุ่มนี้</p>
+
+      <figure>
+        <svg viewBox="0 0 560 240" width="560" style="max-width:100%;height:auto" role="img" aria-label="DFS จากบ้าน 1 ไปตามลำดับ 1 2 3 6 5 4 เส้นที่ใช้เดินคือ 1-2 2-3 3-6 6-5 5-4 เป็นเส้นทึบสีหลัก เส้น 1-4 และ 2-5 เป็นเส้นประ บ้าน 7 8 9 ไปไม่ถึง">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="80" y1="50" x2="160" y2="50" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="60" y1="70" x2="60" y2="140" style="stroke-dasharray:5 4"/>
+            <line x1="200" y1="50" x2="280" y2="50" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="180" y1="70" x2="180" y2="140" style="stroke-dasharray:5 4"/>
+            <line x1="80" y1="160" x2="160" y2="160" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="200" y1="160" x2="280" y2="160" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="300" y1="70" x2="300" y2="140" style="stroke:var(--brand);stroke-width:3"/>
+            <line x1="436" y1="61" x2="484" y2="94"/>
+            <line x1="484" y1="116" x2="436" y2="149"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="60" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="60" y="56" style="fill:var(--ink)">1</text>
+            <circle cx="180" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="180" y="56" style="fill:var(--ink)">2</text>
+            <circle cx="300" cy="50" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="300" y="56" style="fill:var(--ink)">3</text>
+            <circle cx="60" cy="160" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="60" y="166" style="fill:var(--ink)">4</text>
+            <circle cx="180" cy="160" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="180" y="166" style="fill:var(--ink)">5</text>
+            <circle cx="300" cy="160" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="300" y="166" style="fill:var(--ink)">6</text>
+            <circle cx="420" cy="50" r="20" style="fill:var(--surface);stroke:var(--line);stroke-width:2"/>
+            <text x="420" y="56" style="fill:var(--ink)">7</text>
+            <circle cx="500" cy="105" r="20" style="fill:var(--surface);stroke:var(--line);stroke-width:2"/>
+            <text x="500" y="111" style="fill:var(--ink)">8</text>
+            <circle cx="420" cy="160" r="20" style="fill:var(--surface);stroke:var(--line);stroke-width:2"/>
+            <text x="420" y="166" style="fill:var(--ink)">9</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px">
+            <text x="460" y="225" text-anchor="middle" style="fill:var(--muted)">ไปไม่ถึง</text>
+          </g>
+          <g style="font-family:var(--font-text)">
+            <text x="60" y="22" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ลำดับ 1</text>
+            <text x="180" y="22" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ลำดับ 2</text>
+            <text x="300" y="22" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ลำดับ 3</text>
+            <text x="300" y="200" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ลำดับ 4</text>
+            <text x="180" y="200" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ลำดับ 5</text>
+            <text x="60" y="200" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">ลำดับ 6</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>เส้นทึบคือเส้นที่ DFS ใช้เดินไปจุดใหม่ รวมกันเป็นต้นไม้ที่มี 1 เป็นราก เรียกว่า DFS tree ส่วนเส้นประคือเส้นที่ตอนตรวจแล้วพบว่าปลายทางถูกจดไปแล้ว เส้นแบบนี้คือเส้นที่ทำให้เกิดวงจร จะได้ใช้ในหัวข้อตรวจวงจร</p>
+
+      <h3 id="complexity">เวลาที่ใช้</h3>
+
+      <p>เพราะมี <code>visited</code> แต่ละจุดเข้า <code>dfs</code> ได้ครั้งเดียว และในครั้งนั้นไล่รายการเพื่อนบ้านของตัวเองครั้งเดียว ผลรวมความยาวของทุกรายการคือ 2E งานทั้งหมดจึงเป็น <strong>O(V + E)</strong> ไม่ว่ากราฟจะมีวงจรมากแค่ไหน และไม่ว่าจะมีเส้นทางระหว่างสองจุดกี่แบบ ต่างจากการลองทุกเส้นทางที่จำนวนเส้นทางระเบิดได้แบบบทที่ 21</p>
+
+      <h2 id="components">นับส่วนเชื่อมต่อ</h2>
+
+      <p>DFS หนึ่งครั้งเดินได้ทั่วแค่กลุ่มเดียว จะนับว่ากราฟมีกี่กลุ่ม ให้ไล่ทุกจุด เจอจุดที่ยังไม่มีกลุ่มเมื่อไร แปลว่าเจอกลุ่มใหม่ เริ่ม DFS จากจุดนั้นแล้วติดเลขกลุ่มให้ทุกจุดที่ไปถึง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="components"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 200001;
+vector&lt;int&gt; adj[MAXN];
+int group_of[MAXN];
+
+void dfs(int v, int group)
+{
+    group_of[v] = group;
+    for (int next : adj[v]) {
+        if (group_of[next] == 0) {
+            dfs(next, group);
+        }
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    int groups = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        if (group_of[v] == 0) { // (1)!
+            groups++;
+            dfs(v, groups);
+        }
+    }
+    cout &lt;&lt; "groups " &lt;&lt; groups &lt;&lt; '\n';
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; group_of[v] &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>group_of</code> ทำหน้าที่แทน <code>visited</code> ด้วย ค่า 0 แปลว่ายังไม่เคยไป จุดที่ถูก DFS ของกลุ่มก่อนหน้าไปถึงแล้วจะไม่เป็น 0 จึงไม่เปิดกลุ่มใหม่ซ้ำ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="components" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="components" data-title="C:\code\components.exe"><pre><code>groups 2
+1 1 1 1 1 1 2 2 2
+</code></pre></div>
+      </div>
+
+      <p>ลูปข้างนอกวนครบ V จุด และ DFS ทุกครั้งรวมกันก็ยังไปแต่ละจุดครั้งเดียว ทั้งโปรแกรมจึงยังเป็น O(V + E) จุดที่ไม่มีถนนเลยก็นับเป็นกลุ่มหนึ่งที่มีสมาชิกคนเดียว</p>
+
+      <h2 id="queries">ถามว่าถึงกันไหม</h2>
+
+      <p>บ้านสองหลังไปหากันได้ ก็ต่อเมื่ออยู่กลุ่มเดียวกัน เมื่อติดเลขกลุ่มเสร็จ แต่ละคำถามจึงตอบได้ใน O(1) แค่เทียบเลขกลุ่ม ตัวอย่างนี้รับ N M Q แล้วตามด้วยถนน และคำถาม Q บรรทัด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="reach"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 200001;
+vector&lt;int&gt; adj[MAXN];
+int group_of[MAXN];
+
+void dfs(int v, int group)
+{
+    group_of[v] = group;
+    for (int next : adj[v]) {
+        if (group_of[next] == 0) {
+            dfs(next, group);
+        }
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m, q;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; q;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    int groups = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        if (group_of[v] == 0) {
+            groups++;
+            dfs(v, groups);
+        }
+    }
+    for (int i = 0; i &lt; q; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+        cout &lt;&lt; (group_of[a] == group_of[b] ? "YES" : "NO") &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="reach" data-title="ข้อมูลเข้า"><pre><code>9 9 4
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+1 6
+4 9
+9 7
+3 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="reach" data-title="C:\code\reach.exe"><pre><code>YES
+NO
+YES
+YES
+</code></pre></div>
+      </div>
+
+      <p>คำถามสุดท้ายถาม 3 กับ 3 ซึ่งเป็นบ้านเดียวกัน ตอบ YES เพราะทุกบ้านอยู่กลุ่มเดียวกับตัวเอง วิธีตรงไปตรงมาคือทุกคำถามล้าง <code>visited</code> แล้ว DFS จาก a ใหม่ แล้วดูว่า b ถูกจดไหม ใช้เวลา O(V + E) ต่อคำถาม รวมเป็น O(Q(V + E))</p>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 กราฟสุ่ม N = M = Q รันแต่ละแบบ 5 รอบ ยกเว้นวิธีตรงไปตรงมารัน 3 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">N = M = Q = 20000</td><td>DFS ใหม่ทุกคำถาม O(Q(V + E))</td><td>19.7 วินาที</td><td>9.616 วินาที</td></tr>
+            <tr><td>ติดเลขกลุ่มครั้งเดียว O(V + E + Q)</td><td>0.035 วินาที</td><td>0.036 วินาที</td></tr>
+            <tr><td>N = M = Q = 100000</td><td>ติดเลขกลุ่มครั้งเดียว</td><td>0.131 วินาที</td><td>0.101 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กราฟสุ่มที่มีถนนเท่ากับจำนวนบ้าน มีกลุ่มใหญ่กลุ่มหนึ่งที่กินบ้านส่วนมาก DFS แต่ละครั้งจึงเดินเป็นหมื่นจุด ทำสองหมื่นครั้งก็หลายร้อยล้านขั้น วิธีตรงไปตรงมาที่ N = 100000 ไม่ได้รัน เพราะงานมากกว่าแถวแรกราวยี่สิบห้าเท่า หลักคิดเดียวกับ prefix sum ในบทที่ 19 คือทำงานหนักครั้งเดียวก่อนเริ่มถาม แล้วตอบทุกคำถามจากผลที่เก็บไว้</p>
+
+      <h2 id="how-deep">ลึกได้กี่ชั้น</h2>
+
+      <p>DFS แบบ recursion ลึกได้เท่าความยาวของสายที่มันเดินลงไป ถ้ากราฟเป็นเส้นตรง <code>1 - 2 - 3 - ... - N</code> โปรแกรม components จะเรียกซ้อนกัน N ชั้น บนเครื่องที่เขียนเอกสารนี้ รันจาก PowerShell ค่าละ 10 ครั้ง ได้ผลดังนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N ของเส้นตรง</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>25,000</td><td>ผ่านทั้ง 10 ครั้ง</td><td>ผ่านทั้ง 10 ครั้ง</td></tr>
+            <tr><td>26,000</td><td>พัง 9 ครั้ง ผ่าน 1 ครั้ง</td><td>ผ่านทั้ง 10 ครั้ง</td></tr>
+            <tr><td>27,000 ถึง 50,000</td><td>พังทุกครั้ง</td><td>ผ่านทุกครั้ง</td></tr>
+            <tr><td>96,000</td><td>พังทุกครั้ง</td><td>ผ่านทั้ง 10 ครั้ง</td></tr>
+            <tr><td>98,000 100,000 และ 200,000</td><td>พังทุกครั้ง</td><td>พังทุกครั้ง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทุกครั้งที่พังได้ <code>Process returned -1073741571 (0xC00000FD)</code> คือ stack overflow แบบหน้า 9.1 แบบ Code::Blocks ลึกได้ราวสองหมื่นห้าพันชั้น ใกล้กับที่หน้า 26.3 วัดไว้กับต้นไม้ แบบ <code>-O2</code> ลึกได้เกือบแสนชั้น แต่โจทย์ที่ให้ N ถึงสองแสนก็ยังพังทั้งสองแบบ</p>
+
+      <p>กราฟไม่ต้องเป็นเส้นตรงก็ลึกได้ ลองกับกราฟสุ่ม N = M = 200000 DFS ลงไปลึกที่สุด 52,496 ชั้น แบบ Code::Blocks พังทุกครั้ง แบบ <code>-O2</code> ผ่าน ถ้าทดสอบในเครื่องแค่แบบ <code>-O2</code> จะไม่รู้ตัวเลย และ grader แต่ละที่ตั้งขนาด stack ไม่เท่ากัน หลักเดียวกับหน้า 9.1 คือ recursion ที่อาจลึกถึงหลักหมื่นชั้นให้เขียนเป็นลูป</p>
+
+      <h2 id="own-stack">DFS ด้วย stack ของเราเอง</h2>
+
+      <p>หน้า 26.3 แก้ปัญหานี้กับต้นไม้ด้วย <code>stack&lt;int&gt;</code> ที่จองหน่วยความจำนอก stack ของโปรแกรม กราฟใช้วิธีเดียวกันได้ ต่างกันแค่ต้องจดว่าไปแล้วด้วย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="components-stack"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 200001;
+vector&lt;int&gt; adj[MAXN];
+int group_of[MAXN];
+
+void dfs(int start, int group)
+{
+    stack&lt;int&gt; waiting;
+    waiting.push(start);
+    group_of[start] = group; // (1)!
+    while (!waiting.empty()) {
+        int v = waiting.top(); // (2)!
+        waiting.pop();
+        for (int next : adj[v]) {
+            if (group_of[next] == 0) {
+                group_of[next] = group; // (3)!
+                waiting.push(next);
+            }
+        }
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    int groups = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        if (group_of[v] == 0) {
+            groups++;
+            dfs(v, groups);
+        }
+    }
+    cout &lt;&lt; "groups " &lt;&lt; groups &lt;&lt; '\n';
+    for (int v = 1; v &lt;= n; v++) {
+        cout &lt;&lt; group_of[v] &lt;&lt; (v == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จดตั้งแต่ตอนใส่ลง stack ไม่ใช่ตอนหยิบออก แต่ละจุดจึงถูกใส่ลง stack ไม่เกินครั้งเดียว stack ใหญ่สุดไม่เกิน V ช่อง</li>
+        <li>หยิบตัวบนสุด ซึ่งเป็นตัวที่ใส่ล่าสุด จึงยังเดินลึกลงไปทางที่เพิ่งเจอก่อน</li>
+        <li>เจอเพื่อนบ้านที่ยังไม่มีกลุ่ม ติดเลขกลุ่มแล้วใส่ลง stack ไว้ไปต่อทีหลัง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="components-stack" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="components-stack" data-title="C:\code\components.exe"><pre><code>groups 2
+1 1 1 1 1 1 2 2 2
+</code></pre></div>
+      </div>
+
+      <p>ได้ผลเท่าโปรแกรม components ทุกตัว ลำดับที่เดินต่างจากแบบ recursion เพราะเพื่อนบ้านทุกตัวถูกใส่ลง stack ทีเดียว ตัวที่ใส่หลังสุดถูกหยิบก่อน แต่งานที่สนใจแค่ว่า "ไปถึงจุดไหนบ้าง" เช่น นับกลุ่ม ติดเลขกลุ่ม หรือนับขนาดกลุ่ม ลำดับไม่มีผลกับคำตอบเลย ถ้างานต้องการลำดับแบบ recursion เป๊ะๆ ใช้วิธีในหน้า 26.3 หรือเลือก BFS ในหน้าถัดไปซึ่งไม่ใช้ recursion อยู่แล้ว</p>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>กราฟ</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">สุ่ม N = M = 200000</td><td>recursion</td><td>พังด้วย <code>0xC00000FD</code></td><td>0.193 วินาที</td></tr>
+            <tr><td>stack ของเราเอง</td><td>0.241 วินาที</td><td>0.176 วินาที</td></tr>
+            <tr><td rowspan="2">เส้นตรง N = 200000</td><td>recursion</td><td>พังด้วย <code>0xC00000FD</code></td><td>พังด้วย <code>0xC00000FD</code></td></tr>
+            <tr><td>stack ของเราเอง</td><td>0.091 วินาที</td><td>0.067 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสองแบบเป็น O(V + E) เวลาจึงพอกัน ตัวเลขในตารางรวมการอ่านถนนสองแสนเส้นและพิมพ์เลขกลุ่มสองแสนตัวด้วย สิ่งที่ต่างจริงคือแบบหนึ่งพังกับข้อมูลที่ลึก อีกแบบไม่พัง โจทย์ที่ N เกินหมื่นให้ใช้แบบ stack หรือ BFS เป็นค่าเริ่มต้น</p>
+
+      <h2 id="cycle">ตรวจวงจร</h2>
+
+      <p>ในภาพ DFS tree ข้างบน เส้นประ 1-4 กับ 2-5 คือเส้นที่ตอนตรวจแล้วพบว่าปลายทางถูกจดไปแล้ว ในกราฟไม่มีทิศ เส้นแบบนี้มีได้สองกรณี กรณีแรกคือเส้นที่เพิ่งเดินมา เช่น ตอนอยู่ที่ 2 แล้วเห็น 1 ซึ่งเป็นจุดที่เรียก <code>dfs(2)</code> มา จุดนี้เรียกว่า <strong>พ่อ (parent)</strong> ใน DFS tree เส้นนี้ไม่ใช่วงจร กรณีที่สองคือปลายทางถูกจดแล้วและไม่ใช่พ่อ แปลว่ามีอีกทางที่ไปถึงจุดนั้นได้ สองทางรวมกันเป็นวงจร จึงต้องส่งพ่อไปกับ <code>dfs</code> ด้วย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="cycle"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+bool visited[MAXN];
+bool found_cycle;
+int houses, road_ends;
+
+void dfs(int v, int parent)
+{
+    visited[v] = true;
+    houses++;
+    road_ends += adj[v].size(); // (1)!
+    for (int next : adj[v]) {
+        if (!visited[next]) {
+            dfs(next, v);
+        } else if (next != parent) { // (2)!
+            found_cycle = true;
+        }
+    }
+}
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    int groups = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        if (!visited[v]) {
+            groups++;
+            found_cycle = false;
+            houses = 0;
+            road_ends = 0;
+            dfs(v, 0);
+            cout &lt;&lt; "group " &lt;&lt; groups &lt;&lt; ": " &lt;&lt; houses &lt;&lt; " houses " &lt;&lt; road_ends / 2 &lt;&lt; " roads ";
+            cout &lt;&lt; (found_cycle ? "cycle" : "no cycle") &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>นับไปพร้อมกันว่าในกลุ่มมีปลายถนนกี่ปลาย ถนนหนึ่งเส้นมีสองปลาย หารสองได้จำนวนถนนในกลุ่ม ใช้ในวิธีที่สองข้างล่าง</li>
+        <li>ปลายทางถูกจดแล้ว และไม่ใช่จุดที่เพิ่งเดินมา แปลว่าเจอวงจร</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="cycle" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="cycle" data-title="C:\code\cycle.exe"><pre><code>group 1: 6 houses 7 roads cycle
+group 2: 3 houses 2 roads no cycle
+</code></pre></div>
+      </div>
+
+      <p>มีวิธีที่สองที่ไม่ต้องใช้พ่อเลย ดูจากจำนวนอย่างเดียว กลุ่มที่มี V จุดและถึงกันหมด ถ้าไม่มีวงจรก็คือต้นไม้ ต้องมีเส้นเชื่อม V - 1 เส้นพอดี ถ้ามีมากกว่านั้นมีวงจรแน่นอน กลุ่มแรกมี 6 บ้าน ถนน 7 เส้น เกิน 5 จึงมีวงจร กลุ่มที่สองมี 3 บ้าน ถนน 2 เส้นพอดี จึงไม่มี วิธีนี้ใช้กับ DFS แบบ stack หรือ BFS ได้ทันที เพราะแค่นับ ไม่ต้องรู้ว่าใครเป็นพ่อใคร</p>
+
+      <p>ทั้งสองวิธีใช้ได้กับกราฟไม่มีทิศที่ไม่มีถนนซ้ำและไม่มีถนนวนเข้าหาตัวเอง ถ้าโจทย์อนุญาตถนนซ้ำ ถนนสองเส้นระหว่าง u กับ v ก็เป็นวงจรแล้ว วิธีที่ใช้พ่อจะมองไม่เห็น ส่วนกราฟมีทิศต้องใช้วิธีอื่น เพราะลูกศรที่ชี้กลับไปหาจุดที่จดแล้วไม่ได้แปลว่าวนกลับมาได้เสมอ เรื่องนั้นจะเรียนพร้อมกับ topological sort ในบทที่ 30</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-visited-check">แบบที่ 1 ไม่เช็กว่าเคยไปแล้ว</h3>
+
+      <p>ในโปรแกรม dfs-order ลบ <code>if (!visited[next])</code> ออก เหลือแค่ <code>dfs(next, depth + 1);</code> ในลูป คอมไพล์ผ่านโดยไม่มีคำเตือน พอรันกับกราฟของหมู่บ้าน หน้าต่างดำพิมพ์รัวๆ</p>
+
+      <div class="code" data-lang="text"><pre><code>visit 1
+  visit 2
+    visit 1
+      visit 2
+        visit 1
+          visit 2
+</code></pre></div>
+
+      <p>บรรทัดยาวขึ้นเรื่อยๆ เป็นหมื่นบรรทัด แล้ว Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p>บ้าน 1 เรียกบ้าน 2 แล้วบ้าน 2 ก็เรียกบ้าน 1 กลับ เพราะ 1 อยู่ต้นรายการของ 2 วนกันไปทุกชั้นจน stack เต็ม <code>visited</code> ยังถูกจดอยู่ แต่ไม่มีใครเอาไปเช็ก อาการเดียวกับลืมจดสถานะในหน้า 21.5 กราฟไม่มีทิศทุกกราฟมีเส้นที่เดินกลับได้ จึงพังเสมอแม้ไม่มีวงจรเลย</p>
+
+      <h3 id="forgot-parent">แบบที่ 2 ตรวจวงจรโดยไม่สนพ่อ</h3>
+
+      <p>เขียนการตรวจวงจรแบบตรงไปตรงมา ว่าเจอจุดที่จดแล้วเมื่อไรก็คือวงจร โดยไม่ส่งพ่อไปด้วย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="cycle-no-parent"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 100001;
+vector&lt;int&gt; adj[MAXN];
+bool visited[MAXN];
+bool found_cycle;
+int houses, road_ends;
+
+void dfs(int v)
+{
+    visited[v] = true;
+    houses++;
+    road_ends += adj[v].size();
+    for (int next : adj[v]) {
+        if (!visited[next]) {
+            dfs(next);
+        } else {
+            found_cycle = true;
+        }
+    }
+}
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    int groups = 0;
+    for (int v = 1; v &lt;= n; v++) {
+        if (!visited[v]) {
+            groups++;
+            found_cycle = false;
+            houses = 0;
+            road_ends = 0;
+            dfs(v);
+            cout &lt;&lt; "group " &lt;&lt; groups &lt;&lt; ": " &lt;&lt; houses &lt;&lt; " houses " &lt;&lt; road_ends / 2 &lt;&lt; " roads ";
+            cout &lt;&lt; (found_cycle ? "cycle" : "no cycle") &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="cycle-no-parent" data-title="ข้อมูลเข้า"><pre><code>9 9
+1 2
+1 4
+2 3
+2 5
+4 5
+5 6
+3 6
+7 8
+8 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="cycle-no-parent" data-title="C:\code\cycle.exe"><pre><code>group 1: 6 houses 7 roads cycle
+group 2: 3 houses 2 roads cycle
+</code></pre></div>
+      </div>
+
+      <p>กลุ่มที่สองเป็นเส้นตรง 7 - 8 - 9 แต่ได้ว่ามีวงจร เพราะตอนอยู่ที่ 8 แล้วไล่เพื่อนบ้าน เจอ 7 ซึ่งเป็นจุดที่เพิ่งเดินมาและถูกจดแล้ว ถนนทุกเส้นถูกมองเห็นจากทั้งสองปลาย ถ้าไม่ยกเว้นพ่อ ทุกกลุ่มที่มีถนนอย่างน้อยหนึ่งเส้นจะถูกตอบว่ามีวงจรหมด ชุดทดสอบที่มีแต่กราฟมีวงจรจะผ่าน จึงต้องทดสอบกับต้นไม้ด้วยเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>DFS จดจุดปัจจุบันว่าไปแล้ว แล้วไปต่อที่เพื่อนบ้านที่ยังไม่เคยไปทีละตัว เครื่องหมายไม่ลบตอนถอยกลับ ใช้เวลา O(V + E)</li>
+        <li>นับส่วนเชื่อมต่อด้วยการเริ่ม DFS จากทุกจุดที่ยังไม่มีกลุ่ม ติดเลขกลุ่มครั้งเดียวแล้วตอบว่าถึงกันไหมได้ใน O(1)</li>
+        <li>DFS แบบ recursion บนเครื่องที่เขียนเอกสารนี้ลึกได้ราวสองหมื่นห้าพันชั้นแบบ Code::Blocks และเกือบแสนชั้นแบบ <code>-O2</code> กราฟสองแสนจุดพังทั้งคู่ ใช้ stack ของเราเองหรือ BFS</li>
+        <li>DFS ด้วย stack จดตอนใส่ลง stack ลำดับต่างจากแบบ recursion แต่ได้กลุ่มเดียวกัน</li>
+        <li>กราฟไม่มีทิศมีวงจรเมื่อเจอจุดที่จดแล้วซึ่งไม่ใช่พ่อ หรือเมื่อกลุ่ม V จุดมีเส้นเชื่อมมากกว่า V - 1 เส้น</li>
+      </ul>
+    </article>
