@@ -1,0 +1,460 @@
+<article class="doc">
+      <h1>28.1 BFS ไม่พอ และ Dijkstra แบบอาเรย์</h1>
+
+      <p>บทที่ 27 ใช้ BFS หาระยะทางที่สั้นที่สุดเมื่อทุกเส้นยาวเท่ากัน ถนนจริงไม่เป็นแบบนั้น ถนนบางเส้นใช้เวลา 2 นาที บางเส้นใช้ 15 นาที ค่าโดยสารแต่ละช่วงก็ไม่เท่ากัน โจทย์ที่ถามว่า "ไปจากจุดหนึ่งถึงอีกจุดหนึ่งใช้เวลาหรือค่าใช้จ่ายน้อยที่สุดเท่าไร" ออกในค่าย 2 และ TOI แทบทุกปี หน้านี้แสดงให้เห็นก่อนว่าทำไม BFS ตอบผิด แล้วเขียนวิธีที่ถูกที่ชื่อ <strong>Dijkstra</strong> (อ่านว่า ไดค์สตรา ตามชื่อนักวิทยาศาสตร์คอมพิวเตอร์ชาวดัตช์) แบบที่ใช้อาเรย์ธรรมดา</p>
+
+      <h2 id="weighted-graph">กราฟมีน้ำหนัก</h2>
+
+      <p>กราฟที่ทุกเส้นมีตัวเลขกำกับเรียกว่า <strong>กราฟมีน้ำหนัก (weighted graph)</strong> ตัวเลขนั้นคือ <strong>น้ำหนัก (weight)</strong> จะแทนระยะทาง เวลา หรือค่าใช้จ่ายก็ได้ ความยาวของเส้นทางคือผลรวมน้ำหนักของทุกเส้นที่ผ่าน ไม่ใช่จำนวนเส้น ตลอดหน้านี้ใช้แผนที่เมืองเล็กๆ ที่มี 6 จุด ตัวเลขบนถนนคือเวลาเดินทางเป็นนาที และถนนทุกเส้นวิ่งได้สองทาง</p>
+
+      <figure>
+        <svg viewBox="0 0 560 300" width="560" style="max-width:100%;height:auto" role="img" aria-label="กราฟหกจุด บ้าน 1 ตลาด 2 วัด 3 สถานี 4 สวน 5 โรงเรียน 6 ถนน 1-2 ยาว 4 1-3 ยาว 1 3-2 ยาว 2 2-4 ยาว 5 3-4 ยาว 8 3-5 ยาว 10 4-5 ยาว 2 4-6 ยาว 6 5-6 ยาว 3">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="60" y1="150" x2="200" y2="60"/>
+            <line x1="60" y1="150" x2="200" y2="240"/>
+            <line x1="200" y1="240" x2="200" y2="60"/>
+            <line x1="200" y1="60" x2="360" y2="60"/>
+            <line x1="200" y1="240" x2="360" y2="60"/>
+            <line x1="200" y1="240" x2="360" y2="240"/>
+            <line x1="360" y1="60" x2="360" y2="240"/>
+            <line x1="360" y1="60" x2="500" y2="150"/>
+            <line x1="360" y1="240" x2="500" y2="150"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:15px;fill:var(--brand-text)" text-anchor="middle">
+            <text x="118" y="96">4</text>
+            <text x="118" y="218">1</text>
+            <text x="214" y="155">2</text>
+            <text x="280" y="50">5</text>
+            <text x="296" y="132">8</text>
+            <text x="280" y="260">10</text>
+            <text x="374" y="155">2</text>
+            <text x="442" y="96">6</text>
+            <text x="442" y="218">3</text>
+          </g>
+          <g style="font-family:var(--font-code);font-size:16px" text-anchor="middle">
+            <circle cx="60" cy="150" r="20" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="60" y="156" style="fill:var(--ink)">1</text>
+            <circle cx="200" cy="60" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="200" y="66" style="fill:var(--ink)">2</text>
+            <circle cx="200" cy="240" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="200" y="246" style="fill:var(--ink)">3</text>
+            <circle cx="360" cy="60" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="360" y="66" style="fill:var(--ink)">4</text>
+            <circle cx="360" cy="240" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="360" y="246" style="fill:var(--ink)">5</text>
+            <circle cx="500" cy="150" r="20" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="500" y="156" style="fill:var(--ink)">6</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--muted)" text-anchor="middle">
+            <text x="60" y="194">บ้าน</text>
+            <text x="200" y="28">ตลาด</text>
+            <text x="200" y="284">วัด</text>
+            <text x="360" y="28">สถานี</text>
+            <text x="360" y="284">สวน</text>
+            <text x="500" y="194">โรงเรียน</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ข้อมูลเข้าของกราฟแบบนี้ บรรทัดแรกคือจำนวนจุด n กับจำนวนถนน m แล้วตามด้วยถนนบรรทัดละเส้น เป็นจุดปลายสองข้าง u v กับน้ำหนัก w เก็บด้วย adjacency list แบบบทที่ 27 ต่างกันแค่แต่ละช่องเก็บเป็นคู่ (ปลายทาง, น้ำหนัก) แทนที่จะเก็บแค่ปลายทาง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="bfs-edges"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1); // (1)!
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; ":";
+        for (auto [v, w] : adj[u]) { // (2)!
+            cout &lt;&lt; " (" &lt;&lt; v &lt;&lt; ", " &lt;&lt; w &lt;&lt; ")";
+        }
+        cout &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>adj[u]</code> คือรายชื่อถนนที่ออกจากจุด u แต่ละตัวเป็น <code>pair</code> ช่องแรกคือปลายทาง ช่องที่สองคือน้ำหนัก ถนนสองทางจึงใส่ทั้ง <code>adj[u]</code> และ <code>adj[v]</code></li>
+        <li>แตก pair ออกเป็น <code>v</code> กับ <code>w</code> ด้วย structured binding จากหน้า 16.4 อ่านง่ายกว่า <code>.first</code> กับ <code>.second</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bfs-edges" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 4
+1 3 1
+3 2 2
+2 4 5
+3 4 8
+3 5 10
+4 5 2
+4 6 6
+5 6 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bfs-edges" data-title="C:\code\town.exe"><pre><code>1: (2, 4) (3, 1)
+2: (1, 4) (3, 2) (4, 5)
+3: (1, 1) (2, 2) (4, 8) (5, 10)
+4: (2, 5) (3, 8) (5, 2) (6, 6)
+5: (3, 10) (4, 2) (6, 3)
+6: (4, 6) (5, 3)
+</code></pre></div>
+      </div>
+
+      <h2 id="bfs-fails">ทำไม BFS ตอบผิด</h2>
+
+      <p>ลองเอา BFS จากบทที่ 27 มาใช้ตรงๆ เปลี่ยนแค่ตอนเจอจุดใหม่ ให้ระยะของจุดนั้นเป็นระยะของจุดก่อนหน้าบวกน้ำหนักของถนน แทนที่จะบวกหนึ่ง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bfs-wrong"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;long long&gt; dist(n + 1, -1);
+    queue&lt;int&gt; q;
+    dist[1] = 0;
+    q.push(1);
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        for (auto [v, w] : adj[u]) {
+            if (dist[v] == -1) {
+                dist[v] = dist[u] + w;
+                q.push(v);
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; dist[u] &lt;&lt; (u == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bfs-wrong" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 4
+1 3 1
+3 2 2
+2 4 5
+3 4 8
+3 5 10
+4 5 2
+4 6 6
+5 6 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bfs-wrong" data-title="C:\code\bfs_weight.exe"><pre><code>0 4 1 9 11 15
+</code></pre></div>
+      </div>
+
+      <p>ดูจุดที่ 2 ตลาด BFS ตอบ 4 เพราะเจอตลาดครั้งแรกจากถนนตรงที่ยาว 4 นาที แต่ทางอ้อม บ้าน วัด ตลาด ใช้แค่ 1 + 2 = 3 นาที พอตลาดผิด ทุกจุดที่ BFS ไปเจอผ่านตลาดก็ผิดตามกันหมด คำตอบที่ถูกคือ <code>0 3 1 8 10 13</code> ผิดไปสี่จุดจากหกจุด</p>
+
+      <p>BFS รับประกันแค่ว่าจุดที่เจอก่อนอยู่ห่างจากจุดเริ่ม <strong>จำนวนเส้น</strong> น้อยกว่าหรือเท่ากัน ซึ่งเท่ากับระยะทางจริงเฉพาะตอนที่ทุกเส้นยาวเท่ากัน พอเส้นยาวไม่เท่ากัน ทางที่ผ่านสองเส้นสั้นๆ อาจสั้นกว่าเส้นยาวเส้นเดียว 0-1 BFS ในบทที่ 27 แก้ได้เฉพาะกรณีที่น้ำหนักเป็น 0 กับ 1 เท่านั้น น้ำหนักทั่วไปต้องใช้วิธีในบทนี้</p>
+
+      <h2 id="relax">ผ่อนระยะ</h2>
+
+      <p>ทุกวิธีในบทนี้ใช้การกระทำพื้นฐานอย่างเดียวกัน ให้ <code>dist[v]</code> คือระยะที่สั้นที่สุดเท่าที่รู้ตอนนี้จากจุดเริ่มถึง v เริ่มต้นจุดเริ่มเป็น 0 จุดอื่นเป็นค่าที่ใหญ่มากแทนอนันต์ เมื่อดูถนนจาก u ไป v ที่ยาว w ถ้า <code>dist[u] + w</code> น้อยกว่า <code>dist[v]</code> แปลว่าเจอทางไป v ที่สั้นกว่าเดิม คือไปถึง u ก่อนแล้วต่อถนนเส้นนี้ ให้แก้ <code>dist[v]</code> เป็นค่าใหม่</p>
+
+      <div class="code" data-lang="text"><pre><code>if (dist[u] + w &lt; dist[v])
+    dist[v] = dist[u] + w
+</code></pre></div>
+
+      <p>การทำแบบนี้เรียกว่า <strong>relaxation</strong> แปลตรงตัวว่าผ่อน เพราะค่าใน <code>dist</code> ลดลงเรื่อยๆ จนถึงค่าจริง ไม่มีวันต่ำกว่าค่าจริง เพราะทุกค่าที่ใส่ลงไปคือความยาวของเส้นทางที่มีอยู่จริงเส้นหนึ่ง สิ่งที่ทำให้แต่ละวิธีในบทนี้ต่างกันคือ <strong>ลำดับ</strong> ของการผ่อน ผ่อนถูกลำดับก็ทำครั้งเดียวพอ ผ่อนผิดลำดับต้องทำซ้ำหลายรอบ</p>
+
+      <h2 id="idea">ความคิดของ Dijkstra</h2>
+
+      <p>แบ่งจุดเป็นสองกลุ่ม กลุ่มที่ <strong>เสร็จแล้ว</strong> คือรู้ระยะจริงแน่นอน กับกลุ่มที่ยังไม่เสร็จ ทุกรอบทำสองอย่าง</p>
+
+      <ol>
+        <li>เลือกจุด u ที่ยังไม่เสร็จและมี <code>dist</code> น้อยที่สุด แล้วประกาศว่า u เสร็จ</li>
+        <li>ผ่อนทุกถนนที่ออกจาก u</li>
+      </ol>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">ทำไมจุดที่เลือกเสร็จได้ทันที</p>
+        <p>สมมติ u มี <code>dist</code> น้อยที่สุดในกลุ่มที่ยังไม่เสร็จ เส้นทางอื่นที่จะไปถึง u ได้ ต้องออกจากกลุ่มที่เสร็จแล้วไปที่จุด x สักจุดในกลุ่มที่ยังไม่เสร็จก่อน ระยะถึง x อย่างน้อยก็ <code>dist[x]</code> ซึ่งไม่น้อยกว่า <code>dist[u]</code> แล้วยังต้องเดินจาก x ต่อไปถึง u ซึ่งไม่ทำให้ระยะลดลง <strong>เพราะน้ำหนักไม่ติดลบ</strong> จึงไม่มีทางไหนสั้นกว่า <code>dist[u]</code> อีกแล้ว เงื่อนไขตัวหนาข้อนี้สำคัญมาก หน้า 28.4 จะแสดงว่าถ้ามีน้ำหนักติดลบ เหตุผลนี้พังทันที</p>
+      </div>
+
+      <p>ลองกับแผนที่เมือง เริ่มที่บ้าน ตารางแสดงค่า <code>dist</code> หลังจบแต่ละรอบ ช่องที่เป็นตัวหนาคือจุดที่เพิ่งเลือกในรอบนั้น ∞ คือยังไม่เจอทางไป</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>รอบ</th><th>เลือก</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เริ่ม</td><td></td><td>0</td><td>∞</td><td>∞</td><td>∞</td><td>∞</td><td>∞</td></tr>
+            <tr><td>1</td><td>1</td><td><strong>0</strong></td><td>4</td><td>1</td><td>∞</td><td>∞</td><td>∞</td></tr>
+            <tr><td>2</td><td>3</td><td>0</td><td>3</td><td><strong>1</strong></td><td>9</td><td>11</td><td>∞</td></tr>
+            <tr><td>3</td><td>2</td><td>0</td><td><strong>3</strong></td><td>1</td><td>8</td><td>11</td><td>∞</td></tr>
+            <tr><td>4</td><td>4</td><td>0</td><td>3</td><td>1</td><td><strong>8</strong></td><td>10</td><td>14</td></tr>
+            <tr><td>5</td><td>5</td><td>0</td><td>3</td><td>1</td><td>8</td><td><strong>10</strong></td><td>13</td></tr>
+            <tr><td>6</td><td>6</td><td>0</td><td>3</td><td>1</td><td>8</td><td>10</td><td><strong>13</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>รอบที่ 2 เลือกวัดเพราะ 1 น้อยกว่า 4 ของตลาด แล้วผ่อนถนนวัดไปตลาด ได้ 1 + 2 = 3 ดีกว่า 4 เดิม ตรงนี้คือจุดที่ BFS พลาด BFS ตัดสินตลาดไปแล้วตั้งแต่เห็นครั้งแรก ส่วน Dijkstra รอจนตลาดเป็นจุดที่ใกล้ที่สุดที่เหลืออยู่ก่อน ค่อยตัดสิน สังเกตว่าจุดที่ถูกเลือกมีระยะ 0 1 3 8 10 13 เรียงจากน้อยไปมากเสมอ Dijkstra ขยายวงออกจากจุดเริ่มตามระยะทางจริง เหมือนที่ BFS ขยายวงตามจำนวนเส้น</p>
+
+      <h2 id="array-version">เขียนด้วยอาเรย์</h2>
+
+      <p>แบบที่ตรงที่สุดคือทุกรอบไล่ดูทุกจุดเพื่อหาจุดที่ยังไม่เสร็จที่มี <code>dist</code> น้อยที่สุด โปรแกรมนี้พิมพ์จุดที่เลือกในแต่ละรอบ แล้วพิมพ์ระยะของทุกจุด จุดที่ไปไม่ถึงพิมพ์ -1</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="dijkstra-array"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18; // (1)!
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;long long&gt; dist(n + 1, INF);
+    vector&lt;bool&gt; done(n + 1, false);
+    dist[1] = 0;
+    for (int round = 0; round &lt; n; round++) {
+        int u = -1;
+        for (int i = 1; i &lt;= n; i++) { // (2)!
+            if (!done[i] &amp;&amp; (u == -1 || dist[i] &lt; dist[u])) {
+                u = i;
+            }
+        }
+        if (dist[u] == INF) { // (3)!
+            break;
+        }
+        done[u] = true;
+        cout &lt;&lt; "take " &lt;&lt; u &lt;&lt; " dist=" &lt;&lt; dist[u] &lt;&lt; '\n';
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w &lt; dist[v]) { // (4)!
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        if (dist[u] == INF) {
+            cout &lt;&lt; -1 &lt;&lt; (u == n ? '\n' : ' ');
+        } else {
+            cout &lt;&lt; dist[u] &lt;&lt; (u == n ? '\n' : ' ');
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใช้ 10<sup>18</sup> แทนอนันต์ ระยะจริงในโจทย์ส่วนใหญ่ไม่เกินราว 10<sup>14</sup> (แสนเส้น เส้นละ 10<sup>9</sup>) และ 10<sup>18</sup> บวกน้ำหนักอีกเส้นก็ยังไม่ล้น <code>long long</code> ซึ่งเก็บได้ถึงราว 9 × 10<sup>18</sup> ตามหน้า 1.3</li>
+        <li>ไล่หาจุดที่ยังไม่เสร็จที่ <code>dist</code> น้อยที่สุด รอบละ n ช่อง</li>
+        <li>จุดที่น้อยที่สุดยังเป็นอนันต์ แปลว่าจุดที่เหลือทั้งหมดไปไม่ถึง หยุดได้เลย</li>
+        <li>ผ่อนถนนที่ออกจาก u ตามหัวข้อก่อนหน้า</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="dijkstra-array" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 4
+1 3 1
+3 2 2
+2 4 5
+3 4 8
+3 5 10
+4 5 2
+4 6 6
+5 6 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="dijkstra-array" data-title="C:\code\dijkstra.exe"><pre><code>take 1 dist=0
+take 3 dist=1
+take 2 dist=3
+take 4 dist=8
+take 5 dist=10
+take 6 dist=13
+0 3 1 8 10 13
+</code></pre></div>
+      </div>
+
+      <p>ลำดับที่เลือกตรงกับตาราง แต่ละรอบไล่หาจุดน้อยที่สุด n ช่อง ทำ n รอบ เป็น O(V<sup>2</sup>) เมื่อ V คือจำนวนจุด (vertex) ส่วนการผ่อนถนน แต่ละจุดผ่อนถนนของตัวเองครั้งเดียวตอนที่ถูกเลือก ถนนสองทางถูกผ่อนจากทั้งสองข้าง จึงรวมราว 2E ครั้งเมื่อ E คือจำนวนเส้น (edge) ทั้งหมดเป็น O(V<sup>2</sup> + E)</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>ถ้าไม่รู้จัก Dijkstra วิธีตรงไปตรงมาคือ backtracking แบบบทที่ 21 ลองเดินทุกเส้นทางที่ไม่ซ้ำจุดจากจุด 1 ไปจุด n แล้วจำเส้นที่สั้นที่สุดไว้ วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 เสียบสายชาร์จ คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks แบบ <code>-O2</code> กราฟคือ n จุดที่ทุกคู่มีถนนถึงกัน น้ำหนักสุ่ม 1 ถึง 100 จับเวลาเฉพาะช่วงหาคำตอบ แต่ละช่องเป็นค่ากลางของ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>n</th><th>ลองทุกเส้นทาง</th><th>Dijkstra แบบอาเรย์</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>12</td><td>0.093 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>13</td><td>1.325 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>14</td><td>15.237 วินาที (วัด 3 รอบ)</td><td>0.000 วินาที</td></tr>
+            <tr><td>3000</td><td>ไม่ได้วัด</td><td>0.022 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เพิ่มจุดทีละหนึ่ง วิธีลองทุกเส้นทางช้าลงกว่าสิบเท่าทุกครั้ง เพราะจำนวนเส้นทางที่ไม่ซ้ำจุดโตแบบแฟกทอเรียลตามหน้า 18.2 ส่วน Dijkstra ที่ 3000 จุด ซึ่งมีถนนเกือบสี่ล้านครึ่งเส้น ยังใช้ไม่ถึงหนึ่งในสิบวินาที</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forgot-done">แบบที่ 1 ลืมเช็กว่าเสร็จแล้ว</h3>
+
+      <p>ในโปรแกรม dijkstra-array ลบ <code>!done[i] &amp;&amp;</code> ออกจากเงื่อนไขที่หาจุดน้อยที่สุด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="forgot-done"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;long long&gt; dist(n + 1, INF);
+    vector&lt;bool&gt; done(n + 1, false);
+    dist[1] = 0;
+    for (int round = 0; round &lt; n; round++) {
+        int u = -1;
+        for (int i = 1; i &lt;= n; i++) {
+            if (u == -1 || dist[i] &lt; dist[u]) {
+                u = i;
+            }
+        }
+        if (dist[u] == INF) {
+            break;
+        }
+        done[u] = true;
+        cout &lt;&lt; "take " &lt;&lt; u &lt;&lt; " dist=" &lt;&lt; dist[u] &lt;&lt; '\n';
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        if (dist[u] == INF) {
+            cout &lt;&lt; -1 &lt;&lt; (u == n ? '\n' : ' ');
+        } else {
+            cout &lt;&lt; dist[u] &lt;&lt; (u == n ? '\n' : ' ');
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="forgot-done" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 4
+1 3 1
+3 2 2
+2 4 5
+3 4 8
+3 5 10
+4 5 2
+4 6 6
+5 6 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="forgot-done" data-title="C:\code\dijkstra.exe"><pre><code>take 1 dist=0
+take 1 dist=0
+take 1 dist=0
+take 1 dist=0
+take 1 dist=0
+take 1 dist=0
+0 4 1 -1 -1 -1
+</code></pre></div>
+      </div>
+
+      <p>จุด 1 มีระยะ 0 ซึ่งน้อยที่สุดตลอดกาล จึงถูกเลือกซ้ำทุกรอบ จุดอื่นไม่เคยถูกเลือกเลย ได้แค่ระยะจากถนนที่ติดกับบ้านโดยตรง ตลาดได้ 4 ไม่ใช่ 3 และสามจุดสุดท้ายกลายเป็นไปไม่ถึง ทุกครั้งที่เขียนแบบอาเรย์ ให้ใส่บรรทัดพิมพ์จุดที่เลือกไว้ตอนทดสอบ ถ้าเห็นจุดเดิมซ้ำแปลว่าลืม <code>done</code></p>
+
+      <h3 id="int-max">แบบที่ 2 ใช้ int กับ INT_MAX และไม่หยุดเมื่อไปไม่ถึง</h3>
+
+      <p>หลายคนใช้ <code>INT_MAX</code> แทนอนันต์ เพราะจำง่าย แล้วตัดบรรทัด <code>if (dist[u] == INF) break;</code> ทิ้งเพราะคิดว่าไม่จำเป็น แผนที่ชุดนี้มีหมู่บ้าน 4 5 6 ที่ไม่มีถนนเชื่อมกับบ้าน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="int-max-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;int&gt; dist(n + 1, INT_MAX);
+    vector&lt;bool&gt; done(n + 1, false);
+    dist[1] = 0;
+    for (int round = 0; round &lt; n; round++) {
+        int u = -1;
+        for (int i = 1; i &lt;= n; i++) {
+            if (!done[i] &amp;&amp; (u == -1 || dist[i] &lt; dist[u])) {
+                u = i;
+            }
+        }
+        done[u] = true;
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; dist[u] &lt;&lt; (u == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="int-max-bug" data-title="ข้อมูลเข้า"><pre><code>6 5
+1 2 4
+1 3 1
+3 2 2
+4 5 7
+5 6 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="int-max-bug" data-title="C:\code\dijkstra.exe"><pre><code>0 3 1 -2147483635 -2147483642 -2147483639
+</code></pre></div>
+      </div>
+
+      <p>สามจุดที่ไปไม่ถึงได้ระยะติดลบ เมื่อจุด 1 2 3 เสร็จหมด จุดที่เหลือมี <code>dist</code> เป็น <code>INT_MAX</code> ทุกจุด โปรแกรมเลือกจุด 4 แล้วผ่อนถนนไปจุด 5 ได้ <code>INT_MAX + 7</code> ซึ่งล้นเป็นค่าติดลบตามหน้า 1.3 และน้อยกว่า <code>INT_MAX</code> จึงถูกเก็บ ค่าติดลบนั้นยังลามต่อไปจุด 6 และย้อนกลับมาจุด 4 อีก แก้ได้สองทางพร้อมกัน คือหยุดเมื่อจุดที่น้อยที่สุดเป็นอนันต์ และใช้ <code>long long</code> กับอนันต์ที่บวกแล้วไม่ล้น เช่น 10<sup>18</sup> แบบโปรแกรมต้นฉบับ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ในกราฟมีน้ำหนัก ความยาวเส้นทางคือผลรวมน้ำหนัก BFS ให้ทางที่ผ่านน้อยเส้นที่สุด ซึ่งไม่ใช่ทางที่สั้นที่สุด</li>
+        <li>เก็บกราฟด้วย <code>vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt;</code> แต่ละช่องคือ (ปลายทาง, น้ำหนัก)</li>
+        <li>ผ่อนระยะ ถ้า <code>dist[u] + w &lt; dist[v]</code> ให้แก้ <code>dist[v]</code> ทุกวิธีในบทนี้ต่างกันแค่ลำดับของการผ่อน</li>
+        <li>Dijkstra เลือกจุดที่ยังไม่เสร็จที่ใกล้ที่สุด ประกาศว่าเสร็จ แล้วผ่อนถนนที่ออกจากจุดนั้น ถูกต้องเมื่อน้ำหนักไม่ติดลบ</li>
+        <li>แบบอาเรย์เป็น O(V<sup>2</sup> + E) ใช้ <code>long long</code> และอนันต์ 10<sup>18</sup> หยุดเมื่อจุดที่น้อยที่สุดไปไม่ถึง</li>
+      </ul>
+    </article>

@@ -1,0 +1,370 @@
+<article class="doc">
+      <h1>28.4 น้ำหนักติดลบและ Bellman-Ford</h1>
+
+      <p>บางโจทย์มีน้ำหนักติดลบ เช่น รถขนของที่วิ่งเปล่าบางเส้นต้องจ่ายค่าน้ำมัน แต่บางเส้นได้ค่าจ้างขนสินค้ากลับ ค่าใช้จ่ายของเส้นนั้นจึงติดลบ หรือเกมที่บางห้องหักพลัง บางห้องเติมพลัง หน้า 28.1 พิสูจน์ว่า Dijkstra ถูกโดยอาศัยว่าน้ำหนักไม่ติดลบ หน้านี้แสดงว่าพอเงื่อนไขนั้นหายไป Dijkstra ผิดจริง แล้วใช้วิธีที่ช้ากว่าแต่รับน้ำหนักติดลบได้ ชื่อ <strong>Bellman-Ford</strong> ซึ่งยังตรวจได้ด้วยว่ามีวงที่วนแล้วค่าใช้จ่ายลดลงเรื่อยๆ ไม่สิ้นสุดหรือไม่</p>
+
+      <p>ทุกตัวอย่างในหน้านี้เป็นกราฟมีทิศทาง (directed) ถนน u v w แปลว่าวิ่งจาก u ไป v ได้ทางเดียว เหตุผลอยู่ในส่วนลองทำให้พัง</p>
+
+      <h2 id="dijkstra-fails">Dijkstra ผิดเมื่อมีน้ำหนักติดลบ</h2>
+
+      <p>ใช้ Dijkstra แบบอาเรย์จากหน้า 28.1 เปลี่ยนแค่ให้ถนนเป็นทางเดียว แผนที่มีสี่จุด ถนนจาก 3 ไป 2 ได้ค่าจ้างกลับ 4 บาท</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="dijkstra-negative"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w}); // (1)!
+    }
+    vector&lt;long long&gt; dist(n + 1, INF);
+    vector&lt;bool&gt; done(n + 1, false);
+    dist[1] = 0;
+    for (int round = 0; round &lt; n; round++) {
+        int u = -1;
+        for (int i = 1; i &lt;= n; i++) {
+            if (!done[i] &amp;&amp; (u == -1 || dist[i] &lt; dist[u])) {
+                u = i;
+            }
+        }
+        if (dist[u] == INF) {
+            break;
+        }
+        done[u] = true;
+        cout &lt;&lt; "take " &lt;&lt; u &lt;&lt; " dist=" &lt;&lt; dist[u] &lt;&lt; '\n';
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; dist[u] &lt;&lt; (u == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ถนนทางเดียว ใส่เฉพาะ <code>adj[u]</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="dijkstra-negative" data-title="ข้อมูลเข้า"><pre><code>4 4
+1 2 2
+1 3 5
+3 2 -4
+2 4 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="dijkstra-negative" data-title="C:\code\dijkstra.exe"><pre><code>take 1 dist=0
+take 2 dist=2
+take 3 dist=5
+take 4 dist=5
+0 1 5 5
+</code></pre></div>
+      </div>
+
+      <p>ทางที่ถูกคือ 1 ไป 3 ไป 2 ไป 4 ค่าใช้จ่าย 5 - 4 + 3 = 4 แต่โปรแกรมตอบ 5 จุด 2 ถูกเลือกเป็นจุดที่เสร็จตั้งแต่ระยะ 2 และผ่อนถนนไปจุด 4 ได้ 5 ทีหลังจุด 3 ผ่อนกลับมาลดจุด 2 เหลือ 1 แต่จุด 2 เสร็จไปแล้ว ไม่มีใครส่งค่าใหม่ต่อให้จุด 4 คำตอบจึงขัดกันเอง จุด 2 บอก 1 แต่จุด 4 ยังคิดจากจุด 2 ที่ระยะ 2</p>
+
+      <p>เหตุผลในหน้า 28.1 พังตรงประโยค "เดินต่อไม่ทำให้ระยะลดลง" ทางที่ผ่านจุด 3 ซึ่งตอนนั้นไกลกว่า กลับมาถูกลงได้ด้วยถนนติดลบ จุดที่ใกล้ที่สุดในตอนนั้นจึงยังไม่ใช่คำตอบสุดท้าย</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">แบบ priority_queue บังเอิญรอด แต่ไม่ปลอดภัย</p>
+        <p>ข้อมูลชุดนี้ป้อนให้แบบ priority_queue ในหน้า 28.2 ที่ทำเป็นทางเดียว ได้ <code>0 1 5 4</code> ถูก เพราะพอจุด 2 ได้ระยะใหม่ ก็ถูกใส่ลงคิวและถูกหยิบมาทำซ้ำ แต่นั่นไม่ใช่ Dijkstra แล้ว จุดเดียวกันอาจถูกทำซ้ำได้มากจนไม่มีขอบเขตเวลาที่รับประกัน และถ้ามีวงติดลบในหัวข้อถัดไป ระยะจะลดลงไม่หยุด ลองแล้วโปรแกรมพิมพ์ระยะที่ติดลบมากขึ้นเรื่อยๆ จนต้องหยุดเองเมื่อครบสิบวินาที โจทย์ที่มีน้ำหนักติดลบให้ใช้วิธีในหน้านี้</p>
+      </div>
+
+      <h2 id="bellman-ford">Bellman-Ford</h2>
+
+      <p>ความคิดง่ายมาก <strong>ผ่อนถนนทุกเส้น วนแบบนี้ V - 1 รอบ</strong> ไม่ต้องสนลำดับ ไม่ต้องมีคิว ไม่ต้องเก็บ adjacency list เก็บแค่รายการถนนสามอาเรย์ก็พอ</p>
+
+      <p>ทำไม V - 1 รอบพอ ถ้าไม่มีวงติดลบ ทางที่สั้นที่สุดไม่จำเป็นต้องผ่านจุดซ้ำ เพราะวงที่ไม่ติดลบตัดทิ้งได้โดยไม่ทำให้ยาวขึ้น ทางที่สั้นที่สุดจึงมีไม่เกิน V - 1 เส้น ให้ทางที่สั้นที่สุดถึง v เป็น 1 = x<sub>0</sub>, x<sub>1</sub>, ..., x<sub>k</sub> = v รอบที่ 1 ผ่อนถนนทุกเส้น ซึ่งรวมถนน x<sub>0</sub> ไป x<sub>1</sub> ด้วย <code>dist[x<sub>1</sub>]</code> จึงถูกแล้ว รอบที่ 2 ผ่อนถนน x<sub>1</sub> ไป x<sub>2</sub> ด้วย <code>dist[x<sub>1</sub>]</code> ที่ถูกแล้ว <code>dist[x<sub>2</sub>]</code> จึงถูก ไล่ไปเรื่อยๆ หลังรอบที่ k <code>dist[v]</code> ถูกแน่นอน และ k ไม่เกิน V - 1</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="bellman-ford"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;int&gt; from(m), to(m), cost(m); // (1)!
+    for (int i = 0; i &lt; m; i++) {
+        cin &gt;&gt; from[i] &gt;&gt; to[i] &gt;&gt; cost[i];
+    }
+    vector&lt;long long&gt; dist(n + 1, INF);
+    dist[1] = 0;
+    for (int round = 1; round &lt;= n - 1; round++) { // (2)!
+        bool changed = false;
+        for (int i = 0; i &lt; m; i++) {
+            int u = from[i], v = to[i];
+            if (dist[u] != INF &amp;&amp; dist[u] + cost[i] &lt; dist[v]) { // (3)!
+                dist[v] = dist[u] + cost[i];
+                changed = true;
+            }
+        }
+        cout &lt;&lt; "after round " &lt;&lt; round &lt;&lt; ":";
+        for (int u = 1; u &lt;= n; u++) {
+            if (dist[u] == INF) {
+                cout &lt;&lt; " inf";
+            } else {
+                cout &lt;&lt; ' ' &lt;&lt; dist[u];
+            }
+        }
+        cout &lt;&lt; '\n';
+        if (!changed) { // (4)!
+            break;
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บถนนเป็นรายการ เส้นที่ i วิ่งจาก <code>from[i]</code> ไป <code>to[i]</code> ค่าใช้จ่าย <code>cost[i]</code></li>
+        <li>วนไม่เกิน V - 1 รอบ แต่ละรอบผ่อนถนนครบทุกเส้น</li>
+        <li>ผ่อนเฉพาะถนนที่ต้นทางไปถึงแล้ว เหตุผลอยู่ในส่วนลองทำให้พัง</li>
+        <li>รอบไหนไม่มีอะไรเปลี่ยน รอบต่อไปก็ไม่มีอะไรเปลี่ยนเหมือนกัน เพราะผ่อนด้วยค่าชุดเดิม หยุดได้เลย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bellman-ford" data-title="ข้อมูลเข้า"><pre><code>4 4
+2 4 3
+3 2 -4
+1 3 5
+1 2 2
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bellman-ford" data-title="C:\code\bellman_ford.exe"><pre><code>after round 1: 0 2 5 inf
+after round 2: 0 1 5 5
+after round 3: 0 1 5 4
+</code></pre></div>
+      </div>
+
+      <p>กราฟเดิม แต่เรียงถนนกลับด้าน รอบที่ 1 ถนนที่ออกจากจุด 2 กับจุด 3 ถูกผ่อนก่อนที่สองจุดนี้จะไปถึงได้ จึงไม่เกิดอะไร ได้แค่ระยะของถนนที่ออกจากจุด 1 รอบที่ 2 ได้ทางที่มีสองเส้น จุด 2 ลดเป็น 1 รอบที่ 3 ได้ทางที่มีสามเส้น จุด 4 เป็น 4 ถูกต้อง ลำดับของถนนมีผลกับจำนวนรอบที่ต้องใช้จริง แต่ไม่มีผลกับคำตอบ เพราะ V - 1 รอบพอเสมอ ถ้าเรียงถนนตามลำดับเดิมในหัวข้อก่อน รอบแรกก็ได้ <code>0 1 5 4</code> ครบแล้ว</p>
+
+      <p>แต่ละรอบดูถนน E เส้น วนไม่เกิน V - 1 รอบ จึงเป็น <strong>O(VE)</strong> ช้ากว่า Dijkstra มาก แลกกับการรับน้ำหนักติดลบได้</p>
+
+      <h2 id="negative-cycle">วงติดลบ</h2>
+
+      <p>ถ้ามีวงที่ผลรวมน้ำหนักติดลบ เช่น วิ่ง 2 ไป 3 ไป 4 แล้วกลับ 2 ได้กำไรรอบละ 1 บาท ก็วนวงนี้กี่รอบก็ได้ ค่าใช้จ่ายลดลงไม่มีที่สิ้นสุด ทางที่สั้นที่สุดจึงไม่มีอยู่จริงสำหรับทุกจุดที่ไปถึงได้หลังผ่านวงนี้ โจทย์มักให้ตอบว่า "ลดได้ไม่สิ้นสุด" สำหรับจุดเหล่านั้น</p>
+
+      <p>ตรวจด้วยข้อสังเกตจากหัวข้อก่อน ถ้าไม่มีวงติดลบ หลัง V - 1 รอบจะไม่มีถนนไหนผ่อนได้อีก ถ้ารอบที่ V ยังผ่อนได้ แปลว่ามีวงติดลบที่ไปถึงจากจุดเริ่มได้แน่นอน ส่วนจุดที่ได้รับผลกระทบ คือจุดที่ยังผ่อนได้ กับทุกจุดที่เดินต่อจากจุดพวกนั้นได้ วนผ่อนอีก V รอบพร้อมส่งเครื่องหมายต่อไปตามถนน ก็ทั่วถึงทุกจุด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="bf-cycle"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;int&gt; from(m), to(m), cost(m);
+    for (int i = 0; i &lt; m; i++) {
+        cin &gt;&gt; from[i] &gt;&gt; to[i] &gt;&gt; cost[i];
+    }
+    vector&lt;long long&gt; dist(n + 1, INF);
+    dist[1] = 0;
+    for (int round = 1; round &lt;= n - 1; round++) {
+        for (int i = 0; i &lt; m; i++) {
+            int u = from[i], v = to[i];
+            if (dist[u] != INF &amp;&amp; dist[u] + cost[i] &lt; dist[v]) {
+                dist[v] = dist[u] + cost[i];
+            }
+        }
+    }
+    vector&lt;bool&gt; endless(n + 1, false);
+    for (int round = 1; round &lt;= n; round++) { // (1)!
+        for (int i = 0; i &lt; m; i++) {
+            int u = from[i], v = to[i];
+            if (dist[u] == INF) {
+                continue;
+            }
+            if (endless[u] || dist[u] + cost[i] &lt; dist[v]) { // (2)!
+                endless[v] = true;
+                dist[v] = min(dist[v], dist[u] + cost[i]);
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; ": ";
+        if (dist[u] == INF) {
+            cout &lt;&lt; "unreachable" &lt;&lt; '\n';
+        } else if (endless[u]) {
+            cout &lt;&lt; "-inf" &lt;&lt; '\n';
+        } else {
+            cout &lt;&lt; dist[u] &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>หลัง V - 1 รอบแรก วนต่ออีก V รอบ เครื่องหมายเดินได้รอบละอย่างน้อยหนึ่งเส้น V รอบจึงไปถึงทุกจุดที่ไปถึงได้</li>
+        <li>ปลายถนนได้รับผลกระทบถ้ายังผ่อนได้ หรือต้นถนนได้รับผลกระทบอยู่แล้ว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bf-cycle" data-title="ข้อมูลเข้า"><pre><code>8 8
+1 2 4
+2 3 -2
+3 4 3
+4 2 -2
+4 5 1
+1 6 5
+6 5 2
+7 8 -3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bf-cycle" data-title="C:\code\bf_cycle.exe"><pre><code>1: 0
+2: -inf
+3: -inf
+4: -inf
+5: -inf
+6: 5
+7: unreachable
+8: unreachable
+</code></pre></div>
+      </div>
+
+      <p>วง 2 3 4 รวม -2 + 3 - 2 = -1 จุด 2 3 4 จึงได้ <code>-inf</code> จุด 5 ไปถึงได้จากจุด 4 จึงได้ด้วย ส่วนจุด 6 ไปได้แค่จากจุด 1 โดยตรง ไม่ผ่านวง จึงได้ 5 ตามปกติ จุด 7 กับ 8 ไม่มีทางไปจากจุด 1 เลย</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">หาวงติดลบที่ไหนก็ได้ในกราฟ</p>
+        <p>โปรแกรมนี้สนใจเฉพาะวงที่ไปถึงจากจุด 1 ได้ ถ้าโจทย์ถามว่า "มีวงติดลบอยู่ที่ใดในกราฟหรือไม่" ให้เริ่มทุกจุดที่ <code>dist</code> เป็น 0 แทนอนันต์ เหมือนมีจุดเริ่มสมมติที่มีถนนยาว 0 ไปทุกจุด แบบหลายจุดเริ่มในหน้า 28.3 แล้วดูว่ารอบที่ V ยังผ่อนได้หรือไม่</p>
+      </div>
+
+      <h2 id="timing">เร็วแค่ไหน</h2>
+
+      <p>วิธีตรงไปตรงมาที่รับน้ำหนักติดลบได้คือลองทุกเส้นทางแบบหน้า 28.1 ซึ่งที่ 14 จุดก็ใช้เวลาเป็นสิบวินาทีแล้ว Bellman-Ford ช้ากว่า Dijkstra แต่ยังอยู่ในระดับพหุนาม วัดบนเครื่องเดียวกับหน้า 28.1 กราฟสุ่มที่มีถนนติดลบแต่ไม่มีวงติดลบ สร้างโดยสุ่มความสูง h ให้ทุกจุด แล้วให้ถนน u ไป v มีค่า สุ่มบวก + h[u] - h[v] วงใดๆ ผลรวมของ h หักล้างกันหมด จึงเหลือแต่ส่วนที่เป็นบวก แถวที่เป็นเส้นยาวคือกราฟที่ทางที่สั้นที่สุดไปจุดสุดท้ายผ่านทุกจุดเรียงกัน และถนนเส้นนั้นอยู่ในรายการกลับด้าน ค่ากลาง 5 รอบ <code>-O2</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>กราฟ</th><th>แบบ</th><th>จำนวนรอบที่วน</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">V = 10<sup>4</sup>, E = 5 × 10<sup>4</sup></td><td>สุ่ม วนครบ V - 1 รอบ</td><td>9999</td><td>0.297 วินาที</td></tr>
+            <tr><td>สุ่ม หยุดเมื่อไม่เปลี่ยน</td><td>12</td><td>0.001 วินาที</td></tr>
+            <tr><td>เส้นยาว หยุดเมื่อไม่เปลี่ยน</td><td>9999</td><td>0.280 วินาที</td></tr>
+            <tr><td rowspan="2">V = 10<sup>5</sup>, E = 2 × 10<sup>5</sup></td><td>สุ่ม หยุดเมื่อไม่เปลี่ยน</td><td>10</td><td>0.003 วินาที</td></tr>
+            <tr><td>เส้นยาว หยุดเมื่อไม่เปลี่ยน</td><td>99999</td><td>12.253 วินาที (วัด 3 รอบ)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กราฟสุ่มทางที่สั้นที่สุดมีแค่สิบกว่าเส้น การหยุดเมื่อไม่มีอะไรเปลี่ยนจึงจบเร็วมาก แต่ชุดทดสอบที่ตั้งใจดักจะให้ทางยาวแบบแถวเส้นยาว ซึ่งต้องวนเกือบครบ V - 1 รอบ ที่ V เป็นแสนใช้กว่าสิบวินาที ขณะที่ Dijkstra กับกราฟขนาดเดียวกันในหน้า 28.2 ใช้ไม่ถึงหนึ่งในสิบวินาที จึงประเมินเวลาด้วย V × E เสมอ ลูปของ Bellman-Ford เรียบง่ายมาก แถวแรกที่ V × E เป็น 5 × 10<sup>8</sup> ยังใช้ราว 0.3 วินาที แต่ถ้าเกินระดับ 10<sup>9</sup> ให้ดูว่าโจทย์มีน้ำหนักติดลบจริงหรือไม่</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="from-infinity">แบบที่ 1 ผ่อนจากจุดที่ไปไม่ถึง</h3>
+
+      <p>ในโปรแกรม bf-cycle ลบ <code>dist[u] != INF &amp;&amp;</code> ออกจากการผ่อน V - 1 รอบแรก เพราะคิดว่าอนันต์บวกอะไรก็ยังมากกว่าค่าอื่น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bf-inf-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;int&gt; from(m), to(m), cost(m);
+    for (int i = 0; i &lt; m; i++) {
+        cin &gt;&gt; from[i] &gt;&gt; to[i] &gt;&gt; cost[i];
+    }
+    vector&lt;long long&gt; dist(n + 1, INF);
+    dist[1] = 0;
+    for (int round = 1; round &lt;= n - 1; round++) {
+        for (int i = 0; i &lt; m; i++) {
+            int u = from[i], v = to[i];
+            if (dist[u] + cost[i] &lt; dist[v]) {
+                dist[v] = dist[u] + cost[i];
+            }
+        }
+    }
+    vector&lt;bool&gt; endless(n + 1, false);
+    for (int round = 1; round &lt;= n; round++) { // (1)!
+        for (int i = 0; i &lt; m; i++) {
+            int u = from[i], v = to[i];
+            if (dist[u] == INF) {
+                continue;
+            }
+            if (endless[u] || dist[u] + cost[i] &lt; dist[v]) { // (2)!
+                endless[v] = true;
+                dist[v] = min(dist[v], dist[u] + cost[i]);
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; ": ";
+        if (dist[u] == INF) {
+            cout &lt;&lt; "unreachable" &lt;&lt; '\n';
+        } else if (endless[u]) {
+            cout &lt;&lt; "-inf" &lt;&lt; '\n';
+        } else {
+            cout &lt;&lt; dist[u] &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bf-inf-bug" data-title="ข้อมูลเข้า"><pre><code>8 8
+1 2 4
+2 3 -2
+3 4 3
+4 2 -2
+4 5 1
+1 6 5
+6 5 2
+7 8 -3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bf-inf-bug" data-title="C:\code\bf_cycle.exe"><pre><code>1: 0
+2: -inf
+3: -inf
+4: -inf
+5: -inf
+6: 5
+7: unreachable
+8: 999999999999999997
+</code></pre></div>
+      </div>
+
+      <p>จุด 8 ไปไม่ถึงจากจุด 1 แต่ได้ระยะเป็นเลขยาวเหยียด เพราะถนน 7 ไป 8 ค่า -3 ทำให้ <code>INF - 3</code> น้อยกว่า <code>INF</code> จึงถูกเก็บ พอตรวจตอนพิมพ์ว่าเท่ากับ <code>INF</code> หรือไม่ ก็ไม่เท่า ข้อนี้เกิดเฉพาะเมื่อมีน้ำหนักติดลบ Dijkstra ในหน้าก่อนๆ ไม่เคยเจอ เพราะไม่เคยหยิบจุดที่ไปไม่ถึงออกมาผ่อน ถ้าถนนที่ออกจากจุดที่ไปไม่ถึงมีค่าเป็นบวกและใช้ <code>INT_MAX</code> หรือ <code>LLONG_MAX</code> เป็นอนันต์ ก็จะล้นเป็นค่าติดลบแบบหน้า 28.1</p>
+
+      <h3 id="two-way">แบบที่ 2 ถนนสองทางที่ติดลบ</h3>
+
+      <p>ถ้าโจทย์ให้ถนนวิ่งได้สองทางแล้วใส่ทั้งสองทิศลงรายการ ถนนที่ติดลบแค่เส้นเดียวก็คือวงติดลบแล้ว เพราะวิ่งไปกลับบนถนนเส้นนั้นได้กำไรทุกเที่ยว ป้อนให้โปรแกรม bf-cycle โดยถนน 2 กับ 3 ค่า -1 วิ่งได้สองทาง</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>3 4
+1 2 5
+2 1 5
+2 3 -1
+3 2 -1
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\bf_cycle.exe"><pre><code>1: -inf
+2: -inf
+3: -inf
+</code></pre></div>
+      </div>
+
+      <p>ทุกจุดเป็น <code>-inf</code> รวมทั้งจุดเริ่มเอง เพราะไปจุด 2 แล้ววนกลับมาได้ น้ำหนักติดลบจึงมีความหมายเฉพาะกับกราฟมีทิศทาง กราฟไม่มีทิศทางที่มีถนนติดลบ คำตอบเป็น <code>-inf</code> ทุกจุดที่ไปถึงถนนเส้นนั้นได้ ต้องอ่านโจทย์ให้ชัดว่าถนนเป็นทางเดียวหรือสองทาง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>Dijkstra ถูกเฉพาะเมื่อน้ำหนักไม่ติดลบ ถ้ามีถนนติดลบ คำตอบผิดได้ และแบบ priority_queue ไม่มีเวลาที่รับประกัน</li>
+        <li>Bellman-Ford ผ่อนถนนทุกเส้น V - 1 รอบ เป็น O(VE) หยุดก่อนได้เมื่อรอบไหนไม่มีอะไรเปลี่ยน</li>
+        <li>ผ่อนเฉพาะถนนที่ต้นทางไปถึงแล้ว <code>dist[u] != INF</code></li>
+        <li>ถ้ารอบที่ V ยังผ่อนได้ มีวงติดลบ วนต่ออีก V รอบเพื่อส่งเครื่องหมายไปทุกจุดที่ได้รับผลกระทบ</li>
+        <li>ถนนสองทางที่ติดลบคือวงติดลบในตัวมันเอง</li>
+      </ul>
+    </article>

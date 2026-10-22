@@ -1,0 +1,275 @@
+<article class="doc">
+      <h1>28.5 Floyd-Warshall และการเลือกวิธี</h1>
+
+      <p>ทุกวิธีที่ผ่านมาหาระยะจากจุดเริ่มจุดเดียว บางโจทย์ต้องรู้ระยะของ <strong>ทุกคู่</strong> เช่น มีคำถามเป็นแสนข้อ แต่ละข้อถามระยะระหว่างสองเมืองใดๆ หรือต้องเลือกเมืองจัดงานที่ทุกคนเดินทางมารวมกันใกล้ที่สุด ถ้ากราฟเล็ก มีวิธีที่สั้นมากเพียงลูปซ้อนสามชั้นชื่อ <strong>Floyd-Warshall</strong> หน้านี้เขียนวิธีนั้น ดูว่าลำดับของลูปสำคัญแค่ไหน แล้วปิดบทด้วยตารางเลือกวิธีตามขอบเขตของโจทย์</p>
+
+      <h2 id="idea">ความคิด</h2>
+
+      <p>ให้ <code>d[i][j]</code> เป็นตารางระยะ เริ่มจาก 0 บนเส้นทแยง ระยะของถนนตรงถ้ามี และอนันต์ถ้าไม่มี แล้วค่อยๆ อนุญาตให้ใช้จุดเป็น <strong>จุดแวะกลางทาง</strong> ทีละจุด ตอนที่อนุญาตจุด k เพิ่ม ทางที่ดีที่สุดจาก i ไป j มีได้สองแบบ</p>
+
+      <ul>
+        <li>ไม่แวะ k ระยะเท่าเดิม <code>d[i][j]</code></li>
+        <li>แวะ k ครั้งเดียว คือไป i ถึง k แล้ว k ถึง j โดยแวะได้เฉพาะจุดที่อนุญาตไปก่อนแล้ว ระยะ <code>d[i][k] + d[k][j]</code></li>
+      </ul>
+
+      <p>เลือกแบบที่น้อยกว่า พออนุญาตครบทุกจุด <code>d[i][j]</code> ก็คือระยะที่สั้นที่สุดจริง ความคิดแบบนี้คือ dynamic programming จากบทที่ 24 สถานะคือ (i, j, จำนวนจุดที่อนุญาต) และเพราะ <code>d[i][k]</code> กับ <code>d[k][j]</code> ไม่เปลี่ยนระหว่างรอบของ k (แวะ k ระหว่างทางไป k ไม่ช่วยอะไร) จึงเขียนทับตารางเดิมได้ ไม่ต้องเก็บตารางของทุกรอบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="floyd"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;long long&gt;&gt; d(n + 1, vector&lt;long long&gt;(n + 1, INF));
+    for (int i = 1; i &lt;= n; i++) {
+        d[i][i] = 0;
+    }
+    for (int e = 0; e &lt; m; e++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        d[u][v] = min(d[u][v], (long long)w); // (1)!
+    }
+    for (int k = 1; k &lt;= n; k++) { // (2)!
+        for (int i = 1; i &lt;= n; i++) {
+            for (int j = 1; j &lt;= n; j++) {
+                if (d[i][k] + d[k][j] &lt; d[i][j]) {
+                    d[i][j] = d[i][k] + d[k][j];
+                }
+            }
+        }
+    }
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= n; j++) {
+            if (d[i][j] == INF) {
+                cout &lt;&lt; "INF";
+            } else {
+                cout &lt;&lt; d[i][j];
+            }
+            cout &lt;&lt; (j == n ? '\n' : ' ');
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ถ้ามีถนนหลายเส้นระหว่างคู่เดียวกัน เก็บเส้นที่สั้นที่สุด ถ้าเขียนทับเฉยๆ จะได้เส้นที่อ่านทีหลัง ชุดทดสอบชอบดักจุดนี้</li>
+        <li><code>k</code> ต้องอยู่ลูปนอกสุด ส่วนลำดับของ <code>i</code> กับ <code>j</code> สลับกันได้</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="floyd" data-title="ข้อมูลเข้า"><pre><code>4 5
+1 2 10
+1 3 1
+3 4 2
+4 2 3
+2 1 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="floyd" data-title="C:\code\floyd.exe"><pre><code>0 6 1 3
+4 0 5 7
+9 5 0 2
+7 3 8 0
+</code></pre></div>
+      </div>
+
+      <p>ถนนเป็นทางเดียว แถว i คอลัมน์ j คือระยะจาก i ไป j จาก 1 ไป 2 มีถนนตรงยาว 10 แต่ทาง 1 ไป 3 ไป 4 ไป 2 ยาว 1 + 2 + 3 = 6 ตารางจึงได้ 6 ค่า <code>d[1][2]</code> เปลี่ยนเป็น 6 ตอนรอบ k = 4 เพราะรอบ k = 3 ได้ <code>d[1][4] = 3</code> ไว้ก่อนแล้ว พอรอบ k = 4 ก็ใช้ <code>d[1][4] + d[4][2] = 3 + 3</code></p>
+
+      <p>ลูปสามชั้น ชั้นละ V รอบ เป็น <strong>O(V<sup>3</sup>)</strong> และใช้หน่วยความจำ V<sup>2</sup> ช่อง ไม่ขึ้นกับจำนวนถนนเลย V = 500 คือ 1.25 × 10<sup>8</sup> ครั้ง ยังทัน แต่ V = 2000 คือ 8 × 10<sup>9</sup> ไม่ทันแล้ว</p>
+
+      <h2 id="negative">น้ำหนักติดลบกับ Floyd-Warshall</h2>
+
+      <p>Floyd-Warshall ใช้กับน้ำหนักติดลบได้ ถ้าไม่มีวงติดลบ เพราะไม่ได้อาศัยลำดับแบบ Dijkstra แต่ต้องเพิ่มสองอย่าง</p>
+
+      <ul>
+        <li>ผ่อนเฉพาะเมื่อ <code>d[i][k] &lt; INF</code> และ <code>d[k][j] &lt; INF</code> เหตุผลเดียวกับหน้า 28.4 อนันต์บวกค่าติดลบจะได้ค่าที่น้อยกว่าอนันต์</li>
+        <li>หลังจบลูป ถ้ามี i ที่ <code>d[i][i] &lt; 0</code> แปลว่า i อยู่บนวงติดลบ เพราะเดินออกจาก i แล้ววนกลับมาได้ค่าติดลบ คู่ (a, b) ใดที่มี k ซึ่ง <code>d[a][k]</code> กับ <code>d[k][b]</code> ไม่เป็นอนันต์ และ <code>d[k][k] &lt; 0</code> คือคู่ที่ระยะลดได้ไม่สิ้นสุด</li>
+      </ul>
+
+      <h2 id="timing">เร็วแค่ไหน</h2>
+
+      <p>อีกวิธีที่ได้ระยะทุกคู่เหมือนกัน คือรัน Dijkstra แบบ priority_queue จากทุกจุด เป็น O(V (V + E) log V) วัดบนเครื่องเดียวกับหน้า 28.1 น้ำหนักสุ่ม 1 ถึง 10<sup>9</sup> ถนนสองทาง ค่ากลาง 5 รอบ <code>-O2</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>กราฟ</th><th>Floyd-Warshall O(V<sup>3</sup>)</th><th>Dijkstra จากทุกจุด</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>V = 500 ทุกคู่มีถนน (E = 124750)</td><td>0.060 วินาที</td><td>0.165 วินาที</td></tr>
+            <tr><td>V = 1000 ทุกคู่มีถนน (E = 499500)</td><td>0.398 วินาที</td><td>1.001 วินาที</td></tr>
+            <tr><td>V = 2000, E = 10000</td><td>5.159 วินาที (วัด 3 รอบ)</td><td>0.654 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กราฟที่ทุกคู่มีถนน Floyd-Warshall เร็วกว่าสองเท่าครึ่ง เพราะลูปสามชั้นของมันอ่านตารางเรียงกันในหน่วยความจำ ไม่ต้องยุ่งกับคิว และโค้ดสั้นกว่ามาก แต่กราฟเส้นน้อย Floyd-Warshall ยังต้องทำ V<sup>3</sup> ครั้งเท่าเดิม ขณะที่ Dijkstra ทำงานตามจำนวนถนนจริง จึงชนะเกือบแปดเท่า Floyd-Warshall เหมาะกับ V ไม่เกินราว 500 ถึง 1000 ถ้าจุดเยอะกว่านั้นแต่ถนนน้อย ใช้ Dijkstra จากทุกจุดที่ต้องการ</p>
+
+      <h2 id="choose">เลือกวิธีตามขอบเขต</h2>
+
+      <p>ก่อนเขียนโจทย์เส้นทางสั้นสุด ให้ตอบสามคำถามจากโจทย์ น้ำหนักเป็นแบบไหน ต้องการระยะจากจุดเดียวหรือทุกคู่ และ V กับ E ใหญ่แค่ไหน แล้วเลือกจากตาราง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>น้ำหนัก</th><th>ต้องการ</th><th>ขอบเขตที่ใช้ได้</th><th>วิธี</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เท่ากันทุกเส้น</td><td>จากจุดเดียว</td><td>V, E ถึงหลักล้าน</td><td>BFS (บทที่ 27)</td><td>O(V + E)</td></tr>
+            <tr><td>0 หรือ 1</td><td>จากจุดเดียว</td><td>V, E ถึงหลักล้าน</td><td>0-1 BFS (บทที่ 27)</td><td>O(V + E)</td></tr>
+            <tr><td rowspan="2">ไม่ติดลบ</td><td rowspan="2">จากจุดเดียว</td><td>E ใกล้ V<sup>2</sup> และ V ไม่เกินหลักพัน</td><td>Dijkstra แบบอาเรย์ (หน้า 28.1)</td><td>O(V<sup>2</sup>)</td></tr>
+            <tr><td>V, E ถึงหลักแสนหรือล้าน</td><td>Dijkstra แบบ priority_queue (หน้า 28.2)</td><td>O((V + E) log V)</td></tr>
+            <tr><td>มีติดลบ</td><td>จากจุดเดียว หรือตรวจวงติดลบ</td><td>V × E ไม่เกินราว 10<sup>9</sup></td><td>Bellman-Ford (หน้า 28.4)</td><td>O(VE)</td></tr>
+            <tr><td>อะไรก็ได้ที่ไม่มีวงติดลบ</td><td>ทุกคู่</td><td>V ไม่เกินราว 500 ถึง 1000</td><td>Floyd-Warshall</td><td>O(V<sup>3</sup>)</td></tr>
+            <tr><td>ไม่ติดลบ</td><td>ทุกคู่ หรือจากหลายจุด</td><td>V หลักพัน E น้อย</td><td>Dijkstra จากแต่ละจุดที่ต้องการ</td><td>O(V (V + E) log V)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>มีอีกสามกรณีที่เจอบ่อย</p>
+
+      <ul>
+        <li>จุดเริ่มหลายจุดแต่ถามแค่ระยะถึงจุดเริ่มที่ใกล้ที่สุด ไม่ต้องรันหลายครั้ง ใส่ทุกจุดเริ่มลงคิวพร้อมกันตามหน้า 28.3</li>
+        <li>ถามระยะจากทุกจุดไปยัง <strong>ปลายทางเดียว</strong> กลับทิศถนนทุกเส้นแล้วรัน Dijkstra จากปลายทาง ถนนสองทางไม่ต้องกลับ</li>
+        <li>กราฟมีทิศทางที่ไม่มีวงเลย (DAG) หาระยะได้ใน O(V + E) แม้มีน้ำหนักติดลบ ด้วยการผ่อนตามลำดับ topological sort ซึ่งจะเรียนในบทที่ 30</li>
+      </ul>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="wrong-order">แบบที่ 1 วางลูป k ไว้ในสุด</h3>
+
+      <p>หลายคนจำว่า Floyd-Warshall คือลูปสามชั้นที่ใช้ i j k แล้วเขียนเรียงตามตัวอักษร เอา <code>k</code> ไว้ในสุด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="floyd-wrong-order"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;long long&gt;&gt; d(n + 1, vector&lt;long long&gt;(n + 1, INF));
+    for (int i = 1; i &lt;= n; i++) {
+        d[i][i] = 0;
+    }
+    for (int e = 0; e &lt; m; e++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        d[u][v] = min(d[u][v], (long long)w);
+    }
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= n; j++) {
+            for (int k = 1; k &lt;= n; k++) {
+                if (d[i][k] + d[k][j] &lt; d[i][j]) {
+                    d[i][j] = d[i][k] + d[k][j];
+                }
+            }
+        }
+    }
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= n; j++) {
+            if (d[i][j] == INF) {
+                cout &lt;&lt; "INF";
+            } else {
+                cout &lt;&lt; d[i][j];
+            }
+            cout &lt;&lt; (j == n ? '\n' : ' ');
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="floyd-wrong-order" data-title="ข้อมูลเข้า"><pre><code>4 5
+1 2 10
+1 3 1
+3 4 2
+4 2 3
+2 1 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="floyd-wrong-order" data-title="C:\code\floyd.exe"><pre><code>0 10 1 3
+4 0 5 7
+INF 5 0 2
+7 3 8 0
+</code></pre></div>
+      </div>
+
+      <p>ผิดสองช่อง <code>d[1][2]</code> ได้ 10 แทน 6 และ <code>d[3][1]</code> ได้ <code>INF</code> ทั้งที่ไปได้ด้วยระยะ 9 ตอนคำนวณช่อง (1, 2) ลูปในสุดลองทุก k แต่ <code>d[1][4]</code> ยังเป็นอนันต์ เพราะช่อง (1, 4) จะคำนวณทีหลังตอน j = 4 แบบนี้แต่ละช่องจึงได้แค่ทางที่แวะไม่เกินหนึ่งจุดจากค่าที่บังเอิญเสร็จก่อน ไม่ใช่ทางที่ดีที่สุด และคำตอบส่วนใหญ่ยังถูก ตัวอย่างเล็กๆ ในโจทย์จึงมักผ่าน จำว่า <strong>k คือจุดแวะ ต้องอยู่นอกสุด</strong></p>
+
+      <h3 id="llong-max">แบบที่ 2 ใช้ LLONG_MAX เป็นอนันต์</h3>
+
+      <p>ในโปรแกรม floyd เปลี่ยนอนันต์เป็น <code>const long long INF = LLONG_MAX;</code> เพราะคิดว่าใหญ่ที่สุดย่อมปลอดภัยที่สุด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="floyd-llmax"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = LLONG_MAX;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;long long&gt;&gt; d(n + 1, vector&lt;long long&gt;(n + 1, INF));
+    for (int i = 1; i &lt;= n; i++) {
+        d[i][i] = 0;
+    }
+    for (int e = 0; e &lt; m; e++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        d[u][v] = min(d[u][v], (long long)w);
+    }
+    for (int k = 1; k &lt;= n; k++) {
+        for (int i = 1; i &lt;= n; i++) {
+            for (int j = 1; j &lt;= n; j++) {
+                if (d[i][k] + d[k][j] &lt; d[i][j]) {
+                    d[i][j] = d[i][k] + d[k][j];
+                }
+            }
+        }
+    }
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= n; j++) {
+            if (d[i][j] == INF) {
+                cout &lt;&lt; "INF";
+            } else {
+                cout &lt;&lt; d[i][j];
+            }
+            cout &lt;&lt; (j == n ? '\n' : ' ');
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="floyd-llmax" data-title="ข้อมูลเข้า"><pre><code>4 5
+1 2 10
+1 3 1
+3 4 2
+4 2 3
+2 1 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="floyd-llmax" data-title="C:\code\floyd.exe"><pre><code>-9223372036854775794 -9223372036854775798 -9223372036854775807 -9223372036854775797
+-9223372036854775790 -9223372036854775794 -9223372036854775803 -9223372036854775807
+-9223372036854775797 -9223372036854775801 -9223372036854775808 -4
+-9223372036854775797 -9223372036854775801 -9223372036854775808 -4
+</code></pre></div>
+      </div>
+
+      <p>ตารางพังทั้งตาราง รอบ k = 1 ตอนคำนวณช่อง (2, 4) ซึ่งยังไม่มีถนน โปรแกรมลอง <code>d[2][1] + d[1][4]</code> คือ <code>4 + LLONG_MAX</code> ล้นเป็นค่าติดลบที่เกือบน้อยที่สุดของ <code>long long</code> ค่านั้นน้อยกว่าอนันต์จึงถูกเก็บ แล้วรอบต่อๆ ไปค่าติดลบก็ลามไปทุกช่องที่ใช้มันต่อ Floyd-Warshall บวกระยะสองช่องที่อาจเป็นอนันต์ทั้งคู่ จึงต้องเลือกอนันต์ที่บวกกันสองตัวแล้วยังไม่ล้น 10<sup>18</sup> บวกกันได้ 2 × 10<sup>18</sup> ยังน้อยกว่าขีดจำกัด หรือเช็ก <code>&lt; INF</code> ก่อนบวกทุกครั้ง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>Floyd-Warshall ให้ระยะทุกคู่ด้วยลูปสามชั้น <code>d[i][j] = min(d[i][j], d[i][k] + d[k][j])</code> เป็น O(V<sup>3</sup>) ใช้กับ V ไม่เกินราว 500 ถึง 1000</li>
+        <li>k คือจุดแวะ ต้องอยู่ลูปนอกสุด วางผิดที่แล้วคำตอบผิดบางช่องโดยไม่มีอะไรเตือน</li>
+        <li>เริ่มตารางด้วย 0 บนเส้นทแยง ถนนซ้ำคู่เก็บเส้นที่สั้นที่สุด และใช้อนันต์ 10<sup>18</sup> ที่บวกกันสองตัวแล้วไม่ล้น</li>
+        <li>รับน้ำหนักติดลบได้ถ้าเช็ก <code>&lt; INF</code> ก่อนบวก และ <code>d[i][i] &lt; 0</code> บอกว่า i อยู่บนวงติดลบ</li>
+        <li>ก่อนเขียน ดูชนิดของน้ำหนัก จุดเดียวหรือทุกคู่ และขนาด V กับ E แล้วเลือกจากตารางในหน้านี้</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

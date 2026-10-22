@@ -417,7 +417,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "28"
 title = "บทที่ 28 เส้นทางสั้นสุด"
 summary = "Dijkstra Bellman-Ford และ Floyd-Warshall"
-# dir = "algo/28-shortest-paths"
+path = "algo/28-shortest-paths/index.html"
+pages = [
+  { num = "28.1", title = "BFS ไม่พอ และ Dijkstra แบบอาเรย์", path = "algo/28-shortest-paths/dijkstra.html" },
+  { num = "28.2", title = "Dijkstra ด้วย priority_queue", path = "algo/28-shortest-paths/dijkstra-pq.html" },
+  { num = "28.3", title = "พิมพ์เส้นทาง นับทาง และตาราง", path = "algo/28-shortest-paths/paths-grid.html" },
+  { num = "28.4", title = "น้ำหนักติดลบและ Bellman-Ford", path = "algo/28-shortest-paths/bellman-ford.html" },
+  { num = "28.5", title = "Floyd-Warshall และการเลือกวิธี", path = "algo/28-shortest-paths/floyd-warshall.html" },
+  { num = "28.6", title = "แบบฝึกหัด", path = "algo/28-shortest-paths/exercises.html", exercises = "algo/28-shortest-paths" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

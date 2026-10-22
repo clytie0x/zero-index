@@ -1,0 +1,442 @@
+<article class="doc">
+      <h1>28.3 พิมพ์เส้นทาง นับทาง และตาราง</h1>
+
+      <p>โจทย์จริงไม่ได้ถามแค่ระยะ หลายข้อให้พิมพ์ว่าเดินผ่านจุดไหนบ้าง ถามว่ามีทางที่สั้นที่สุดกี่ทาง ให้จุดเริ่มมาหลายจุดพร้อมกัน หรือให้แผนที่มาเป็นตารางที่แต่ละช่องมีค่าผ่าน ทั้งหมดนี้ใช้ Dijkstra จากหน้า 28.2 ตัวเดิม เติมของเพียงไม่กี่บรรทัด หน้านี้รวมสี่แบบที่เจอบ่อยที่สุด พร้อมกับดักของแต่ละแบบ</p>
+
+      <h2 id="print-path">พิมพ์เส้นทาง</h2>
+
+      <p>ทุกครั้งที่ผ่อน v สำเร็จจาก u แปลว่าทางที่ดีที่สุดถึง v ตอนนี้มาจาก u จดไว้ใน <code>parent[v] = u</code> พอ Dijkstra จบ <code>parent</code> ของแต่ละจุดคือจุดก่อนหน้าบนทางที่สั้นที่สุด เดินย้อนจากปลายทางตาม <code>parent</code> ไปเรื่อยๆ จนถึงจุดเริ่ม แล้วกลับลำดับ ก็ได้เส้นทาง เหมือนการพิมพ์ทางเดินของ BFS ในบทที่ 27</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="print-path"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    int target;
+    cin &gt;&gt; target;
+    vector&lt;long long&gt; dist(n + 1, INF);
+    vector&lt;int&gt; parent(n + 1, 0); // (1)!
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq;
+    dist[1] = 0;
+    pq.push({0, 1});
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+        if (d &gt; dist[u]) {
+            continue;
+        }
+        for (auto [v, w] : adj[u]) {
+            if (d + w &lt; dist[v]) {
+                dist[v] = d + w;
+                parent[v] = u; // (2)!
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    if (dist[target] == INF) {
+        cout &lt;&lt; "no path" &lt;&lt; '\n';
+        return 0;
+    }
+    vector&lt;int&gt; path;
+    for (int u = target; u != 0; u = parent[u]) { // (3)!
+        path.push_back(u);
+    }
+    reverse(path.begin(), path.end());
+    cout &lt;&lt; "dist = " &lt;&lt; dist[target] &lt;&lt; '\n';
+    for (int i = 0; i &lt; (int)path.size(); i++) {
+        cout &lt;&lt; path[i] &lt;&lt; (i + 1 == (int)path.size() ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จุดเริ่มไม่มีจุดก่อนหน้า ใช้ 0 ซึ่งไม่ใช่จุดจริง เป็นตัวบอกว่าเดินย้อนถึงต้นทางแล้ว</li>
+        <li>จดเฉพาะตอนผ่อนสำเร็จ ค่าสุดท้ายของ <code>parent[v]</code> จึงมาจากการผ่อนครั้งที่ได้ระยะจริง</li>
+        <li>เดินย้อนจากปลายทาง ได้เส้นทางกลับหลัง จึงต้อง <code>reverse</code> ก่อนพิมพ์</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="print-path" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 4
+1 3 1
+3 2 2
+2 4 5
+3 4 8
+3 5 10
+4 5 2
+4 6 6
+5 6 3
+6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="print-path" data-title="C:\code\path.exe"><pre><code>dist = 13
+1 3 2 4 5 6
+</code></pre></div>
+      </div>
+
+      <p>บ้าน วัด ตลาด สถานี สวน โรงเรียน รวม 1 + 2 + 5 + 2 + 3 = 13 นาที ตรงกับระยะที่หาได้ในหน้า 28.1 การเดินย้อนใช้เวลาไม่เกินจำนวนจุดบนเส้นทาง ความซับซ้อนรวมจึงยังเป็นของ Dijkstra</p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">ถ้ามีหลายเส้นทางที่สั้นเท่ากัน</p>
+        <p>โปรแกรมนี้พิมพ์เส้นทางที่ Dijkstra บังเอิญเจอก่อน ถ้าโจทย์บอกว่า "ถ้ามีหลายทางให้พิมพ์ทางใดก็ได้" ก็ใช้ได้เลย แต่ถ้ากำหนดว่าต้องเป็นทางที่เรียงตามพจนานุกรมน้อยที่สุด หรือผ่านน้อยจุดที่สุด ต้องเพิ่มเงื่อนไขตอนระยะเท่ากัน อย่าเชื่อว่าโปรแกรมแบบนี้เลือกให้ถูกเอง</p>
+      </div>
+
+      <h2 id="count-paths">นับทางที่สั้นที่สุด</h2>
+
+      <p>ให้ <code>ways[v]</code> คือจำนวนทางที่สั้นที่สุดจากจุดเริ่มถึง v ทุกทางแบบนั้นต้องจบด้วยถนนเส้นใดเส้นหนึ่งจาก u ที่ <code>dist[u] + w == dist[v]</code> จำนวนทางถึง v จึงเป็นผลรวมของ <code>ways[u]</code> ทุก u แบบนั้น ตอนผ่อนมีสองกรณี</p>
+
+      <ul>
+        <li>ได้ระยะใหม่ที่ <strong>น้อยกว่า</strong> เดิม ทางเก่าทั้งหมดไม่ใช่ทางที่สั้นที่สุดแล้ว ตั้ง <code>ways[v] = ways[u]</code> ใหม่</li>
+        <li>ได้ระยะ <strong>เท่ากับ</strong> เดิม เจอทางที่สั้นที่สุดเพิ่ม บวก <code>ways[u]</code> เข้าไป</li>
+      </ul>
+
+      <p>ที่ใช้ได้เพราะ Dijkstra หยิบจุดออกตามระยะจากน้อยไปมาก ตอนที่ u ถูกหยิบ ทุกจุดที่ระยะน้อยกว่า u ส่งค่าให้ u ครบแล้ว <code>ways[u]</code> จึงนิ่งก่อนถูกส่งต่อ เงื่อนไขนี้ต้องการให้ทุกถนนยาวอย่างน้อย 1 ถ้ามีถนนยาว 0 สองจุดที่ระยะเท่ากันอาจส่งค่าให้กันในลำดับที่ผิด จำนวนทางโตเร็วมาก โจทย์จึงมักให้ตอบเป็นเศษจากการหารด้วย 10<sup>9</sup> + 7 ตามบทที่ 12</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="count-ways"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+const long long MOD = 1000000007;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;long long&gt; dist(n + 1, INF), ways(n + 1, 0);
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq;
+    dist[1] = 0;
+    ways[1] = 1;
+    pq.push({0, 1});
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+        if (d &gt; dist[u]) {
+            continue;
+        }
+        for (auto [v, w] : adj[u]) {
+            if (d + w &lt; dist[v]) { // (1)!
+                dist[v] = d + w;
+                ways[v] = ways[u];
+                pq.push({dist[v], v});
+            } else if (d + w == dist[v]) { // (2)!
+                ways[v] = (ways[v] + ways[u]) % MOD;
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; ": dist=" &lt;&lt; dist[u] &lt;&lt; " ways=" &lt;&lt; ways[u] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ระยะใหม่สั้นกว่า ทิ้งทางเก่าทั้งหมด เริ่มนับใหม่จากจำนวนทางถึง u</li>
+        <li>ระยะเท่าเดิม เพิ่มทางที่ผ่าน u เข้าไป ไม่ต้องใส่ลงคิวอีก เพราะระยะของ v ไม่เปลี่ยน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-ways" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 2
+1 3 2
+2 3 1
+2 4 3
+3 4 3
+1 4 7
+4 5 1
+4 6 4
+5 6 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-ways" data-title="C:\code\count_ways.exe"><pre><code>1: dist=0 ways=1
+2: dist=2 ways=1
+3: dist=2 ways=1
+4: dist=5 ways=2
+5: dist=6 ways=2
+6: dist=9 ways=4
+</code></pre></div>
+      </div>
+
+      <p>ถึงจุด 4 ได้ 5 สองทาง คือผ่านจุด 2 หรือผ่านจุด 3 ส่วนถนนตรง 1 ไป 4 ยาว 7 ไม่นับ จุด 6 ได้ระยะ 9 จากสองทิศ ผ่านจุด 4 โดยตรงกับผ่านจุด 5 ทิศละสองทาง รวมสี่ทาง</p>
+
+      <h2 id="multi-source">หลายจุดเริ่ม</h2>
+
+      <p>ในอำเภอมีโรงพยาบาลหลายแห่ง อยากรู้ว่าแต่ละหมู่บ้านอยู่ห่างโรงพยาบาลที่ใกล้ที่สุดเท่าไร วิธีตรงไปตรงมาคือรัน Dijkstra จากโรงพยาบาลทีละแห่งแล้วเก็บค่าน้อยสุด ถ้ามี K แห่ง ก็ช้าลง K เท่า</p>
+
+      <p>วิธีที่ดีกว่าคือคิดว่ามีจุดเริ่มสมมติจุดหนึ่ง ซึ่งมีถนนยาว 0 ไปทุกโรงพยาบาล ระยะจากจุดสมมตินี้ถึงหมู่บ้านใดๆ ก็คือระยะถึงโรงพยาบาลที่ใกล้ที่สุดพอดี และไม่ต้องสร้างจุดสมมติจริงด้วย แค่เริ่มต้นให้ทุกโรงพยาบาลมีระยะ 0 และอยู่ในคิวตั้งแต่แรก แบบเดียวกับ BFS หลายจุดเริ่มในบทที่ 27</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="hospitals"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m, k;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; k;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;long long&gt; dist(n + 1, INF);
+    vector&lt;int&gt; nearest(n + 1, 0);
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq;
+    for (int i = 0; i &lt; k; i++) {
+        int h;
+        cin &gt;&gt; h;
+        dist[h] = 0; // (1)!
+        nearest[h] = h;
+        pq.push({0, h});
+    }
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+        if (d &gt; dist[u]) {
+            continue;
+        }
+        for (auto [v, w] : adj[u]) {
+            if (d + w &lt; dist[v]) {
+                dist[v] = d + w;
+                nearest[v] = nearest[u]; // (2)!
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; "village " &lt;&lt; u &lt;&lt; ": " &lt;&lt; dist[u] &lt;&lt; " to hospital " &lt;&lt; nearest[u] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ทุกโรงพยาบาลเริ่มที่ระยะ 0 และอยู่ในคิว เหมือนถูกผ่อนจากจุดเริ่มสมมติมาแล้ว</li>
+        <li>จำด้วยว่าระยะนี้มาจากโรงพยาบาลไหน ส่งต่อจาก u ไป v พร้อมกับระยะ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="hospitals" data-title="ข้อมูลเข้า"><pre><code>8 9 2
+1 2 7
+2 3 4
+3 4 6
+4 5 3
+5 6 5
+6 7 2
+7 8 9
+2 7 15
+3 6 8
+2 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="hospitals" data-title="C:\code\hospitals.exe"><pre><code>village 1: 7 to hospital 2
+village 2: 0 to hospital 2
+village 3: 4 to hospital 2
+village 4: 8 to hospital 6
+village 5: 5 to hospital 6
+village 6: 0 to hospital 6
+village 7: 2 to hospital 6
+village 8: 11 to hospital 6
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดแรกของข้อมูลเข้าคือ n m และจำนวนโรงพยาบาล K บรรทัดสุดท้ายคือหมู่บ้านที่มีโรงพยาบาล หมู่บ้าน 4 อยู่ห่างโรงพยาบาลที่หมู่บ้าน 2 โดยผ่านหมู่บ้าน 3 เป็น 4 + 6 = 10 แต่ห่างโรงพยาบาลที่หมู่บ้าน 6 โดยผ่านหมู่บ้าน 5 แค่ 5 + 3 = 8 จึงได้ 8 รันครั้งเดียวได้ O((V + E) log V) เท่ากับ Dijkstra ปกติ ไม่ว่าจะมีโรงพยาบาลกี่แห่ง วัดบนเครื่องเดียวกับหน้า 28.1 กราฟสุ่ม V = 10<sup>5</sup> E = 2 × 10<sup>5</sup> มีโรงพยาบาล 100 แห่ง รันทีละแห่งใช้ 2.629 วินาที แบบหลายจุดเริ่มใช้ 0.026 วินาที (ค่ากลาง 5 รอบ <code>-O2</code>)</p>
+
+      <h2 id="grid">ตารางที่ช่องมีค่าผ่าน</h2>
+
+      <p>แผนที่เป็นตาราง R แถว C คอลัมน์ ช่องที่เป็นเลข 1 ถึง 9 คือค่าผ่านช่องนั้น เช่น เวลาที่ใช้เดินลุยโคลน ช่อง <code>#</code> คือกำแพง เดินขึ้นลงซ้ายขวาได้ทีละช่อง เริ่มที่มุมซ้ายบน ต้องไปมุมขวาล่าง ค่าใช้จ่ายรวมคือผลรวมค่าของทุกช่องที่เหยียบ รวมช่องแรกและช่องสุดท้าย</p>
+
+      <p>ทุกช่องคือจุดของกราฟ เดินจากช่องหนึ่งไปช่องข้างเคียงคือถนนที่ยาวเท่ากับค่าของช่องที่เดินเข้าไป ไม่ต้องสร้าง <code>adj</code> เพราะหาช่องข้างเคียงได้ด้วย <code>dr</code> กับ <code>dc</code> แบบหน้า 7.4 และให้ช่อง (r, c) เป็นจุดหมายเลข <code>r * C + c</code> จะได้ใช้ <code>vector</code> มิติเดียวกับคิวของ pair แบบเดิมได้ทันที</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="grid-cost"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+int dr[4] = {-1, 1, 0, 0};
+int dc[4] = {0, 0, -1, 1};
+
+int main()
+{
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;string&gt; grid(rows);
+    for (int r = 0; r &lt; rows; r++) {
+        cin &gt;&gt; grid[r];
+    }
+    if (grid[0][0] == '#') {
+        cout &lt;&lt; -1 &lt;&lt; '\n';
+        return 0;
+    }
+    vector&lt;long long&gt; dist(rows * cols, INF); // (1)!
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq;
+    dist[0] = grid[0][0] - '0'; // (2)!
+    pq.push({dist[0], 0});
+    while (!pq.empty()) {
+        auto [d, id] = pq.top();
+        pq.pop();
+        if (d &gt; dist[id]) {
+            continue;
+        }
+        int r = id / cols, c = id % cols; // (3)!
+        for (int k = 0; k &lt; 4; k++) {
+            int nr = r + dr[k], nc = c + dc[k];
+            if (nr &lt; 0 || nr &gt;= rows || nc &lt; 0 || nc &gt;= cols || grid[nr][nc] == '#') {
+                continue;
+            }
+            int next = nr * cols + nc;
+            long long nd = d + (grid[nr][nc] - '0'); // (4)!
+            if (nd &lt; dist[next]) {
+                dist[next] = nd;
+                pq.push({nd, next});
+            }
+        }
+    }
+    long long answer = dist[rows * cols - 1];
+    cout &lt;&lt; (answer == INF ? -1 : answer) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ช่อง (r, c) เก็บที่ช่อง <code>r * cols + c</code> ทั้งตารางจึงใช้ R × C ช่อง</li>
+        <li>ช่องแรกก็ต้องจ่ายค่าผ่าน ระยะเริ่มจึงไม่ใช่ 0</li>
+        <li>แปลงหมายเลขกลับเป็นแถวกับคอลัมน์ด้วยการหารและ mod ตามหน้า 1.2</li>
+        <li>น้ำหนักของ "ถนน" คือค่าของช่องที่เดินเข้าไป ไม่ใช่ช่องที่จากมา</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="grid-cost" data-title="ข้อมูลเข้า"><pre><code>4 6
+139112
+1#9#91
+11211#
+9#1111
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="grid-cost" data-title="C:\code\grid.exe"><pre><code>10
+</code></pre></div>
+      </div>
+
+      <p>ทางหนึ่งที่ได้ 10 คือลงตามคอลัมน์ซ้ายสุดสองช่อง เดินขวาตามแถวที่ 3 ผ่านเลข 2 ไปถึงช่องที่สี่ของแถว แล้วลงไปเดินแถวล่างจนสุด 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 = 10 ทางที่เดินตามแถวบนสุดไปก่อนมีช่องเลข 9 ขวางอยู่ จึงแพงกว่า ตารางที่มี R × C ช่อง มีจุด RC จุดและถนนไม่เกิน 4RC เส้น เป็น O(RC log(RC))</p>
+
+      <h3 id="grid-timing">เทียบกับ BFS ที่ยอมเข้าคิวซ้ำ</h3>
+
+      <p>หลังเรียน BFS ในบทที่ 27 หลายคนแก้ให้ใช้กับตารางแบบนี้ด้วยการยอมให้ช่องเข้าคิวซ้ำได้ทุกครั้งที่ระยะลดลง ใช้ <code>queue</code> ธรรมดาแทน priority_queue วิธีนี้ได้คำตอบถูก เพราะผ่อนไปเรื่อยๆ จนไม่มีอะไรลดได้อีก แต่ช่องหนึ่งอาจถูกประมวลผลหลายครั้ง วัดบนเครื่องเดียวกับหน้า 28.1 ตารางสุ่มเลข 1 ถึง 9 ไม่มีกำแพง ค่ากลาง 5 รอบ <code>-O2</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตาราง</th><th>วิธี</th><th>จำนวนครั้งที่ประมวลผลช่อง</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">1000 × 1000</td><td>Dijkstra</td><td>1000000</td><td>0.091 วินาที</td></tr>
+            <tr><td>queue เข้าซ้ำได้</td><td>17061831</td><td>0.302 วินาที</td></tr>
+            <tr><td rowspan="2">2000 × 2000</td><td>Dijkstra</td><td>4000000</td><td>0.392 วินาที</td></tr>
+            <tr><td>queue เข้าซ้ำได้</td><td>134176009</td><td>2.432 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Dijkstra ประมวลผลแต่ละช่องครั้งเดียวพอดี ส่วนแบบ queue ประมวลผลช่องละราว 17 ครั้งในตารางแรก และราว 34 ครั้งในตารางที่สอง ยิ่งตารางใหญ่ยิ่งซ้ำมากขึ้น และยังมีข้อมูลเข้าที่ออกแบบให้ซ้ำมากกว่านี้ได้อีก ถ้าค่าผ่านไม่เท่ากันให้ใช้ Dijkstra ถ้าเท่ากันทุกช่องใช้ BFS ธรรมดา</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="count-no-skip">นับทางโดยไม่ข้ามคู่เก่า</h3>
+
+      <p>หน้า 28.2 บอกว่าลืมข้ามคู่เก่าแล้วแค่ช้า แต่ไม่ผิด นั่นจริงเฉพาะตอนหาระยะ ในโปรแกรม count-ways ลบบรรทัดที่ข้ามคู่เก่า และผ่อนด้วย <code>dist[u] + w</code> แบบที่เขียนกันบ่อย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="count-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+const long long MOD = 1000000007;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;long long&gt; dist(n + 1, INF), ways(n + 1, 0);
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq;
+    dist[1] = 0;
+    ways[1] = 1;
+    pq.push({0, 1});
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        pq.pop();
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+                ways[v] = ways[u];
+                pq.push({dist[v], v});
+            } else if (dist[u] + w == dist[v]) {
+                ways[v] = (ways[v] + ways[u]) % MOD;
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; u &lt;&lt; ": dist=" &lt;&lt; dist[u] &lt;&lt; " ways=" &lt;&lt; ways[u] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-bug" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 2
+1 3 2
+2 3 1
+2 4 3
+3 4 3
+1 4 7
+4 5 1
+4 6 4
+5 6 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-bug" data-title="C:\code\count_ways.exe"><pre><code>1: dist=0 ways=1
+2: dist=2 ways=1
+3: dist=2 ways=1
+4: dist=5 ways=2
+5: dist=6 ways=4
+6: dist=9 ways=6
+</code></pre></div>
+      </div>
+
+      <p>ระยะถูกทุกจุด แต่จุด 5 ได้ 4 ทางแทน 2 และจุด 6 ได้ 6 ทางแทน 4 จุด 4 ถูกใส่ลงคิวสองครั้ง ครั้งแรกเป็น <code>(7, 4)</code> จากถนนตรง แล้วเป็น <code>(5, 4)</code> จากจุด 2 พอคู่เก่า <code>(7, 4)</code> ออกมา โปรแกรมไม่ข้าม และผ่อนด้วย <code>dist[4]</code> ซึ่งตอนนี้เป็น 5 แล้ว จึงเจอว่าระยะถึงจุด 5 และจุด 6 "เท่ากับเดิม" และบวกจำนวนทางผ่านจุด 4 ซ้ำเป็นครั้งที่สอง ระยะไม่ผิดเพราะการผ่อนซ้ำไม่ทำให้ระยะลดลง แต่การนับไม่ได้ทนต่อการทำซ้ำแบบนั้น แผนที่ที่ไม่มีจุดไหนถูกใส่ลงคิวสองครั้งจะได้คำตอบถูก จึงต้องทดสอบด้วยข้อมูลที่มีทางอ้อมสั้นกว่าทางตรงเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>พิมพ์เส้นทาง จด <code>parent[v] = u</code> ตอนผ่อนสำเร็จ แล้วเดินย้อนจากปลายทางและกลับลำดับ</li>
+        <li>นับทางที่สั้นที่สุด ระยะน้อยกว่าเดิมให้ตั้ง <code>ways[v] = ways[u]</code> ระยะเท่าเดิมให้บวก ต้องข้ามคู่เก่าเสมอ และใช้ได้เมื่อถนนยาวอย่างน้อย 1</li>
+        <li>หลายจุดเริ่ม ใส่ทุกจุดเริ่มลงคิวด้วยระยะ 0 ตั้งแต่แรก รันครั้งเดียว</li>
+        <li>ตารางที่ช่องมีค่าผ่าน ใช้ช่องเป็นจุด หมายเลข <code>r * C + c</code> น้ำหนักคือค่าของช่องที่เดินเข้าไป</li>
+        <li>BFS ที่ยอมเข้าคิวซ้ำได้คำตอบถูก แต่ประมวลผลช่องซ้ำหลายสิบครั้ง ใช้ Dijkstra แทน</li>
+      </ul>
+    </article>

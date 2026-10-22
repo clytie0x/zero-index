@@ -1,0 +1,289 @@
+<article class="doc">
+      <h1>28.2 Dijkstra ด้วย priority_queue</h1>
+
+      <p>Dijkstra แบบอาเรย์เสียเวลาเกือบทั้งหมดไปกับการไล่หาจุดที่ใกล้ที่สุด รอบละ V ช่อง โจทย์ค่าย 2 และ TOI ส่วนใหญ่ให้ V ถึงแสน และ E ถึงสองแสน ซึ่ง V<sup>2</sup> คือ 10<sup>10</sup> ไม่ทันแน่นอน งาน "ใส่ค่าเข้าไปเรื่อยๆ แล้วหยิบค่าน้อยที่สุดออก" คืองานของ <code>priority_queue</code> ในหน้า 20.5 พอดี หน้านี้เปลี่ยนการไล่หาเป็น priority_queue ซึ่งเป็นแบบที่ใช้จริงในการแข่งขัน แล้วดูกับดักสามข้อที่ทำให้คนเสียคะแนนบ่อยที่สุด</p>
+
+      <h2 id="idea">เก็บคู่ (ระยะ, จุด) ไว้ในคิว</h2>
+
+      <p>ใส่คู่ <code>(dist[v], v)</code> ลงใน priority_queue แบบน้อยสุดก่อน ทุกครั้งที่หยิบออก จะได้จุดที่ระยะน้อยที่สุดในเวลา log ของขนาดคิว แทนการไล่ V ช่อง ปัญหาคือเมื่อผ่อนแล้ว <code>dist[v]</code> ลดลง ค่าของ v ที่อยู่ในคิวอยู่แล้วต้องเปลี่ยนตาม แต่ priority_queue แก้ค่าของที่อยู่ข้างในไม่ได้ ทำได้แค่ใส่กับหยิบ</p>
+
+      <p>ทางออกคือ <strong>ไม่ต้องแก้</strong> ใส่คู่ใหม่ <code>(ระยะใหม่, v)</code> ลงไปอีกตัว ปล่อยคู่เก่าค้างไว้ในคิว คู่ใหม่ระยะน้อยกว่าจึงออกมาก่อนเสมอ พอคู่เก่าออกมาทีหลัง ก็ดูออกได้ทันทีว่ามันเก่า เพราะระยะในคู่มากกว่า <code>dist[v]</code> ปัจจุบัน ให้ข้ามไปเฉยๆ วิธีปล่อยของเก่าค้างแล้วค่อยทิ้งตอนหยิบออกมาแบบนี้เรียกว่า <strong>lazy deletion</strong></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="dijkstra-pq"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;long long&gt; dist(n + 1, INF);
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq; // (1)!
+    dist[1] = 0;
+    pq.push({0, 1});
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+        if (d &gt; dist[u]) { // (2)!
+            cout &lt;&lt; "skip " &lt;&lt; u &lt;&lt; " d=" &lt;&lt; d &lt;&lt; '\n';
+            continue;
+        }
+        cout &lt;&lt; "take " &lt;&lt; u &lt;&lt; " dist=" &lt;&lt; d &lt;&lt; '\n';
+        for (auto [v, w] : adj[u]) {
+            if (d + w &lt; dist[v]) {
+                dist[v] = d + w;
+                pq.push({dist[v], v}); // (3)!
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; (dist[u] == INF ? -1 : dist[u]) &lt;&lt; (u == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>priority_queue แบบน้อยสุดก่อนตามหน้า 20.5 เก็บ <code>pair</code> ช่องแรกคือระยะ จึงเรียงตามระยะ ระยะเป็น <code>long long</code> ช่องแรกของ pair จึงต้องเป็น <code>long long</code> ด้วย</li>
+        <li>คู่นี้เก่าแล้ว เคยมีคู่ที่ระยะน้อยกว่าของจุดเดียวกันออกไปก่อน ข้ามไปเลย โปรแกรมจริงไม่ต้องพิมพ์ ตัวอย่างนี้พิมพ์ไว้ให้เห็น</li>
+        <li>ทุกครั้งที่ระยะลดลงให้ใส่คู่ใหม่ จุดเดียวกันจึงอยู่ในคิวได้หลายคู่</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="dijkstra-pq" data-title="ข้อมูลเข้า"><pre><code>6 9
+1 2 4
+1 3 1
+3 2 2
+2 4 5
+3 4 8
+3 5 10
+4 5 2
+4 6 6
+5 6 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="dijkstra-pq" data-title="C:\code\dijkstra_pq.exe"><pre><code>take 1 dist=0
+take 3 dist=1
+take 2 dist=3
+skip 2 d=4
+take 4 dist=8
+skip 4 d=9
+take 5 dist=10
+skip 5 d=11
+take 6 dist=13
+skip 6 d=14
+0 3 1 8 10 13
+</code></pre></div>
+      </div>
+
+      <p>ลำดับ <code>take</code> ตรงกับแบบอาเรย์ในหน้า 28.1 ทุกบรรทัด บรรทัด <code>skip</code> คือคู่เก่าที่ค้างอยู่ เช่น ตลาดเคยถูกใส่เป็น <code>(4, 2)</code> ตอนผ่อนจากบ้าน แล้วถูกใส่อีกครั้งเป็น <code>(3, 2)</code> ตอนผ่อนจากวัด คู่ <code>(3, 2)</code> ออกก่อนและถูกใช้ คู่ <code>(4, 2)</code> ออกทีหลังจึงถูกข้าม</p>
+
+      <p>ใน <code>for</code> ที่ผ่อนถนน ใช้ <code>d + w</code> ไม่ใช่ <code>dist[u] + w</code> สองค่านี้เท่ากันเสมอหลังผ่านบรรทัดที่ข้ามคู่เก่าแล้ว เขียนแบบไหนก็ได้ แต่หน้า 28.3 จะแสดงว่าถ้าลืมบรรทัดที่ข้าม สองแบบนี้ให้ผลต่างกัน</p>
+
+      <h2 id="complexity">ความซับซ้อน</h2>
+
+      <p>นับว่าแต่ละอย่างเกิดขึ้นกี่ครั้ง</p>
+
+      <ul>
+        <li>คู่ใหม่ถูกใส่ทุกครั้งที่ผ่อนสำเร็จ ผ่อนได้ไม่เกินจำนวนครั้งที่ดูถนน คือราว 2E ครั้งเมื่อถนนเป็นสองทาง คิวจึงมีของไม่เกินราว 2E ตัว ใส่และหยิบตัวละ O(log E)</li>
+        <li>แต่ละจุดผ่านบรรทัดที่ข้ามไปได้ครั้งเดียว จึงดูถนนของตัวเองครั้งเดียว รวม O(V + E)</li>
+        <li>E ไม่เกิน V<sup>2</sup> ทำให้ log E ไม่เกิน 2 log V จึงเขียนเป็น log V ได้</li>
+      </ul>
+
+      <p>รวมเป็น <strong>O((V + E) log V)</strong> ที่ V เป็นแสนและ E เป็นสองแสน ได้ราว 3 × 10<sup>5</sup> × 17 ประมาณห้าล้านขั้น สบายมาก</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 28.1 คอมไพล์แบบ <code>-O2</code> กราฟสุ่มด้วย <code>mt19937</code> น้ำหนัก 1 ถึง 10<sup>9</sup> ทุกจุดไปถึงกันได้ จับเวลาเฉพาะช่วง Dijkstra แต่ละช่องเป็นค่ากลางของ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>กราฟ</th><th>แบบอาเรย์ O(V<sup>2</sup> + E)</th><th>แบบ priority_queue O((V + E) log V)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>V = 10<sup>4</sup>, E = 2 × 10<sup>4</sup></td><td>0.128 วินาที</td><td>0.002 วินาที</td></tr>
+            <tr><td>V = 10<sup>5</sup>, E = 2 × 10<sup>5</sup></td><td>20.875 วินาที (วัด 3 รอบ)</td><td>0.029 วินาที</td></tr>
+            <tr><td>V = 3000 ทุกคู่มีถนน น้ำหนักสุ่ม</td><td>0.017 วินาที</td><td>0.010 วินาที</td></tr>
+            <tr><td>V = 3000 ทุกคู่มีถนน น้ำหนักแบบที่ผ่อนสำเร็จเกือบทุกครั้ง</td><td>0.018 วินาที</td><td>0.878 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กราฟที่เส้นน้อย (sparse) แบบที่โจทย์ส่วนใหญ่ให้ แบบ priority_queue เร็วกว่าหลายสิบเท่าที่ V เป็นหมื่น และหลายร้อยเท่าที่ V เป็นแสน ซึ่งแบบอาเรย์ใช้กว่ายี่สิบวินาที แต่สองแถวล่างคือกราฟที่ทุกคู่มีถนน (dense) E ราวสี่ล้านครึ่ง น้ำหนักสุ่มยังสูสีกัน เพราะถนนส่วนใหญ่ผ่อนไม่สำเร็จ คิวจึงไม่ค่อยโต แถวสุดท้ายใช้น้ำหนัก <code>2|u - v| - 1</code> ซึ่งทำให้ทุกครั้งที่เลือกจุดใหม่ ระยะของทุกจุดที่เหลือลดลง คิวจึงต้องรับของหลายล้านตัว แบบ priority_queue กลายเป็น O(V<sup>2</sup> log V) และช้ากว่าแบบอาเรย์ราวห้าสิบเท่า</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">เลือกแบบไหน</p>
+        <p>โจทย์ที่ E ใกล้ V<sup>2</sup> เช่นให้ระยะของทุกคู่มาเป็นตาราง V × V และ V ไม่เกินหลักพัน แบบอาเรย์ทั้งง่ายกว่าและไม่มีทางช้ากว่า V<sup>2</sup> นอกนั้นใช้แบบ priority_queue หน้า 28.5 มีตารางเลือกวิธีครบทุกแบบ</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-skip">แบบที่ 1 ไม่ข้ามคู่เก่า</h3>
+
+      <p>บรรทัด <code>if (d &gt; dist[u]) continue;</code> ดูเหมือนไม่จำเป็น เพราะถ้าลบทิ้ง คู่เก่าที่ออกมาจะผ่อนถนนด้วยระยะที่มากกว่าเดิม ซึ่งไม่มีทางทำให้อะไรดีขึ้น คำตอบจึงยังถูก แต่ทุกครั้งที่คู่เก่าออกมา มันไล่ดูถนน <strong>ทุกเส้น</strong> ของจุดนั้นซ้ำ ถ้าจุดที่มีถนนเยอะถูกใส่ลงคิวหลายครั้ง งานจะระเบิด</p>
+
+      <p>โปรแกรมนี้สร้างกราฟที่ตั้งใจให้เกิดแบบนั้น <code>add</code> คือ lambda แบบหน้า 16.3 ที่เก็บไว้ในตัวแปรเพื่อเรียกใช้ซ้ำ จุด 1 มีถนนไปจุดป้อน k จุด ทุกจุดป้อนมีถนนไปจุดศูนย์กลางจุดเดียว น้ำหนักตั้งไว้ให้ทุกครั้งที่จุดป้อนถูกเลือก ระยะของศูนย์กลางลดลง ศูนย์กลางจึงถูกใส่ลงคิว k ครั้ง และศูนย์กลางมีถนนไปจุดปลายอีก L จุด ตัวแปร <code>skip_old</code> เลือกว่าจะข้ามคู่เก่าหรือไม่ โปรแกรมนับด้วยว่าดูถนนไปกี่ครั้ง</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long INF = 1e18;
+
+int main()
+{
+    int feeders, leaves, skip_old;
+    cin &gt;&gt; feeders &gt;&gt; leaves &gt;&gt; skip_old;
+    int n = feeders + leaves + 2;
+    int hub = feeders + 2;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    auto add = [&amp;](int u, int v, int w) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    };
+    for (int i = 1; i &lt;= feeders; i++) {
+        add(1, 1 + i, i);
+        add(1 + i, hub, 3 * feeders - 2 * i);
+    }
+    for (int j = 1; j &lt;= leaves; j++) {
+        add(hub, hub + j, 1);
+    }
+    clock_t start = clock();
+    vector&lt;long long&gt; dist(n + 1, INF);
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq;
+    dist[1] = 0;
+    pq.push({0, 1});
+    long long scanned = 0;
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+        if (skip_old &amp;&amp; d &gt; dist[u]) {
+            continue;
+        }
+        for (auto [v, w] : adj[u]) {
+            scanned++;
+            if (d + w &lt; dist[v]) {
+                dist[v] = d + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    clock_t end = clock();
+    long long total = 0;
+    for (int u = 1; u &lt;= n; u++) {
+        total += dist[u];
+    }
+    cout &lt;&lt; "n = " &lt;&lt; n &lt;&lt; " edges scanned = " &lt;&lt; scanned &lt;&lt; " sum = " &lt;&lt; total &lt;&lt; '\n';
+    cout &lt;&lt; "time = " &lt;&lt; fixed &lt;&lt; setprecision(3) &lt;&lt; (double)(end - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูลเข้า</th><th>ดูถนน</th><th>เวลา <code>-O2</code> (ค่ากลาง 5 รอบ)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>50000 50000 1</code> ข้ามคู่เก่า</td><td>300000 ครั้ง</td><td>0.009 วินาที</td></tr>
+            <tr><td><code>50000 50000 0</code> ไม่ข้าม</td><td>5000200000 ครั้ง</td><td>2.777 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กราฟมีแค่แสนจุดกับสองแสนเส้น แต่แบบไม่ข้ามดูถนนห้าพันล้านครั้ง เพราะคู่เก่าของศูนย์กลางห้าหมื่นคู่ แต่ละคู่ไล่ถนนของศูนย์กลางแสนเส้นซ้ำ ผลรวมระยะที่พิมพ์ออกมาเท่ากันทั้งสองแบบ ชุดทดสอบที่ตัวเลขเล็กจึงจับไม่ได้ แต่ชุดที่ออกแบบมาดักแบบนี้จะเกินเวลา บรรทัดที่ข้ามคู่เก่าจึงต้องมีทุกครั้ง</p>
+
+      <h3 id="max-heap">แบบที่ 2 ลืม greater</h3>
+
+      <p>ประกาศคิวเป็น <code>priority_queue&lt;pair&lt;long long, int&gt;&gt; pq;</code> เพราะลืมว่าค่าเริ่มต้นคือมากสุดก่อน ตามที่หน้า 20.5 เตือนไว้ ผลแปลกกว่าที่คิด คือกับแผนที่เมืองยัง <strong>ได้คำตอบถูก</strong> <code>0 3 1 8 10 13</code> แต่ <code>take</code> ออกมา 11 ครั้งแทน 6 ครั้ง เพราะหยิบจุดที่ไกลที่สุดก่อน แล้วระยะของมันลดลงทีหลังจึงต้องทำซ้ำ บรรทัดที่ข้ามคู่เก่ากันไม่ให้ผิด แต่กันไม่ให้ทำซ้ำไม่ได้ วัดบนเครื่องเดียวกัน แถวที่เป็นตารางคือกราฟที่แต่ละจุดเป็นช่องในตาราง ต่อกับช่องบนล่างซ้ายขวา น้ำหนักสุ่ม 1 ถึง 9 ซึ่งหน้า 28.3 จะเขียนให้ดู</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>กราฟ</th><th>น้อยสุดก่อน</th><th>มากสุดก่อน (ลืม greater)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>สุ่ม V = 10<sup>4</sup>, E = 2 × 10<sup>4</sup></td><td>0.002 วินาที</td><td>0.001 วินาที</td></tr>
+            <tr><td>สุ่ม V = 10<sup>5</sup>, E = 2 × 10<sup>5</sup></td><td>0.029 วินาที</td><td>0.027 วินาที</td></tr>
+            <tr><td>ตาราง 100 × 100</td><td>0.001 วินาที ประมวลผล 10000 ครั้ง</td><td>2.526 วินาที ประมวลผล 66381539 ครั้ง</td></tr>
+            <tr><td>ตาราง 150 × 150</td><td>ไม่ได้วัด</td><td>14.611 วินาที ประมวลผล 351534020 ครั้ง (วัดรอบเดียว)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กราฟสุ่มไม่ฟ้องอะไรเลย เวลาพอๆ กัน แต่กราฟรูปตารางแค่หนึ่งหมื่นช่อง แบบมากสุดก่อนประมวลผลจุดซ้ำเฉลี่ยจุดละราวหกพันครั้ง ช้ากว่าหลายพันเท่า และตาราง 300 × 300 รอร้อยวินาทีแล้วยังไม่จบ ความผิดแบบนี้ตรวจด้วยตัวอย่างในโจทย์ไม่เจอ เพราะคำตอบถูก ทุกครั้งที่เขียน Dijkstra ให้เช็กบรรทัดประกาศคิวว่ามี <code>greater</code></p>
+
+      <h3 id="int-overflow">แบบที่ 3 เก็บระยะใน int</h3>
+
+      <p>โจทย์บอกว่าน้ำหนักไม่เกิน 10<sup>9</sup> ซึ่งอยู่ใน <code>int</code> หลายคนจึงเก็บระยะเป็น <code>int</code> ด้วย ลองถนนสามเส้นต่อกัน เส้นละ 10<sup>9</sup></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="dijkstra-int-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    vector&lt;int&gt; dist(n + 1, INT_MAX);
+    priority_queue&lt;pair&lt;int, int&gt;, vector&lt;pair&lt;int, int&gt;&gt;, greater&lt;pair&lt;int, int&gt;&gt;&gt; pq;
+    dist[1] = 0;
+    pq.push({0, 1});
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+        if (d &gt; dist[u]) {
+            continue;
+        }
+        for (auto [v, w] : adj[u]) {
+            if (d + w &lt; dist[v]) {
+                dist[v] = d + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    for (int u = 1; u &lt;= n; u++) {
+        cout &lt;&lt; dist[u] &lt;&lt; (u == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="dijkstra-int-bug" data-title="ข้อมูลเข้า"><pre><code>4 3
+1 2 1000000000
+2 3 1000000000
+3 4 1000000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="dijkstra-int-bug" data-title="C:\code\dijkstra_pq.exe"><pre><code>-294967296 -1294967296 -294967296 -1294967296
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ <code>0 1000000000 2000000000 3000000000</code> ซึ่งโปรแกรม dijkstra-pq ที่ใช้ <code>long long</code> ให้ถูกต้อง แต่แบบ <code>int</code> ระยะถึงจุด 4 คือ 3 × 10<sup>9</sup> ล้นเป็น -1294967296 เลขเดียวกับตัวอย่างประชากรในหน้า 1.3 ค่าติดลบนั้นน้อยกว่าทุกอย่าง พอจุด 4 ถูกหยิบออกมาก็ผ่อนย้อนกลับไปจุด 3 จุด 2 และแม้แต่จุดเริ่ม ระยะของจุดเริ่มเองยังติดลบ ทางที่สั้นที่สุดยาวได้ถึง (V - 1) × น้ำหนักมากสุด ถ้าเกิน 2 × 10<sup>9</sup> ต้องใช้ <code>long long</code> ทั้ง <code>dist</code> และช่องแรกของ pair ในคิว ส่วนน้ำหนักใน <code>adj</code> เก็บเป็น <code>int</code> ได้ เพราะ <code>d + w</code> เป็น <code>long long</code> บวก <code>int</code> ผลจึงเป็น <code>long long</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ใส่คู่ <code>(dist[v], v)</code> ลง priority_queue แบบน้อยสุดก่อน ระยะลดลงเมื่อไรก็ใส่คู่ใหม่ ปล่อยคู่เก่าค้างไว้</li>
+        <li>หยิบออกมาแล้วถ้า <code>d &gt; dist[u]</code> คือคู่เก่า ต้องข้าม ไม่งั้นอาจช้าระเบิด</li>
+        <li>ความซับซ้อน O((V + E) log V) ใช้กับกราฟเส้นน้อยที่ V เป็นแสนได้ กราฟที่ E ใกล้ V<sup>2</sup> แบบอาเรย์ไม่แพ้</li>
+        <li>ต้องใส่ <code>greater</code> ลืมแล้วคำตอบยังถูกแต่ช้า ตรวจด้วยตัวอย่างเล็กไม่เจอ</li>
+        <li>ระยะรวมเกิน <code>int</code> ได้ง่าย ใช้ <code>long long</code> ทั้งใน <code>dist</code> และในคิว</li>
+      </ul>
+    </article>

@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 28 เส้นทางสั้นสุด</h1>
+
+      <p>จบบทนี้ น้องจะหาเส้นทางที่ใช้เวลาหรือค่าใช้จ่ายน้อยที่สุดบนกราฟที่ถนนยาวไม่เท่ากันได้ ทั้งจากจุดเดียวด้วย Dijkstra แบบอาเรย์และแบบ priority_queue เมื่อมีน้ำหนักติดลบด้วย Bellman-Ford ซึ่งตรวจวงที่วนแล้วค่าใช้จ่ายลดลงไม่สิ้นสุดได้ด้วย และระหว่างทุกคู่ด้วย Floyd-Warshall จะพิมพ์เส้นทาง นับจำนวนทางที่สั้นที่สุด เริ่มจากหลายจุดพร้อมกัน และหาทางบนตารางที่แต่ละช่องมีค่าผ่าน โจทย์เส้นทางสั้นสุดออกในค่าย 2 และ TOI แทบทุกปี ส่วนใหญ่ไม่ได้ยากที่ตัววิธี แต่ยากที่การเลือกวิธีให้ตรงกับขอบเขต และไม่พลาดกับดักอย่างระยะเกิน <code>int</code> หรือคู่เก่าในคิว ซึ่งบทนี้วัดและทำให้พังให้เห็นทุกจุด</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="dijkstra.html">28.1 BFS ไม่พอ และ Dijkstra แบบอาเรย์</a></td><td>กราฟมีน้ำหนัก ตัวอย่างที่ BFS ตอบผิด การผ่อนระยะ ความคิดของ Dijkstra และแบบ O(V<sup>2</sup>) กับดัก <code>INT_MAX</code> ล้น</td></tr>
+            <tr><td><a href="dijkstra-pq.html">28.2 Dijkstra ด้วย priority_queue</a></td><td>lazy deletion O((V + E) log V) วัดเวลาเทียบแบบอาเรย์ กับดักไม่ข้ามคู่เก่า ลืม <code>greater</code> และระยะเก็บใน <code>int</code></td></tr>
+            <tr><td><a href="paths-grid.html">28.3 พิมพ์เส้นทาง นับทาง และตาราง</a></td><td><code>parent</code> นับทางที่สั้นที่สุด หลายจุดเริ่ม ตารางที่ช่องมีค่าผ่าน และ BFS ที่ยอมเข้าคิวซ้ำ</td></tr>
+            <tr><td><a href="bellman-ford.html">28.4 น้ำหนักติดลบและ Bellman-Ford</a></td><td>ตัวอย่างที่ Dijkstra ผิด Bellman-Ford O(VE) ตรวจวงติดลบและหาจุดที่ได้รับผลกระทบ</td></tr>
+            <tr><td><a href="floyd-warshall.html">28.5 Floyd-Warshall และการเลือกวิธี</a></td><td>ระยะทุกคู่ O(V<sup>3</sup>) ลำดับลูปที่ต้องถูก อนันต์ที่ไม่ล้น และตารางเลือกวิธีตามขอบเขต</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>รัน BFS ที่บวกน้ำหนักกับแผนที่เมืองในหน้า 28.1 จนได้ <code>0 4 1 9 11 15</code> อธิบายได้ว่าตลาดผิดเพราะอะไร แล้วเขียน Dijkstra แบบอาเรย์เองจนได้ <code>0 3 1 8 10 13</code></span></label></li>
+        <li><label><input type="checkbox"><span>เขียน Dijkstra แบบ priority_queue เองโดยไม่เปิดดู ได้ผลเดียวกัน แล้วลบบรรทัดข้ามคู่เก่าในโปรแกรม count-ways ของหน้า 28.3 จนเห็นจุด 6 ได้ 6 ทางแทน 4</span></label></li>
+        <li><label><input type="checkbox"><span>พิมพ์เส้นทาง <code>1 3 2 4 5 6</code> ของแผนที่เมือง และหาค่าผ่านตารางในหน้า 28.3 ได้ 10</span></label></li>
+        <li><label><input type="checkbox"><span>ป้อนแผนที่ที่มีวง 2 3 4 ให้ Bellman-Ford ในหน้า 28.4 ได้ <code>-inf</code> ที่จุด 2 ถึง 5 และได้ 5 ที่จุด 6</span></label></li>
+        <li><label><input type="checkbox"><span>ย้ายลูป <code>k</code> ของ Floyd-Warshall ไปไว้ในสุดจนเห็น <code>d[1][2]</code> เป็น 10 แล้วแก้กลับให้ได้ 6 และบอกได้จากขอบเขตของโจทย์ว่าควรใช้วิธีไหน</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ รวมข้อที่มีน้ำหนักติดลบหรือใช้ Floyd-Warshall อย่างน้อย 1 ข้อ</span></label></li>
+      </ul>
+    </article>
