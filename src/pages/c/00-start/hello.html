@@ -45,7 +45,7 @@ Press any key to continue.
 
       <ul>
         <li>บรรทัดแรกคือสิ่งที่โปรแกรมของเราพิมพ์</li>
-        <li>สองบรรทัดล่าง <strong>Code::Blocks เติมให้เอง</strong> บอกว่าโปรแกรมจบแล้ว และใช้เวลาเท่าไร ตอนส่งโจทย์จริง grader ไม่เห็นสองบรรทัดนี้</li>
+        <li>สองบรรทัดล่าง <strong>Code::Blocks เติมให้เอง</strong> บอกว่าโปรแกรมจบแล้ว และใช้เวลาเท่าไร ตอนส่งโจทย์จริง grader ไม่เห็นสองบรรทัดนี้ grader คือโปรแกรมที่ตรวจคำตอบอัตโนมัติในการแข่งขัน มันรันโค้ดของเราแล้วเทียบสิ่งที่พิมพ์ออกมากับคำตอบ</li>
         <li>กดปุ่มอะไรก็ได้เพื่อปิดหน้าต่าง</li>
       </ul>
 
@@ -76,7 +76,7 @@ int main() // (2)!
       <h2 id="try-changes">ลองเปลี่ยนดู</h2>
 
       <ol>
-        <li>เปลี่ยนข้อความเป็นชื่อตัวเอง แล้วกด <span class="keys"><kbd>F9</kbd></span> อีกครั้ง</li>
+        <li>เปลี่ยนข้อความเป็นชื่อตัวเองแบบตัวอังกฤษ เพราะหน้าต่างดำแสดงภาษาไทยเพี้ยน แล้วกด <span class="keys"><kbd>F9</kbd></span> อีกครั้ง</li>
         <li>ลบ <code>\n</code> ออก แล้วรัน สังเกตว่าบรรทัด Process returned ไปต่อท้ายตรงไหน</li>
         <li>เพิ่ม <code>printf</code> อีกบรรทัด ให้พิมพ์ข้อความสองบรรทัด</li>
       </ol>
@@ -128,6 +128,7 @@ note: include '&lt;stdio.h&gt;' or provide a declaration of 'printf'
       <p>กด <span class="keys"><kbd>F9</kbd></span> ให้หน้าต่างดำขึ้น <strong>อย่าเพิ่งปิด</strong> แล้วกลับไปที่ Code::Blocks กด <span class="keys"><kbd>F9</kbd></span> อีกครั้ง</p>
 
       <div class="code" data-lang="gcc"><pre><code>ld.exe: cannot open output file hello.exe: Permission denied
+collect2.exe: error: ld returned 1 exit status
 </code></pre></div>
 
       <p><code>hello.exe</code> ตัวเก่ายังรันอยู่ Windows เลยไม่ยอมให้เขียนทับ แก้ด้วยการปิดหน้าต่างดำก่อนแล้วค่อยรันใหม่ error นี้เจอบ่อยมาก จำไว้ว่าไม่ได้แปลว่าโค้ดผิด</p>

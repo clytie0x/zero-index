@@ -306,13 +306,13 @@ while (i &lt;= 5) {
         <li>ใน Code::Blocks เลือกเมนู Build แล้วเลือก Abort หรือกดปุ่ม Abort บนแถบเครื่องมือ ซึ่งจะกดได้เฉพาะตอนที่โปรแกรมกำลังทำงาน</li>
       </ol>
 
-      <p>ถ้าลืมหยุดโปรแกรมเก่า แก้โค้ดแล้วคอมไพล์ใหม่เลย จะได้ข้อความแบบนี้ (ตัด path ยาวๆ หน้า <code>ld.exe</code> ออกแล้ว)</p>
+      <p>ถ้าลืมหยุดโปรแกรมเก่า แก้โค้ดแล้วคอมไพล์ใหม่เลย จะเจอ error <code>Permission denied</code> แบบเดียวกับแบบที่ 3 ในหน้า 0.3 (ตัด path ยาวๆ หน้า <code>ld.exe</code> ออกแล้ว)</p>
 
       <div class="code" data-lang="gcc"><pre><code>ld.exe: cannot open output file forever.exe: Permission denied
 collect2.exe: error: ld returned 1 exit status
 </code></pre></div>
 
-      <p><code>ld</code> คือส่วนที่ประกอบไฟล์ <code>.exe</code> ขั้นสุดท้าย มันเขียนทับ <code>forever.exe</code> ไม่ได้เพราะไฟล์นั้นยังทำงานค้างอยู่ หยุดโปรแกรมเก่าก่อนแล้วคอมไพล์ใหม่ก็หาย ส่วนใน grader ลูปไม่รู้จบจะทำงานจนเกินเวลาที่โจทย์กำหนด แล้วได้ผลตรวจว่า Time Limit Exceeded</p>
+      <p><code>ld</code> คือส่วนที่ประกอบไฟล์ <code>.exe</code> ขั้นสุดท้าย เหตุผลและวิธีแก้เหมือนหน้า 0.3 คือ <code>forever.exe</code> ยังทำงานค้างอยู่ หยุดโปรแกรมเก่าก่อนแล้วคอมไพล์ใหม่ก็หาย ส่วนใน grader ลูปไม่รู้จบจะทำงานจนเกินเวลาที่โจทย์กำหนด แล้วได้ผลตรวจว่า Time Limit Exceeded</p>
 
       <h2 id="break-it">ลองทำให้พัง</h2>
 
@@ -387,6 +387,7 @@ total = 10
       <div class="code" data-lang="gcc"><pre><code>count_for.c:8:35: error: 'i' undeclared (first use in this function)
     8 |     printf("after loop i = %d\n", i);
       |                                   ^
+count_for.c:8:35: note: each undeclared identifier is reported only once for each function it appears in
 </code></pre></div>
 
       <p>ตัวแปรที่ประกาศในวงเล็บของ <code>for</code> มีอยู่แค่ในลูปนั้น ลูปจบตัวแปรก็หายไป ถ้าต้องการค่าตัวนับหลังลูปจบ ให้ประกาศไว้ก่อนลูปแบบโปรแกรม semicolon ในแบบที่ 1 เรื่องที่ว่าตัวแปรมีชีวิตอยู่ตรงไหนบ้างจะเรียนละเอียดในบทที่ 8</p>

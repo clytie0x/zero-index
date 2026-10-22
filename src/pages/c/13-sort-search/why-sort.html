@@ -205,7 +205,10 @@ int main()
     int a[5] = {6, 3, 8, 2, 5};
     swap(&amp;a[0], &amp;a[3]); // (2)!
     for (int i = 0; i &lt; 5; i++) {
-        printf("%d ", a[i]);
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", a[i]);
     }
     printf("\n");
     return 0;
@@ -216,19 +219,10 @@ int main()
         <li><code>&amp;a[0]</code> คือที่อยู่ของช่อง 0 สลับช่อง 0 กับช่อง 3</li>
       </ol>
 
-      <div class="code" data-lang="output" data-for="swap" data-title="C:\code\swap.exe"><pre><code>2 3 8 6 5 
+      <div class="code" data-lang="output" data-for="swap" data-title="C:\code\swap.exe"><pre><code>2 3 8 6 5
 </code></pre></div>
 
-      <p>บรรทัด <code>printf("%d ", a[i])</code> พิมพ์ช่องว่างตามหลังทุกตัว รวมตัวสุดท้ายด้วย ตัวตรวจของเว็บนี้ตัดช่องว่างท้ายบรรทัดทิ้งก่อนเทียบ แต่ grader บางระบบเทียบทุกตัวอักษร ในโปรแกรมที่จะส่งจริง ให้พิมพ์ช่องว่างเฉพาะระหว่างตัวเลข ตัวอย่างในหน้าถัดๆ ไปจะใช้แบบนี้</p>
-
-      <div class="code" data-lang="c"><pre><code>for (int i = 0; i &lt; n; i++) {
-    if (i &gt; 0) {
-        printf(" ");
-    }
-    printf("%d", a[i]);
-}
-printf("\n");
-</code></pre></div>
+      <p>ลูปพิมพ์ใช้วิธีจากหน้า 4.1 คือพิมพ์ช่องว่างก่อนตัวเลขทุกตัวยกเว้นตัวแรก จึงไม่มีช่องว่างเกินท้ายบรรทัด ตัวอย่างในหน้าถัดๆ ไปก็ใช้แบบนี้</p>
 
       <h2 id="break-it">ลองทำให้พัง</h2>
 
@@ -244,14 +238,17 @@ int main()
     a[0] = a[3];
     a[3] = a[0];
     for (int i = 0; i &lt; 5; i++) {
-        printf("%d ", a[i]);
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", a[i]);
     }
     printf("\n");
     return 0;
 }
 </code></pre></div>
 
-      <div class="code" data-lang="output" data-for="bad-swap" data-title="C:\code\bad_swap.exe"><pre><code>2 3 8 2 5 
+      <div class="code" data-lang="output" data-for="bad-swap" data-title="C:\code\bad_swap.exe"><pre><code>2 3 8 2 5
 </code></pre></div>
 
       <p>ได้ 2 สองตัว และ 6 หายไปเลย บรรทัดที่ 6 เทน้ำส้มทับนมไปแล้ว นมหายตั้งแต่ตรงนั้น บรรทัดที่ 7 จึงได้แค่ค่าที่เพิ่งใส่กลับไปที่เดิม ไม่มี error ไม่มี warning ถ้าอยู่ในวิธีเรียง จะเห็นแค่ว่าผลมีตัวเลขซ้ำแปลกๆ และบางตัวหายไป เจออาการนี้ให้ดูที่การสลับก่อน</p>

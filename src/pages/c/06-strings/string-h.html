@@ -288,10 +288,13 @@ int main()
 
       <h3 id="strlen-format">แบบที่ 1 พิมพ์ strlen ด้วย %d ตรงๆ</h3>
 
-      <p>ในโปรแกรม length ลบตัวแปร <code>length</code> ทิ้ง แล้วเขียน <code>printf("%s has %d letters\n", word, strlen(word));</code></p>
+      <p>ในโปรแกรม length แก้แค่บรรทัดที่ 9 ซึ่งเป็น <code>printf</code> บรรทัดแรก ให้ส่ง <code>strlen(word)</code> ตรงๆ แทน <code>length</code> บรรทัดอื่นไม่ต้องแตะ</p>
 
-      <div class="code" data-lang="gcc"><pre><code>length.c:8:21: warning: format '%d' expects argument of type 'int', but argument 3 has type 'size_t' {aka 'long long unsigned int'} [-Wformat=]
-    8 |     printf("%s has %d letters\n", word, strlen(word));
+      <div class="code" data-lang="c"><pre><code>printf("%s has %d letters\n", word, strlen(word));
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>length.c:9:21: warning: format '%d' expects argument of type 'int', but argument 3 has type 'size_t' {aka 'long long unsigned int'} [-Wformat=]
+    9 |     printf("%s has %d letters\n", word, strlen(word));
       |                    ~^                   ~~~~~~~~~~~~
       |                     |                   |
       |                     int                 size_t {aka long long unsigned int}

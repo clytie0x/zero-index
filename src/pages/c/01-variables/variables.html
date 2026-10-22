@@ -208,9 +208,15 @@ int main()
     7 |     printf("score = %d\n", scroe);
       |                            ^~~~~
       |                            score
+score.c:7:28: note: each undeclared identifier is reported only once for each function it appears in
+score.c:5:9: warning: variable 'score' set but not used [-Wunused-but-set-variable]
+    5 |     int score;
+      |         ^~~~~
 </code></pre></div>
 
       <p><code>undeclared</code> แปลว่ายังไม่ได้ประกาศ compiler ไม่รู้จักชื่อ <code>scroe</code> เพราะกล่องที่เราขอไว้ชื่อ <code>score</code> และมันเดาให้ด้วยว่าน่าจะหมายถึง <code>score</code> ถ้าลืมประกาศตัวแปรก่อนใช้ ก็ได้ error แบบเดียวกันนี้</p>
+
+      <p>บรรทัด <code>note</code> บอกแค่ว่าชื่อที่ไม่รู้จักชื่อหนึ่งจะถูกฟ้องครั้งเดียวต่อฟังก์ชัน ไม่ต้องแก้อะไร ส่วน warning <code>set but not used</code> ขึ้นตามมาเพราะตอนนี้ <code>score</code> ถูกใส่ค่าแต่ไม่มีใครเอาไปใช้ พอแก้ชื่อให้ถูก ทั้งสองบรรทัดก็หายไปพร้อม error</p>
 
       <h3 id="digit-first">แบบที่ 2 ตั้งชื่อขึ้นต้นด้วยตัวเลข</h3>
 
@@ -226,6 +232,7 @@ score.c:5:9: error: expected identifier or '(' before numeric constant
 score.c:6:5: error: 'score' undeclared (first use in this function)
     6 |     score = 85;
       |     ^~~~~
+score.c:6:5: note: each undeclared identifier is reported only once for each function it appears in
 </code></pre></div>
 
       <p>compiler เห็นเลข 2 แล้วคิดว่าเป็นตัวเลข ตามด้วยตัวอักษรแปลกๆ <code>nd_score</code> ข้อความไม่ได้บอกตรงๆ ว่าตั้งชื่อผิดกฎ แต่ชี้ตำแหน่งให้ ถ้าเจอ error ที่อ่านไม่เข้าใจ ให้ดูตำแหน่งที่ <code>^</code> ชี้ก่อนเสมอ</p>

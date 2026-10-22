@@ -100,7 +100,7 @@ first = 8, second = 3
         </svg>
       </figure>
 
-      <p>เทียบกับรูปในหน้า 8.2 ที่ <code>swap</code> มีกล่อง <code>a</code> กับ <code>b</code> ที่เก็บ 3 กับ 8 เป็นของตัวเอง ตอนนี้กล่องของ <code>swap</code> เก็บแค่ทาง ส่วนตัวเลขที่ถูกสลับคือของ <code>main</code> พอ <code>swap</code> จบ กล่อง <code>x</code> กับ <code>y</code> หายไปเหมือนเดิม แต่การแก้ที่ทำผ่านลูกศรยังอยู่</p>
+      <p>เทียบกับโปรแกรม swap ในหน้า 8.2 ที่ <code>swap</code> มีกล่อง <code>a</code> กับ <code>b</code> ที่เก็บ 3 กับ 8 เป็นของตัวเอง ตอนนี้กล่องของ <code>swap</code> เก็บแค่ทาง ส่วนตัวเลขที่ถูกสลับคือของ <code>main</code> พอ <code>swap</code> จบ กล่อง <code>x</code> กับ <code>y</code> หายไปเหมือนเดิม แต่การแก้ที่ทำผ่านลูกศรยังอยู่</p>
 
       <h2 id="pass-along">ส่ง pointer ต่อให้ฟังก์ชันอื่น</h2>
 
@@ -138,7 +138,7 @@ int main()
 }
 </code></pre></div>
       <ol class="anno-list">
-        <li><code>a</code> เป็นที่อยู่อยู่แล้ว ส่งต่อให้ <code>swap</code> ได้เลย <strong>ไม่ต้องมี <code>&amp;</code></strong> ถ้าเขียน <code>&amp;a</code> จะได้ที่อยู่ของกล่อง <code>a</code> เอง ซึ่งมีชนิดเป็น <code>int **</code> ไม่ใช่ที่อยู่ของความสูง</li>
+        <li><code>a</code> เป็นที่อยู่อยู่แล้ว ส่งต่อให้ <code>swap</code> ได้เลย <strong>ไม่ต้องมี <code>&amp;</code></strong> ถ้าเขียน <code>&amp;a</code> จะได้ที่อยู่ของกล่อง <code>a</code> เอง ซึ่งมีชนิดเป็น <code>int **</code> (อธิบายในหน้า 10.5) ไม่ใช่ที่อยู่ของความสูง</li>
         <li><code>&amp;heights[0]</code> ใช้แบบเดียวกับใน <code>scanf</code> บรรทัดบน</li>
       </ol>
 

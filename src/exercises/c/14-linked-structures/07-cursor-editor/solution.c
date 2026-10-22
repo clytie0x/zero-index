@@ -36,10 +36,10 @@ int main()
         return 0;
     }
     for (int i = 0; i < left_size; i++) {
-        putchar(left[i]);
+        printf("%c", left[i]);
     }
     for (int i = right_size - 1; i >= 0; i--) {
-        putchar(right[i]);
+        printf("%c", right[i]);
     }
     printf("\n");
     return 0;

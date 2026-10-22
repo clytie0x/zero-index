@@ -106,7 +106,10 @@ int main()
     next[front] = head;
     head = front;
     for (int p = head; p != 0; p = next[p]) { // (5)!
-        printf("%d ", value[p]);
+        if (p != head) {
+            printf(" ");
+        }
+        printf("%d", value[p]);
     }
     printf("\n");
     for (int i = 1; i &lt;= node_count; i++) {
@@ -153,7 +156,7 @@ node 5: value 5, next 1
 
       <h2 id="doubly">ลิสต์สองทางกับ node 0 ที่ไม่มีวันหาย</h2>
 
-      <p>หน้า 14.2 ลบ node ทีต้องหา node ก่อนหน้าด้วยการเดิน ถ้าแต่ละ node จำทั้งตัวถัดไปและ<strong>ตัวก่อนหน้า</strong> ก็ลบได้ทันที ลิสต์แบบนี้เรียกว่า <strong>doubly linked list</strong> (ลิสต์สองทาง) แบบอาเรย์ก็แค่เพิ่มอาเรย์ <code>prev[]</code> อีกตัว</p>
+      <p>หน้า 14.2 ลบ node แต่ละครั้งต้องหา node ก่อนหน้าด้วยการเดิน ถ้าแต่ละ node จำทั้งตัวถัดไปและ<strong>ตัวก่อนหน้า</strong> ก็ลบได้ทันที ลิสต์แบบนี้เรียกว่า <strong>doubly linked list</strong> (ลิสต์สองทาง) แบบอาเรย์ก็แค่เพิ่มอาเรย์ <code>prev[]</code> อีกตัว</p>
 
       <p>เทคนิคที่ทำให้โค้ดสั้นลงมาก คือให้ node 0 เป็น<strong>หัวขบวนปลอม</strong>ที่อยู่ในลิสต์ตลอดเวลา และต่อหัวกับท้ายเข้าหากันเป็นวง <code>next[0]</code> คือตัวแรกจริง <code>prev[0]</code> คือตัวสุดท้ายจริง ลิสต์ว่างคือ <code>next[0]</code> กับ <code>prev[0]</code> เป็น 0 ทั้งคู่ ทุก node จริงจึงมีตัวก่อนหน้าและตัวถัดไปเสมอ การลบหัว ลบท้าย หรือแทรกหน้าสุด ไม่ต้องเขียนกรณีพิเศษเลย</p>
 
@@ -197,7 +200,10 @@ int main()
         }
     }
     for (int p = next[0]; p != 0; p = next[p]) {
-        printf("%d ", p);
+        if (p != next[0]) {
+            printf(" ");
+        }
+        printf("%d", p);
     }
     printf("\n");
     return 0;
@@ -277,7 +283,10 @@ int main()
     next[front] = head;
     head = front;
     for (int p = head; p != 0; p = next[p]) {
-        printf("%d ", value[p]);
+        if (p != head) {
+            printf(" ");
+        }
+        printf("%d", value[p]);
     }
     printf("\n");
     return 0;

@@ -328,7 +328,7 @@ upper = HELLO SONGKHLA
 
       <p>ต้องเรียก <code>reverse_into</code> ก่อน <code>make_upper</code> เพราะ <code>make_upper</code> แก้ <code>line</code> ตัวจริง ถ้าสลับลำดับ สตริงที่กลับหลังจะเป็นตัวพิมพ์ใหญ่ไปด้วย ฟังก์ชันที่แก้อาเรย์ได้ทำให้ลำดับการเรียกมีผลเสมอ</p>
 
-      <p>อีกเรื่องที่เปลี่ยนไปคือ <code>sizeof line</code> ใน <code>fgets</code> ใช้ได้เพราะเขียนอยู่ใน <code>main</code> ซึ่งเห็นการประกาศ <code>line[1005]</code> ทั้งก้อน ถ้าย้ายบรรทัด <code>fgets</code> ไปไว้ในฟังก์ชันที่รับ <code>char text[]</code> จะใช้ <code>sizeof text</code> ไม่ได้ด้วยเหตุผลเดียวกับหัวข้อความยาว ต้องส่งขนาดเข้าไปเป็นพารามิเตอร์</p>
+      <p>อีกเรื่องที่เปลี่ยนไปคือ <code>sizeof line</code> ใน <code>fgets</code> ใช้ได้เพราะ <code>line</code> ตรงนั้นคือตัวอาเรย์จริงที่ประกาศไว้ว่า <code>char line[1005]</code> ไม่ใช่พารามิเตอร์ <code>sizeof</code> จึงได้ 1005 ถ้าย้ายบรรทัด <code>fgets</code> ไปไว้ในฟังก์ชันที่รับ <code>char text[]</code> จะใช้ <code>sizeof text</code> ไม่ได้ด้วยเหตุผลเดียวกับหัวข้อความยาว ต้องส่งขนาดเข้าไปเป็นพารามิเตอร์</p>
 
       <h2 id="break-it">ลองทำให้พัง</h2>
 

@@ -5,7 +5,7 @@
 
       <h2 id="distance">ระยะห่างระหว่างสองจุด</h2>
 
-      <p>จุด (x1, y1) กับ (x2, y2) ห่างกันในแนวนอน dx = x2 - x1 และแนวตั้ง dy = y2 - y1 ตามทฤษฎีบทพีทาโกรัส ระยะห่างคือ √(dx<sup>2</sup> + dy<sup>2</sup>) ฟังก์ชันหารากที่สองชื่อ <code>sqrt</code> อยู่ในไลบรารี <code>math.h</code> รับ <code>double</code> และส่งกลับ <code>double</code> ใน Code::Blocks ใส่ <code>#include &lt;math.h&gt;</code> แล้วใช้ได้เลย</p>
+      <p>จุด (x1, y1) กับ (x2, y2) ห่างกันในแนวนอน dx = x2 - x1 และแนวตั้ง dy = y2 - y1 ตามทฤษฎีบทพีทาโกรัส ระยะห่างคือ √(dx<sup>2</sup> + dy<sup>2</sup>) ซึ่งหน้า 8.5 เขียนด้วย <code>sqrt</code> จาก <code>math.h</code> ไปแล้ว ต่างกันตรงที่หน้านั้นเก็บพิกัดเป็น <code>double</code> ส่วนหน้านี้เก็บเป็นจำนวนเต็ม แล้วแปลงเป็นทศนิยมตอนถอดรากเท่านั้น</p>
 
       <div class="code" data-lang="c" data-linenums data-test="distance"><pre><code>#include &lt;stdio.h&gt;
 #include &lt;math.h&gt;
@@ -35,7 +35,7 @@ distance = 5.83
 
       <h2 id="compare">เทียบระยะไม่ต้องถอดราก</h2>
 
-      <p>ถ้าโจทย์ถามแค่ว่าใครอยู่ใกล้กว่า ไม่ได้ถามระยะจริง ไม่ต้องใช้ <code>sqrt</code> เลย ระยะที่ยาวกว่าก็มีกำลังสองที่มากกว่าเสมอ เทียบ dx<sup>2</sup> + dy<sup>2</sup> ซึ่งเป็นจำนวนเต็มได้ตรงๆ ไม่มีการคลาด โรงเรียนอยู่ที่ (0, 0) หาว่าบ้านของนักเรียนคนไหนใกล้โรงเรียนที่สุด</p>
+      <p>หน้า 8.5 บอกไว้แล้วว่าถ้าโจทย์ถามแค่ว่าใครอยู่ใกล้กว่า ให้เทียบ dx<sup>2</sup> + dy<sup>2</sup> ตรงๆ ไม่ต้องใช้ <code>sqrt</code> ตัวอย่างนี้ทำให้ดูเต็มโปรแกรม โรงเรียนอยู่ที่ (0, 0) หาว่าบ้านของนักเรียนคนไหนใกล้โรงเรียนที่สุด</p>
 
       <div class="code" data-lang="c" data-linenums data-test="nearest"><pre><code>#include &lt;stdio.h&gt;
 
