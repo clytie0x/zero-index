@@ -1,0 +1,437 @@
+<article class="doc">
+      <h1>24.1 จาก recursion สู่ตาราง</h1>
+
+      <p>บทที่ 23 มีโจทย์ทอนเหรียญที่ greedy ตอบผิด มีเหรียญราคา 1 3 และ 4 บาท ต้องทอน 6 บาทให้ใช้เหรียญน้อยที่สุด greedy หยิบเหรียญใหญ่สุดก่อนได้ 4 + 1 + 1 สามเหรียญ แต่คำตอบจริงคือ 3 + 3 สองเหรียญ ทางที่ถูกแน่นอนคือลองทุกทาง แต่ลองทุกทางตรงๆ ช้ามาก หน้านี้ใช้โจทย์นี้ข้อเดียวพาไปครบสามแบบ คือ recursion ลองทุกทาง แล้วจดคำตอบแบบหน้า 9.3 แล้วเปลี่ยนเป็นลูปเติมตารางที่ไม่เรียกตัวเองเลย สามแบบนี้คือ <strong>dynamic programming</strong> (DP) ในสองหน้าตา</p>
+
+      <h2 id="try-every-way">ลองทุกทางด้วย recursion</h2>
+
+      <p>คิดจากเหรียญเหรียญแรกที่ยื่นให้ลูกค้า ถ้าต้องทอน x บาท เหรียญแรกเป็นได้แค่ 1 3 หรือ 4 บาท ยื่นเหรียญ c ไปแล้ว ที่เหลือคือทอน x - c บาทให้ใช้เหรียญน้อยที่สุด ซึ่งเป็นโจทย์แบบเดิมแต่เล็กลง ให้ <code>fewest(x)</code> คือจำนวนเหรียญน้อยที่สุดที่รวมได้ x บาท</p>
+
+      <div class="code" data-lang="text"><pre><code>fewest(0) = 0
+fewest(x) = 1 + ค่าน้อยที่สุดของ fewest(x - c) ทุกเหรียญ c ที่ไม่เกิน x
+</code></pre></div>
+
+      <p>แปลงเป็นโค้ดได้ตรงตัวแบบบทที่ 9 และนับจำนวนครั้งที่เรียกไว้ด้วยตัวแปร global แบบหน้า 9.3</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="coin-recursion"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; coins = {1, 3, 4};
+long long calls = 0;
+
+int fewest(int amount)
+{
+    calls++;
+    if (amount == 0) { // (1)!
+        return 0;
+    }
+    int best = INT_MAX; // (2)!
+    for (int c : coins) {
+        if (c &lt;= amount) {
+            best = min(best, fewest(amount - c) + 1); // (3)!
+        }
+    }
+    return best;
+}
+
+int main()
+{
+    int amount;
+    cin &gt;&gt; amount;
+    int answer = fewest(amount);
+    cout &lt;&lt; "fewest(" &lt;&lt; amount &lt;&lt; ") = " &lt;&lt; answer &lt;&lt; '\n';
+    cout &lt;&lt; "calls = " &lt;&lt; calls &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>กรณีฐาน ทอน 0 บาทไม่ต้องใช้เหรียญ</li>
+        <li><code>INT_MAX</code> จากหน้า 20.2 เป็นค่าเริ่มต้นที่อะไรก็น้อยกว่า เหรียญ 1 บาทมีเสมอ จึงทอนได้ทุกจำนวนและ <code>best</code> ไม่ค้างที่ <code>INT_MAX</code></li>
+        <li>ลองเหรียญ c เป็นเหรียญแรก ใช้ไปหนึ่งเหรียญ บวกกับจำนวนเหรียญน้อยที่สุดของเงินที่เหลือ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coin-recursion" data-title="ข้อมูลเข้า"><pre><code>6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="coin-recursion" data-title="C:\code\coin_recursion.exe"><pre><code>fewest(6) = 2
+calls = 24
+</code></pre></div>
+      </div>
+
+      <p>ได้ 2 ถูกต้อง แต่ใช้การเรียก 24 ครั้ง ภาพนี้คือทุกการเรียกตอนคำนวณ <code>fewest(6)</code> ตัวเลขในกล่องคือจำนวนเงินที่ยังต้องทอน กิ่งซ้ายคือยื่นเหรียญ 1 กิ่งกลางคือเหรียญ 3 กิ่งขวาคือเหรียญ 4</p>
+
+      <figure>
+        <svg viewBox="0 0 588 362" width="588" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้การเรียกของ fewest(6) มี 24 กล่อง กล่องที่คำนวณจริงมี 9 กล่อง กล่องที่เคยคำนวณแล้วมี 5 กล่อง คือ 1 2 1 3 และ 2 ที่เหลืออีก 10 กล่องเป็นลูกหลานของกล่องที่เคยคำนวณแล้ว ซึ่งแบบจดไม่ต้องเรียกเลย">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+          <line x1="395.25" y1="40" x2="256.5" y2="66"/>
+          <line x1="395.25" y1="40" x2="444" y2="66"/>
+          <line x1="395.25" y1="40" x2="534" y2="66"/>
+          <line x1="256.5" y1="92" x2="159" y2="118"/>
+          <line x1="256.5" y1="92" x2="294" y2="118"/>
+          <line x1="256.5" y1="92" x2="354" y2="118"/>
+          <line x1="159" y1="144" x2="84" y2="170"/>
+          <line x1="159" y1="144" x2="174" y2="170"/>
+          <line x1="159" y1="144" x2="234" y2="170"/>
+          <line x1="84" y1="196" x2="54" y2="222"/>
+          <line x1="84" y1="196" x2="114" y2="222"/>
+          <line x1="54" y1="248" x2="54" y2="274"/>
+          <line x1="54" y1="300" x2="54" y2="326"/>
+          </g>
+          <g style="stroke:var(--line);stroke-width:2;stroke-dasharray:4 4">
+          <line x1="174" y1="196" x2="174" y2="222"/>
+          <line x1="294" y1="144" x2="294" y2="170"/>
+          <line x1="294" y1="196" x2="294" y2="222"/>
+          <line x1="354" y1="144" x2="354" y2="170"/>
+          <line x1="444" y1="92" x2="414" y2="118"/>
+          <line x1="444" y1="92" x2="474" y2="118"/>
+          <line x1="414" y1="144" x2="414" y2="170"/>
+          <line x1="414" y1="196" x2="414" y2="222"/>
+          <line x1="534" y1="92" x2="534" y2="118"/>
+          <line x1="534" y1="144" x2="534" y2="170"/>
+          </g>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+          <rect x="375.25" y="14" width="40" height="26" rx="6"/>
+          <rect x="236.5" y="66" width="40" height="26" rx="6"/>
+          <rect x="139" y="118" width="40" height="26" rx="6"/>
+          <rect x="64" y="170" width="40" height="26" rx="6"/>
+          <rect x="34" y="222" width="40" height="26" rx="6"/>
+          <rect x="34" y="274" width="40" height="26" rx="6"/>
+          <rect x="34" y="326" width="40" height="26" rx="6"/>
+          <rect x="94" y="222" width="40" height="26" rx="6"/>
+          <rect x="214" y="170" width="40" height="26" rx="6"/>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--warning);stroke-width:2">
+          <rect x="154" y="170" width="40" height="26" rx="6"/>
+          <rect x="274" y="118" width="40" height="26" rx="6"/>
+          <rect x="334" y="118" width="40" height="26" rx="6"/>
+          <rect x="424" y="66" width="40" height="26" rx="6"/>
+          <rect x="514" y="66" width="40" height="26" rx="6"/>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--line);stroke-width:2;stroke-dasharray:4 4">
+          <rect x="154" y="222" width="40" height="26" rx="6"/>
+          <rect x="274" y="170" width="40" height="26" rx="6"/>
+          <rect x="274" y="222" width="40" height="26" rx="6"/>
+          <rect x="334" y="170" width="40" height="26" rx="6"/>
+          <rect x="394" y="118" width="40" height="26" rx="6"/>
+          <rect x="394" y="170" width="40" height="26" rx="6"/>
+          <rect x="394" y="222" width="40" height="26" rx="6"/>
+          <rect x="454" y="118" width="40" height="26" rx="6"/>
+          <rect x="514" y="118" width="40" height="26" rx="6"/>
+          <rect x="514" y="170" width="40" height="26" rx="6"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:14px;fill:var(--ink)" text-anchor="middle">
+          <text x="395.25" y="32">6</text>
+          <text x="256.5" y="84">5</text>
+          <text x="159" y="136">4</text>
+          <text x="84" y="188">3</text>
+          <text x="54" y="240">2</text>
+          <text x="54" y="292">1</text>
+          <text x="54" y="344">0</text>
+          <text x="114" y="240">0</text>
+          <text x="174" y="188">1</text>
+          <text x="234" y="188">0</text>
+          <text x="294" y="136">2</text>
+          <text x="354" y="136">1</text>
+          <text x="444" y="84">3</text>
+          <text x="534" y="84">2</text>
+          </g>
+          <g style="font-family:var(--font-code);font-size:14px;fill:var(--muted)" text-anchor="middle">
+          <text x="174" y="240">0</text>
+          <text x="294" y="188">1</text>
+          <text x="294" y="240">0</text>
+          <text x="354" y="188">0</text>
+          <text x="414" y="136">2</text>
+          <text x="414" y="188">1</text>
+          <text x="414" y="240">0</text>
+          <text x="474" y="136">0</text>
+          <text x="534" y="136">1</text>
+          <text x="534" y="188">0</text>
+          </g>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"><rect x="230" y="274" width="16" height="16" rx="3"/></g>
+          <g style="fill:var(--surface);stroke:var(--warning);stroke-width:2"><rect x="230" y="304" width="16" height="16" rx="3"/></g>
+          <g style="fill:var(--surface);stroke:var(--line);stroke-width:2;stroke-dasharray:4 4"><rect x="230" y="334" width="16" height="16" rx="3"/></g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--muted)">
+          <text x="256" y="287">คำนวณจริงทั้งแบบตรงๆ และแบบจด</text>
+          <text x="256" y="317">เคยคำนวณแล้ว แบบจดตอบจากสมุดทันที</text>
+          <text x="256" y="347">แบบจดไม่เรียกเลย</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>กล่อง 3 ทางขวาบนทำงานเดียวกับกล่อง 3 ทางซ้ายทุกอย่าง ทั้งกิ่งย่อยใต้มันด้วย กล่อง 2 โผล่สามครั้ง กล่อง 1 โผล่สี่ครั้ง จำนวนเงินที่ต่างกันมีแค่ 0 ถึง 6 รวม 7 ค่า ที่เหลือคือ <strong>คำนวณปัญหาย่อยเดิมซ้ำ</strong> แบบเดียวกับต้นไม้ฟีโบนัชชีในหน้า 9.3 ต่างกันตรงที่ที่นี่แตกได้สามกิ่ง จึงโตเร็วกว่าอีก</p>
+
+      <h2 id="how-slow">ช้าแค่ไหน</h2>
+
+      <p>ป้อนจำนวนเงินมากขึ้นแล้วดูจำนวนครั้งที่เรียก จากนั้นตัดบรรทัดนับออกแล้วจับเวลาด้วย <code>clock()</code> แบบหน้า 9.3 วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 กับ GCC 14.2 ของ Code::Blocks ทั้งแบบ Code::Blocks (<code>-Wall</code> อย่างเดียว) และแบบ <code>-O2</code> ทุกช่องคือค่ากลางของการรัน 5 ครั้ง ยกเว้น 45 บาทแบบ Code::Blocks ที่รันครั้งเดียวเพราะรอนานเกินไป</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>จำนวนเงิน</th><th>คำตอบ</th><th>จำนวนครั้งที่เรียก</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>30</td><td>8</td><td>2550408</td><td>0.042 วินาที</td><td>0.003 วินาที</td></tr>
+            <tr><td>35</td><td>9</td><td>28284464</td><td>0.477 วินาที</td><td>0.034 วินาที</td></tr>
+            <tr><td>40</td><td>10</td><td>313679521</td><td>5.541 วินาที</td><td>0.443 วินาที</td></tr>
+            <tr><td>45</td><td>12</td><td>3478759200</td><td>68.826 วินาที</td><td>5.895 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เงินเพิ่มทีละ 5 บาท จำนวนครั้งเพิ่มราว 11 เท่าทุกแถว ทอนแค่ 45 บาทก็รอกว่าหนึ่งนาทีแบบ Code::Blocks ทั้งที่จำนวนเงินที่ต่างกันมีแค่ 46 ค่า เวลาแบบนี้เรียกว่าโตแบบทวีคูณ (exponential) ตามที่บทที่ 18 เตือนไว้</p>
+
+      <h2 id="memo">จดคำตอบ แบบ top-down</h2>
+
+      <p>แก้ด้วยวิธีของหน้า 9.3 ทุกประการ คำนวณ <code>fewest(x)</code> ได้ครั้งแรกเมื่อไรก็จดลง <code>memo[x]</code> ครั้งต่อไปตอบจากสมุดเลย ต่างจากหน้า 9.3 แค่ใช้ vector ที่สร้างตามขนาดของข้อมูลเข้า แทนอาเรย์ขนาดตายตัว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="coin-memo"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; coins = {1, 3, 4};
+vector&lt;int&gt; memo; // (1)!
+long long calls = 0;
+
+int fewest(int amount)
+{
+    calls++;
+    if (amount == 0) {
+        return 0;
+    }
+    if (memo[amount] != -1) { // (2)!
+        return memo[amount];
+    }
+    int best = INT_MAX;
+    for (int c : coins) {
+        if (c &lt;= amount) {
+            best = min(best, fewest(amount - c) + 1);
+        }
+    }
+    memo[amount] = best; // (3)!
+    return best;
+}
+
+int main()
+{
+    int amount;
+    cin &gt;&gt; amount;
+    memo = vector&lt;int&gt;(amount + 1, -1); // (4)!
+    int answer = fewest(amount);
+    cout &lt;&lt; "fewest(" &lt;&lt; amount &lt;&lt; ") = " &lt;&lt; answer &lt;&lt; '\n';
+    cout &lt;&lt; "calls = " &lt;&lt; calls &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สมุดจดเป็น global เพราะทุกชั้นของ recursion ต้องเห็นเล่มเดียวกัน ยังไม่รู้ขนาดจนกว่าจะอ่านจำนวนเงิน จึงประกาศว่างไว้ก่อน</li>
+        <li>-1 แปลว่ายังไม่เคยคำนวณ จำนวนเหรียญไม่มีทางติดลบ จึงไม่สับสนกับคำตอบจริง</li>
+        <li>จดก่อนคืนค่า ถ้าลืมบรรทัดนี้ โปรแกรมจะช้าเท่าเดิมทั้งที่คำตอบถูก ตามที่เห็นในหน้า 9.3</li>
+        <li>สร้าง vector ใหม่ amount + 1 ช่อง ทุกช่องเป็น -1 แล้วใส่ทับ <code>memo</code> ที่ว่างอยู่ ตามที่หน้า 16.1 บอกว่า vector คัดลอกได้ทั้งก้อน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coin-memo" data-title="ข้อมูลเข้า"><pre><code>6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="coin-memo" data-title="C:\code\coin_memo.exe"><pre><code>fewest(6) = 2
+calls = 14
+</code></pre></div>
+      </div>
+
+      <p>14 ครั้งตรงกับภาพข้างบนพอดี คือกล่องสีหลัก 9 กล่องกับกรอบส้ม 5 กล่อง ส่วนกล่องเส้นประ 10 กล่องไม่ถูกเรียกเลย ป้อน 40 ได้ <code>calls = 116</code> จากเดิมสามร้อยกว่าล้านครั้ง ป้อน 1000 ได้ <code>calls = 2996</code> จำนวนเงินแต่ละค่าคำนวณจริงครั้งเดียว ครั้งนั้นเรียกต่อไม่เกินสามครั้ง จำนวนครั้งที่เรียกจึงไม่เกินราวสามเท่าของจำนวนเงิน</p>
+
+      <p>แบบนี้เรียกว่า <strong>top-down</strong> (บนลงล่าง) เพราะเริ่มถามจากปัญหาใหญ่ที่ต้องการ แล้วให้ recursion ไล่ลงไปหาปัญหาย่อยเอง ข้อดีคือเขียนต่อจาก recursion เดิมได้เลย เพิ่มแค่สามจุด</p>
+
+      <h2 id="table">เติมตาราง แบบ bottom-up</h2>
+
+      <p>ดูต้นไม้อีกครั้ง กว่า <code>fewest(6)</code> จะได้คำตอบ ต้องรู้ <code>fewest(5)</code> <code>fewest(3)</code> และ <code>fewest(2)</code> ก่อน และทุกค่าก็ต้องรู้ค่าที่น้อยกว่าตัวเองก่อนเสมอ ถ้าอย่างนั้นก็ไม่ต้องให้ recursion ไล่ลงไปหา คำนวณจากน้อยไปมากเองเลย เริ่มจาก 0 บาท แล้ว 1 บาท 2 บาท ไปเรื่อยๆ พอถึงช่องไหน ช่องที่น้อยกว่าที่ต้องใช้ก็เติมไว้ครบแล้ว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="coin-table"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; coins = {1, 3, 4};
+    int amount;
+    cin &gt;&gt; amount;
+    vector&lt;int&gt; dp(amount + 1);
+    dp[0] = 0; // (1)!
+    for (int x = 1; x &lt;= amount; x++) { // (2)!
+        dp[x] = INT_MAX;
+        for (int c : coins) {
+            if (c &lt;= x) {
+                dp[x] = min(dp[x], dp[x - c] + 1); // (3)!
+            }
+        }
+    }
+    for (int x = 0; x &lt;= amount; x++) {
+        cout &lt;&lt; "dp[" &lt;&lt; x &lt;&lt; "] = " &lt;&lt; dp[x] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ช่องแรกของตารางคือกรณีฐานเดิม เขียนให้เห็นชัดแม้ vector จะเริ่มที่ 0 อยู่แล้ว</li>
+        <li>เติมจากช่องน้อยไปช่องมาก ลำดับนี้สำคัญที่สุดของแบบตาราง ดูในส่วนลองทำให้พัง</li>
+        <li>สูตรเดียวกับ recursion ทุกตัวอักษร แค่เปลี่ยน <code>fewest(x - c)</code> เป็นการอ่านช่อง <code>dp[x - c]</code> ที่เติมไว้แล้ว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coin-table" data-title="ข้อมูลเข้า"><pre><code>6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="coin-table" data-title="C:\code\coin_table.exe"><pre><code>dp[0] = 0
+dp[1] = 1
+dp[2] = 2
+dp[3] = 1
+dp[4] = 1
+dp[5] = 2
+dp[6] = 2
+</code></pre></div>
+      </div>
+
+      <p>ภาพนี้คือจังหวะที่เติมช่อง 6 ช่อง 5 3 และ 2 ที่มีกรอบสีเติมค่าไว้แล้ว ยื่นเหรียญ 1 เหลือ 5 บาทใช้ 2 เหรียญ ยื่นเหรียญ 3 เหลือ 3 บาทใช้ 1 เหรียญ ยื่นเหรียญ 4 เหลือ 2 บาทใช้ 2 เหรียญ ทางเหรียญ 3 ดีที่สุด <code>dp[6]</code> จึงเป็น 1 + 1 = 2</p>
+
+      <figure>
+        <svg viewBox="0 0 480 150" width="480" style="max-width:100%;height:auto" role="img" aria-label="ตาราง dp ช่อง 0 ถึง 6 มีค่า 0 1 2 1 1 2 2 ช่อง 6 อ่านช่อง 5 ผ่านเหรียญ 1 ช่อง 3 ผ่านเหรียญ 3 และช่อง 2 ผ่านเหรียญ 4 ช่อง 3 มีค่าน้อยที่สุด dp[6] จึงเป็น 1 + min(2, 1, 2) = 2">
+          <g style="font-family:var(--font-code);font-size:13px;fill:var(--muted)" text-anchor="middle">
+            <text x="60" y="22">0</text>
+            <text x="120" y="22">1</text>
+            <text x="180" y="22">2</text>
+            <text x="240" y="22">3</text>
+            <text x="300" y="22">4</text>
+            <text x="360" y="22">5</text>
+            <text x="420" y="22">6</text>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2">
+            <rect x="30" y="30" width="60" height="44"/>
+            <rect x="90" y="30" width="60" height="44"/>
+            <rect x="270" y="30" width="60" height="44"/>
+          </g>
+          <g style="fill:var(--surface);stroke:var(--warning);stroke-width:2">
+            <rect x="150" y="30" width="60" height="44"/>
+            <rect x="330" y="30" width="60" height="44"/>
+          </g>
+          <rect x="210" y="30" width="60" height="44" style="fill:var(--surface);stroke:var(--brand);stroke-width:3"/>
+          <rect x="390" y="30" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <g style="font-family:var(--font-code);font-size:16px;fill:var(--ink)" text-anchor="middle">
+            <text x="60" y="58">0</text>
+            <text x="120" y="58">1</text>
+            <text x="180" y="58">2</text>
+            <text x="240" y="58">1</text>
+            <text x="300" y="58">1</text>
+            <text x="360" y="58">2</text>
+            <text x="420" y="58">2</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:13px;fill:var(--muted)" text-anchor="middle">
+            <text x="180" y="94">เหรียญ 4</text>
+            <text x="360" y="94">เหรียญ 1</text>
+          </g>
+          <text x="240" y="94" text-anchor="middle" style="font-family:var(--font-text);font-size:13px;fill:var(--brand-text)">เหรียญ 3</text>
+          <text x="240" y="132" text-anchor="middle" style="font-family:var(--font-code);font-size:15px;fill:var(--ink)">dp[6] = 1 + min(2, 1, 2) = 2</text>
+        </svg>
+      </figure>
+
+      <p>แบบนี้เรียกว่า <strong>bottom-up</strong> (ล่างขึ้นบน) หรือ <strong>tabulation</strong> (การเติมตาราง) ไม่มี recursion เลย จึงไม่มี call stack ให้เต็ม และไม่ต้องเสียเวลาเรียกฟังก์ชัน ต้องแลกด้วยการคิดเองว่าจะเติมช่องไหนก่อน</p>
+
+      <h2 id="compare">เทียบสามแบบ</h2>
+
+      <p>ทั้งสามแบบใช้สูตรเดียวกัน ต่างกันแค่วิธีพาไปถึงปัญหาย่อย</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>แบบ</th><th>ปัญหาย่อยเดิม</th><th>ลำดับ</th><th>ความซับซ้อน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>recursion ตรงๆ</td><td>คำนวณใหม่ทุกครั้งที่ถูกถาม</td><td>recursion เลือกให้</td><td>ทวีคูณ</td></tr>
+            <tr><td>top-down จดคำตอบ</td><td>คำนวณครั้งเดียว ครั้งต่อไปเปิดสมุด</td><td>recursion เลือกให้</td><td>O(XK)</td></tr>
+            <tr><td>bottom-up เติมตาราง</td><td>คำนวณครั้งเดียว ตามลำดับที่เราเลือก</td><td>เราต้องเลือกเอง</td><td>O(XK)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>X คือจำนวนเงิน K คือจำนวนชนิดเหรียญ ตารางมี X + 1 ช่อง แต่ละช่องลองเหรียญ K ชนิด งานทั้งหมดจึงราว X × K หน้า 24.2 จะใช้หลักนี้กับทุกโจทย์ วัดบนเครื่องเดียวกับข้างบน รันแบบละ 5 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>จำนวนเงิน</th><th>แบบ</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">40</td><td>recursion ตรงๆ</td><td>5.541 วินาที</td><td>0.443 วินาที</td></tr>
+            <tr><td>top-down</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>bottom-up</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td rowspan="2">10000</td><td>top-down</td><td>0.001 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>bottom-up</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>1000000</td><td>bottom-up</td><td>0.041 วินาที</td><td>0.005 วินาที</td></tr>
+            <tr><td>10000000</td><td>bottom-up</td><td>0.553 วินาที</td><td>0.046 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>0.000 คือเร็วเกินกว่าที่ <code>clock()</code> วัดได้ ตารางนี้ไม่มี top-down ตอนเงินเป็นล้าน เพราะมันพังก่อน ดูในส่วนลองทำให้พัง เลือกแบบไหนดี ถ้าลำดับการเติมคิดง่ายและข้อมูลใหญ่ ใช้ bottom-up ถ้าลำดับคิดยาก หรือปัญหาย่อยที่ถูกถามจริงมีน้อยกว่าตารางทั้งตารางมาก ใช้ top-down ส่วนใหญ่ของบทนี้กับบทที่ 25 จะใช้ bottom-up</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="deep-memo">แบบที่ 1 top-down กับจำนวนเงินมาก</h3>
+
+      <p>ใช้โปรแกรม coin-memo เดิมทุกตัวอักษร คอมไพล์แบบ Code::Blocks แล้วรันใน PowerShell บนเครื่องที่เขียนเอกสารนี้ ป้อน 18000 ได้ <code>fewest(18000) = 4500</code> ทั้ง 5 ครั้งที่ลอง แต่ป้อน 19000 โปรแกรมปิดตัวโดยไม่พิมพ์อะไรทั้ง 5 ครั้ง</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p><code>0xC00000FD</code> คือ stack overflow แบบหน้า 9.1 <code>fewest(19000)</code> เรียก <code>fewest(18999)</code> ซึ่งเรียก <code>fewest(18998)</code> ต่อลงไปเรื่อยๆ ก่อนจะมีชั้นไหนจบ stack จึงต้องซ้อนหนึ่งหมื่นเก้าพันชั้น จดคำตอบช่วยลดจำนวนครั้งที่เรียก แต่ไม่ได้ช่วยเรื่องความลึก แบบ <code>-O2</code> ลึกได้มากกว่าเล็กน้อย ผ่านที่ 25000 พังที่ 26000 แต่ก็ยังห่างจากหลักล้านมาก ส่วน bottom-up ไม่มีความลึกเลย เติมสิบล้านช่องได้ในครึ่งวินาที โจทย์ที่ขอบเขตเป็นแสนเป็นล้าน จึงควรเขียนแบบตาราง</p>
+
+      <h3 id="wrong-order">แบบที่ 2 เติมตารางผิดลำดับ</h3>
+
+      <p>ในโปรแกรม coin-table เปลี่ยนลูปนอกให้เติมจากช่องมากไปช่องน้อย คิดว่ายังไงก็เติมครบทุกช่องเหมือนกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="wrong-order"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; coins = {1, 3, 4};
+    int amount;
+    cin &gt;&gt; amount;
+    vector&lt;int&gt; dp(amount + 1);
+    dp[0] = 0;
+    for (int x = amount; x &gt;= 1; x--) {
+        dp[x] = INT_MAX;
+        for (int c : coins) {
+            if (c &lt;= x) {
+                dp[x] = min(dp[x], dp[x - c] + 1);
+            }
+        }
+    }
+    for (int x = 0; x &lt;= amount; x++) {
+        cout &lt;&lt; "dp[" &lt;&lt; x &lt;&lt; "] = " &lt;&lt; dp[x] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="wrong-order" data-title="ข้อมูลเข้า"><pre><code>6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="wrong-order" data-title="C:\code\coin_table.exe"><pre><code>dp[0] = 0
+dp[1] = 1
+dp[2] = 1
+dp[3] = 1
+dp[4] = 1
+dp[5] = 1
+dp[6] = 1
+</code></pre></div>
+      </div>
+
+      <p>ทุกช่องได้ 1 ราวกับว่าเหรียญเดียวทอนได้ทุกจำนวน ตอนเติมช่อง 6 ช่อง 5 ยังไม่ได้เติม ค่าในนั้นจึงเป็น 0 ที่ vector ใส่ไว้ตอนสร้าง โปรแกรมเข้าใจว่าทอน 5 บาทไม่ต้องใช้เหรียญเลย ไม่มี error ไม่มี warning กฎของแบบตารางคือ <strong>ช่องที่สูตรอ่าน ต้องเติมเสร็จก่อนช่องที่กำลังเติมเสมอ</strong> สูตรนี้อ่านช่องที่น้อยกว่า จึงต้องเติมจากน้อยไปมาก</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>recursion ที่ลองทุกทางคำนวณปัญหาย่อยเดิมซ้ำ เวลาโตแบบทวีคูณ ทอนแค่ 45 บาทก็เรียกสามพันกว่าล้านครั้ง</li>
+        <li>top-down คือ recursion เดิมที่จดคำตอบลงสมุดก่อนคืนค่า และเปิดสมุดก่อนคำนวณ</li>
+        <li>bottom-up คือเติมตารางด้วยลูป จากปัญหาย่อยที่เล็กที่สุดขึ้นไป ใช้สูตรเดียวกันแต่อ่านจากช่องในตาราง</li>
+        <li>ทั้งสองแบบคำนวณแต่ละปัญหาย่อยครั้งเดียว ทอนเงิน X บาทด้วยเหรียญ K ชนิดเป็น O(XK)</li>
+        <li>top-down ลึกเท่าจำนวนเงิน พังด้วย stack overflow ที่หลักหมื่น bottom-up ไม่มีปัญหานี้</li>
+        <li>เติมตารางต้องเติมช่องที่สูตรอ่านให้เสร็จก่อน เติมผิดลำดับได้คำตอบผิดเงียบๆ</li>
+      </ul>
+    </article>

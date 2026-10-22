@@ -1,0 +1,258 @@
+<article class="doc">
+      <h1>24.5 เก็บเส้นทางเพื่อพิมพ์คำตอบจริง</h1>
+
+      <p>ทุกโปรแกรมที่ผ่านมาตอบได้แค่ตัวเลข เช่น ใช้ 2 เหรียญ หรือได้เงิน 140 บาท แต่โจทย์จำนวนมากถามต่อว่า "ใช้เหรียญอะไรบ้าง" "เข้าบ้านหลังไหน" หรือ "ช่วงวันไหน" ตารางเก็บแค่ค่าที่ดีที่สุดของแต่ละสถานะ ไม่ได้เก็บว่าได้มาจากทางไหน หน้านี้แสดงสองวิธี คือจดทางเลือกที่ชนะไว้ระหว่างเติมตาราง กับเดินย้อนตารางที่เติมเสร็จแล้ว ทั้งสองวิธีเพิ่มเวลาแค่เท่าความยาวของคำตอบ</p>
+
+      <h2 id="parent">จดว่าชนะด้วยทางไหน</h2>
+
+      <p>ตอนเติมช่อง x ของโจทย์ทอนเหรียญ เราลองทุกเหรียญแล้วเก็บค่าที่น้อยที่สุด ถ้าจดไว้ด้วยว่าเหรียญไหนทำให้ได้ค่านั้น ก็รู้ว่าเหรียญสุดท้ายของคำตอบที่ x บาทคือเหรียญอะไร หักเหรียญนั้นออกได้ x - c บาท ซึ่งก็จดไว้แล้วว่าเหรียญสุดท้ายคืออะไร เดินย้อนแบบนี้จนเหลือ 0 บาท</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="coin-path"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int INF = 1000000000;
+
+int main()
+{
+    int n, target;
+    cin &gt;&gt; n &gt;&gt; target;
+    vector&lt;int&gt; coins(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; coins[i];
+    }
+    vector&lt;int&gt; fewest(target + 1, INF);
+    vector&lt;int&gt; last_coin(target + 1, 0); // (1)!
+    fewest[0] = 0;
+    for (int x = 1; x &lt;= target; x++) {
+        for (int c : coins) {
+            if (c &lt;= x &amp;&amp; fewest[x - c] + 1 &lt; fewest[x]) {
+                fewest[x] = fewest[x - c] + 1;
+                last_coin[x] = c; // (2)!
+            }
+        }
+    }
+    if (fewest[target] == INF) { // (3)!
+        cout &lt;&lt; "impossible\n";
+        return 0;
+    }
+    cout &lt;&lt; "coins = " &lt;&lt; fewest[target] &lt;&lt; '\n';
+    int x = target;
+    while (x &gt; 0) { // (4)!
+        cout &lt;&lt; last_coin[x] &lt;&lt; (x - last_coin[x] &gt; 0 ? ' ' : '\n');
+        x -= last_coin[x];
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อาเรย์ที่สองขนาดเท่าตาราง จดเหรียญสุดท้ายของคำตอบที่ดีที่สุดของแต่ละช่อง อาเรย์แบบนี้มักเรียกว่า parent หรือ choice</li>
+        <li>จดเฉพาะตอนที่ได้ค่าดีขึ้นจริง จึงเปลี่ยน <code>min</code> เป็น <code>if</code> ที่เทียบด้วย <code>&lt;</code></li>
+        <li>เช็กว่าทำได้ก่อนเดินย้อน ดูในส่วนลองทำให้พัง</li>
+        <li>เดินย้อนจากเป้าหมายลงไป แต่ละรอบหักเหรียญที่จดไว้ จบเมื่อเหลือ 0 บาท</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coin-path" data-title="ข้อมูลเข้า"><pre><code>3 13
+1 3 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="coin-path" data-title="C:\code\coin_path.exe"><pre><code>coins = 4
+1 4 4 4
+</code></pre></div>
+      </div>
+
+      <p>เดินจาก 13 เหรียญสุดท้ายคือ 1 เหลือ 12 เหรียญสุดท้ายของ 12 คือ 4 เหลือ 8 แล้ว 4 แล้ว 0 เหรียญออกมาตามลำดับที่เดินย้อน ซึ่งกลับหัวกับลำดับที่ใส่ ถ้าโจทย์อยากได้ลำดับตอนใส่ ให้เก็บใส่ vector แล้ว <code>reverse</code> ตามหน้า 16.5 ก่อนพิมพ์</p>
+
+      <h3 id="ties">เมื่อมีหลายคำตอบที่ดีเท่ากัน</h3>
+
+      <p>ทอน 4 บาทด้วยเหรียญ 1 2 3 ใช้ 2 เหรียญได้สองแบบ คือ 1 + 3 กับ 2 + 2 โปรแกรมเดิมพิมพ์แบบไหน ขึ้นกับลำดับเหรียญในข้อมูลเข้า เพราะเหรียญที่ลองก่อนและได้ค่าน้อยสุดจะถูกจดไว้ เหรียญหลังที่ได้ค่าเท่ากันไม่ทับ เพราะเทียบด้วย <code>&lt;</code> ผลที่ได้จากการรันจริงคือ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูลเข้า</th><th>บรรทัดที่สองที่พิมพ์</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>3 4</code> กับ <code>1 2 3</code></td><td><code>1 3</code></td></tr>
+            <tr><td><code>3 4</code> กับ <code>2 1 3</code></td><td><code>2 2</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถูกทั้งคู่ ถ้าโจทย์ยอมรับคำตอบใดก็ได้ grader จะมีตัวตรวจพิเศษ แต่ถ้าโจทย์กำหนดว่าต้องพิมพ์แบบไหน เช่น "ถ้ามีหลายแบบ ให้ใช้เหรียญมูลค่ามากก่อน" ต้องเลือกให้ตรง ทั้งลำดับที่ลองและการเทียบด้วย <code>&lt;</code> หรือ <code>&lt;=</code> เป็นตัวกำหนด แบบฝึกหัดข้อ 8 ของบทนี้ให้ฝึกเรื่องนี้</p>
+
+      <h2 id="walk-back">เดินย้อนตารางโดยไม่จดเพิ่ม</h2>
+
+      <p>บางครั้งไม่ต้องมีอาเรย์ที่สอง เพราะดูจากตารางก็รู้ว่าแต่ละช่องมาจากทางไหน บ้านติดกันในหน้า 24.4 มีแค่สองทาง ถ้า <code>best[i]</code> เท่ากับ <code>best[i - 1]</code> แปลว่าไม่ต้องเข้าหลังที่ i ก็ได้เท่านี้ ข้ามไปดูหลังที่ i - 1 ถ้าไม่เท่า แปลว่าค่านี้ได้มาจากการเข้าหลังที่ i เท่านั้น จดหลังที่ i แล้วกระโดดไปดูหลังที่ i - 2</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="robber-path"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;long long&gt; money(n + 1);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; money[i];
+    }
+    vector&lt;long long&gt; best(n + 1);
+    best[0] = 0;
+    best[1] = money[1];
+    for (int i = 2; i &lt;= n; i++) {
+        best[i] = max(best[i - 1], best[i - 2] + money[i]);
+    }
+    vector&lt;int&gt; chosen;
+    int i = n;
+    while (i &gt;= 1) {
+        if (i &gt;= 2 &amp;&amp; best[i] == best[i - 1]) { // (1)!
+            i -= 1;
+        } else {
+            chosen.push_back(i); // (2)!
+            i -= 2;
+        }
+    }
+    reverse(chosen.begin(), chosen.end()); // (3)!
+    cout &lt;&lt; "total = " &lt;&lt; best[n] &lt;&lt; '\n';
+    cout &lt;&lt; "houses =";
+    for (int h : chosen) {
+        cout &lt;&lt; ' ' &lt;&lt; h;
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ไม่เข้าหลังที่ i ก็ได้ค่าเท่ากัน จึงไม่เข้า เช็ก <code>i &gt;= 2</code> ก่อน เพราะหลังที่ 1 ตาราง <code>best[1]</code> คือ <code>a[1]</code> ถ้าไปถึงหลังที่ 1 ได้แปลว่าต้องเข้า</li>
+        <li>ค่านี้ได้จากการเข้าหลังที่ i เท่านั้น จด แล้วข้ามหลังที่ i - 1 ซึ่งเข้าไม่ได้</li>
+        <li>เดินย้อนจึงได้เลขบ้านจากมากไปน้อย กลับลำดับให้เป็นน้อยไปมากก่อนพิมพ์</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="robber-path" data-title="ข้อมูลเข้า"><pre><code>7
+20 50 30 10 60 40 30
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="robber-path" data-title="C:\code\robber_path.exe"><pre><code>total = 140
+houses = 2 5 7
+</code></pre></div>
+      </div>
+
+      <p>50 + 60 + 30 = 140 ตรงกับตาราง ข้อนี้ก็มีคำตอบที่ดีเท่ากันอีกแบบ คือหลัง 1 3 5 7 ได้ 20 + 30 + 60 + 30 = 140 โปรแกรมเลือกแบบแรกเพราะตอนย้อนถึงหลังที่ 3 <code>best[3]</code> เท่ากับ <code>best[2]</code> คือ 50 จึงเลือกไม่เข้า ถ้าเปลี่ยนให้เลือกเข้าเมื่อค่าเท่ากัน ต้องเช็กว่า <code>best[i - 2] + a[i]</code> เท่ากับ <code>best[i]</code> แทน</p>
+
+      <h2 id="range">ช่วงย่อยมากสุดเป็นวันไหน</h2>
+
+      <p>Kadane ในหน้า 24.4 ตอบว่ากำไรมากสุดคือ 7 แต่เจ้าของร้านอยากรู้ว่าวันไหนถึงวันไหน ช่วงที่จบที่วัน i เริ่มที่ไหน ขึ้นกับว่าวัน i ต่อจากช่วงเดิมหรือเริ่มใหม่ จึงจดวันเริ่มไว้คู่กับทุกช่อง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="kadane-path"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;long long&gt; profit(n + 1);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; profit[i];
+    }
+    vector&lt;long long&gt; ending(n + 1);
+    vector&lt;int&gt; start(n + 1); // (1)!
+    ending[1] = profit[1];
+    start[1] = 1;
+    int best_end = 1;
+    for (int i = 2; i &lt;= n; i++) {
+        if (ending[i - 1] + profit[i] &gt;= profit[i]) { // (2)!
+            ending[i] = ending[i - 1] + profit[i];
+            start[i] = start[i - 1];
+        } else {
+            ending[i] = profit[i];
+            start[i] = i;
+        }
+        if (ending[i] &gt; ending[best_end]) { // (3)!
+            best_end = i;
+        }
+    }
+    cout &lt;&lt; "best = " &lt;&lt; ending[best_end] &lt;&lt; '\n';
+    cout &lt;&lt; "days " &lt;&lt; start[best_end] &lt;&lt; " to " &lt;&lt; best_end &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>start[i]</code> คือวันเริ่มของช่วงที่ดีที่สุดที่จบที่วัน i</li>
+        <li>ต่อจากช่วงเดิม วันเริ่มก็เป็นวันเริ่มเดิม ถ้าเริ่มใหม่ วันเริ่มคือวันนี้ ใช้ <code>&gt;=</code> ให้ต่อช่วงเดิมเมื่อได้เท่ากัน จึงได้ช่วงที่ยาวกว่า</li>
+        <li>จำวันจบของช่วงที่ดีที่สุดแทนการจำค่า ใช้ <code>&gt;</code> จึงได้ช่วงที่จบเร็วที่สุดเมื่อมีหลายช่วงเท่ากัน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="kadane-path" data-title="ข้อมูลเข้า"><pre><code>8
+-3 5 -2 4 -6 3 2 -1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="kadane-path" data-title="C:\code\kadane_path.exe"><pre><code>best = 7
+days 2 to 4
+</code></pre></div>
+      </div>
+
+      <p>5 - 2 + 4 = 7 ตรงกัน ทั้งสามตัวอย่างในหน้านี้ใช้หลักเดียวกัน ตารางบอกว่าดีที่สุดได้เท่าไร ส่วนการตัดสินใจที่ทำให้ได้ค่านั้น ต้องจดไว้หรือคำนวณย้อนได้จากตาราง</p>
+
+      <h2 id="timing">ทำไมไม่เก็บคำตอบทั้งชุดไว้ในทุกช่อง</h2>
+
+      <p>วิธีตรงไปตรงมาที่หลายคนคิดก่อน คือให้แต่ละช่องเก็บรายการเหรียญทั้งชุดเป็น <code>vector&lt;int&gt;</code> เวลาช่อง x ชนะด้วยเหรียญ c ก็คัดลอกรายการของช่อง x - c มาแล้วต่อท้ายด้วย c ถูกต้องเหมือนกัน แต่การคัดลอกแต่ละครั้งยาวเท่าคำตอบ ซึ่งยาวถึงราว X / 4 เหรียญเมื่อมีเหรียญ 4 บาท ทั้งเวลาและหน่วยความจำจึงเป็น O(X<sup>2</sup>) วัดบนเครื่องเดียวกับหน้า 24.1 ด้วยเหรียญ 1 3 4 รันแบบละ 5 ครั้ง ยกเว้นแถว 40000 ที่รัน 3 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>จำนวนเงิน</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10000</td><td>เก็บรายการทั้งชุด</td><td>0.038 วินาที</td><td>0.036 วินาที</td></tr>
+            <tr><td>20000</td><td>เก็บรายการทั้งชุด</td><td>0.117 วินาที</td><td>0.112 วินาที</td></tr>
+            <tr><td>40000</td><td>เก็บรายการทั้งชุด</td><td>0.408 วินาที</td><td>0.451 วินาที</td></tr>
+            <tr><td>20000</td><td>จดเหรียญสุดท้าย</td><td>0.001 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>10000000</td><td>จดเหรียญสุดท้าย</td><td>0.396 วินาที</td><td>0.039 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เงินเพิ่มสองเท่า เวลาของการเก็บรายการเพิ่มราวสามถึงสี่เท่า ซึ่งเป็นลักษณะของ O(X<sup>2</sup>) ที่ 40000 บาท รายการทุกช่องรวมกันมีตัวเลขราว 2 × 10<sup>8</sup> ตัว กินหน่วยความจำราว 800 MB เกินที่ grader ส่วนใหญ่ให้ไปมาก <code>-O2</code> ก็ช่วยไม่ได้เพราะเวลาเกือบทั้งหมดคือการจองและคัดลอกหน่วยความจำ ส่วนการจดเหรียญสุดท้ายใช้อาเรย์เพิ่มแค่หนึ่งชุด เดินย้อนเพิ่มแค่เท่าจำนวนเหรียญในคำตอบ เติมสิบล้านช่องได้ในไม่ถึงครึ่งวินาที</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-check">แบบที่ 1 เดินย้อนโดยไม่เช็กว่าทำได้</h3>
+
+      <p>ในโปรแกรม coin-path ลบสี่บรรทัดที่เช็ก <code>fewest[target] == INF</code> ออก คิดว่าโจทย์ส่วนใหญ่ทำได้อยู่แล้ว แล้วป้อนแสตมป์ 5 กับ 7 บาท ราคา 23 บาทจากหน้า 24.3</p>
+
+      <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>2 23
+5 7
+</code></pre></div>
+
+      <div class="code" data-lang="text"><pre><code>coins = 1000000000
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+</code></pre></div>
+
+      <p>พิมพ์ INF เป็นจำนวนเหรียญ แล้วพิมพ์ 0 ไม่หยุดจนต้องปิดหน้าต่างเอง <code>last_coin[23]</code> ไม่เคยถูกจด จึงเป็น 0 ที่ใส่ไว้ตอนสร้าง หัก 0 บาทแล้วก็ยังเป็น 23 บาท ลูปไม่มีวันจบ ถ้าส่ง grader ข้อนี้จะได้ผลว่าเกินเวลา ทุกครั้งที่เดินย้อน ต้องแน่ใจว่าแต่ละรอบเดินเข้าใกล้จุดจบจริง เหมือนกฎของลูป binary search ในหน้า 19.1</p>
+
+      <h3 id="wrong-condition">แบบที่ 2 เดินย้อนด้วยเงื่อนไขผิด</h3>
+
+      <p>ในโปรแกรม robber-path คิดว่า "ถ้าหลังที่ i มีเงินไม่มากกว่าหลังที่ i - 1 ก็ไม่ต้องเข้า" จึงเปลี่ยนเงื่อนไขของ <code>if</code> ในลูปเดินย้อนเป็น</p>
+
+      <div class="code" data-lang="cpp"><pre><code>if (i &gt;= 2 &amp;&amp; money[i] &lt;= money[i - 1]) {
+</code></pre></div>
+
+      <div class="code" data-lang="text"><pre><code>total = 140
+houses = 2 5
+</code></pre></div>
+
+      <p>ตัวเลข 140 ยังถูกเพราะมาจากตาราง แต่บ้านหลังที่ 2 กับ 5 ได้แค่ 50 + 60 = 110 ตอนอยู่ที่หลังที่ 7 เงิน 30 บาทน้อยกว่าหลังที่ 6 จึงข้ามไป แล้วเข้าหลังที่ 6 ไม่ได้เพราะ 40 น้อยกว่า 60 ทั้งที่คำตอบ 140 ต้องเข้าหลังที่ 7 การเดินย้อนต้องถามตารางว่า "ค่านี้มาจากทางไหน" เท่านั้น ห้ามใช้เหตุผลแบบ greedy มาแทน ตรวจได้ง่ายๆ ด้วยการบวกเงินของบ้านที่พิมพ์ออกมา แล้วเทียบกับ <code>total</code> ทุกครั้งที่ทดสอบ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ตาราง DP เก็บแค่ค่าที่ดีที่สุด ถ้าต้องการคำตอบจริงต้องรู้ว่าแต่ละช่องได้ค่ามาจากทางไหน</li>
+        <li>วิธีแรก จดทางเลือกที่ชนะลงอาเรย์ที่สองขณะเติมตาราง แล้วเดินย้อนจากช่องคำตอบ</li>
+        <li>วิธีที่สอง เดินย้อนตารางที่เติมเสร็จแล้ว ถามว่าค่าในช่องนี้ได้มาจากทางไหน</li>
+        <li>เดินย้อนได้คำตอบกลับหัว ใช้ <code>reverse</code> ถ้าต้องการลำดับเดิม</li>
+        <li>เมื่อมีหลายคำตอบที่ดีเท่ากัน ลำดับที่ลองและ <code>&lt;</code> กับ <code>&lt;=</code> เป็นตัวเลือกว่าได้แบบไหน</li>
+        <li>เก็บคำตอบทั้งชุดไว้ทุกช่องเป็น O(X<sup>2</sup>) ทั้งเวลาและหน่วยความจำ จดเหรียญสุดท้ายเพิ่มแค่อาเรย์เดียว</li>
+        <li>เช็กว่าทำได้ก่อนเดินย้อนเสมอ ไม่งั้นลูปไม่จบ</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

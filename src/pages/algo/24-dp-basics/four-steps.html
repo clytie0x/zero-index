@@ -1,0 +1,320 @@
+<article class="doc">
+      <h1>24.2 วิธีคิด DP สี่ขั้น</h1>
+
+      <p>หน้า 24.1 ได้สูตรทอนเหรียญมาจากการคิดว่า "เหรียญแรกเป็นอะไรได้บ้าง" แต่พอเจอโจทย์ใหม่ น้องจะคิดสูตรแบบนั้นเองได้ยังไง หน้านี้แบ่งการคิดเป็นสี่ขั้นที่ทำบนกระดาษก่อนเขียนโค้ดทุกครั้ง ทำครบสี่ขั้นแล้ว โค้ดแทบจะเขียนตัวเอง แล้วต่อด้วยสองเรื่องที่มากับ DP เสมอ คือคำตอบที่ใหญ่จนต้อง mod และการประมาณเวลาจากจำนวนสถานะ</p>
+
+      <h2 id="broken-stairs">โจทย์บันไดที่มีขั้นพัง</h2>
+
+      <p>บันไดหน้าอาคารเรียนมี N ขั้น น้องเริ่มยืนที่พื้น ซึ่งนับเป็นขั้น 0 แต่ละก้าวขึ้นได้ 1 หรือ 2 ขั้น ต้องไปหยุดที่ขั้น N พอดี แต่มีบางขั้นพัง ห้ามเหยียบ ถามว่ามีวิธีขึ้นกี่วิธี สองวิธีถือว่าต่างกันถ้าลำดับการก้าวต่างกัน</p>
+
+      <p>ลองกับบันได 10 ขั้นที่ขั้น 4 กับ 7 พัง จะข้ามขั้น 4 ได้ต้องก้าว 2 ขั้นจากขั้น 3 ไปขั้น 5 ข้ามขั้น 7 ได้ต้องก้าวจากขั้น 6 ไปขั้น 8 ทุกวิธีจึงต้องผ่านขั้น 3 5 6 และ 8 จากพื้นไปขั้น 3 มี 3 วิธี (1+1+1, 1+2, 2+1) จากขั้น 8 ไปขั้น 10 มี 2 วิธี รวม 3 × 2 = 6 วิธี นับด้วยมือได้เพราะบันไดสั้น ถ้าบันไดยาวแสนขั้นต้องให้โปรแกรมนับ</p>
+
+      <h2 id="step-1" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>1</span> นิยามสถานะ</h2>
+
+      <p><strong>สถานะ (state)</strong> คือปัญหาย่อยหนึ่งข้อ ที่เราจะเก็บคำตอบไว้ในตารางหนึ่งช่อง ขั้นนี้สำคัญที่สุด ต้องเขียนเป็นประโยคเต็มว่าช่อง i เก็บอะไร ข้อนี้</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">สถานะของโจทย์บันได</p>
+        <p><code>ways[i]</code> คือจำนวนวิธีเดินจากพื้นไปหยุดที่ขั้น i โดยไม่เหยียบขั้นพัง</p>
+      </div>
+
+      <p>สถานะที่ดีมีสองอย่าง อย่างแรก คำตอบของโจทย์ต้องเป็นช่องใดช่องหนึ่ง หรือหาได้ง่ายจากตาราง ข้อนี้คำตอบคือ <code>ways[N]</code> อย่างที่สอง แต่ละช่องต้องคำนวณได้จากช่องอื่นที่เล็กกว่า โดยไม่ต้องรู้ว่าก่อนหน้านั้นเดินมายังไง ถ้าน้องต้องรู้ประวัติการเดินด้วยถึงจะคำนวณต่อได้ แปลว่าสถานะเก็บข้อมูลไม่พอ ต้องเพิ่มข้อมูลเข้าไปในสถานะ ซึ่งจะเห็นในแบบฝึกหัดข้อท้ายๆ</p>
+
+      <h2 id="step-2" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>2</span> หาความสัมพันธ์</h2>
+
+      <p>หาว่าช่อง i คำนวณจากช่องไหน วิธีคิดที่ใช้ได้เกือบทุกข้อคือ <strong>ดูการตัดสินใจครั้งสุดท้าย</strong> จะไปหยุดที่ขั้น i ก้าวสุดท้ายต้องเป็นก้าว 1 ขั้นจากขั้น i - 1 หรือก้าว 2 ขั้นจากขั้น i - 2 อย่างใดอย่างหนึ่ง</p>
+
+      <div class="code" data-lang="text"><pre><code>ways[i] = 0                          ถ้าขั้น i พัง
+ways[i] = ways[i - 1] + ways[i - 2]  ถ้าไม่พัง
+</code></pre></div>
+
+      <p>บวกกันได้เพราะสองกลุ่มนี้ <strong>ไม่ซ้อนกันและครอบคลุมครบ</strong> ทุกวิธีที่ไปหยุดขั้น i มีก้าวสุดท้ายแบบเดียว จึงอยู่ในกลุ่มเดียวพอดี ไม่ถูกนับสองครั้ง และไม่มีวิธีไหนตกหล่น โจทย์นับวิธีทุกข้อต้องตรวจสองข้อนี้ ส่วนโจทย์หาค่าน้อยสุดหรือมากสุดแบบหน้า 24.1 ใช้ <code>min</code> หรือ <code>max</code> แทนการบวก ซึ่งไม่เดือดร้อนถ้ากลุ่มซ้อนกัน แต่ยังต้องครอบคลุมครบ</p>
+
+      <h2 id="step-3" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>3</span> กรณีฐาน</h2>
+
+      <p>ช่องที่สูตรใช้ไม่ได้ ต้องกำหนดค่าเอง ข้อนี้คือขั้น 0 กับขั้น 1 เพราะสูตรจะอ่านขั้นติดลบ</p>
+
+      <ul>
+        <li><code>ways[0] = 1</code> ยืนอยู่บนพื้นแล้วมีหนึ่งวิธี คือไม่ต้องก้าว ฟังดูแปลก แต่ตรวจได้ <code>ways[2]</code> ต้องเป็น 2 (1+1 กับ 2) ซึ่งได้จาก <code>ways[1] + ways[0]</code> = 1 + 1 ถ้าให้ <code>ways[0]</code> เป็น 0 จะผิดทันที ดูในส่วนลองทำให้พัง</li>
+        <li><code>ways[1]</code> มาจากขั้น 0 ได้ทางเดียว จึงเท่ากับ <code>ways[0]</code> ถ้าขั้น 1 ไม่พัง</li>
+      </ul>
+
+      <h2 id="step-4" class="step"><span class="step-label"><span class="step-word">ขั้นที่ </span>4</span> ลำดับการเติมและคำตอบสุดท้าย</h2>
+
+      <p>ดูจากสูตรว่าช่อง i อ่านช่องไหน แล้วเลือกลำดับที่ช่องเหล่านั้นเสร็จก่อน ข้อนี้อ่าน i - 1 กับ i - 2 จึงเติมจาก 1 ขึ้นไปถึง N แล้วตอบ <code>ways[N]</code> สองขั้นนี้รวมกันเพราะคิดคู่กันเสมอ ตำแหน่งของคำตอบไม่จำเป็นต้องเป็นช่องสุดท้าย หน้า 24.4 มีโจทย์ที่คำตอบคือค่ามากสุดของทุกช่อง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="broken-stairs"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;bool&gt; broken(n + 1, false);
+    for (int j = 0; j &lt; k; j++) {
+        int step;
+        cin &gt;&gt; step;
+        broken[step] = true;
+    }
+    vector&lt;long long&gt; ways(n + 1); // (1)!
+    ways[0] = 1; // (2)!
+    for (int i = 1; i &lt;= n; i++) { // (3)!
+        if (broken[i]) {
+            ways[i] = 0;
+        } else if (i == 1) { // (4)!
+            ways[i] = ways[i - 1];
+        } else {
+            ways[i] = ways[i - 1] + ways[i - 2];
+        }
+    }
+    for (int i = 0; i &lt;= n; i++) { // (5)!
+        cout &lt;&lt; ways[i] &lt;&lt; (i &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ขั้นที่ 1 ตารางหนึ่งช่องต่อหนึ่งสถานะ ช่อง 0 ถึง N</li>
+        <li>ขั้นที่ 3 กรณีฐาน</li>
+        <li>ขั้นที่ 4 เติมจากน้อยไปมาก</li>
+        <li>ขั้นที่ 3 อีกกรณี ขั้น 1 มาจากขั้น 0 ได้ทางเดียว ไม่มีขั้น -1 ให้อ่าน</li>
+        <li>พิมพ์ทั้งตารางให้ตรวจกับมือได้ โปรแกรมส่ง grader พิมพ์แค่ <code>ways[n]</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="broken-stairs" data-title="ข้อมูลเข้า"><pre><code>10 2
+4 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="broken-stairs" data-title="C:\code\broken_stairs.exe"><pre><code>1 1 2 3 0 3 3 0 3 3 6
+</code></pre></div>
+      </div>
+
+      <p>ตัวสุดท้ายคือ 6 ตรงกับที่นับด้วยมือ ช่อง 4 กับ 7 เป็น 0 ช่อง 5 ได้ 3 เพราะมาจากขั้น 3 ได้ทางเดียว ส่วนบรรทัด <code>cout</code> ใช้ <code>? :</code> จากหน้า 3.4 เพื่อพิมพ์ช่องว่างระหว่างตัวเลข แต่ไม่พิมพ์ช่องว่างเกินท้ายบรรทัด</p>
+
+      <p>ทั้งสี่ขั้นใช้กับโจทย์ทอนเหรียญในหน้า 24.1 ได้เหมือนกัน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ขั้น</th><th>บันไดขั้นพัง</th><th>ทอนเหรียญ 1 3 4</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>สถานะ</td><td><code>ways[i]</code> จำนวนวิธีไปหยุดที่ขั้น i</td><td><code>dp[x]</code> จำนวนเหรียญน้อยสุดที่รวมได้ x บาท</td></tr>
+            <tr><td>ความสัมพันธ์</td><td>ก้าวสุดท้าย 1 หรือ 2 ขั้น บวกกัน</td><td>เหรียญแรก 1 3 หรือ 4 บาท เอาค่าน้อยสุด</td></tr>
+            <tr><td>กรณีฐาน</td><td><code>ways[0] = 1</code></td><td><code>dp[0] = 0</code></td></tr>
+            <tr><td>ลำดับและคำตอบ</td><td>i จาก 1 ถึง N ตอบ <code>ways[N]</code></td><td>x จาก 1 ถึง X ตอบ <code>dp[X]</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าอยากเขียนแบบ top-down ก็ใช้สี่ขั้นเดิม สถานะคือพารามิเตอร์ของฟังก์ชัน ความสัมพันธ์คือการเรียกตัวเอง กรณีฐานคือ <code>if</code> ที่คืนค่าทันที ส่วนลำดับการเติม recursion จัดให้เอง</p>
+
+      <h2 id="mod">คำตอบใหญ่เกิน long long</h2>
+
+      <p>ตารางนี้โตเร็วแบบฟีโบนัชชี ลองโปรแกรมที่พิมพ์แค่คำตอบกับบันได 100 ขั้นที่ไม่มีขั้นพัง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="stairs-overflow"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;bool&gt; broken(n + 1, false);
+    for (int j = 0; j &lt; k; j++) {
+        int step;
+        cin &gt;&gt; step;
+        broken[step] = true;
+    }
+    vector&lt;long long&gt; ways(n + 1);
+    ways[0] = 1;
+    for (int i = 1; i &lt;= n; i++) {
+        if (broken[i]) {
+            ways[i] = 0;
+        } else if (i == 1) {
+            ways[i] = ways[i - 1];
+        } else {
+            ways[i] = ways[i - 1] + ways[i - 2];
+        }
+    }
+    cout &lt;&lt; ways[n] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="stairs-overflow" data-title="ข้อมูลเข้า"><pre><code>100 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="stairs-overflow" data-title="C:\code\stairs.exe"><pre><code>1298777728820984005
+</code></pre></div>
+      </div>
+
+      <p>ได้เลขบวกสิบเก้าหลักที่ดูน่าเชื่อ แต่คำตอบจริงคือ 573147844013817084101 ยาว 21 หลัก ล้น <code>long long</code> ไปตั้งแต่ขั้นที่ 92 ตามที่หน้า 9.3 เจอกับ <code>fib(93)</code> ล้นแล้ววนกลับมาเป็นบวกได้ จึงสังเกตไม่ออกถ้าไม่คำนวณขนาดก่อน โจทย์นับวิธีจึงสั่งให้ตอบเป็นเศษจากการหารด้วย 1000000007 ตามหน้า 12.1 และใช้กฎเดียวกัน คือเก็บแค่เศษตั้งแต่ระหว่างทาง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="stairs-mod"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long MOD = 1000000007; // (1)!
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;bool&gt; broken(n + 1, false);
+    for (int j = 0; j &lt; k; j++) {
+        int step;
+        cin &gt;&gt; step;
+        broken[step] = true;
+    }
+    vector&lt;long long&gt; ways(n + 1);
+    ways[0] = 1;
+    for (int i = 1; i &lt;= n; i++) {
+        if (broken[i]) {
+            ways[i] = 0;
+        } else if (i == 1) {
+            ways[i] = ways[i - 1];
+        } else {
+            ways[i] = (ways[i - 1] + ways[i - 2]) % MOD; // (2)!
+        }
+    }
+    cout &lt;&lt; ways[n] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>แบบ <code>#define MOD</code> ในหน้า 12.1 แต่ใช้ <code>const</code> ซึ่งเป็นตัวแปรที่มีชนิดและห้ามแก้ค่า ภาษา C++ นิยมแบบนี้มากกว่า ถ้าเผลอเขียน <code>MOD = 5;</code> compiler จะฟ้อง</li>
+        <li>สองช่องที่บวกกันมีค่าน้อยกว่า MOD อยู่แล้ว ผลบวกไม่เกินสองพันล้าน ไม่ล้น <code>long long</code> แน่นอน mod ทันทีหลังบวกทุกครั้ง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="stairs-mod" data-title="ข้อมูลเข้า"><pre><code>100 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="stairs-mod" data-title="C:\code\stairs.exe"><pre><code>782204094
+</code></pre></div>
+      </div>
+
+      <p>573147844013817084101 หารด้วย 1000000007 เหลือเศษ 782204094 พอดี โปรแกรมนี้อ่านข้อมูลได้มาก (ขั้นพังได้เป็นแสนขั้น) จึงเปิด <code>ios::sync_with_stdio(false)</code> ตามหน้า 15.3 ด้วย</p>
+
+      <h2 id="states-times-work">ความซับซ้อนคือจำนวนสถานะคูณงานต่อสถานะ</h2>
+
+      <p>DP คำนวณแต่ละสถานะครั้งเดียว เวลาทั้งหมดจึงประมาณได้ก่อนเขียนจากสองตัวเลข</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">สูตรประมาณเวลา</p>
+        <p>เวลาของ DP = จำนวนสถานะ × งานที่ทำต่อหนึ่งสถานะ</p>
+      </div>
+
+      <p>บันไดข้างบนมี N + 1 สถานะ แต่ละสถานะบวกสองค่า จึงเป็น O(N) ลองทำให้งานต่อสถานะมากขึ้น ถ้าแต่ละก้าวขึ้นได้ 1 ถึง K ขั้น ก้าวสุดท้ายมาได้จาก K ขั้นก่อนหน้า ต้องบวก K ค่าต่อหนึ่งสถานะ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="k-steps"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MOD = 1000000007;
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; ways(n + 1);
+    ways[0] = 1;
+    for (int i = 1; i &lt;= n; i++) {
+        long long total = 0;
+        for (int j = 1; j &lt;= k &amp;&amp; j &lt;= i; j++) {
+            total += ways[i - j];
+        }
+        ways[i] = total % MOD;
+    }
+    cout &lt;&lt; ways[n] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="k-steps" data-title="ข้อมูลเข้า"><pre><code>10 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="k-steps" data-title="C:\code\k_steps.exe"><pre><code>274
+</code></pre></div>
+      </div>
+
+      <p>ตารางเก็บเป็น <code>int</code> ได้เพราะทุกช่องน้อยกว่า MOD แต่ตัวแปร <code>total</code> ต้องเป็น <code>long long</code> เพราะบวก K ค่าที่เกือบถึง MOD ก่อนค่อย mod ตอนท้าย K ไม่เกินพันก็ไม่ถึง 10<sup>13</sup> สถานะ N + 1 ตัว งาน K ต่อตัว รวม O(NK) วัดบนเครื่องเดียวกับหน้า 24.1 รันแบบละ 5 ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>K</th><th>N × K</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1000000</td><td>2</td><td>2 × 10<sup>6</sup></td><td>0.012 วินาที</td><td>0.007 วินาที</td></tr>
+            <tr><td>100000</td><td>10</td><td>10<sup>6</sup></td><td>0.002 วินาที</td><td>0.001 วินาที</td></tr>
+            <tr><td>100000</td><td>100</td><td>10<sup>7</sup></td><td>0.017 วินาที</td><td>0.004 วินาที</td></tr>
+            <tr><td>100000</td><td>1000</td><td>10<sup>8</sup></td><td>0.175 วินาที</td><td>0.035 วินาที</td></tr>
+            <tr><td>1000000</td><td>1000</td><td>10<sup>9</sup></td><td>1.888 วินาที (5 รอบอยู่ระหว่าง 1.719 ถึง 2.169)</td><td>0.368 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>N × K เพิ่มสิบเท่า เวลาก็เพิ่มราวสิบเท่าตาม ประมาณจาก N × K แล้วเทียบกับหลักในหน้า 18.2 ได้เลยตั้งแต่ก่อนเขียน แถวสุดท้ายแบบ <code>-O2</code> เร็วกว่าที่คาด เพราะลูปบวกต่อเนื่องเป็นงานที่ compiler เร่งได้มาก แต่ถ้า N เพิ่มเป็นสิบล้านก็เกินแน่นอน</p>
+
+      <p>เทียบกับ recursion ตรงๆ ของโจทย์บันได ซึ่งเรียก <code>count_ways(i - 1) + count_ways(i - 2)</code> โดยไม่จด บันได 30 ขั้นใช้ 0.075 วินาทีแบบ Code::Blocks และ 0.004 วินาทีแบบ <code>-O2</code> บันได 40 ขั้นใช้ 11.215 วินาที (5 รอบอยู่ระหว่าง 9.773 ถึง 11.653) กับ 0.864 วินาที ส่วนแบบตารางเดินบันไดล้านขั้นในแถวแรกเสร็จในราวหนึ่งในร้อยวินาที</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="zero-base">แบบที่ 1 กรณีฐานเป็น 0</h3>
+
+      <p>ในโปรแกรม broken-stairs คิดว่ายืนเฉยๆ ไม่ได้ก้าว ก็ไม่น่านับเป็นวิธี จึงเปลี่ยนเป็น <code>ways[0] = 0;</code> ป้อนข้อมูลเข้าเดิม</p>
+
+      <div class="code" data-lang="text"><pre><code>0 0 0 0 0 0 0 0 0 0 0
+</code></pre></div>
+
+      <p>ศูนย์ทั้งตาราง เพราะทุกช่องเป็นผลบวกของช่องก่อนหน้า ถ้าต้นทางเป็น 0 ทุกอย่างก็เป็น 0 กรณีฐานผิดช่องเดียวทำให้ทั้งตารางผิด วิธีตรวจคือคำนวณช่องเล็กๆ ด้วยมือ เช่น <code>ways[2]</code> ต้องเป็น 2 แล้วดูว่ากรณีฐานพาไปถึงค่านั้นไหม</p>
+
+      <h3 id="int-total">แบบที่ 2 บวกหลายค่าใน int ก่อน mod</h3>
+
+      <p>ในโปรแกรม k-steps เห็นว่าตารางเป็น <code>int</code> ก็เลยประกาศ <code>total</code> เป็น <code>int</code> ด้วย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="k-steps-int"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MOD = 1000000007;
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; ways(n + 1);
+    ways[0] = 1;
+    for (int i = 1; i &lt;= n; i++) {
+        int total = 0;
+        for (int j = 1; j &lt;= k &amp;&amp; j &lt;= i; j++) {
+            total += ways[i - j];
+        }
+        ways[i] = total % MOD;
+    }
+    cout &lt;&lt; ways[n] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="k-steps-int" data-title="ข้อมูลเข้า"><pre><code>100 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="k-steps-int" data-title="C:\code\k_steps.exe"><pre><code>961558590
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ 347873931 ซึ่งได้จากโปรแกรมเดิม ป้อน <code>10 3</code> ทั้งสองแบบได้ 274 เท่ากัน เพราะตัวเลขยังเล็ก พอช่องในตารางเข้าใกล้ MOD สามค่ารวมกันได้เกือบสามพันล้าน เกิน <code>int</code> ทันที แล้วผลที่ล้นก็ยังเป็นเลขบวกที่ดูปกติ ข้อนี้คือเหตุผลที่ชุดทดสอบเล็กผ่าน แต่ชุดใหญ่ตก ก่อนเขียน ให้ถามว่าตัวแปรที่สะสมค่าก่อน mod ใหญ่ได้ถึงเท่าไร</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ก่อนเขียน DP ทำสี่ขั้น นิยามสถานะเป็นประโยคเต็ม หาความสัมพันธ์จากการตัดสินใจครั้งสุดท้าย กำหนดกรณีฐาน และเลือกลำดับการเติมพร้อมตำแหน่งคำตอบ</li>
+        <li>โจทย์นับวิธี กลุ่มที่บวกกันต้องไม่ซ้อนกันและครอบคลุมครบ</li>
+        <li>กรณีฐานผิดช่องเดียว ทั้งตารางผิดตาม ตรวจด้วยช่องเล็กๆ ที่นับมือได้</li>
+        <li>คำตอบที่โตแบบฟีโบนัชชีล้น <code>long long</code> ตั้งแต่ราวช่อง 92 ให้ mod 1000000007 ทุกครั้งที่บวก</li>
+        <li>เวลาของ DP = จำนวนสถานะ × งานต่อสถานะ ก้าวได้ถึง K ขั้นเป็น O(NK)</li>
+      </ul>
+    </article>

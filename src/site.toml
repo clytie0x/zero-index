@@ -373,7 +373,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "24"
 title = "บทที่ 24 dynamic programming เบื้องต้น"
 summary = "จำคำตอบของปัญหาย่อย ไม่คำนวณซ้ำ"
-# dir = "algo/24-dp-basics"
+path = "algo/24-dp-basics/index.html"
+pages = [
+  { num = "24.1", title = "จาก recursion สู่ตาราง", path = "algo/24-dp-basics/recursion-to-table.html" },
+  { num = "24.2", title = "วิธีคิด DP สี่ขั้น", path = "algo/24-dp-basics/four-steps.html" },
+  { num = "24.3", title = "ทอนเหรียญ น้อยที่สุดและนับวิธี", path = "algo/24-dp-basics/coins.html" },
+  { num = "24.4", title = "บ้านติดกันและช่วงย่อยมากสุด", path = "algo/24-dp-basics/pick-or-skip.html" },
+  { num = "24.5", title = "เก็บเส้นทางเพื่อพิมพ์คำตอบจริง", path = "algo/24-dp-basics/reconstruct.html" },
+  { num = "24.6", title = "แบบฝึกหัด", path = "algo/24-dp-basics/exercises.html", exercises = "algo/24-dp-basics" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"
