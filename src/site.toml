@@ -290,7 +290,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "19"
 title = "บทที่ 19 binary search และ prefix sum"
 summary = "ค้นในข้อมูลที่เรียงแล้ว และหาผลรวมช่วงในเวลาคงที่"
-# dir = "algo/19-binary-search-prefix"
+path = "algo/19-binary-search-prefix/index.html"
+pages = [
+  { num = "19.1", title = "binary search แบบวนลูป", path = "algo/19-binary-search-prefix/binary-search.html" },
+  { num = "19.2", title = "lower_bound upper_bound และ equal_range", path = "algo/19-binary-search-prefix/bounds.html" },
+  { num = "19.3", title = "binary search บนคำตอบ", path = "algo/19-binary-search-prefix/on-answer.html" },
+  { num = "19.4", title = "binary search บนจำนวนจริง", path = "algo/19-binary-search-prefix/real-numbers.html" },
+  { num = "19.5", title = "difference array และนับช่วงด้วย prefix sum", path = "algo/19-binary-search-prefix/prefix-tricks.html" },
+  { num = "19.6", title = "แบบฝึกหัด", path = "algo/19-binary-search-prefix/exercises.html", exercises = "algo/19-binary-search-prefix" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

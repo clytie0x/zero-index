@@ -1,0 +1,439 @@
+<article class="doc">
+      <h1>19.5 difference array และนับช่วงด้วย prefix sum</h1>
+
+      <p>หน้า 5.4 กับ 7.5 ใช้ prefix sum ตอบผลรวมของช่วงในเวลาคงที่ หน้านี้ต่อยอดสามทาง ทางแรกกลับด้านกัน คือ <strong>บวกค่าให้ทั้งช่วง</strong> หลายครั้งแล้วค่อยถามทีหลัง ทางที่สองใช้ความคิดเดิมกับ xor และทางที่สามซึ่งเจอในข้อสอบบ่อยที่สุด คือ <strong>นับว่ามีกี่ช่วงที่ผลรวมเท่ากับ k พอดี</strong> โดยใช้ prefix sum คู่กับการเรียงและ binary search จากหน้าก่อนๆ</p>
+
+      <h2 id="review">ทบทวนสั้นๆ</h2>
+
+      <ul>
+        <li><code>prefix[i]</code> คือผลรวมของ i ตัวแรก <code>prefix[0] = 0</code> สร้างด้วย <code>prefix[i] = prefix[i - 1] + a[i]</code> เมื่อเก็บ <code>a</code> ตั้งแต่ช่อง 1</li>
+        <li>ผลรวมตัวที่ l ถึง r คือ <code>prefix[r] - prefix[l - 1]</code></li>
+        <li>สองมิติใช้สี่พจน์ตามหน้า 7.5 และ prefix sum โตเร็ว ใช้ <code>long long</code> เป็นค่าเริ่มต้น</li>
+      </ul>
+
+      <h2 id="difference-array">difference array บวกทั้งช่วง</h2>
+
+      <p>โรงแรมแห่งหนึ่งเปิดจองล่วงหน้า N คืน มีรายการจอง Q รายการ รายการหนึ่งคือแขก g คนพักตั้งแต่คืนที่ l ถึงคืนที่ r อยากรู้ว่าแต่ละคืนมีแขกพักกี่คน วิธีตรงไปตรงมาคือทุกรายการวนบวก g ให้คืน l ถึง r ซึ่งรายการหนึ่งอาจยาวถึง N คืน รวมเป็น O(NQ)</p>
+
+      <p>สังเกตว่ารายการจองหนึ่งรายการ ทำให้จำนวนแขก <strong>เปลี่ยน</strong> แค่สองจุด คือคืนที่ l มีแขกเพิ่มขึ้น g คน และคืนที่ r + 1 แขกกลุ่มนี้ออกไปแล้ว จึงลดลง g คน ระหว่างนั้นไม่มีอะไรเปลี่ยน ให้จดเฉพาะจุดที่เปลี่ยนลงอาเรย์ <code>diff</code></p>
+
+      <div class="code" data-lang="text"><pre><code>diff[l] += g
+diff[r + 1] -= g
+</code></pre></div>
+
+      <p>จดครบทุกรายการแล้ว จำนวนแขกคืนที่ i ก็คือผลรวมของการเปลี่ยนแปลงตั้งแต่คืนแรกถึงคืนที่ i หรือก็คือ prefix sum ของ <code>diff</code> นั่นเอง ลองกับการจอง 4 รายการ ได้แก่ คืน 2 ถึง 4 สามคน คืน 1 ถึง 2 ห้าคน คืน 4 ถึง 7 สองคน และคืน 3 คืนเดียวสี่คน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คืนที่</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2 ถึง 4 สามคน</td><td></td><td>+3</td><td></td><td></td><td>-3</td><td></td><td></td><td></td></tr>
+            <tr><td>1 ถึง 2 ห้าคน</td><td>+5</td><td></td><td>-5</td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>4 ถึง 7 สองคน</td><td></td><td></td><td></td><td>+2</td><td></td><td></td><td></td><td>-2</td></tr>
+            <tr><td>3 ถึง 3 สี่คน</td><td></td><td></td><td>+4</td><td>-4</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td><code>diff</code> รวม</td><td>5</td><td>3</td><td>-1</td><td>-2</td><td>-3</td><td>0</td><td>0</td><td>-2</td></tr>
+            <tr><td>prefix sum ของ <code>diff</code></td><td>5</td><td>8</td><td>7</td><td>5</td><td>2</td><td>2</td><td>2</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แถวสุดท้ายคือจำนวนแขกจริงทุกคืน เช่น คืนที่ 2 มีกลุ่มสามคนกับกลุ่มห้าคน รวม 8 คน ช่อง 8 อยู่เลยคืนสุดท้าย มีไว้ให้รายการที่จบคืนที่ 7 ลบได้โดยไม่ต้องเขียนกรณีพิเศษ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="hotel"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;long long&gt; diff(n + 2, 0); // (1)!
+    for (int k = 0; k &lt; q; k++) {
+        int l, r, guests;
+        cin &gt;&gt; l &gt;&gt; r &gt;&gt; guests;
+        diff[l] += guests;
+        diff[r + 1] -= guests;
+    }
+    long long current = 0;
+    for (int night = 1; night &lt;= n; night++) {
+        current += diff[night]; // (2)!
+        cout &lt;&lt; current &lt;&lt; (night == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใช้ช่อง 1 ถึง n + 1 ช่อง n + 1 รับการลบของรายการที่จบคืนสุดท้าย จึงต้องมี n + 2 ช่อง</li>
+        <li>สะสมไปทีละคืน ไม่ต้องเก็บ prefix เป็นอาเรย์อีกตัว เพราะใช้แต่ละค่าครั้งเดียวแล้วพิมพ์เลย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="hotel" data-title="ข้อมูลเข้า"><pre><code>7 4
+2 4 3
+1 2 5
+4 7 2
+3 3 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="hotel" data-title="C:\code\hotel.exe"><pre><code>5 8 7 5 2 2 2
+</code></pre></div>
+      </div>
+
+      <p>แต่ละรายการใช้งานสองครั้งไม่ว่าช่วงจะยาวแค่ไหน และสะสมอีก N ครั้ง รวมเป็น O(N + Q) <code>diff</code> กับ prefix sum เป็นของตรงข้ามกัน <code>diff[i]</code> คือค่าของคืน i ลบค่าของคืน i - 1 และ prefix sum ของ <code>diff</code> ได้ค่าเดิมกลับมา เหมือนที่ prefix sum ของผลต่างคืนค่าเดิม</p>
+
+      <p>ทำแบบเดียวกันในสองมิติได้ ถ้าจะบวก v ให้ทุกช่องในสี่เหลี่ยมมุม (r1, c1) ถึง (r2, c2) ให้บวก v ที่ <code>diff[r1][c1]</code> และ <code>diff[r2 + 1][c2 + 1]</code> ลบ v ที่ <code>diff[r1][c2 + 1]</code> และ <code>diff[r2 + 1][c1]</code> แล้วทำ prefix sum สองมิติตามหน้า 7.5 ทั้งตาราง สังเกตว่าเครื่องหมายของสี่มุมตรงกับสูตรหาผลรวมสี่เหลี่ยมในหน้า 7.5</p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">ใช้ได้เมื่อบวกครบก่อนแล้วค่อยถาม</p>
+        <p>difference array เหมาะกับโจทย์ที่บวกค่าทั้งหมดก่อน แล้วค่อยถามทีหลัง ถ้าโจทย์สลับกันระหว่างบวกช่วงกับถามค่าทีละครั้ง จะต้องสะสมใหม่ทุกครั้งที่ถาม ซึ่งช้าอีก โครงสร้างที่รับทั้งสองอย่างได้เร็วคือ Fenwick tree ในบทที่ 30</p>
+      </div>
+
+      <h2 id="prefix-xor">prefix xor</h2>
+
+      <p>ความคิดเดียวกันใช้ได้กับ xor ที่เรียนในหน้า 12.3 เพราะ xor มีคุณสมบัติ <code>x ^ x = 0</code> ถ้าให้ <code>px[i]</code> คือ xor ของ i ตัวแรก แล้ว <code>px[r] ^ px[l - 1]</code> จะหักล้างส่วนของ l - 1 ตัวแรกที่ซ้ำกันออก เหลือ xor ของตัวที่ l ถึง r พอดี เหมือนการลบใน prefix sum เช่น อุปกรณ์ส่งข้อมูลเป็นชุดตัวเลข และใช้ xor ของช่วงเป็นรหัสตรวจสอบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="prefix-xor"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; prefix_xor(n + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        int value;
+        cin &gt;&gt; value;
+        prefix_xor[i] = prefix_xor[i - 1] ^ value;
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int l, r;
+        cin &gt;&gt; l &gt;&gt; r;
+        cout &lt;&lt; (prefix_xor[r] ^ prefix_xor[l - 1]) &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="prefix-xor" data-title="ข้อมูลเข้า"><pre><code>6 4
+5 3 7 2 6 4
+1 6
+2 4
+3 3
+4 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="prefix-xor" data-title="C:\code\prefix_xor.exe"><pre><code>1
+6
+7
+4
+</code></pre></div>
+      </div>
+
+      <p>คำถามที่สองคือ 3 ^ 7 ^ 2 = 6 ต้องมีวงเล็บรอบ <code>^</code> ตอนพิมพ์ เพราะ <code>&lt;&lt;</code> ทำก่อน <code>^</code> เทคนิคนี้ใช้ได้กับการดำเนินการที่ "ถอนกลับได้" อย่างบวกที่ถอนด้วยลบ หรือ xor ที่ถอนด้วยตัวมันเอง แต่ใช้กับค่ามากสุดหรือน้อยสุดไม่ได้ เพราะรู้ค่ามากสุดของ r ตัวแรกกับ l - 1 ตัวแรก ไม่ได้บอกค่ามากสุดของช่วงตรงกลาง</p>
+
+      <h2 id="count-sum-k">นับช่วงที่ผลรวมเท่ากับ k</h2>
+
+      <p>ร้านกาแฟจดกำไรรายวัน N วัน วันที่ขาดทุนจดเป็นค่าติดลบ เจ้าของอยากรู้ว่ามีกี่ช่วงวันติดกันที่กำไรรวมเท่ากับ k พอดี วิธีตรงไปตรงมาคือลองทุกคู่ l กับ r แล้วหาผลรวมด้วย prefix sum</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sum-k-naive"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;long long&gt; prefix(n + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        int profit;
+        cin &gt;&gt; profit;
+        prefix[i] = prefix[i - 1] + profit;
+    }
+    long long count = 0;
+    for (int l = 1; l &lt;= n; l++) {
+        for (int r = l; r &lt;= n; r++) {
+            if (prefix[r] - prefix[l - 1] == k) {
+                count++;
+            }
+        }
+    }
+    cout &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sum-k-naive" data-title="ข้อมูลเข้า"><pre><code>8 5
+3 2 -1 1 5 -5 5 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sum-k-naive" data-title="C:\code\sum_k.exe"><pre><code>11
+</code></pre></div>
+      </div>
+
+      <p>ถูกต้อง แต่มีคู่ l กับ r ราว N<sup>2</sup>/2 คู่ เป็น O(N<sup>2</sup>) ที่ N เป็นแสนไม่ทัน ต้องคิดใหม่จากสูตรผลรวมช่วง</p>
+
+      <div class="code" data-lang="text"><pre><code>prefix[r] - prefix[l - 1] = k   ก็คือ   prefix[l - 1] = prefix[r] - k
+</code></pre></div>
+
+      <p>แปลว่า ถ้าตรึงวันสุดท้าย r ไว้ จำนวนช่วงที่จบที่ r และรวมได้ k เท่ากับจำนวน index j ตั้งแต่ 0 ถึง r - 1 ที่ <code>prefix[j]</code> เท่ากับ <code>prefix[r] - k</code> ไม่ต้องลอง l ทุกค่า แค่ต้องนับว่าค่าหนึ่งๆ ปรากฏกี่ครั้งใน prefix ช่วงก่อนหน้า ลองกับตัวอย่าง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>j</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>prefix[j]</code></td><td>0</td><td>3</td><td>5</td><td>4</td><td>5</td><td>10</td><td>5</td><td>10</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ที่ r = 5 <code>prefix[5]</code> คือ 10 ต้องหาค่า 5 ใน j = 0 ถึง 4 เจอที่ j = 2 กับ j = 4 จึงมีสองช่วงที่จบวันที่ 5 คือวันที่ 3 ถึง 5 และวันที่ 5 วันเดียว ทำแบบนี้ครบทุก r แล้วรวมกันได้ 11</p>
+
+      <p>ยังเหลือคำถามว่าจะนับเร็วๆ ได้ยังไง กำไรติดลบได้ <code>prefix</code> จึงขึ้นๆ ลงๆ ไม่เรียง ใช้ <code>lower_bound</code> บน <code>prefix</code> ตรงๆ ไม่ได้ มีสองทางตามขอบเขตของโจทย์</p>
+
+      <h3 id="narrow-range">ทางที่ 1 ค่าอยู่ในช่วงแคบ ใช้อาเรย์นับ</h3>
+
+      <p>ถ้าโจทย์บอกว่ากำไรแต่ละวันอยู่ระหว่าง -10 ถึง 10 ค่า <code>prefix</code> ทุกตัวจะอยู่ระหว่าง -10N ถึง 10N เท่านั้น ใช้อาเรย์นับแบบหน้า 5.3 จดว่าค่าแต่ละค่าเคยเป็น prefix มาแล้วกี่ครั้ง ไล่ r จากซ้ายไปขวา ก่อนจดค่าของ r ให้ถามอาเรย์นับว่า <code>prefix[r] - k</code> เคยเจอกี่ครั้ง ซึ่งคือ j ทุกตัวที่น้อยกว่า r พอดี ค่าติดลบใช้เป็น index ไม่ได้ จึงเลื่อนทุกค่าขึ้นด้วย <code>limit</code> แบบที่ทำกับคะแนนติดลบในบทที่ 13</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="sum-k-count"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long k;
+    cin &gt;&gt; n &gt;&gt; k;
+    long long limit = 10LL * n;
+    vector&lt;int&gt; seen(2 * limit + 1, 0); // (1)!
+    long long prefix = 0;
+    seen[prefix + limit]++; // (2)!
+    long long count = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        int profit;
+        cin &gt;&gt; profit;
+        prefix += profit;
+        long long want = prefix - k;
+        if (want &gt;= -limit &amp;&amp; want &lt;= limit) { // (3)!
+            count += seen[want + limit];
+        }
+        seen[prefix + limit]++;
+    }
+    cout &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ช่อง <code>v + limit</code> นับว่าค่า v เป็น prefix มาแล้วกี่ครั้ง N เป็นแสน อาเรย์มีราวสองล้านช่อง</li>
+        <li>จด <code>prefix[0] = 0</code> ไว้ก่อนเริ่ม ช่วงที่เริ่มวันที่ 1 ต้องใช้ค่านี้</li>
+        <li>k อาจใหญ่จน <code>want</code> หลุดช่วงที่อาเรย์รองรับ ค่าแบบนั้นไม่มีทางเป็น prefix ได้ ข้ามไปเลย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sum-k-count" data-title="ข้อมูลเข้า"><pre><code>8 5
+3 2 -1 1 5 -5 5 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sum-k-count" data-title="C:\code\sum_k.exe"><pre><code>11
+</code></pre></div>
+      </div>
+
+      <p>ไล่ครั้งเดียว เป็น O(N) แต่ใช้ได้เฉพาะเมื่อช่วงของ prefix แคบพอจะสร้างอาเรย์ ถ้ากำไรแต่ละวันถึง 10<sup>9</sup> ช่วงของ prefix กว้างถึง 10<sup>14</sup> สร้างอาเรย์ไม่ได้</p>
+
+      <h3 id="sort-and-search">ทางที่ 2 ค่ากว้าง ใช้การเรียงกับ binary search</h3>
+
+      <p>เก็บ prefix ทุกตัวเป็นคู่ (ค่า, index) แล้วเรียง pair เรียงตามค่าก่อน ถ้าค่าเท่ากันเรียงตาม index ตามบทที่ 16 คู่ที่มีค่าเท่ากันจึงอยู่ติดกันเป็นกลุ่ม และในกลุ่มเรียงตาม index ด้วย จำนวน j ที่ <code>prefix[j]</code> เท่ากับ <code>want</code> และ j น้อยกว่า r คือระยะระหว่างรอยต่อสองจุดในอาเรย์ที่เรียงแล้ว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="sum-k-sorted"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;long long&gt; prefix(n + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        int profit;
+        cin &gt;&gt; profit;
+        prefix[i] = prefix[i - 1] + profit;
+    }
+    vector&lt;pair&lt;long long, int&gt;&gt; sorted_prefix(n + 1);
+    for (int j = 0; j &lt;= n; j++) {
+        sorted_prefix[j] = make_pair(prefix[j], j);
+    }
+    sort(sorted_prefix.begin(), sorted_prefix.end());
+    long long count = 0;
+    for (int r = 1; r &lt;= n; r++) {
+        long long want = prefix[r] - k;
+        auto from = lower_bound(sorted_prefix.begin(), sorted_prefix.end(), make_pair(want, 0)); // (1)!
+        auto to = lower_bound(sorted_prefix.begin(), sorted_prefix.end(), make_pair(want, r)); // (2)!
+        count += to - from;
+    }
+    cout &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>คู่แรกที่ไม่น้อยกว่า (want, 0) คือคู่แรกของกลุ่มค่า <code>want</code> เพราะ index ไม่มีทางน้อยกว่า 0</li>
+        <li>คู่แรกที่ไม่น้อยกว่า (want, r) คือคู่แรกในกลุ่มที่ index ตั้งแต่ r ขึ้นไป หรือคู่แรกของกลุ่มถัดไป ระหว่าง <code>from</code> ถึง <code>to</code> จึงเป็นค่า <code>want</code> ที่ index น้อยกว่า r พอดี</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sum-k-sorted" data-title="ข้อมูลเข้า"><pre><code>8 5
+3 2 -1 1 5 -5 5 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sum-k-sorted" data-title="C:\code\sum_k.exe"><pre><code>11
+</code></pre></div>
+      </div>
+
+      <p>เรียงครั้งเดียว O(N log N) แล้วแต่ละ r ค้นสองครั้ง O(log N) รวมเป็น O(N log N) ใช้ได้กับค่าขนาดไหนก็ได้ จำนวนช่วงทั้งหมดมีได้ถึง N(N + 1)/2 ซึ่งเกิน <code>int</code> เมื่อ N เป็นแสน ตัวนับจึงต้องเป็น <code>long long</code> บทที่ 20 จะได้รู้จัก <code>map</code> ที่ทำงานแบบอาเรย์นับในทางที่ 1 ได้กับค่าขนาดไหนก็ได้ และเขียนสั้นกว่านี้</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 รันแต่ละแบบ 5 รอบ ตารางแรกคือโรงแรม N = 100000 คืน รายการจอง Q = 100000 รายการ ช่วงสุ่ม ยาวเฉลี่ยราวหนึ่งในสามของทั้งหมด วิธีตรงไปตรงมาจึงบวกราว 3 × 10<sup>9</sup> ครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>บวกทีละคืน O(NQ)</td><td>5.8 วินาที (5 รอบอยู่ระหว่าง 5.2 ถึง 7.1)</td><td>0.53 วินาที</td></tr>
+            <tr><td>difference array O(N + Q)</td><td>0.04 วินาที</td><td>0.05 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ลูปบวกช่วงต่อเนื่องเป็นงานที่ <code>-O2</code> เร่งได้มาก เพราะ compiler สั่งให้บวกหลายช่องพร้อมกันได้ วิธีตรงไปตรงมาแบบ <code>-O2</code> จึงยังอยู่ในหนึ่งวินาที แต่ถ้า N กับ Q เพิ่มเป็นสองแสน งานจะเพิ่มสี่เท่าและเกินทันที ส่วน difference array เร็วเท่าการอ่านข้อมูล</p>
+
+      <p>ตารางที่สองคือนับช่วงที่ผลรวมเท่ากับ 7 กำไรรายวันสุ่มตั้งแต่ -10 ถึง 10 ซึ่งใช้ได้ทั้งสามวิธี</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">100000</td><td>ลองทุกคู่ O(N<sup>2</sup>)</td><td>19 วินาที (5 รอบอยู่ระหว่าง 15 ถึง 23)</td><td>2.0 วินาที</td></tr>
+            <tr><td>เรียงกับ binary search O(N log N)</td><td>0.11 วินาที</td><td>0.05 วินาที</td></tr>
+            <tr><td>อาเรย์นับ O(N)</td><td>0.03 วินาที</td><td>0.03 วินาที</td></tr>
+            <tr><td rowspan="2">1000000</td><td>เรียงกับ binary search</td><td>0.97 วินาที</td><td>0.28 วินาที</td></tr>
+            <tr><td>อาเรย์นับ</td><td>0.13 วินาที</td><td>0.11 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสามวิธีได้คำตอบเดียวกัน คือ 2184709 ช่วงที่ N เป็นแสน วิธีลองทุกคู่ไม่ได้วัดที่ N เป็นล้าน เพราะงานมากขึ้นร้อยเท่า วิธีเรียงช้ากว่าอาเรย์นับอยู่บ้าง เพราะต้องเรียงและค้น แต่ใช้ได้ทุกขอบเขต ถ้าโจทย์ให้ค่าแคบ ใช้อาเรย์นับ ถ้าไม่แน่ใจ ใช้วิธีเรียง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="minus-at-r">แบบที่ 1 ลบที่ r แทน r + 1</h3>
+
+      <p>ในโปรแกรม hotel เขียน <code>diff[r] -= guests;</code> เพราะคิดว่าแขกพักถึงคืน r ก็ควรลบที่ r</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="hotel-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;long long&gt; diff(n + 2, 0);
+    for (int k = 0; k &lt; q; k++) {
+        int l, r, guests;
+        cin &gt;&gt; l &gt;&gt; r &gt;&gt; guests;
+        diff[l] += guests;
+        diff[r] -= guests;
+    }
+    long long current = 0;
+    for (int night = 1; night &lt;= n; night++) {
+        current += diff[night];
+        cout &lt;&lt; current &lt;&lt; (night == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="hotel-bug" data-title="ข้อมูลเข้า"><pre><code>7 4
+2 4 3
+1 2 5
+4 7 2
+3 3 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="hotel-bug" data-title="C:\code\hotel.exe"><pre><code>5 3 3 2 2 2 0
+</code></pre></div>
+      </div>
+
+      <p>ทุกรายการหายไปหนึ่งคืนท้าย และรายการที่จองคืนเดียว (คืน 3 สี่คน) หายไปทั้งรายการ เพราะบวกแล้วลบที่ช่องเดียวกัน <code>diff[i]</code> คือการเปลี่ยนแปลงตอน <strong>เริ่ม</strong> คืนที่ i แขกยังอยู่ตลอดคืน r จึงต้องลดตอนเริ่มคืน r + 1 ทดสอบ difference array ด้วยช่วงยาวหนึ่งเสมอ เหมือนที่หน้า 5.4 ทดสอบ prefix sum ด้วยช่วงยาวหนึ่ง</p>
+
+      <h3 id="forgot-zero">แบบที่ 2 ลืม prefix[0]</h3>
+
+      <p>ในโปรแกรม sum-k-sorted เก็บเฉพาะ <code>prefix[1]</code> ถึง <code>prefix[n]</code> ลงในอาเรย์ที่จะเรียง เพราะคิดว่า <code>prefix[0]</code> เป็นแค่ 0 ไม่ใช่ของจริง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sum-k-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;long long&gt; prefix(n + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        int profit;
+        cin &gt;&gt; profit;
+        prefix[i] = prefix[i - 1] + profit;
+    }
+    vector&lt;pair&lt;long long, int&gt;&gt; sorted_prefix(n);
+    for (int j = 1; j &lt;= n; j++) {
+        sorted_prefix[j - 1] = make_pair(prefix[j], j);
+    }
+    sort(sorted_prefix.begin(), sorted_prefix.end());
+    long long count = 0;
+    for (int r = 1; r &lt;= n; r++) {
+        long long want = prefix[r] - k;
+        auto from = lower_bound(sorted_prefix.begin(), sorted_prefix.end(), make_pair(want, 0));
+        auto to = lower_bound(sorted_prefix.begin(), sorted_prefix.end(), make_pair(want, r));
+        count += to - from;
+    }
+    cout &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sum-k-bug" data-title="ข้อมูลเข้า"><pre><code>8 5
+3 2 -1 1 5 -5 5 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sum-k-bug" data-title="C:\code\sum_k.exe"><pre><code>8
+</code></pre></div>
+      </div>
+
+      <p>ขาดไปสามช่วง คือวันที่ 1 ถึง 2 วันที่ 1 ถึง 4 และวันที่ 1 ถึง 6 ทุกช่วงที่หายเริ่มวันที่ 1 ซึ่งต้องใช้ <code>prefix[0]</code> เป็นตัวลบ ช่วงที่ไม่ได้เริ่มวันแรกยังนับถูกหมด ชุดทดสอบที่ช่วงคำตอบบังเอิญไม่มีช่วงไหนเริ่มวันแรกจะผ่าน จึงต้องทดสอบด้วยข้อมูลที่ผลรวมของวันแรกๆ เท่ากับ k พอดีด้วย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>บวก g ให้ช่วง l ถึง r หลายครั้ง จดแค่ <code>diff[l] += g</code> กับ <code>diff[r + 1] -= g</code> แล้วทำ prefix sum ครั้งเดียว ได้ O(N + Q)</li>
+        <li>xor ของช่วงคือ <code>px[r] ^ px[l - 1]</code> ใช้ได้กับการดำเนินการที่ถอนกลับได้เท่านั้น ใช้กับค่ามากสุดไม่ได้</li>
+        <li>ช่วงที่ผลรวมเท่ากับ k คือคู่ j &lt; r ที่ <code>prefix[j] = prefix[r] - k</code> นับด้วยอาเรย์นับเมื่อค่าแคบ หรือเรียงคู่ (ค่า, index) แล้วใช้ <code>lower_bound</code> สองครั้งเมื่อค่ากว้าง</li>
+        <li>อย่าลืม <code>prefix[0] = 0</code> และทดสอบด้วยช่วงยาวหนึ่ง กับช่วงที่เริ่มตัวแรก</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

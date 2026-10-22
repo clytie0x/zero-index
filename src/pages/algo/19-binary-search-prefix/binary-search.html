@@ -1,0 +1,354 @@
+<article class="doc">
+      <h1>19.1 binary search แบบวนลูป</h1>
+
+      <p>หน้า 9.4 เขียน binary search ด้วย recursion เพื่อหาว่าเลขที่ต้องการอยู่ช่องไหน โจทย์ค่าย 2 ถามละเอียดกว่านั้น เช่น มีกี่คนที่ได้คะแนนน้อยกว่า 60 หรือคนแรกที่ได้อย่างน้อย 52 คะแนนอยู่ลำดับที่เท่าไร คำถามแบบนี้ต้องตอบถูกทั้งตอนที่มีค่าซ้ำ และตอนที่ค่าที่ถามไม่มีอยู่ในข้อมูลเลย หน้านี้เปลี่ยน binary search เป็นลูป แล้วเขียนตามกฎข้อเดียวที่ทำให้ทุกขอบถูกโดยไม่ต้องเดา</p>
+
+      <h2 id="from-recursion">จาก recursion เป็นลูป</h2>
+
+      <p>binary search ในหน้า 9.4 เรียกตัวเองแค่ครั้งเดียวต่อชั้น สิ่งที่เปลี่ยนระหว่างชั้นมีแค่ <code>low</code> กับ <code>high</code> จึงเปลี่ยนเป็นลูปได้ตรงๆ แทนที่จะเรียกตัวเองด้วยช่วงใหม่ ก็แก้ค่า <code>low</code> หรือ <code>high</code> แล้ววนกลับไปทำซ้ำ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="loop-search"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, target;
+    cin &gt;&gt; n &gt;&gt; target;
+    vector&lt;int&gt; ids(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; ids[i];
+    }
+    int low = 0, high = n - 1;
+    int position = -1;
+    while (low &lt;= high) {
+        int mid = (low + high) / 2;
+        cout &lt;&lt; "low=" &lt;&lt; low &lt;&lt; " high=" &lt;&lt; high &lt;&lt; " mid=" &lt;&lt; mid &lt;&lt; " a[mid]=" &lt;&lt; ids[mid] &lt;&lt; '\n';
+        if (ids[mid] == target) {
+            position = mid;
+            break;
+        }
+        if (ids[mid] &lt; target) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    cout &lt;&lt; "position = " &lt;&lt; position &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="loop-search" data-title="ข้อมูลเข้า"><pre><code>10 1460
+1012 1047 1105 1188 1230 1302 1377 1419 1460 1525
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="loop-search" data-title="C:\code\loop_search.exe"><pre><code>low=0 high=9 mid=4 a[mid]=1230
+low=5 high=9 mid=7 a[mid]=1419
+low=8 high=9 mid=8 a[mid]=1460
+position = 8
+</code></pre></div>
+      </div>
+
+      <p>ช่วงที่พิมพ์ออกมาตรงกับหน้า 9.4 ทุกบรรทัด แบบลูปไม่ต้องส่งอาเรย์เป็นพารามิเตอร์ ไม่ใช้ call stack และเพิ่มเงื่อนไขได้ง่ายกว่า ตั้งแต่หน้านี้ไปจะใช้แบบลูปทั้งหมด</p>
+
+      <h2 id="duplicates">เมื่อมีค่าซ้ำ</h2>
+
+      <p>คะแนนสอบของนักเรียน 8 คนเรียงแล้วเป็น <code>45 52 52 52 60 71 71 88</code> ป้อนให้โปรแกรมเดิมหา 52</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>8 52
+45 52 52 52 60 71 71 88
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\loop_search.exe"><pre><code>low=0 high=7 mid=3 a[mid]=52
+position = 3
+</code></pre></div>
+      </div>
+
+      <p>เจอ 52 ที่ช่อง 3 ถูกต้องว่ามีอยู่ แต่ถ้าคำถามคือ "มีกี่คนที่ได้น้อยกว่า 52" คำตอบคือ 1 ซึ่งเป็นตำแหน่งของ 52 <strong>ตัวแรก</strong> ไม่ใช่ตัวที่บังเอิญเจอก่อน วิธีนี้หยุดทันทีที่เจอตัวไหนก็ได้ จึงตอบคำถามแบบนี้ไม่ได้ และถ้าถามหา 55 ซึ่งไม่มีใครได้ ก็ตอบได้แค่ -1 ทั้งที่อยากรู้ว่ามีกี่คนที่ได้น้อยกว่า 55</p>
+
+      <h2 id="first-at-least">ช่องแรกที่มีค่าอย่างน้อย x</h2>
+
+      <p>เปลี่ยนคำถามให้มีคำตอบเสมอ คือ <strong>ช่องแรกที่ <code>a[i] &gt;= x</code> อยู่ช่องไหน ถ้าไม่มีเลยให้ตอบ n</strong> ลองเขียนผลของเงื่อนไข <code>a[i] &gt;= 52</code> ไว้ใต้แต่ละช่อง</p>
+
+      <figure>
+        <svg viewBox="0 0 600 190" width="600" style="max-width:100%;height:auto" role="img" aria-label="อาเรย์ 45 52 52 52 60 71 71 88 ใต้ช่อง 0 เขียนว่าไม่ ใต้ช่อง 1 ถึง 7 เขียนว่าใช่ รอยต่อระหว่างช่อง 0 กับช่อง 1 คือคำตอบ 1">
+          <g style="font-family:var(--font-code)">
+            <text x="90" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">0</text>
+            <text x="150" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">1</text>
+            <text x="210" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">2</text>
+            <text x="270" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">3</text>
+            <text x="330" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">4</text>
+            <text x="390" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">5</text>
+            <text x="450" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">6</text>
+            <text x="510" y="24" text-anchor="middle" style="fill:var(--muted);font-size:13px">7</text>
+            <rect x="60" y="34" width="60" height="44" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="120" y="34" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="180" y="34" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="240" y="34" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="300" y="34" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="360" y="34" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="420" y="34" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="480" y="34" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="90" y="62" text-anchor="middle" style="fill:var(--ink);font-size:16px">45</text>
+            <text x="150" y="62" text-anchor="middle" style="fill:var(--ink);font-size:16px">52</text>
+            <text x="210" y="62" text-anchor="middle" style="fill:var(--ink);font-size:16px">52</text>
+            <text x="270" y="62" text-anchor="middle" style="fill:var(--ink);font-size:16px">52</text>
+            <text x="330" y="62" text-anchor="middle" style="fill:var(--ink);font-size:16px">60</text>
+            <text x="390" y="62" text-anchor="middle" style="fill:var(--ink);font-size:16px">71</text>
+            <text x="450" y="62" text-anchor="middle" style="fill:var(--ink);font-size:16px">71</text>
+            <text x="510" y="62" text-anchor="middle" style="fill:var(--ink);font-size:16px">88</text>
+            <line x1="120" y1="28" x2="120" y2="140" style="stroke:var(--brand);stroke-width:2;stroke-dasharray:5 4"/>
+          </g>
+          <g style="font-family:var(--font-text)">
+            <text x="30" y="106" text-anchor="middle" style="fill:var(--muted);font-size:13px">&gt;= 52</text>
+            <text x="90" y="106" text-anchor="middle" style="fill:var(--muted);font-size:15px">ไม่</text>
+            <text x="150" y="106" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">ใช่</text>
+            <text x="210" y="106" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">ใช่</text>
+            <text x="270" y="106" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">ใช่</text>
+            <text x="330" y="106" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">ใช่</text>
+            <text x="390" y="106" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">ใช่</text>
+            <text x="450" y="106" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">ใช่</text>
+            <text x="510" y="106" text-anchor="middle" style="fill:var(--brand-text);font-size:15px">ใช่</text>
+            <text x="126" y="166" style="fill:var(--brand-text);font-size:14px">รอยต่ออยู่หน้าช่อง 1 คำตอบคือ 1</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ข้อมูลเรียงจากน้อยไปมาก ผลจึงเป็น "ไม่" ติดกันทางซ้าย แล้วเป็น "ใช่" ติดกันทางขวาเสมอ ไม่มีทางสลับไปมา งานของเราคือหา <strong>รอยต่อ</strong> ระหว่างสองฝั่ง คำตอบคือช่อง "ใช่" ช่องแรก ถ้าทุกช่องตอบ "ไม่" รอยต่อก็อยู่หลังช่องสุดท้าย คือ n</p>
+
+      <p>ใช้ตัวแปร <code>lo</code> กับ <code>hi</code> แล้วรักษาสัญญาข้อเดียวไว้ตลอดลูป</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">สัญญาของ lo กับ hi</p>
+        <p>ทุกช่อง <strong>ก่อน</strong> <code>lo</code> ตอบ "ไม่" ทุกช่อง <strong>ตั้งแต่</strong> <code>hi</code> เป็นต้นไปตอบ "ใช่" รอยต่อจึงอยู่ระหว่าง <code>lo</code> ถึง <code>hi</code> เสมอ</p>
+      </div>
+
+      <p>เริ่มที่ <code>lo = 0</code> กับ <code>hi = n</code> สัญญาเป็นจริงทันที เพราะยังไม่มีช่องไหนอยู่ก่อนช่อง 0 และไม่มีช่องไหนอยู่ตั้งแต่ช่อง n แต่ละรอบดูช่อง <code>mid</code> ตรงกลาง</p>
+
+      <ul>
+        <li>ถ้า <code>a[mid] &gt;= x</code> ช่อง <code>mid</code> และทุกช่องทางขวาตอบ "ใช่" ย้าย <code>hi = mid</code> ห้ามเป็น <code>mid - 1</code> เพราะ <code>mid</code> อาจเป็นช่อง "ใช่" ช่องแรกพอดี</li>
+        <li>ถ้าไม่ ช่อง <code>mid</code> และทุกช่องทางซ้ายตอบ "ไม่" ย้าย <code>lo = mid + 1</code></li>
+      </ul>
+
+      <p>วนจน <code>lo</code> เท่ากับ <code>hi</code> ที่ที่รอยต่ออยู่ได้เหลือจุดเดียว นั่นคือคำตอบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="first-at-least"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, x;
+    cin &gt;&gt; n &gt;&gt; x;
+    vector&lt;int&gt; scores(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; scores[i];
+    }
+    int lo = 0, hi = n; // (1)!
+    while (lo &lt; hi) { // (2)!
+        int mid = lo + (hi - lo) / 2; // (3)!
+        cout &lt;&lt; "lo=" &lt;&lt; lo &lt;&lt; " hi=" &lt;&lt; hi &lt;&lt; " mid=" &lt;&lt; mid &lt;&lt; " a[mid]=" &lt;&lt; scores[mid] &lt;&lt; '\n';
+        if (scores[mid] &gt;= x) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    cout &lt;&lt; "first index with score &gt;= " &lt;&lt; x &lt;&lt; " is " &lt;&lt; lo &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>hi</code> เริ่มที่ <code>n</code> ไม่ใช่ <code>n - 1</code> เพื่อให้ตอบ n ได้เมื่อไม่มีช่องไหนถึง x ช่อง <code>n</code> ไม่มีอยู่จริง แต่ไม่เคยถูกอ่าน เพราะ <code>mid</code> น้อยกว่า <code>hi</code> เสมอ</li>
+        <li>ช่วงที่รอยต่ออยู่ได้คือ <code>lo</code> ถึง <code>hi</code> วนจนเหลือจุดเดียว ไม่ใช่ <code>&lt;=</code> แบบโปรแกรมก่อนหน้า</li>
+        <li>ได้ค่าเดียวกับ <code>(lo + hi) / 2</code> แต่ไม่ล้นเมื่อ <code>lo</code> กับ <code>hi</code> ใหญ่ ดูในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="first-at-least" data-title="ข้อมูลเข้า"><pre><code>8 52
+45 52 52 52 60 71 71 88
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="first-at-least" data-title="C:\code\first_at_least.exe"><pre><code>lo=0 hi=8 mid=4 a[mid]=60
+lo=0 hi=4 mid=2 a[mid]=52
+lo=0 hi=2 mid=1 a[mid]=52
+lo=0 hi=1 mid=0 a[mid]=45
+first index with score &gt;= 52 is 1
+</code></pre></div>
+      </div>
+
+      <p>ช่อง 4 คือ 60 ถึง 52 แล้ว จึงเก็บไว้เป็น <code>hi</code> ช่อง 2 กับช่อง 1 เป็น 52 ก็ถึงเหมือนกัน <code>hi</code> จึงเลื่อนซ้ายต่อ แม้เจอ 52 แล้วก็ยังไม่หยุด เพราะอาจมี 52 ที่อยู่ซ้ายกว่านั้น สุดท้ายช่อง 0 คือ 45 ไม่ถึง <code>lo</code> จึงกลายเป็น 1 เท่ากับ <code>hi</code> แล้วจบ ลองป้อน x อื่นกับคะแนนชุดเดิม</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>x</th><th>คำตอบ</th><th>ความหมาย</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>52</td><td>1</td><td>52 ตัวแรกอยู่ช่อง 1 มี 1 คนที่ได้น้อยกว่า 52</td></tr>
+            <tr><td>53</td><td>4</td><td>ไม่มีใครได้ 53 ถ้าจะแทรก 53 ให้ยังเรียงอยู่ ต้องแทรกที่ช่อง 4</td></tr>
+            <tr><td>45</td><td>0</td><td>ตัวแรกสุดก็ถึงแล้ว</td></tr>
+            <tr><td>10</td><td>0</td><td>ทุกคนถึง</td></tr>
+            <tr><td>88</td><td>7</td><td>มีแค่ช่องสุดท้ายที่ถึง</td></tr>
+            <tr><td>100</td><td>8</td><td>ไม่มีใครถึงเลย ได้ n</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="why-it-stops">ทำไมลูปจบแน่นอน</h3>
+
+      <p>ตอนที่ <code>lo &lt; hi</code> ค่า <code>mid</code> อยู่ระหว่าง <code>lo</code> ถึง <code>hi - 1</code> เสมอ เพราะการหารปัดเศษลง ทั้ง <code>hi = mid</code> และ <code>lo = mid + 1</code> จึงทำให้ช่วงสั้นลงอย่างน้อยหนึ่งทุกรอบ และจริงๆ แล้วสั้นลงราวครึ่งหนึ่ง ข้อมูล n ตัววนราว log<sub>2</sub> n รอบ แสนตัวไม่เกิน 17 รอบ ล้านตัวไม่เกิน 20 รอบ ค้นหนึ่งครั้งจึงเป็น O(log n) เทียบกับไล่ทีละช่องที่เป็น O(n)</p>
+
+      <h2 id="count">นับด้วยรอยต่อ</h2>
+
+      <p>ช่องแรกที่ถึง x บอกจำนวนช่องที่ <strong>น้อยกว่า</strong> x ไปในตัว เพราะทุกช่องก่อนหน้ามันตอบ "ไม่" ทั้งหมด ถ้าเปลี่ยนเงื่อนไขเป็น <code>a[mid] &gt; x</code> จะได้ช่องแรกที่ <strong>มากกว่า</strong> x ซึ่งก็คือจำนวนช่องที่ไม่เกิน x สองค่านี้ลบกันได้จำนวนช่องที่เท่ากับ x พอดี</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="count-bounds"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int first_at_least(const vector&lt;int&gt; &amp;a, int x) // (1)!
+{
+    int lo = 0, hi = a.size();
+    while (lo &lt; hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (a[mid] &gt;= x) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    return lo;
+}
+
+int first_greater(const vector&lt;int&gt; &amp;a, int x)
+{
+    int lo = 0, hi = a.size();
+    while (lo &lt; hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (a[mid] &gt; x) { // (2)!
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    return lo;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; scores(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; scores[i];
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int x;
+        cin &gt;&gt; x;
+        int less = first_at_least(scores, x);
+        int at_most = first_greater(scores, x);
+        cout &lt;&lt; "x=" &lt;&lt; x &lt;&lt; " less=" &lt;&lt; less &lt;&lt; " at_most=" &lt;&lt; at_most &lt;&lt; " equal=" &lt;&lt; at_most - less &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ส่ง vector แบบ reference ตามบทที่ 15 จะได้ไม่ต้องคัดลอกข้อมูลแสนตัวทุกครั้งที่เรียก <code>const</code> บอกว่าฟังก์ชันนี้จะไม่แก้ข้อมูล ถ้าเผลอแก้ compiler จะฟ้อง</li>
+        <li>ต่างจากฟังก์ชันแรกแค่ <code>&gt;=</code> กับ <code>&gt;</code> ตัวเดียว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="count-bounds" data-title="ข้อมูลเข้า"><pre><code>8 5
+45 52 52 52 60 71 71 88
+52
+53
+71
+10
+100
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="count-bounds" data-title="C:\code\count_bounds.exe"><pre><code>x=52 less=1 at_most=4 equal=3
+x=53 less=4 at_most=4 equal=0
+x=71 less=5 at_most=7 equal=2
+x=10 less=0 at_most=0 equal=0
+x=100 less=8 at_most=8 equal=0
+</code></pre></div>
+      </div>
+
+      <p>คำถามอื่นที่เจอบ่อยก็ได้จากสองฟังก์ชันนี้ เช่น ช่องสุดท้ายที่ไม่เกิน x คือ <code>first_greater(a, x) - 1</code> ถ้าได้ -1 แปลว่าไม่มีช่องไหนเลย และจำนวนคนที่ได้อย่างน้อย x คือ <code>n - first_at_least(a, x)</code> ก่อนเขียน ให้ถามตัวเองว่าคำถามคือ "รอยต่อของเงื่อนไขอะไร" แล้วค่อยเลือกว่าใช้ <code>&gt;=</code> หรือ <code>&gt;</code></p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนโน้ตบุ๊ก AMD Ryzen AI 9 HX 370 กับ Windows 11 และ GCC 14.2 ของ Code::Blocks คะแนน N = 100000 ตัว สุ่มตั้งแต่ 1 ถึง 10<sup>9</sup> แล้วเรียงไว้ มีคำถาม Q = 100000 ข้อ แต่ละข้อถามว่ามีกี่ตัวที่น้อยกว่า x วิธีตรงไปตรงมาไล่จากช่องซ้ายสุดจนเจอตัวที่ถึง x ซึ่งเฉลี่ยต้องไล่ครึ่งอาเรย์ทุกคำถาม เป็น O(NQ) ส่วน binary search เป็น O(Q log N) รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลางของ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ไล่จากซ้าย</td><td>10.1 วินาที (5 รอบอยู่ระหว่าง 8.4 ถึง 11.3)</td><td>2.0 วินาที</td></tr>
+            <tr><td>binary search</td><td>0.06 วินาที</td><td>0.06 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วิธีไล่ต้องเทียบราว 5 × 10<sup>9</sup> ครั้ง ส่วน binary search เทียบไม่เกิน 17 × 10<sup>5</sup> ครั้ง เวลาที่เหลือ 0.06 วินาทีเกือบทั้งหมดคือการอ่านตัวเลขสองแสนตัว แม้ <code>-O2</code> จะช่วยวิธีไล่ได้ห้าเท่า ก็ยังเกิน 1 วินาทีอยู่ดี</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="lo-equals-mid">แบบที่ 1 เขียน lo = mid</h3>
+
+      <p>ในโปรแกรม first-at-least เปลี่ยน <code>lo = mid + 1;</code> เป็น <code>lo = mid;</code> เพราะคิดว่าดูช่อง <code>mid</code> ซ้ำอีกรอบก็ไม่เสียหาย แล้วป้อน <code>8 100</code> กับคะแนนชุดเดิม</p>
+
+      <div class="code" data-lang="text"><pre><code>lo=0 hi=8 mid=4 a[mid]=60
+lo=4 hi=8 mid=6 a[mid]=71
+lo=6 hi=8 mid=7 a[mid]=88
+lo=7 hi=8 mid=7 a[mid]=88
+lo=7 hi=8 mid=7 a[mid]=88
+lo=7 hi=8 mid=7 a[mid]=88
+lo=7 hi=8 mid=7 a[mid]=88
+lo=7 hi=8 mid=7 a[mid]=88
+</code></pre></div>
+
+      <p>พิมพ์บรรทัดเดิมไม่หยุดจนต้องปิดหน้าต่างเอง พอช่วงเหลือ <code>lo=7 hi=8</code> ค่า <code>mid</code> ปัดลงได้ 7 ช่อง 7 คือ 88 ไม่ถึง 100 จึงตั้ง <code>lo = 7</code> ซึ่งเป็นค่าเดิม ช่วงไม่สั้นลงเลย ถ้าลบบรรทัดที่พิมพ์ออก โปรแกรมจะค้างเงียบๆ และ grader ให้ผลว่าเกินเวลา ทั้งที่ทุกบรรทัดดูถูก ลองหา 52 ซึ่งมีอยู่จริงก็ค้างเหมือนกัน คราวนี้ค้างที่ <code>lo=0 hi=1 mid=0</code></p>
+
+      <p>เป็นกฎเดียวกับหน้า 9.4 ทุกรอบช่วงต้องสั้นลง ฝั่งที่ตอบ "ไม่" ตัด <code>mid</code> ทิ้งไปด้วย ฝั่งที่ตอบ "ใช่" เก็บ <code>mid</code> ไว้ ทดสอบ binary search ทุกครั้งด้วย x ที่น้อยกว่าทุกตัว มากกว่าทุกตัว เท่ากับตัวแรก เท่ากับตัวสุดท้าย และค่าที่ซ้ำ</p>
+
+      <h3 id="mid-overflow">แบบที่ 2 mid ล้น</h3>
+
+      <p>ในหน้านี้ <code>hi</code> ไม่เกิน n จึงไม่มีปัญหา แต่หน้า 19.3 จะค้นบนช่วงของคำตอบที่ใหญ่ถึงพันล้าน ถ้าหาจุดกลางด้วย <code>(lo + hi) / 2</code> แบบ <code>int</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="mid-overflow"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int lo, hi;
+    cin &gt;&gt; lo &gt;&gt; hi;
+    cout &lt;&lt; (lo + hi) / 2 &lt;&lt; '\n';
+    cout &lt;&lt; lo + (hi - lo) / 2 &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="mid-overflow" data-title="ข้อมูลเข้า"><pre><code>1500000000 2000000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="mid-overflow" data-title="C:\code\mid.exe"><pre><code>-397483648
+1750000000
+</code></pre></div>
+      </div>
+
+      <p><code>lo + hi</code> คือ 3.5 × 10<sup>9</sup> เกิน <code>int</code> ล้นเป็นค่าติดลบตามหน้า 1.3 จุดกลางจึงติดลบ ถ้าเอาไปใช้เป็น index ก็อ่านนอกอาเรย์ ถ้าใช้เป็นคำตอบก็ผิด ส่วน <code>lo + (hi - lo) / 2</code> ไม่ล้น เพราะ <code>hi - lo</code> ไม่เกิน <code>hi</code> และบวกกลับแค่ครึ่งเดียว อีกทางคือประกาศ <code>lo</code> <code>hi</code> <code>mid</code> เป็น <code>long long</code> ไปเลย ซึ่งหน้า 19.3 จะทำแบบนั้นเมื่อช่วงใหญ่</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เปลี่ยนคำถามเป็น "รอยต่อของเงื่อนไข" ที่เป็น "ไม่" ทางซ้ายและ "ใช่" ทางขวา แล้วหาช่อง "ใช่" ช่องแรก</li>
+        <li>เริ่ม <code>lo = 0</code> กับ <code>hi = n</code> วน <code>while (lo &lt; hi)</code> ถ้า "ใช่" ให้ <code>hi = mid</code> ถ้า "ไม่" ให้ <code>lo = mid + 1</code> จบแล้วคำตอบคือ <code>lo</code></li>
+        <li>ช่องแรกที่ <code>&gt;= x</code> คือจำนวนที่น้อยกว่า x ช่องแรกที่ <code>&gt; x</code> คือจำนวนที่ไม่เกิน x สองค่าลบกันได้จำนวนที่เท่ากับ x</li>
+        <li>ค้นหนึ่งครั้งเป็น O(log n) แสนตัวไม่เกิน 17 รอบ</li>
+        <li>ทุกรอบช่วงต้องสั้นลง <code>lo = mid</code> ทำให้ลูปไม่จบ</li>
+        <li>หาจุดกลางด้วย <code>lo + (hi - lo) / 2</code> หรือใช้ <code>long long</code> เมื่อช่วงใหญ่</li>
+      </ul>
+    </article>

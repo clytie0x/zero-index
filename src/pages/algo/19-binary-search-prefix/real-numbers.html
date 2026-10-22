@@ -1,0 +1,241 @@
+<article class="doc">
+      <h1>19.4 binary search บนจำนวนจริง</h1>
+
+      <p>บางโจทย์คำตอบเป็นทศนิยม เช่น ระดับน้ำ เวลาที่ใช้ ความเร็ว ค่าเหล่านี้ไม่มีคำว่า "ค่าถัดไป" แบบจำนวนเต็ม ช่วงที่ค้นจึงไม่มีวันหดจนเหลือค่าเดียวพอดี หน้านี้ใช้ความคิดเดิมจากหน้า 19.3 กับคำตอบที่เป็น <code>double</code> แล้วเปลี่ยนวิธีหยุดลูปเป็นวนจำนวนรอบที่กำหนดไว้ ซึ่งปลอดภัยกว่าการรอให้ช่วงแคบลงเอง</p>
+
+      <h2 id="square-root">ลองกับรากที่สอง</h2>
+
+      <p>รากที่สองของ x คือค่า m ที่ m × m = x ใช้คำถามใช่ไม่ใช่ว่า <code>m * m &gt;= x</code> ไหม ยิ่ง m มากยิ่งตอบใช่ จึงเป็นทางเดียว คำตอบอยู่ระหว่าง 0 ถึง x ถ้า x ไม่น้อยกว่า 1 แต่ถ้า x น้อยกว่า 1 เช่น 0.25 รากที่สองคือ 0.5 ซึ่งมากกว่า x จึงให้ <code>hi</code> เป็นค่าที่มากกว่าระหว่าง 1 กับ x</p>
+
+      <p>ต่างจากจำนวนเต็มสองจุด ไม่มีบวกหนึ่งหรือลบหนึ่ง เพราะไม่มีค่าถัดไปให้ข้าม ตั้ง <code>lo = mid</code> หรือ <code>hi = mid</code> ตรงๆ และไม่ใช้ <code>while (lo &lt; hi)</code> แต่วนให้ครบ 100 รอบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="bisect-root"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    double x;
+    cin &gt;&gt; x;
+    double lo = 0, hi = max(1.0, x);
+    for (int step = 0; step &lt; 100; step++) { // (1)!
+        double mid = (lo + hi) / 2;
+        if (mid * mid &gt;= x) {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+    cout &lt;&lt; fixed &lt;&lt; setprecision(9); // (2)!
+    cout &lt;&lt; "binary search: " &lt;&lt; hi &lt;&lt; '\n';
+    cout &lt;&lt; "sqrt:          " &lt;&lt; sqrt(x) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>วนครบ 100 รอบเสมอ ไม่ว่าช่วงจะแคบแค่ไหนแล้ว เหตุผลอยู่ในหัวข้อถัดไป</li>
+        <li><code>fixed</code> กับ <code>setprecision(9)</code> คือทศนิยม 9 ตำแหน่ง แบบเดียวกับ <code>printf("%.9f")</code> ในบทที่ 2 ตั้งครั้งเดียวมีผลกับทุกค่าที่พิมพ์ต่อจากนั้น</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="bisect-root" data-title="ข้อมูลเข้า"><pre><code>2
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="bisect-root" data-title="C:\code\root.exe"><pre><code>binary search: 1.414213562
+sqrt:          1.414213562
+</code></pre></div>
+      </div>
+
+      <p>ตรงกับ <code>sqrt</code> ทั้ง 9 ตำแหน่ง ลองป้อน x อื่นก็ได้ตรงกัน เช่น 10 ได้ 3.162277660 ทั้งคู่ 0.5 ได้ 0.707106781 ทั้งคู่ และ 123456789 ได้ 11111.111060556 ทั้งคู่ แน่นอนว่าโจทย์จริงไม่ต้องหารากที่สองเอง ตัวอย่างนี้มีไว้ให้เห็นว่าลูปแบบนี้ได้ความละเอียดเท่าที่ <code>double</code> เก็บได้</p>
+
+      <h2 id="how-many-steps">ทำไมต้อง 100 รอบ</h2>
+
+      <p>ทุกรอบช่วงแคบลงครึ่งหนึ่ง ถ้าช่วงเริ่มกว้าง 10<sup>9</sup> ความกว้างหลังวน k รอบคือ 10<sup>9</sup> หารด้วย 2<sup>k</sup></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>จำนวนรอบ</th><th>ความกว้างของช่วงที่เหลือ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>30</td><td>ราว 0.93</td></tr>
+            <tr><td>60</td><td>ราว 8.7 × 10<sup>-10</sup></td></tr>
+            <tr><td>100</td><td>ราว 7.9 × 10<sup>-22</sup> ในทางทฤษฎี</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><code>double</code> แม่นราว 15 ถึง 16 หลักตามหน้า 1.4 ค่าใกล้ 10<sup>9</sup> จึงแม่นได้ถึงราวทศนิยมตำแหน่งที่ 6 หรือ 7 เท่านั้น พอวนไปราว 60 รอบ ช่วงก็แคบจนติดขีดจำกัดของ <code>double</code> แล้ว รอบที่เหลือไม่ได้ทำให้แม่นขึ้น แต่ก็ไม่ทำให้เสียหาย 100 รอบจึงเผื่อไว้สบายๆ สำหรับช่วงกว้างแค่ไหนก็ได้ เวลาทั้งหมดคือ 100 คูณเวลาตรวจหนึ่งครั้ง ถ้าตรวจหนึ่งครั้งเป็น O(N) ที่ N เป็นแสน ก็ราว 10<sup>7</sup> ขั้น สบายมาก</p>
+
+      <h2 id="water-level">ระดับน้ำ</h2>
+
+      <p>แท็งก์น้ำแบ่งเป็น N ช่องเรียงกัน ช่องละกว้าง 1 เมตร ผนังกั้นสูงมาก พื้นของแต่ละช่องสูงไม่เท่ากัน ช่องที่ i สูง h<sub>i</sub> เมตร ทุกช่องมีท่อเล็กๆ เชื่อมถึงกันใต้พื้น เทน้ำลงไป V ตารางเมตร (มองเป็นภาพตัดขวางสองมิติ และไม่คิดน้ำที่ค้างในท่อ) น้ำจะไหลถึงกันจนผิวน้ำของทุกช่องที่มีน้ำอยู่ระดับเดียวกัน ถามว่าผิวน้ำอยู่สูงเท่าไร ตอบทศนิยม 4 ตำแหน่ง</p>
+
+      <p>ถ้าผิวน้ำอยู่ที่ระดับ L ช่องที่พื้นต่ำกว่า L จะมีน้ำสูง L - h<sub>i</sub> ช่องที่พื้นสูงกว่าไม่มีน้ำ น้ำทั้งหมดใต้ระดับ L จึงคำนวณได้ในลูปเดียว คำถามใช่ไม่ใช่คือ "ใต้ระดับ L จุน้ำได้อย่างน้อย V ไหม" ยกระดับขึ้น ทุกช่องจุได้เท่าเดิมหรือมากขึ้น จึงเป็นทางเดียว และคำตอบคือ L ที่น้อยที่สุดที่ตอบใช่</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="water-level"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+double water_below(const vector&lt;int&gt; &amp;floor_height, double level)
+{
+    double total = 0;
+    for (int i = 0; i &lt; (int)floor_height.size(); i++) {
+        if (level &gt; floor_height[i]) {
+            total += level - floor_height[i];
+        }
+    }
+    return total;
+}
+
+int main()
+{
+    int n;
+    double volume;
+    cin &gt;&gt; n &gt;&gt; volume;
+    vector&lt;int&gt; floor_height(n);
+    int highest = 0;
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; floor_height[i];
+        highest = max(highest, floor_height[i]);
+    }
+    double lo = 0, hi = highest + volume; // (1)!
+    for (int step = 0; step &lt; 100; step++) {
+        double mid = (lo + hi) / 2;
+        if (water_below(floor_height, mid) &gt;= volume) {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+    cout &lt;&lt; fixed &lt;&lt; setprecision(4) &lt;&lt; hi &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ที่ระดับ <code>highest + volume</code> ช่องไหนก็ตามมีน้ำสูงอย่างน้อย <code>volume</code> แล้ว จึงตอบใช่แน่นอน ส่วนระดับ 0 ไม่มีน้ำเลย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="water-level" data-title="ข้อมูลเข้า"><pre><code>5 6
+3 1 4 1 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="water-level" data-title="C:\code\water.exe"><pre><code>3.6667
+</code></pre></div>
+      </div>
+
+      <p>ตรวจด้วยมือ ระดับต้องอยู่ระหว่าง 3 ถึง 4 เพราะที่ระดับ 3 จุได้แค่ 0 + 2 + 0 + 2 + 0 = 4 ตารางเมตร ช่วงนี้มีน้ำสามช่องคือช่องที่พื้นสูง 3 1 1 จึงได้ 3L - 5 = 6 ได้ L = 11/3 = 3.6667 ตรงกัน ถ้าจะคิดด้วยสูตรแบบนี้ ต้องรู้ก่อนว่าระดับอยู่ช่วงไหน ซึ่งต้องเรียงความสูงแล้วไล่หา ส่วน binary search ไม่ต้องรู้อะไรเลยนอกจากวิธีคำนวณน้ำใต้ระดับหนึ่งๆ</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">ระวังชุดทดสอบที่ปัดเศษตรงครึ่ง</p>
+        <p>คำตอบที่ได้จาก binary search คลาดจากค่าจริงนิดเดียว ถ้าค่าจริงตกตรงกลางระหว่างสองค่าที่ปัดได้พอดี เช่น 2.00005 กับทศนิยม 4 ตำแหน่ง ความคลาดนิดเดียวนั้นอาจทำให้ปัดไปคนละทาง โจทย์ที่ดีจึงตรวจคำตอบแบบยอมให้คลาดได้เล็กน้อย หรือเลือกชุดทดสอบที่ไม่ตกตรงครึ่ง ตัวตรวจของเว็บนี้เทียบทุกตัวอักษร ชุดทดสอบในแบบฝึกหัดจึงกรองกรณีแบบนั้นออกแล้ว</p>
+      </div>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วิธีตรงไปตรงมาคือไล่ระดับขึ้นทีละ 0.0001 เมตรจาก 0 จนกว่าน้ำใต้ระดับจะถึง V จำนวนรอบเท่ากับคำตอบคูณหนึ่งหมื่น วัดบนเครื่องเดียวกับหน้า 19.1 แท็งก์ N = 1000 ช่อง พื้นสูงสุ่มตั้งแต่ 0 ถึง 100 เมตร เทน้ำ V = 50000 ผิวน้ำอยู่ที่ราว 99 เมตร วิธีไล่จึงต้องตรวจราวหนึ่งล้านครั้ง ครั้งละ 1000 ช่อง รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th><th>คำตอบ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ไล่ทีละ 0.0001</td><td>5.0 วินาที</td><td>0.74 วินาที</td><td>99.0152</td></tr>
+            <tr><td>binary search 100 รอบ</td><td>0.04 วินาที</td><td>0.04 วินาที</td><td>99.0151</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วิธีไล่ไม่ได้แค่ช้า แต่ยังได้คำตอบผิดในตำแหน่งสุดท้าย ค่าจริงคือ 99.015136 กว่าๆ วิธีไล่หยุดที่ขั้นแรกที่น้ำพอ คือ 99.0152 ซึ่งเกินค่าจริงไปแล้ว ถ้าจะให้ปัดถูกต้องไล่ละเอียดกว่านี้อีกสิบเท่า ก็ช้าลงอีกสิบเท่า ส่วน binary search ที่ N = 100000 ช่องและน้ำห้าล้านตารางเมตร ยังใช้แค่ 0.10 วินาทีทั้งสองแบบ</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="epsilon">แบบที่ 1 หยุดเมื่อช่วงแคบกว่า 10<sup>-9</sup></h3>
+
+      <p>หลายคนหยุดลูปเมื่อช่วงแคบพอ แทนการวนจำนวนรอบที่กำหนด แบบนี้</p>
+
+      <div class="code" data-lang="cpp"><pre><code>while (hi - lo &gt; 1e-9) {
+    double mid = (lo + hi) / 2;
+    if (water_below(floor_height, mid) &gt;= volume) {
+        hi = mid;
+    } else {
+        lo = mid;
+    }
+}
+</code></pre></div>
+
+      <p>ข้อมูลเข้าชุดเดิมได้ 3.6667 ถูกต้อง แต่ลองแท็งก์สามช่องที่พื้นสูงระดับพันล้าน <code>3 7</code> กับ <code>1000000000 999999999 1000000000</code> โปรแกรมค้าง ใส่บรรทัดพิมพ์ <code>lo</code> กับ <code>hi</code> ทุก 20 รอบด้วย <code>setprecision(17)</code> จะเห็นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>step 20 lo=999999053.32567692 hi=1000000007
+step 40 lo=1000000001.999598 hi=1000000002.0005076
+step 60 lo=1000000001.9999999 hi=1000000002
+step 80 lo=1000000001.9999999 hi=1000000002
+step 100 lo=1000000001.9999999 hi=1000000002
+step 120 lo=1000000001.9999999 hi=1000000002
+step 140 lo=1000000001.9999999 hi=1000000002
+step 160 lo=1000000001.9999999 hi=1000000002
+</code></pre></div>
+
+      <p>ตั้งแต่รอบที่ 60 <code>lo</code> กับ <code>hi</code> ไม่ขยับอีกเลย <code>double</code> ที่อยู่ใกล้ 10<sup>9</sup> เก็บค่าได้ห่างกันทีละราว 1.2 × 10<sup>-7</sup> ไม่มีค่าไหนอยู่ระหว่าง <code>lo</code> กับ <code>hi</code> คู่นี้แล้ว จุดกลางที่คำนวณได้จึงปัดกลับไปเท่ากับ <code>lo</code> หรือ <code>hi</code> เดิม ช่วงไม่มีทางแคบกว่า 10<sup>-9</sup> ได้ ลูปจึงไม่จบ การวนจำนวนรอบที่กำหนดไม่มีปัญหานี้ เพราะไม่ได้รอให้ช่วงแคบ</p>
+
+      <h3 id="default-cout">แบบที่ 2 พิมพ์ double ด้วย cout เฉยๆ</h3>
+
+      <p>ในโปรแกรม water-level ลบ <code>fixed &lt;&lt; setprecision(4) &lt;&lt;</code> ออก เหลือ <code>cout &lt;&lt; hi &lt;&lt; '\n';</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="default-cout"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+double water_below(const vector&lt;int&gt; &amp;floor_height, double level)
+{
+    double total = 0;
+    for (int i = 0; i &lt; (int)floor_height.size(); i++) {
+        if (level &gt; floor_height[i]) {
+            total += level - floor_height[i];
+        }
+    }
+    return total;
+}
+
+int main()
+{
+    int n;
+    double volume;
+    cin &gt;&gt; n &gt;&gt; volume;
+    vector&lt;int&gt; floor_height(n);
+    int highest = 0;
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; floor_height[i];
+        highest = max(highest, floor_height[i]);
+    }
+    double lo = 0, hi = highest + volume;
+    for (int step = 0; step &lt; 100; step++) {
+        double mid = (lo + hi) / 2;
+        if (water_below(floor_height, mid) &gt;= volume) {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+    cout &lt;&lt; hi &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="default-cout" data-title="ข้อมูลเข้า"><pre><code>3 7
+1000000000 999999999 1000000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="default-cout" data-title="C:\code\water.exe"><pre><code>1e+09
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ 1000000002.0000 แต่ <code>cout</code> ที่ไม่ได้ตั้งค่าอะไร พิมพ์ทศนิยมแค่ 6 หลักสำคัญ ค่าที่ใหญ่จึงกลายเป็นรูปวิทยาศาสตร์ <code>1e+09</code> ส่วนข้อมูลเข้าชุดแรกพิมพ์ออกมาเป็น <code>3.66667</code> ซึ่งก็ผิดรูปแบบที่โจทย์ต้องการอยู่ดี โจทย์ที่ตอบเป็นทศนิยมต้องใส่ <code>fixed</code> กับ <code>setprecision</code> ทุกครั้ง หรือใช้ <code>printf("%.4f\n", hi)</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>คำตอบเป็นทศนิยมก็ใช้ binary search ได้ ถ้าคำถามใช่ไม่ใช่เป็นทางเดียว</li>
+        <li>ตั้ง <code>lo = mid</code> หรือ <code>hi = mid</code> ไม่มีบวกลบหนึ่ง และวนจำนวนรอบที่กำหนด เช่น 100 รอบ</li>
+        <li>อย่าหยุดด้วย <code>hi - lo &gt; eps</code> เพราะเมื่อค่าใหญ่ <code>double</code> แคบได้ไม่ถึง eps ลูปจะไม่จบ</li>
+        <li>เวลาทั้งหมดคือ 100 คูณเวลาตรวจหนึ่งครั้ง</li>
+        <li>พิมพ์คำตอบด้วย <code>fixed</code> กับ <code>setprecision</code> หรือ <code>printf</code> ตามจำนวนตำแหน่งที่โจทย์กำหนด</li>
+      </ul>
+    </article>

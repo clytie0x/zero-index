@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 19 binary search และ prefix sum</h1>
+
+      <p>จบบทนี้ น้องจะเขียน binary search ด้วยลูปได้ถูกทุกขอบ ทั้งตอนที่มีค่าซ้ำและตอนที่ค่าที่ถามไม่มีอยู่ รู้ว่า <code>lower_bound</code> กับ <code>upper_bound</code> ทำอะไรข้างใน และใช้ binary search ค้นหา <strong>คำตอบ</strong> ของโจทย์แนว "น้อยที่สุดที่ยังทำได้" หรือ "มากที่สุดที่ยังทำได้" ทั้งคำตอบที่เป็นจำนวนเต็มและทศนิยม ฝั่ง prefix sum จะได้ difference array ที่บวกค่าให้ทั้งช่วงหลายครั้งในเวลา O(N + Q) และนับว่ามีกี่ช่วงที่ผลรวมเท่ากับ k สองเรื่องนี้เป็นเครื่องมือที่ใช้บ่อยที่สุดในค่าย 2 และ TOI เพราะเปลี่ยนวิธี O(N<sup>2</sup>) ให้เหลือ O(N log N) หรือ O(N) ได้ทันทีที่เห็นว่าข้อมูลเรียง หรือคำตอบเป็นทางเดียว</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="binary-search.html">19.1 binary search แบบวนลูป</a></td><td>หาช่องแรกที่มีค่าอย่างน้อย x ด้วยสัญญาของ lo กับ hi นับค่าที่น้อยกว่า เท่ากับ และไม่เกิน x กับดักลูปไม่จบและ mid ล้น</td></tr>
+            <tr><td><a href="bounds.html">19.2 lower_bound upper_bound และ equal_range</a></td><td>ข้างในของสามฟังก์ชัน นับค่าในช่วง ค้นวันแรกที่ยอดสะสมถึงเป้า และกับดักลืมเรียงกับอ่านค่าที่ end()</td></tr>
+            <tr><td><a href="on-answer.html">19.3 binary search บนคำตอบ</a></td><td>แบ่งงาน ตัดไม้ ระยะห่างมากสุด สามขั้นก่อนเขียน และวิธีพิสูจน์ว่าเงื่อนไขเป็นทางเดียว</td></tr>
+            <tr><td><a href="real-numbers.html">19.4 binary search บนจำนวนจริง</a></td><td>วนจำนวนรอบที่กำหนดแทนการรอ eps ระดับน้ำในแท็งก์ และการพิมพ์ทศนิยมด้วย cout</td></tr>
+            <tr><td><a href="prefix-tricks.html">19.5 difference array และนับช่วงด้วย prefix sum</a></td><td>บวกค่าทั้งช่วงหลายครั้ง prefix xor และนับช่วงที่ผลรวมเท่ากับ k ทั้งแบบค่าแคบและค่ากว้าง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>เขียนลูปหาช่องแรกที่ <code>&gt;= x</code> เองโดยไม่เปิดดู แล้วกับคะแนน <code>45 52 52 52 60 71 71 88</code> ได้ 1 4 0 8 เมื่อ x เป็น 52 53 10 100</span></label></li>
+        <li><label><input type="checkbox"><span>นับสินค้าที่ราคาตั้งแต่ 990 ถึง 4500 บาทในหน้า 19.2 ด้วย <code>upper_bound</code> ลบ <code>lower_bound</code> ได้ 5 แล้วสลับสองฟังก์ชันจนเห็นว่าขอบหาย</span></label></li>
+        <li><label><input type="checkbox"><span>เขียนโจทย์แบ่งงานในหน้า 19.3 ได้คำตอบ 80 และอธิบายด้วยคำพูดของตัวเองได้ว่าทำไมถ้า X ทำได้ X + 1 ก็ทำได้</span></label></li>
+        <li><label><input type="checkbox"><span>เปลี่ยนจุดกลางของโปรแกรมตัดไม้เป็นปัดลง ป้อนความต้องการไม้ 26 เมตรจนเห็นลูปค้างที่ <code>lo=16 hi=17</code> แล้วแก้กลับให้ได้ 17</span></label></li>
+        <li><label><input type="checkbox"><span>หาระดับน้ำ 3.6667 ด้วยลูป 100 รอบ และหาจำนวนแขกโรงแรม <code>5 8 7 5 2 2 2</code> ด้วย difference array</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ รวมข้อที่ใช้ binary search บนคำตอบอย่างน้อย 2 ข้อ</span></label></li>
+      </ul>
+    </article>

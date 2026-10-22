@@ -1,0 +1,330 @@
+<article class="doc">
+      <h1>19.3 binary search บนคำตอบ</h1>
+
+      <p>โจทย์ค่าย 2 และ TOI จำนวนมากถามว่า "ค่าที่น้อยที่สุดที่ยังทำได้คือเท่าไร" หรือ "มากที่สุดที่ยังทำได้" เช่น เวลาน้อยสุดที่ทำงานเสร็จ ความยาวมากสุดที่ตัดได้ครบ หาคำตอบตรงๆ มักยากมาก แต่ถ้ามีคนเดาคำตอบมาให้หนึ่งค่า การตรวจว่าค่านั้นทำได้หรือไม่กลับง่าย หน้านี้ใช้ลูปจากหน้า 19.1 ค้นบน <strong>ช่วงของคำตอบ</strong> แทนช่วงของอาเรย์ เรียกกันว่า binary search on the answer</p>
+
+      <h2 id="print-shop">โจทย์แบ่งงาน</h2>
+
+      <p>ร้านถ่ายเอกสารมีงานพิมพ์ต่อคิวอยู่ N งาน งานที่ i ยาว a<sub>i</sub> แผ่น ร้านมีเครื่องพิมพ์ K เครื่อง ต้องแบ่งคิวเป็น K ช่วงที่ติดกันให้เครื่องละช่วง ห้ามสลับลำดับ และห้ามแบ่งงานเดียวไปสองเครื่อง ทุกเครื่องพิมพ์พร้อมกัน ร้านจึงเสร็จเมื่อเครื่องที่ได้งานมากที่สุดพิมพ์เสร็จ ต้องการแบ่งให้ <strong>จำนวนแผ่นของเครื่องที่หนักที่สุดน้อยที่สุด</strong></p>
+
+      <p>เช่น งาน <code>30 10 50 20 40 10 30</code> กับเครื่อง 3 เครื่อง แบ่งเป็น <code>30 10 | 50 20 | 40 10 30</code> เครื่องที่หนักที่สุดพิมพ์ 80 แผ่น และแบ่งยังไงก็ไม่ได้ต่ำกว่า 80 ถ้าจะลองทุกวิธีแบ่ง ต้องเลือกจุดตัด K - 1 จุดจาก N - 1 ที่ N เป็นแสนมีวิธีแบ่งมากเกินนับ</p>
+
+      <h2 id="turn-around">กลับคำถาม</h2>
+
+      <p>ถามกลับกันว่า <strong>ถ้ากำหนดให้แต่ละเครื่องพิมพ์ไม่เกิน X แผ่น ใช้เครื่องไม่เกิน K เครื่องได้ไหม</strong> คำถามนี้ตอบได้ในลูปเดียว ไล่งานตามคิว ใส่งานลงเครื่องปัจจุบันไปเรื่อยๆ จนกว่าใส่งานถัดไปแล้วจะเกิน X จึงเปิดเครื่องใหม่ เสร็จแล้วนับว่าใช้ไปกี่เครื่อง</p>
+
+      <p>ใส่ให้เต็มที่สุดก่อนเปิดเครื่องใหม่แบบนี้ใช้เครื่องน้อยที่สุดแล้ว เพราะวิธีแบ่งอื่นที่ให้เครื่องแรกรับงานน้อยกว่านี้ ก็มีแต่เหลืองานให้เครื่องถัดๆ ไปมากขึ้น ไม่มีทางทำให้ใช้เครื่องน้อยลง ลองกับงานชุดตัวอย่าง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>X</th><th>แบ่งได้</th><th>ใช้เครื่อง</th><th>ไม่เกิน 3 เครื่องไหม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>60</td><td><code>30 10 | 50 | 20 40 | 10 30</code></td><td>4</td><td>ไม่</td></tr>
+            <tr><td>79</td><td><code>30 10 | 50 20 | 40 10 | 30</code></td><td>4</td><td>ไม่</td></tr>
+            <tr><td>80</td><td><code>30 10 | 50 20 | 40 10 30</code></td><td>3</td><td>ใช่</td></tr>
+            <tr><td>100</td><td><code>30 10 50 | 20 40 10 30</code></td><td>2</td><td>ใช่</td></tr>
+            <tr><td>190</td><td><code>30 10 50 20 40 10 30</code></td><td>1</td><td>ใช่</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คำตอบของโจทย์คือ X ที่น้อยที่สุดที่ตอบ "ใช่" ซึ่งคือรอยต่อแบบหน้า 19.1 พอดี ถ้ามั่นใจได้ว่าคำตอบเรียงเป็น "ไม่" ทั้งหมดแล้วค่อยเป็น "ใช่" ทั้งหมด</p>
+
+      <h2 id="monotone">พิสูจน์ว่าเงื่อนไขเป็นทางเดียว</h2>
+
+      <p>binary search ใช้ได้เมื่อคำตอบของคำถามใช่ไม่ใช่เปลี่ยนได้ครั้งเดียว ไม่สลับไปมา เรียกว่าเงื่อนไขเป็น <strong>ทางเดียว (monotonic)</strong> ต้องพิสูจน์ก่อนเขียนทุกครั้ง ข้อนี้พิสูจน์ได้สั้นมาก</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">ถ้า X ทำได้ X + 1 ก็ทำได้</p>
+        <p>สมมติแบ่งให้ทุกเครื่องไม่เกิน X แผ่นได้ ด้วยเครื่องไม่เกิน K เครื่อง วิธีแบ่งเดิมนั้นก็มีทุกเครื่องไม่เกิน X + 1 แผ่นด้วย จึงใช้ได้กับ X + 1 ทันที เมื่อ "ใช่" ที่ X ก็ "ใช่" ที่ทุกค่าที่มากกว่า X หลังจาก "ใช่" ครั้งแรกจึงไม่มี "ไม่" อีกเลย</p>
+      </div>
+
+      <p>ต่อมาหาช่วงที่คำตอบอยู่แน่นอน X ที่น้อยกว่างานที่ยาวที่สุดตอบ "ไม่" เสมอ เพราะงานนั้นใส่เครื่องไหนก็ไม่ได้ จึงเริ่ม <code>lo</code> ที่ค่ามากสุดของ a<sub>i</sub> ส่วน X เท่ากับผลรวมทั้งหมดตอบ "ใช่" เสมอ เพราะเครื่องเดียวรับได้ทั้งคิว จึงเริ่ม <code>hi</code> ที่ผลรวม ทั้งหมดนี้รวมเป็นสามขั้นที่ต้องทำก่อนเขียนโจทย์แบบนี้ทุกข้อ</p>
+
+      <ol>
+        <li>ตั้งคำถามใช่ไม่ใช่ <code>ok(X)</code> ที่ตรวจได้เร็ว มักเป็นลูปเดียวแบบ greedy</li>
+        <li>พิสูจน์ว่าถ้า X ใช่ แล้ว X + 1 ใช่ด้วย (หรือกลับกัน ถ้า X ใช่ แล้ว X - 1 ใช่)</li>
+        <li>หา <code>lo</code> กับ <code>hi</code> ที่แน่ใจว่าคำตอบอยู่ระหว่างนั้น</li>
+      </ol>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="print-shop"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int machines_needed(const vector&lt;int&gt; &amp;pages, long long limit)
+{
+    int machines = 1;
+    long long load = 0;
+    for (int i = 0; i &lt; (int)pages.size(); i++) {
+        if (load + pages[i] &gt; limit) { // (1)!
+            machines++;
+            load = 0;
+        }
+        load += pages[i];
+    }
+    return machines;
+}
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; pages(n);
+    long long lo = 0, hi = 0; // (2)!
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; pages[i];
+        lo = max(lo, (long long)pages[i]);
+        hi += pages[i];
+    }
+    while (lo &lt; hi) {
+        long long mid = lo + (hi - lo) / 2;
+        int needed = machines_needed(pages, mid);
+        cout &lt;&lt; "lo=" &lt;&lt; lo &lt;&lt; " hi=" &lt;&lt; hi &lt;&lt; " mid=" &lt;&lt; mid &lt;&lt; " machines=" &lt;&lt; needed &lt;&lt; '\n';
+        if (needed &lt;= k) { // (3)!
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    cout &lt;&lt; "answer = " &lt;&lt; lo &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใส่งานนี้แล้วเกิน จึงเปิดเครื่องใหม่ให้งานนี้ เครื่องใหม่รับงานนี้ได้แน่เพราะ <code>limit</code> ไม่เคยน้อยกว่างานที่ยาวที่สุด</li>
+        <li>ผลรวมของงานแสนงานงานละ 10<sup>9</sup> แผ่นถึง 10<sup>14</sup> จึงต้องเป็น <code>long long</code> ทั้ง <code>lo</code> <code>hi</code> และ <code>mid</code></li>
+        <li>ถาม "ไม่เกิน K" ไม่ใช่ "เท่ากับ K" ถ้าใช้น้อยกว่า K เครื่อง ก็แบ่งช่วงที่มีหลายงานให้เครื่องที่ว่างได้ โดยไม่ทำให้เครื่องไหนหนักขึ้น</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="print-shop" data-title="ข้อมูลเข้า"><pre><code>7 3
+30 10 50 20 40 10 30
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="print-shop" data-title="C:\code\print_shop.exe"><pre><code>lo=50 hi=190 mid=120 machines=2
+lo=50 hi=120 mid=85 machines=3
+lo=50 hi=85 mid=67 machines=4
+lo=68 hi=85 mid=76 machines=4
+lo=77 hi=85 mid=81 machines=3
+lo=77 hi=81 mid=79 machines=4
+lo=80 hi=81 mid=80 machines=3
+answer = 80
+</code></pre></div>
+      </div>
+
+      <p>ลูปเหมือนหน้า 19.1 ทุกบรรทัด ต่างกันแค่ "ช่องที่ mid" ไม่ได้อ่านจากอาเรย์ แต่คำนวณจาก <code>machines_needed</code> ตรวจหนึ่งครั้งใช้ O(N) และช่วงตั้งแต่ <code>lo</code> ถึง <code>hi</code> กว้างไม่เกิน 10<sup>14</sup> ซึ่งหารสองราว 47 ครั้งก็เหลือค่าเดียว ทั้งหมดจึงเป็น O(N log S) เมื่อ S คือผลรวม แสนงานตรวจราว 47 รอบ รวมไม่ถึงห้าล้านขั้น</p>
+
+      <h2 id="cut-wood">มากที่สุดที่ยังทำได้</h2>
+
+      <p>โรงเลื่อยมีต้นไม้เรียงกัน N ต้น ต้นที่ i สูง h<sub>i</sub> เมตร เครื่องตัดตั้งใบเลื่อยไว้ที่ความสูง H แล้วเลื่อนผ่านทุกต้น ต้นที่สูงกว่า H จะถูกตัดส่วนที่เกิน H ออกมาเป็นไม้ ต้องการไม้รวมอย่างน้อย M เมตร และอยากตั้งใบเลื่อยให้ <strong>สูงที่สุด</strong> เพื่อไม่ตัดต้นไม้มากเกินจำเป็น โจทย์รับประกันว่าตั้งที่ความสูง 0 แล้วได้ไม้พอ</p>
+
+      <p>คำถามใช่ไม่ใช่คือ "ตั้งที่ H แล้วได้ไม้อย่างน้อย M ไหม" คราวนี้ทิศกลับกัน <strong>ถ้า H ทำได้ H - 1 ก็ทำได้</strong> เพราะลดใบเลื่อยลง ทุกต้นให้ไม้เท่าเดิมหรือมากขึ้น ผลจึงเป็น "ใช่" ทั้งหมดทางซ้าย แล้ว "ไม่" ทั้งหมดทางขวา และคำตอบคือ "ใช่" ตัว <strong>สุดท้าย</strong> สลับบทบาทในลูปเป็น</p>
+
+      <ul>
+        <li>ถ้า <code>mid</code> ทำได้ คำตอบอยู่ที่ <code>mid</code> หรือสูงกว่า ตั้ง <code>lo = mid</code></li>
+        <li>ถ้าไม่ได้ คำตอบต่ำกว่า <code>mid</code> ตั้ง <code>hi = mid - 1</code></li>
+        <li>หาจุดกลางแบบ <strong>ปัดขึ้น</strong> <code>lo + (hi - lo + 1) / 2</code> เหตุผลอยู่ในส่วนลองทำให้พัง</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="cut-wood"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long wood_at(const vector&lt;int&gt; &amp;heights, int blade)
+{
+    long long total = 0; // (1)!
+    for (int i = 0; i &lt; (int)heights.size(); i++) {
+        if (heights[i] &gt; blade) {
+            total += heights[i] - blade;
+        }
+    }
+    return total;
+}
+
+int main()
+{
+    int n;
+    long long need;
+    cin &gt;&gt; n &gt;&gt; need;
+    vector&lt;int&gt; heights(n);
+    int lo = 0, hi = 0;
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; heights[i];
+        hi = max(hi, heights[i]);
+    }
+    while (lo &lt; hi) {
+        int mid = lo + (hi - lo + 1) / 2; // (2)!
+        long long wood = wood_at(heights, mid);
+        cout &lt;&lt; "lo=" &lt;&lt; lo &lt;&lt; " hi=" &lt;&lt; hi &lt;&lt; " mid=" &lt;&lt; mid &lt;&lt; " wood=" &lt;&lt; wood &lt;&lt; '\n';
+        if (wood &gt;= need) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    cout &lt;&lt; "blade height = " &lt;&lt; lo &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ต้นไม้แสนต้นต้นละ 10<sup>9</sup> เมตร ตัดที่ 0 ได้ไม้ถึง 10<sup>14</sup> เมตร เกิน <code>int</code></li>
+        <li>ปัดขึ้นเพื่อให้ <code>mid</code> มากกว่า <code>lo</code> เสมอ <code>lo = mid</code> จึงทำให้ช่วงสั้นลงจริง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="cut-wood" data-title="ข้อมูลเข้า"><pre><code>5 20
+18 25 12 30 21
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="cut-wood" data-title="C:\code\cut_wood.exe"><pre><code>lo=0 hi=30 mid=15 wood=34
+lo=15 hi=30 mid=23 wood=9
+lo=15 hi=22 mid=19 wood=19
+lo=15 hi=18 mid=17 wood=26
+lo=17 hi=18 mid=18 wood=22
+blade height = 18
+</code></pre></div>
+      </div>
+
+      <p>ตั้งที่ 18 ได้ 0 + 7 + 0 + 12 + 3 = 22 เมตร พอ แต่ตั้งที่ 19 ได้ 19 เมตร ไม่พอ คำตอบจึงเป็น 18 เริ่ม <code>lo</code> ที่ 0 เพราะโจทย์รับประกันว่าทำได้ และเริ่ม <code>hi</code> ที่ต้นที่สูงที่สุด เพราะตั้งสูงกว่านั้นไม่ได้ไม้เลย</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">จำแค่แบบเดียวก็ได้</p>
+        <p>ถ้าไม่อยากจำสองแบบ ให้หา "ไม่" ตัวแรกด้วยลูปแบบหน้า 19.1 แล้วลบหนึ่ง ข้อนี้คือ H แรกที่ไม้ไม่พอ ลบหนึ่งได้ H สุดท้ายที่พอ ให้ <code>hi</code> เริ่มที่ต้นสูงสุดบวกหนึ่ง ซึ่งไม่พอแน่ ได้คำตอบเท่ากัน เลือกแบบที่ตัวเองเขียนแล้วไม่พลาด</p>
+      </div>
+
+      <h2 id="max-distance">ระยะห่างมากที่สุด</h2>
+
+      <p>แนวที่สามที่เจอบ่อย ถนนเส้นหนึ่งมีจุดที่ตั้งเครื่องได้ N จุด ต้องตั้งเครื่อง C เครื่อง ให้ระยะห่างของคู่ที่อยู่ใกล้กันที่สุดมากที่สุด เช่น ตั้งเสาสัญญาณให้รบกวนกันน้อยที่สุด ทำตามสามขั้นเดิม</p>
+
+      <ol>
+        <li>คำถามใช่ไม่ใช่ "ตั้ง C เครื่องให้ทุกคู่ห่างกันอย่างน้อย D ได้ไหม" ตอบด้วย greedy เรียงตำแหน่ง ตั้งเครื่องแรกที่จุดซ้ายสุด แล้วไล่ไปทางขวา ตั้งเครื่องถัดไปที่จุดแรกที่ห่างจากเครื่องล่าสุดอย่างน้อย D นับว่าตั้งได้ถึง C เครื่องไหม</li>
+        <li>ถ้า D ทำได้ D - 1 ก็ทำได้ เพราะวิธีตั้งเดิมทุกคู่ห่างอย่างน้อย D ซึ่งมากกว่า D - 1 อยู่แล้ว ผลเป็น "ใช่" ทางซ้าย "ไม่" ทางขวา คำตอบคือ "ใช่" ตัวสุดท้าย ใช้แบบเดียวกับโจทย์ตัดไม้</li>
+        <li>D = 0 ทำได้เสมอ และ D ไม่มีทางเกินระยะจากจุดซ้ายสุดถึงขวาสุด</li>
+      </ol>
+
+      <p>ข้อนี้ให้ลองเขียนเองในแบบฝึกหัด ทั้งสามโจทย์ในหน้านี้สรุปได้ตามตาราง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>โจทย์</th><th>ok(X)</th><th>ทิศ</th><th>หา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>แบ่งงาน</td><td>เครื่องละไม่เกิน X ใช้ไม่เกิน K เครื่อง</td><td>ไม่ ... ใช่</td><td>ใช่ตัวแรก <code>hi = mid</code></td></tr>
+            <tr><td>ตัดไม้</td><td>ตั้งที่ X ได้ไม้อย่างน้อย M</td><td>ใช่ ... ไม่</td><td>ใช่ตัวสุดท้าย <code>lo = mid</code> ปัดขึ้น</td></tr>
+            <tr><td>ระยะห่าง</td><td>ตั้งได้ C เครื่องห่างกันอย่างน้อย X</td><td>ใช่ ... ไม่</td><td>ใช่ตัวสุดท้าย <code>lo = mid</code> ปัดขึ้น</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>สังเกตคำในโจทย์ "ค่ามากที่สุดที่น้อยที่สุด" หรือ "ค่าน้อยที่สุดที่มากที่สุด" (minimize the maximum, maximize the minimum) เกือบทุกครั้งเป็นโจทย์แนวนี้</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วิธีตรงไปตรงมาของโจทย์แบ่งงานคือลอง X ทีละค่า เริ่มจากงานที่ยาวที่สุด เพิ่มทีละหนึ่งจนกว่า <code>machines_needed</code> จะได้ไม่เกิน K จำนวนรอบเท่ากับระยะจากงานที่ยาวที่สุดถึงคำตอบ ซึ่งอาจเป็นหลักแสน หลักล้าน หรือมากกว่านั้น วัดบนเครื่องเดียวกับหน้า 19.1 งานยาว 1 ถึง 1000 แผ่นแบบสุ่ม รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">N = 10000, K = 100 คำตอบ 49899</td><td>ลองทีละค่า</td><td>2.5 วินาที</td><td>0.36 วินาที</td></tr>
+            <tr><td>binary search</td><td>0.03 วินาที</td><td>0.03 วินาที</td></tr>
+            <tr><td rowspan="2">N = 100000, K = 1000 คำตอบ 50344</td><td>ลองทีละค่า</td><td>25 วินาที (5 รอบอยู่ระหว่าง 22 ถึง 34)</td><td>3.7 วินาที</td></tr>
+            <tr><td>binary search</td><td>0.03 วินาที</td><td>0.02 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้อมูลชุดแรก วิธีลองทีละค่าตรวจราวห้าหมื่นครั้ง แต่ binary search ตรวจแค่ 22 ครั้ง ชุดที่สองตรวจราวห้าหมื่นครั้งเหมือนเดิม แต่แต่ละครั้งไล่งานมากขึ้นสิบเท่า เวลาจึงโตตาม ถ้างานแต่ละงานยาวถึง 10<sup>9</sup> แผ่น จำนวนค่าที่ต้องลองจะโตตามไปด้วย ส่วน binary search เพิ่มเป็นราว 47 ครั้งเท่านั้น</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="round-down">แบบที่ 1 หาค่ามากสุดแต่ปัดจุดกลางลง</h3>
+
+      <p>ในโปรแกรม cut-wood เปลี่ยนบรรทัดจุดกลางเป็น <code>int mid = lo + (hi - lo) / 2;</code> แบบหน้า 19.1 ป้อนข้อมูลเข้าเดิมที่ต้องการไม้ 20 เมตร ยังได้ <code>blade height = 18</code> ถูกต้อง แต่เปลี่ยนเป็นต้องการไม้ 26 เมตร</p>
+
+      <div class="code" data-lang="text"><pre><code>lo=0 hi=30 mid=15 wood=34
+lo=15 hi=30 mid=22 wood=11
+lo=15 hi=21 mid=18 wood=22
+lo=15 hi=17 mid=16 wood=30
+lo=16 hi=17 mid=16 wood=30
+lo=16 hi=17 mid=16 wood=30
+lo=16 hi=17 mid=16 wood=30
+</code></pre></div>
+
+      <p>ค้างที่ <code>lo=16 hi=17</code> จุดกลางปัดลงได้ 16 ซึ่งทำได้ จึงตั้ง <code>lo = 16</code> ค่าเดิม ช่วงไม่สั้นลง เป็นความผิดเดียวกับ <code>lo = mid</code> ในหน้า 19.1 แต่ซ่อนตัวกว่า เพราะบางข้อมูลเข้าผ่าน บางข้อมูลเข้าค้าง ขึ้นกับว่าช่วงจะเหลือสองค่าในจังหวะที่ <code>lo</code> ทำได้หรือไม่ กฎจำง่าย <strong>ฝั่งไหนเขียน <code>= mid</code> จุดกลางต้องปัดหนีฝั่งนั้น</strong> <code>hi = mid</code> ปัดลง <code>lo = mid</code> ปัดขึ้น</p>
+
+      <h3 id="not-monotone">แบบที่ 2 เงื่อนไขไม่เป็นทางเดียว</h3>
+
+      <p>อ่านโจทย์ว่า "แบ่งให้ K เครื่อง" แล้วเขียนเงื่อนไขเป็นใช้เครื่อง <strong>เท่ากับ</strong> K</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="not-monotone"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int machines_needed(const vector&lt;int&gt; &amp;pages, long long limit)
+{
+    int machines = 1;
+    long long load = 0;
+    for (int i = 0; i &lt; (int)pages.size(); i++) {
+        if (load + pages[i] &gt; limit) {
+            machines++;
+            load = 0;
+        }
+        load += pages[i];
+    }
+    return machines;
+}
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; pages(n);
+    long long lo = 0, hi = 0;
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; pages[i];
+        lo = max(lo, (long long)pages[i]);
+        hi += pages[i];
+    }
+    while (lo &lt; hi) {
+        long long mid = lo + (hi - lo) / 2;
+        int needed = machines_needed(pages, mid);
+        cout &lt;&lt; "lo=" &lt;&lt; lo &lt;&lt; " hi=" &lt;&lt; hi &lt;&lt; " mid=" &lt;&lt; mid &lt;&lt; " machines=" &lt;&lt; needed &lt;&lt; '\n';
+        if (needed == k) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    cout &lt;&lt; "answer = " &lt;&lt; lo &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="not-monotone" data-title="ข้อมูลเข้า"><pre><code>7 3
+30 10 50 20 40 10 30
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="not-monotone" data-title="C:\code\print_shop.exe"><pre><code>lo=50 hi=190 mid=120 machines=2
+lo=121 hi=190 mid=155 machines=2
+lo=156 hi=190 mid=173 machines=2
+lo=174 hi=190 mid=182 machines=2
+lo=183 hi=190 mid=186 machines=2
+lo=187 hi=190 mid=188 machines=2
+lo=189 hi=190 mid=189 machines=2
+answer = 190
+</code></pre></div>
+      </div>
+
+      <p>ได้ 190 แทนที่จะเป็น 80 เพราะ "ใช้เท่ากับ 3 เครื่อง" เป็นจริงแค่ตอน X อยู่ระหว่าง 80 ถึง 99 ต่ำกว่านั้นใช้ 4 ถึง 5 เครื่อง สูงกว่านั้นใช้ 1 ถึง 2 เครื่อง ผลจึงเป็น "ไม่ ... ใช่ ... ไม่" รอบแรกตรวจ 120 ได้ 2 เครื่อง โปรแกรมเข้าใจว่าคำตอบอยู่ทางขวาแล้วไม่กลับมาอีกเลย ก่อนเขียนต้องผ่านขั้นที่ 2 ให้ได้ ถ้าพิสูจน์ "X ใช่ แล้ว X + 1 ใช่" ไม่ได้ แปลว่าตั้งคำถามผิด</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>โจทย์ที่ถามค่าน้อยสุดหรือมากสุดที่ยังทำได้ ลองตั้งคำถามใช่ไม่ใช่ <code>ok(X)</code> แล้วค้นบนช่วงของคำตอบ</li>
+        <li>ก่อนเขียนต้องพิสูจน์ว่าเงื่อนไขเป็นทางเดียว ถ้า X ใช่ แล้ว X + 1 ใช่ (หรือ X - 1 ใช่) และหา <code>lo</code> <code>hi</code> ที่คำตอบอยู่แน่</li>
+        <li>หาใช่ตัวแรก <code>hi = mid</code> กับ <code>lo = mid + 1</code> จุดกลางปัดลง หาใช่ตัวสุดท้าย <code>lo = mid</code> กับ <code>hi = mid - 1</code> จุดกลางปัดขึ้น</li>
+        <li>เวลาทั้งหมดคือเวลาตรวจหนึ่งครั้งคูณ log ของความกว้างช่วง เช่น O(N log S)</li>
+        <li>ช่วงของคำตอบกับผลรวมในฟังก์ชันตรวจมักเกิน <code>int</code> ใช้ <code>long long</code></li>
+      </ul>
+    </article>

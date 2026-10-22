@@ -1,0 +1,288 @@
+<article class="doc">
+      <h1>19.2 lower_bound upper_bound และ equal_range</h1>
+
+      <p>บทที่ 16 ใช้ <code>lower_bound</code> หาตำแหน่งในข้อมูลที่เรียงแล้วมาบ้าง หน้านี้เปิดดูข้างใน <code>lower_bound</code> คือฟังก์ชัน <code>first_at_least</code> ในหน้า 19.1 ทุกประการ <code>upper_bound</code> คือ <code>first_greater</code> ส่วน <code>equal_range</code> คืนทั้งสองค่าพร้อมกัน พอรู้ว่าแต่ละตัวหารอยต่อของเงื่อนไขอะไร ก็เลือกใช้ได้ถูกตัว ไม่ต้องลองผิดลองถูกว่าต้องบวกหรือลบหนึ่ง แล้วเอาไปใช้นับค่าในช่วง และค้นบนผลรวมสะสมได้</p>
+
+      <h2 id="inside">ข้างในคือรอยต่อ</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ฟังก์ชัน</th><th>คืนตำแหน่งของ</th><th>เท่ากับในหน้า 19.1</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>lower_bound(begin, end, x)</code></td><td>ช่องแรกที่ <code>&gt;= x</code></td><td><code>first_at_least</code></td></tr>
+            <tr><td><code>upper_bound(begin, end, x)</code></td><td>ช่องแรกที่ <code>&gt; x</code></td><td><code>first_greater</code></td></tr>
+            <tr><td><code>equal_range(begin, end, x)</code></td><td>ทั้งสองค่าข้างบนเป็น pair</td><td>เรียกทั้งสองฟังก์ชัน</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสามตัวค้นแบบแบ่งครึ่งเหมือนลูปในหน้า 19.1 จึงเป็น O(log n) และใช้ได้กับข้อมูลที่เรียงจากน้อยไปมากแล้วเท่านั้น สิ่งที่คืนมาเป็น iterator ตามบทที่ 16 ไม่ใช่ตัวเลข เอาไปลบด้วย <code>begin()</code> จะได้ index ถ้าไม่มีช่องไหนผ่านเงื่อนไข จะได้ <code>end()</code> ซึ่งลบแล้วได้ n เหมือนที่ฟังก์ชันของเราตอบ n</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bounds-stl"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; scores = {45, 52, 52, 52, 60, 71, 71, 88};
+    vector&lt;int&gt; queries = {52, 53, 71, 10, 100};
+    for (int k = 0; k &lt; (int)queries.size(); k++) {
+        int x = queries[k];
+        int lower = lower_bound(scores.begin(), scores.end(), x) - scores.begin();
+        int upper = upper_bound(scores.begin(), scores.end(), x) - scores.begin();
+        cout &lt;&lt; "x=" &lt;&lt; x &lt;&lt; " lower=" &lt;&lt; lower &lt;&lt; " upper=" &lt;&lt; upper &lt;&lt; " count=" &lt;&lt; upper - lower &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bounds-stl" data-title="C:\code\bounds.exe"><pre><code>x=52 lower=1 upper=4 count=3
+x=53 lower=4 upper=4 count=0
+x=71 lower=5 upper=7 count=2
+x=10 lower=0 upper=0 count=0
+x=100 lower=8 upper=8 count=0
+</code></pre></div>
+
+      <p>เทียบกับโปรแกรม count-bounds ในหน้า 19.1 ที่ใช้คะแนนชุดเดียวกัน <code>lower</code> ตรงกับ <code>less</code> และ <code>upper</code> ตรงกับ <code>at_most</code> ทุกบรรทัด ชื่อฟังก์ชันจำง่ายถ้านึกถึงการแทรก <code>lower_bound</code> คือตำแหน่งซ้ายสุดที่แทรก x ได้โดยข้อมูลยังเรียงอยู่ <code>upper_bound</code> คือตำแหน่งขวาสุด ช่องระหว่างสองตำแหน่งนี้คือ x ทุกตัวที่มีอยู่แล้ว</p>
+
+      <h2 id="equal-range">equal_range</h2>
+
+      <p>ถ้าต้องการทั้งสองค่า <code>equal_range</code> คืน pair ของ iterator ตัวแรกคือผลของ <code>lower_bound</code> ตัวที่สองคือผลของ <code>upper_bound</code> ชนิดของ pair นี้ยาวมาก จึงประกาศด้วย <code>auto</code> ให้ compiler ใส่ชนิดให้เอง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="equal-range"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; scores = {45, 52, 52, 52, 60, 71, 71, 88};
+    auto range = equal_range(scores.begin(), scores.end(), 52);
+    cout &lt;&lt; "first 52 at " &lt;&lt; range.first - scores.begin() &lt;&lt; '\n';
+    cout &lt;&lt; "after last 52 at " &lt;&lt; range.second - scores.begin() &lt;&lt; '\n';
+    cout &lt;&lt; "count = " &lt;&lt; range.second - range.first &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="equal-range" data-title="C:\code\equal_range.exe"><pre><code>first 52 at 1
+after last 52 at 4
+count = 3
+</code></pre></div>
+
+      <p><code>range.second</code> ชี้ช่อง <strong>ถัดจาก</strong> 52 ตัวสุดท้าย ไม่ใช่ตัวสุดท้ายเอง แบบเดียวกับ <code>end()</code> ที่ชี้เลยช่องสุดท้ายไปหนึ่งช่อง ลบสอง iterator กันจึงได้จำนวนพอดีโดยไม่ต้องบวกหนึ่ง</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">count ไม่ใช่ binary search</p>
+        <p>STL มี <code>count(v.begin(), v.end(), x)</code> ที่นับ x ได้เหมือนกัน แต่มันไล่ดูทุกช่องเป็น O(n) เพราะไม่ได้สมมติว่าข้อมูลเรียง ถ้าถามแสนครั้งกับข้อมูลแสนตัว จะช้าแบบเดียวกับวิธีไล่ในหน้า 19.1 ข้อมูลที่เรียงแล้วให้ใช้ <code>equal_range</code> หรือ <code>upper_bound</code> ลบ <code>lower_bound</code></p>
+      </div>
+
+      <h2 id="count-range">นับค่าในช่วง</h2>
+
+      <p>ร้านค้ามีสินค้า N ชิ้น ลูกค้าถามว่ามีสินค้าราคาตั้งแต่ a ถึง b บาทกี่ชิ้น ราคาสูงได้ถึง 10<sup>9</sup> จึงใช้อาเรย์นับแบบหน้า 5.3 ไม่ได้ ให้เรียงราคาก่อนครั้งเดียว แล้วตอบแต่ละคำถามด้วยรอยต่อสองจุด</p>
+
+      <ul>
+        <li><code>lower_bound(a)</code> คือจำนวนชิ้นที่ราคา <strong>น้อยกว่า a</strong></li>
+        <li><code>upper_bound(b)</code> คือจำนวนชิ้นที่ราคา <strong>ไม่เกิน b</strong></li>
+        <li>ลบกันได้จำนวนชิ้นที่ราคาตั้งแต่ a ถึง b รวมทั้งสองขอบ</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="price-range"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; prices(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; prices[i];
+    }
+    sort(prices.begin(), prices.end());
+    for (int k = 0; k &lt; q; k++) {
+        int low, high;
+        cin &gt;&gt; low &gt;&gt; high;
+        int from = lower_bound(prices.begin(), prices.end(), low) - prices.begin();
+        int to = upper_bound(prices.begin(), prices.end(), high) - prices.begin();
+        cout &lt;&lt; to - from &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="price-range" data-title="ข้อมูลเข้า"><pre><code>9 4
+2590 18900 990 4500 990 12000 7490 4500 35000
+1000 5000
+990 4500
+20000 30000
+0 100000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="price-range" data-title="C:\code\price_range.exe"><pre><code>3
+5
+0
+9
+</code></pre></div>
+      </div>
+
+      <p>เรียงแล้วราคาเป็น <code>990 990 2590 4500 4500 7490 12000 18900 35000</code> คำถามแรกได้ 2590 กับ 4500 สองชิ้น รวมสาม คำถามที่สองมีราคาที่ตรงขอบพอดีทั้งสองข้าง ได้ทั้ง 990 สองชิ้นและ 4500 สองชิ้น เพราะ <code>lower_bound</code> นับตั้งแต่ตัวแรกที่เท่ากับ a และ <code>upper_bound</code> เลยตัวสุดท้ายที่เท่ากับ b ไปแล้ว ถ้าสลับกันใช้ จะตกขอบ ซึ่งเป็นจุดที่ชุดทดสอบชอบดัก งานทั้งหมดคือเรียง O(N log N) กับตอบ Q ข้อข้อละ O(log N)</p>
+
+      <h2 id="prefix-search">ค้นบนผลรวมสะสม</h2>
+
+      <p>binary search ไม่ได้ใช้ได้แค่กับข้อมูลที่โจทย์ให้มาเรียงแล้ว อาเรย์อะไรก็ตามที่ <strong>เรียงอยู่แล้วโดยธรรมชาติ</strong> ก็ใช้ได้ ตัวอย่างที่เจอบ่อยที่สุดคือผลรวมสะสมของจำนวนที่ไม่ติดลบ ซึ่งไม่มีทางลดลง</p>
+
+      <p>น้องวางแผนอ่านหนังสือ N วัน วันที่ i อ่าน a<sub>i</sub> หน้า บางวันไม่ได้อ่านเลย มีคำถามว่า ถ้าต้องอ่านให้ครบ t หน้า จะครบในวันที่เท่าไร คำตอบคือวันแรกที่ผลรวมสะสมถึง t ซึ่งก็คือ <code>lower_bound</code> บนอาเรย์ <code>prefix</code> ของหน้า 5.4</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="reading-plan"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;long long&gt; prefix(n + 1, 0);
+    for (int day = 1; day &lt;= n; day++) {
+        int pages;
+        cin &gt;&gt; pages;
+        prefix[day] = prefix[day - 1] + pages;
+    }
+    for (int k = 0; k &lt; q; k++) {
+        long long target;
+        cin &gt;&gt; target;
+        int day = lower_bound(prefix.begin() + 1, prefix.end(), target) - prefix.begin(); // (1)!
+        if (day &gt; n) { // (2)!
+            cout &lt;&lt; "never" &lt;&lt; '\n';
+        } else {
+            cout &lt;&lt; "day " &lt;&lt; day &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เริ่มค้นที่ <code>prefix.begin() + 1</code> เพราะช่อง 0 คือผลรวมของศูนย์วัน ไม่ใช่วันจริง แต่ยังลบด้วย <code>prefix.begin()</code> เพื่อให้ได้เลขวันตรงกับ index ของ <code>prefix</code></li>
+        <li>ไม่เจอได้ <code>end()</code> ซึ่งลบแล้วคือ n + 1 แปลว่าอ่านครบทุกวันแล้วก็ยังไม่ถึง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="reading-plan" data-title="ข้อมูลเข้า"><pre><code>7 5
+30 45 0 0 60 25 40
+30
+31
+75
+76
+201
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="reading-plan" data-title="C:\code\reading_plan.exe"><pre><code>day 1
+day 2
+day 2
+day 5
+never
+</code></pre></div>
+      </div>
+
+      <p>ผลรวมสะสมคือ <code>30 75 75 75 135 160 200</code> วันที่ 3 กับ 4 ไม่ได้อ่าน ค่าจึงซ้ำกันสามช่อง ถาม 75 ได้วันที่ 2 ซึ่งเป็นวันแรกที่ถึง ถูกต้องเพราะ <code>lower_bound</code> ให้ตัวแรกเสมอ ถ้าเขียน binary search แบบหน้า 9.4 ที่หยุดเมื่อเจอ อาจได้วันที่ 3 หรือ 4 ก็ได้</p>
+
+      <p>วิธีนี้ใช้ได้เพราะจำนวนหน้าไม่ติดลบ ถ้าข้อมูลมีค่าติดลบได้ เช่น กำไรขาดทุนรายวัน ผลรวมสะสมขึ้นๆ ลงๆ ไม่เรียง binary search ใช้ตรงๆ ไม่ได้ หน้า 19.5 จะแสดงวิธีรับมือกับกรณีนั้น</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 ราคาสินค้า N = 100000 ชิ้น สุ่มตั้งแต่ 1 ถึง 10<sup>9</sup> ไม่ได้เรียงมา คำถาม Q = 100000 ข้อ ช่วงสุ่ม วิธีตรงไปตรงมาไล่ดูสินค้าทุกชิ้นทุกคำถามแบบหน้า 5.3 เป็น O(NQ) อีกวิธีคือโปรแกรม price-range ข้างบน เป็น O((N + Q) log N) รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ไล่ทุกชิ้นทุกคำถาม</td><td>57 วินาที (5 รอบอยู่ระหว่าง 55 ถึง 65)</td><td>23 วินาที (5 รอบอยู่ระหว่าง 19 ถึง 25)</td></tr>
+            <tr><td>เรียงแล้วใช้ <code>lower_bound</code> กับ <code>upper_bound</code></td><td>0.13 วินาที</td><td>0.08 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วิธีไล่ต้องเทียบ 10<sup>10</sup> ครั้งเต็มๆ เพราะต้องดูครบทุกชิ้นทุกคำถาม ช้ากว่าการไล่ในหน้า 19.1 ที่หยุดได้กลางทาง ส่วนวิธีเรียงแล้วค้น เวลาเกือบทั้งหมดคือการอ่านข้อมูลกับการเรียงครั้งเดียว</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="unsorted">แบบที่ 1 ลืมเรียง</h3>
+
+      <p>ในโปรแกรม price-range ลบบรรทัด <code>sort</code> ออก แล้วใช้ข้อมูลเข้าชุดเดิม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="no-sort"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; prices(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; prices[i];
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int low, high;
+        cin &gt;&gt; low &gt;&gt; high;
+        int from = lower_bound(prices.begin(), prices.end(), low) - prices.begin();
+        int to = upper_bound(prices.begin(), prices.end(), high) - prices.begin();
+        cout &lt;&lt; to - from &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="no-sort" data-title="ข้อมูลเข้า"><pre><code>9 4
+2590 18900 990 4500 990 12000 7490 4500 35000
+1000 5000
+990 4500
+20000 30000
+0 100000
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="no-sort" data-title="C:\code\price_range.exe"><pre><code>3
+8
+0
+9
+</code></pre></div>
+      </div>
+
+      <p>ไม่มี error ไม่มี warning คำตอบแรกบังเอิญถูก แต่คำตอบที่สองได้ 8 แทนที่จะเป็น 5 <code>lower_bound</code> ไม่ได้ตรวจว่าข้อมูลเรียงหรือยัง มันแค่ทิ้งครึ่งหนึ่งตามที่เห็นช่องกลาง ถ้าข้อมูลไม่เรียง ครึ่งที่ทิ้งอาจมีคำตอบอยู่ อันตรายตรงที่ตัวอย่างในโจทย์บางข้อบังเอิญเรียงมาให้ หรือบังเอิญได้คำตอบถูก แล้วไปตกในชุดทดสอบที่ซ่อนไว้</p>
+
+      <h3 id="deref-end">แบบที่ 2 อ่านค่าที่ end()</h3>
+
+      <p>อยากรู้ว่าสินค้าที่ถูกที่สุดในบรรดาชิ้นที่ราคาอย่างน้อย <code>budget</code> ราคาเท่าไร จึงเขียน <code>*</code> หน้าผลของ <code>lower_bound</code> เพื่ออ่านค่าที่ iterator ชี้</p>
+
+      <div class="code" data-lang="cpp"><pre><code>int cheapest = *lower_bound(prices.begin(), prices.end(), budget);
+cout &lt;&lt; "cheapest at least " &lt;&lt; budget &lt;&lt; " is " &lt;&lt; cheapest &lt;&lt; '\n';
+</code></pre></div>
+
+      <p>ราคาสินค้าห้าชิ้นคือ <code>2590 990 4500 7490 12000</code> ป้อน budget เป็น 4000 ได้ <code>cheapest at least 4000 is 4500</code> ถูกต้อง แต่ป้อน 50000 ซึ่งแพงกว่าทุกชิ้น บนเครื่องที่เขียนเอกสารนี้ได้</p>
+
+      <div class="code" data-lang="text"><pre><code>cheapest at least 50000 is 0
+</code></pre></div>
+
+      <p><code>lower_bound</code> คืน <code>end()</code> ซึ่งชี้เลยช่องสุดท้ายไป ไม่มีข้อมูลจริงอยู่ตรงนั้น การอ่านค่าที่ <code>end()</code> คืออ่านนอก vector เหมือนอ่านเกินอาเรย์ในหน้า 5.5 ผลที่ได้ขึ้นกับว่าหน่วยความจำตรงนั้นมีอะไรค้างอยู่ ครั้งนี้บังเอิญได้ 0 ซึ่งดูเหมือนคำตอบปกติ จึงจับยากกว่าโปรแกรมที่พังทันที ต้องเช็กก่อนอ่านทุกครั้ง</p>
+
+      <div class="code" data-lang="cpp"><pre><code>auto it = lower_bound(prices.begin(), prices.end(), budget);
+if (it == prices.end()) {
+    cout &lt;&lt; "none" &lt;&lt; '\n';
+} else {
+    cout &lt;&lt; *it &lt;&lt; '\n';
+}
+</code></pre></div>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>lower_bound</code> ให้ช่องแรกที่ <code>&gt;= x</code> <code>upper_bound</code> ให้ช่องแรกที่ <code>&gt; x</code> ทั้งคู่เป็น O(log n) ลบด้วย <code>begin()</code> ได้ index</li>
+        <li>จำนวน x คือ <code>upper_bound</code> ลบ <code>lower_bound</code> หรือ <code>equal_range</code> ส่วน <code>count</code> ไล่ทุกช่อง</li>
+        <li>จำนวนค่าตั้งแต่ a ถึง b คือ <code>upper_bound(b)</code> ลบ <code>lower_bound(a)</code></li>
+        <li>ผลรวมสะสมของจำนวนที่ไม่ติดลบเรียงอยู่แล้ว ใช้ <code>lower_bound</code> หาวันแรกที่ยอดสะสมถึงเป้าได้</li>
+        <li>ต้องเรียงข้อมูลก่อนเสมอ และต้องเช็ก <code>end()</code> ก่อนอ่านค่าที่ iterator ชี้</li>
+      </ul>
+    </article>
