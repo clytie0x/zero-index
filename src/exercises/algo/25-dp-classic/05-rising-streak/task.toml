@@ -1,0 +1,5 @@
+title = "ค่าที่สูงขึ้นเรื่อยๆ"
+level = 1
+time_limit = 1
+source = "แนวเดียวกับโจทย์ longest increasing subsequence มาตรฐาน"
+hint = '''<p>เป็น LIS ในหน้า 25.2 N ถึงสองแสน วิธี O(N<sup>2</sup>) ต้องเทียบราว 2 × 10<sup>10</sup> คู่ ไม่ทัน ใช้อาเรย์ <code>tails</code> กับ <code>lower_bound</code> แบบ O(N log N) ต้องมากกว่าจริงๆ จึงใช้ <code>lower_bound</code> ถ้าใช้ <code>upper_bound</code> ค่าที่เท่ากันจะถูกนับต่อกัน ลองกับข้อมูลที่ทุกตัวเท่ากัน คำตอบต้องเป็น 1</p>'''

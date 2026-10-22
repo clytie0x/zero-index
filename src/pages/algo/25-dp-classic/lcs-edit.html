@@ -1,0 +1,515 @@
+<article class="doc">
+      <h1>25.3 LCS และ edit distance</h1>
+
+      <p>โจทย์ที่ให้สตริงสองตัวแล้วถามว่าคล้ายกันแค่ไหน ใช้ DP บนตารางสองมิติที่แถวเป็นตัวอักษรของคำแรก คอลัมน์เป็นตัวอักษรของคำที่สอง หน้านี้มีสองโจทย์ที่เป็นแม่แบบของโจทย์กลุ่มนี้ <strong>LCS</strong> (longest common subsequence) หาลำดับย่อยร่วมที่ยาวที่สุด ใช้เทียบไฟล์สองรุ่นว่าบรรทัดไหนเหมือนเดิม และ <strong>edit distance</strong> นับจำนวนครั้งน้อยสุดที่ต้องแก้คำหนึ่งให้เป็นอีกคำ ใช้ในระบบตรวจคำสะกด ทั้งสองโจทย์ต้องเติมตารางให้ถูกลำดับ แล้วย้อนรอยจากมุมตารางเพื่อหาคำตอบจริง ท้ายหน้าลดหน่วยความจำเหลือสองแถว</p>
+
+      <h2 id="lcs">LCS ลำดับย่อยร่วมที่ยาวที่สุด</h2>
+
+      <p>ชื่อจังหวัด <code>TRANG</code> กับ <code>RAYONG</code> มีลำดับย่อยร่วมกันยาวที่สุดเท่าไร ลำดับย่อยมีความหมายเดียวกับหน้า 25.2 คือเลือกบางตัวโดยคงลำดับเดิม <code>RANG</code> เป็นลำดับย่อยของทั้งสองคำ ใน TRANG คือตัวที่ 2 ถึง 5 ใน RAYONG คือตัวที่ 1 2 5 6 ยาว 4 ส่วน <code>RAG</code> ก็ร่วมกันแต่สั้นกว่า</p>
+
+      <p>ทำตามวิธีคิดสี่ขั้นในหน้า 24.2 ให้ s ยาว n และ t ยาว m</p>
+
+      <ul>
+        <li><strong>นิยามสถานะ</strong> <code>common[i][j]</code> คือความยาว LCS ของ i ตัวแรกของ s กับ j ตัวแรกของ t</li>
+        <li><strong>หาความสัมพันธ์</strong> ดูตัวสุดท้ายของสองส่วนนั้น คือ <code>s[i - 1]</code> กับ <code>t[j - 1]</code> ถ้าตรงกัน จับคู่สองตัวนี้ได้เลย ได้ <code>common[i - 1][j - 1] + 1</code> ถ้าไม่ตรง อย่างน้อยตัวหนึ่งในสองตัวนี้ไม่อยู่ใน LCS จึงลองตัด s ทิ้งหนึ่งตัว หรือตัด t ทิ้งหนึ่งตัว เอาทางที่ยาวกว่า <code>max(common[i - 1][j], common[i][j - 1])</code></li>
+        <li><strong>กรณีฐาน</strong> คำใดคำหนึ่งว่าง LCS ยาว 0 คือแถว 0 กับคอลัมน์ 0 เป็น 0 ทั้งหมด</li>
+        <li><strong>ลำดับการเติมและคำตอบสุดท้าย</strong> ช่องหนึ่งใช้ช่องบน ช่องซ้าย และช่องทแยงซ้ายบน จึงเติมทีละแถวจากบนลงล่าง ในแถวเติมจากซ้ายไปขวา คำตอบอยู่ที่ <code>common[n][m]</code></li>
+      </ul>
+
+      <p>ตอนที่ตัวอักษรตรงกัน ทำไมจับคู่ได้เลยโดยไม่ต้องลองทางอื่น ถ้ามี LCS ที่ไม่ได้ใช้คู่นี้ ตัวสุดท้ายของ LCS นั้นจับคู่กับตัวอื่นอยู่ เปลี่ยนให้มาจับคู่ตัวสุดท้ายทั้งสองนี้แทน ความยาวเท่าเดิม จึงไม่เสียอะไร</p>
+
+      <figure>
+        <svg viewBox="0 0 612 298" width="612" style="max-width:100%;height:auto" role="img" aria-label="ตาราง LCS ของ TRANG กับ RAYONG สองภาพ ภาพซ้ายเติมไปถึงแถว N คอลัมน์ N ช่องนี้ตัวอักษรตรงกันจึงเอาช่องทแยงซ้ายบนที่เป็น 2 มาบวกหนึ่ง ภาพขวาเป็นตารางที่เติมครบ คำตอบ 4 อยู่มุมขวาล่าง และทางย้อนรอยผ่านช่องที่ตัวอักษรตรงกันสี่ช่อง คือ R A N G">
+          <defs>
+            <marker id="lcs-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--brand)"/></marker>
+            <marker id="lcs-arrow-dim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--muted)"/></marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="61" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px"></text>
+            <text x="95" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">R</text>
+            <text x="129" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">A</text>
+            <text x="163" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">Y</text>
+            <text x="197" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">O</text>
+            <text x="231" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">N</text>
+            <text x="265" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">G</text>
+            <text x="27" y="56" text-anchor="middle" style="fill:var(--muted);font-size:14px"></text>
+            <text x="27" y="90" text-anchor="middle" style="fill:var(--muted);font-size:14px">T</text>
+            <text x="27" y="124" text-anchor="middle" style="fill:var(--muted);font-size:14px">R</text>
+            <text x="27" y="158" text-anchor="middle" style="fill:var(--muted);font-size:14px">A</text>
+            <text x="27" y="192" text-anchor="middle" style="fill:var(--muted);font-size:14px">N</text>
+            <text x="27" y="226" text-anchor="middle" style="fill:var(--muted);font-size:14px">G</text>
+            <rect x="44" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="61" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="78" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="95" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="112" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="129" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="146" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="163" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="180" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="197" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="214" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="231" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="248" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="265" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="44" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="61" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="78" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="95" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="112" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="129" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="146" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="163" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="180" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="197" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="214" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="231" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="248" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="265" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="44" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="61" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="78" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="95" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="112" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="129" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="146" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="163" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="180" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="197" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="214" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="231" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="248" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="265" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="44" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="61" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="78" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="95" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="112" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="129" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="146" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="163" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="180" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <text x="197" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="214" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <text x="231" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="248" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="265" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="44" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="61" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="78" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="95" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="112" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="129" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="146" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="163" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="180" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--warning);stroke-width:2"/>
+            <text x="197" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="214" y="170" width="34" height="34" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2.5"/>
+            <text x="231" y="193" text-anchor="middle" style="fill:var(--brand-text);font-size:16px;font-weight:700">?</text>
+            <rect x="248" y="170" width="34" height="34" style="fill:none;stroke:var(--line);stroke-width:1"/>
+            <rect x="44" y="204" width="34" height="34" style="fill:none;stroke:var(--line);stroke-width:1"/>
+            <rect x="78" y="204" width="34" height="34" style="fill:none;stroke:var(--line);stroke-width:1"/>
+            <rect x="112" y="204" width="34" height="34" style="fill:none;stroke:var(--line);stroke-width:1"/>
+            <rect x="146" y="204" width="34" height="34" style="fill:none;stroke:var(--line);stroke-width:1"/>
+            <rect x="180" y="204" width="34" height="34" style="fill:none;stroke:var(--line);stroke-width:1"/>
+            <rect x="214" y="204" width="34" height="34" style="fill:none;stroke:var(--line);stroke-width:1"/>
+            <rect x="248" y="204" width="34" height="34" style="fill:none;stroke:var(--line);stroke-width:1"/>
+            <text x="381" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px"></text>
+            <text x="415" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">R</text>
+            <text x="449" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">A</text>
+            <text x="483" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">Y</text>
+            <text x="517" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">O</text>
+            <text x="551" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">N</text>
+            <text x="585" y="22" text-anchor="middle" style="fill:var(--muted);font-size:14px">G</text>
+            <text x="347" y="56" text-anchor="middle" style="fill:var(--muted);font-size:14px"></text>
+            <text x="347" y="90" text-anchor="middle" style="fill:var(--muted);font-size:14px">T</text>
+            <text x="347" y="124" text-anchor="middle" style="fill:var(--muted);font-size:14px">R</text>
+            <text x="347" y="158" text-anchor="middle" style="fill:var(--muted);font-size:14px">A</text>
+            <text x="347" y="192" text-anchor="middle" style="fill:var(--muted);font-size:14px">N</text>
+            <text x="347" y="226" text-anchor="middle" style="fill:var(--muted);font-size:14px">G</text>
+            <rect x="364" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="381" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="398" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="415" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="432" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="449" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="466" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="483" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="500" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="517" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="534" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="551" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="568" y="34" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="585" y="57" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="364" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--brand);stroke-width:1.5"/>
+            <text x="381" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="398" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="415" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="432" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="449" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="466" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="483" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="500" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="517" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="534" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="551" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="568" y="68" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="585" y="91" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="364" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="381" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="398" y="102" width="34" height="34" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="415" y="125" text-anchor="middle" style="fill:var(--brand-text);font-size:16px;font-weight:700">1</text>
+            <rect x="432" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="449" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="466" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="483" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="500" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="517" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="534" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="551" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="568" y="102" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="585" y="125" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="364" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="381" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="398" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="415" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="432" y="136" width="34" height="34" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="449" y="159" text-anchor="middle" style="fill:var(--brand-text);font-size:16px;font-weight:700">2</text>
+            <rect x="466" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--brand);stroke-width:1.5"/>
+            <text x="483" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="500" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--brand);stroke-width:1.5"/>
+            <text x="517" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="534" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="551" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="568" y="136" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="585" y="159" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="364" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="381" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="398" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="415" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="432" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="449" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="466" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="483" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="500" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="517" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="534" y="170" width="34" height="34" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="551" y="193" text-anchor="middle" style="fill:var(--brand-text);font-size:16px;font-weight:700">3</text>
+            <rect x="568" y="170" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="585" y="193" text-anchor="middle" style="fill:var(--ink);font-size:16px">3</text>
+            <rect x="364" y="204" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="381" y="227" text-anchor="middle" style="fill:var(--ink);font-size:16px">0</text>
+            <rect x="398" y="204" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="415" y="227" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <rect x="432" y="204" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="449" y="227" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="466" y="204" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="483" y="227" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="500" y="204" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="517" y="227" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <rect x="534" y="204" width="34" height="34" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1"/>
+            <text x="551" y="227" text-anchor="middle" style="fill:var(--ink);font-size:16px">3</text>
+            <rect x="568" y="204" width="34" height="34" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="585" y="227" text-anchor="middle" style="fill:var(--brand-text);font-size:16px;font-weight:700">4</text>
+            <line x1="205.5" y1="161.5" x2="220.4" y2="176.4" style="stroke:var(--brand);stroke-width:2.5" marker-end="url(#lcs-arrow)"/>
+            <line x1="231.0" y1="165.0" x2="231.0" y2="172.0" style="stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3" marker-end="url(#lcs-arrow-dim)"/>
+            <line x1="209.0" y1="187.0" x2="216.0" y2="187.0" style="stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3" marker-end="url(#lcs-arrow-dim)"/>
+          </g>
+          <g style="font-family:var(--font-text)">
+            <text x="146" y="264" text-anchor="middle" style="fill:var(--ink);font-size:14px">กำลังเติมช่องแถว N คอลัมน์ N</text>
+            <text x="146" y="284" text-anchor="middle" style="fill:var(--muted);font-size:13px">ตัวอักษรตรงกัน ใช้ช่องทแยง 2 + 1</text>
+            <text x="466" y="264" text-anchor="middle" style="fill:var(--ink);font-size:14px">เติมครบแล้ว ย้อนรอยจากมุมขวาล่าง</text>
+            <text x="466" y="284" text-anchor="middle" style="fill:var(--muted);font-size:13px">ช่องสีเข้มคือตัวที่ตรงกัน ได้ R A N G</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>ภาพซ้ายคือจังหวะที่เติมมาถึงแถว N คอลัมน์ N ทุกช่องก่อนหน้าตามลำดับการเติมมีค่าแล้ว ช่องนี้ตัวอักษรตรงกัน จึงหยิบช่องทแยงซ้ายบนที่เป็น 2 มาบวกหนึ่งได้ 3 ส่วนช่องบนกับช่องซ้าย (เส้นประ) ใช้เฉพาะตอนตัวอักษรไม่ตรง ภาพขวาคือตารางที่เติมครบ ช่องที่มีกรอบสีคือทางที่ย้อนรอยผ่าน ช่องที่ระบายสีเข้มคือตัวอักษรที่จับคู่กัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="lcs"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    string s, t;
+    cin &gt;&gt; s &gt;&gt; t;
+    int n = s.size(), m = t.size();
+    vector&lt;vector&lt;int&gt;&gt; common(n + 1, vector&lt;int&gt;(m + 1, 0));
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) { // (1)!
+                common[i][j] = common[i - 1][j - 1] + 1;
+            } else {
+                common[i][j] = max(common[i - 1][j], common[i][j - 1]); // (2)!
+            }
+        }
+    }
+    for (int i = 0; i &lt;= n; i++) {
+        for (int j = 0; j &lt;= m; j++) {
+            cout &lt;&lt; common[i][j] &lt;&lt; (j == m ? '\n' : ' ');
+        }
+    }
+    string answer;
+    int i = n, j = m;
+    while (i &gt; 0 &amp;&amp; j &gt; 0) {
+        if (s[i - 1] == t[j - 1]) {
+            answer += s[i - 1];
+            i--;
+            j--;
+        } else if (common[i - 1][j] &gt;= common[i][j - 1]) { // (3)!
+            i--;
+        } else {
+            j--;
+        }
+    }
+    reverse(answer.begin(), answer.end());
+    cout &lt;&lt; "LCS length = " &lt;&lt; common[n][m] &lt;&lt; '\n';
+    cout &lt;&lt; "LCS = " &lt;&lt; answer &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>แถว i หมายถึง i ตัวแรก ตัวสุดท้ายของมันจึงอยู่ที่ช่อง <code>i - 1</code> ของสตริง ตารางเริ่มที่ 1 แต่สตริงเริ่มที่ 0</li>
+        <li>ตัวไม่ตรง เอาทางที่ดีกว่าระหว่างตัด s ทิ้งหนึ่งตัว (ช่องบน) กับตัด t ทิ้งหนึ่งตัว (ช่องซ้าย)</li>
+        <li>ย้อนไปทางที่ให้ค่ามา ถ้าเท่ากันเลือกขึ้นบน ถ้าเลือกไปซ้ายแทน ความยาวยังเท่าเดิม แต่ LCS ที่ได้อาจเป็นอีกแบบ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lcs" data-title="ข้อมูลเข้า"><pre><code>TRANG RAYONG
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lcs" data-title="C:\code\lcs.exe"><pre><code>0 0 0 0 0 0 0
+0 0 0 0 0 0 0
+0 1 1 1 1 1 1
+0 1 2 2 2 2 2
+0 1 2 2 2 3 3
+0 1 2 2 2 3 4
+LCS length = 4
+LCS = RANG
+</code></pre></div>
+      </div>
+
+      <p>ย้อนรอยเริ่มที่มุมขวาล่าง G ตรง G จึงเก็บ G แล้วไปทแยง N ตรง N เก็บ N แล้วไปทแยง ถึงแถว A คอลัมน์ O ไม่ตรง ช่องบนเป็น 1 ช่องซ้ายเป็น 2 ค่า 2 มาจากทางซ้าย จึงไปซ้าย เจอแถว A คอลัมน์ Y ก็ไปซ้ายอีก แล้วเจอ A ตรง A กับ R ตรง R ได้ตัวอักษรจากท้ายไปหน้าเป็น G N A R กลับลำดับเป็น RANG</p>
+
+      <p>ตารางมี (n + 1)(m + 1) ช่อง ช่องละ O(1) เป็น <strong>O(nm)</strong> ทั้งเวลาและหน่วยความจำ ย้อนรอยเดินไม่เกิน n + m ก้าว</p>
+
+      <h2 id="edit-distance">edit distance</h2>
+
+      <p>คนพิมพ์ชื่อจังหวัดผิดบ่อยเป็น <code>CHAINGMAI</code> แทน <code>CHIANGMAI</code> ระบบค้นหาจะแนะนำคำที่ถูกได้ ต้องวัดว่าสองคำห่างกันแค่ไหน ให้แก้คำได้สามแบบ แบบละ 1 ครั้ง คือ <strong>แทรก</strong> ตัวอักษรหนึ่งตัว <strong>ลบ</strong> หนึ่งตัว หรือ <strong>แทนที่</strong> หนึ่งตัวด้วยตัวอื่น <strong>edit distance</strong> คือจำนวนครั้งน้อยที่สุดที่เปลี่ยน s ให้เป็น t</p>
+
+      <ul>
+        <li><strong>นิยามสถานะ</strong> <code>cost[i][j]</code> คือจำนวนครั้งน้อยสุดที่เปลี่ยน i ตัวแรกของ s ให้เป็น j ตัวแรกของ t</li>
+        <li><strong>หาความสัมพันธ์</strong> ดูตัวสุดท้าย ถ้า <code>s[i - 1]</code> ตรงกับ <code>t[j - 1]</code> ไม่ต้องแก้ตัวนี้ ได้ <code>cost[i - 1][j - 1]</code> ถ้าไม่ตรง ลองสามทาง แทนที่ตัวสุดท้ายของ s ด้วยตัวสุดท้ายของ t มาจากช่องทแยง ลบตัวสุดท้ายของ s มาจากช่องบน แทรกตัวสุดท้ายของ t ต่อท้าย มาจากช่องซ้าย เลือกทางที่น้อยสุดแล้วบวก 1</li>
+        <li><strong>กรณีฐาน</strong> เปลี่ยน i ตัวให้เป็นคำว่าง ต้องลบ i ครั้ง <code>cost[i][0] = i</code> เปลี่ยนคำว่างให้เป็น j ตัว ต้องแทรก j ครั้ง <code>cost[0][j] = j</code> ต่างจาก LCS ที่ขอบเป็น 0</li>
+        <li><strong>ลำดับการเติมและคำตอบสุดท้าย</strong> เหมือน LCS ทุกอย่าง คำตอบอยู่ที่ <code>cost[n][m]</code></li>
+      </ul>
+
+      <p>ย้อนรอยแบบเดียวกับ LCS ดูว่าค่าของช่องมาจากทางไหน แล้วพิมพ์สองคำเรียงกัน ใส่ <code>-</code> ตรงที่ไม่มีตัวอักษร บรรทัดกลางบอกว่าตรงนั้นเกิดอะไร <code>|</code> คือตัวเดียวกัน <code>R</code> คือแทนที่ <code>D</code> คือลบ <code>I</code> คือแทรก</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="edit-distance"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    string s, t;
+    cin &gt;&gt; s &gt;&gt; t;
+    int n = s.size(), m = t.size();
+    vector&lt;vector&lt;int&gt;&gt; cost(n + 1, vector&lt;int&gt;(m + 1, 0));
+    for (int i = 0; i &lt;= n; i++) {
+        cost[i][0] = i;
+    }
+    for (int j = 0; j &lt;= m; j++) {
+        cost[0][j] = j;
+    }
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) {
+                cost[i][j] = cost[i - 1][j - 1];
+            } else {
+                cost[i][j] = 1 + min({cost[i - 1][j - 1], cost[i - 1][j], cost[i][j - 1]}); // (1)!
+            }
+        }
+    }
+    cout &lt;&lt; "edit distance = " &lt;&lt; cost[n][m] &lt;&lt; '\n';
+    string top, bottom, mark;
+    int i = n, j = m;
+    while (i &gt; 0 || j &gt; 0) {
+        if (i &gt; 0 &amp;&amp; j &gt; 0 &amp;&amp; s[i - 1] == t[j - 1]) {
+            top += s[i - 1];
+            bottom += t[j - 1];
+            mark += '|';
+            i--;
+            j--;
+        } else if (i &gt; 0 &amp;&amp; j &gt; 0 &amp;&amp; cost[i][j] == cost[i - 1][j - 1] + 1) { // (2)!
+            top += s[i - 1];
+            bottom += t[j - 1];
+            mark += 'R';
+            i--;
+            j--;
+        } else if (i &gt; 0 &amp;&amp; cost[i][j] == cost[i - 1][j] + 1) {
+            top += s[i - 1];
+            bottom += '-';
+            mark += 'D';
+            i--;
+        } else {
+            top += '-';
+            bottom += t[j - 1];
+            mark += 'I';
+            j--;
+        }
+    }
+    reverse(top.begin(), top.end());
+    reverse(mark.begin(), mark.end());
+    reverse(bottom.begin(), bottom.end());
+    cout &lt;&lt; top &lt;&lt; '\n' &lt;&lt; mark &lt;&lt; '\n' &lt;&lt; bottom &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>min</code> ที่ใส่ค่าในปีกกาหาค่าน้อยสุดของกี่ค่าก็ได้ ไม่ต้องซ้อน <code>min</code> สองชั้น</li>
+        <li>ตรวจทางแทนที่ก่อน แล้วค่อยลบ แล้วค่อยแทรก ถ้าหลายทางให้ค่าเท่ากัน ลำดับการตรวจนี้กำหนดว่าจะพิมพ์แบบไหน จำนวนครั้งยังเท่าเดิม</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="edit-distance" data-title="ข้อมูลเข้า"><pre><code>CHAINGMAI CHIANGMAI
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="edit-distance" data-title="C:\code\edit_distance.exe"><pre><code>edit distance = 2
+CHAINGMAI
+||RR|||||
+CHIANGMAI
+</code></pre></div>
+      </div>
+
+      <p>การสลับตัวอักษรสองตัวที่ติดกันนับเป็นการแทนที่สองครั้ง เพราะไม่มีการสลับในสามแบบที่อนุญาต ลองป้อนคู่อื่นกับโปรแกรมเดียวกัน <code>BANGKOK BKK</code> ได้ 4 (ลบ A N G O) และ <code>PATTAYA PATAYA</code> ได้ 1 (ลบ T หนึ่งตัว) เวลาและหน่วยความจำเป็น O(nm) เหมือน LCS</p>
+
+      <h2 id="two-rows">เหลือแค่สองแถว</h2>
+
+      <p>ทั้งสองโจทย์ แถว i ใช้แค่แถว i กับแถว i - 1 เหมือน knapsack ในหน้า 25.1 แต่คราวนี้ช่องหนึ่งใช้ทั้งช่องทแยงซ้ายบนที่เป็นของแถวบน และช่องซ้ายที่เป็นของแถวเดียวกัน ใช้แถวเดียววนถอยหลังแบบ knapsack ไม่ได้ เพราะช่องซ้ายต้องเป็นค่าใหม่ ทางที่ตรงที่สุดคือเก็บสองแถว <code>above</code> คือแถวบน <code>row</code> คือแถวที่กำลังเติม เติมเสร็จแล้วสลับกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="lcs-two-rows"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string s, t;
+    cin &gt;&gt; s &gt;&gt; t;
+    int n = s.size(), m = t.size();
+    vector&lt;int&gt; above(m + 1, 0), row(m + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) {
+                row[j] = above[j - 1] + 1;
+            } else {
+                row[j] = max(above[j], row[j - 1]);
+            }
+        }
+        swap(above, row); // (1)!
+    }
+    cout &lt;&lt; above[m] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>swap</code> ของ <code>vector</code> สลับแค่ตัวชี้ข้างใน ใช้เวลาคงที่ ไม่ได้คัดลอกทีละช่อง หลังสลับ <code>above</code> คือแถวที่เพิ่งเติมเสร็จ ส่วน <code>row</code> เป็นแถวเก่าที่จะถูกเขียนทับในรอบถัดไป ช่อง 0 ของทั้งสองแถวเป็น 0 ตลอดเพราะไม่เคยถูกเขียน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lcs-two-rows" data-title="ข้อมูลเข้า"><pre><code>TRANG RAYONG
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lcs-two-rows" data-title="C:\code\lcs_two_rows.exe"><pre><code>4
+</code></pre></div>
+      </div>
+
+      <p>เวลายังเป็น O(nm) แต่หน่วยความจำเหลือ O(m) วัดหน่วยความจำสูงสุดที่โปรแกรมใช้จริงบนเครื่องเดียวกับหน้า 19.1 ด้วยสตริง DNA สุ่มจากตัวอักษร A C G T</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ความยาวสตริงละ</th><th>ตารางเต็ม</th><th>สองแถว</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10000</td><td>387 MB</td><td>5 MB</td></tr>
+            <tr><td>20000</td><td>1532 MB</td><td>ไม่ได้วัด</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ตารางเต็มที่ 10000 ตัวต้องมี 10001 × 10001 ช่อง ช่องละ 4 byte ราว 400 ล้าน byte ถ้าโจทย์จำกัดหน่วยความจำ 256 MB ก็ไม่ผ่านแล้ว แม้เวลาจะทัน ข้อเสียของสองแถวคือย้อนรอยไม่ได้ เพราะแถวเก่าถูกทิ้งไปแล้ว ใช้ได้เมื่อโจทย์ถามแค่ความยาวหรือจำนวนครั้ง</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วิธีตรงไปตรงมาคือ recursion ที่ลองตัดทีละตัวตามความสัมพันธ์ข้างบน แต่ไม่จดคำตอบ แบบที่บทที่ 24 เริ่มต้น ถ้าตัวอักษรตรงกันเรียกตัวเองครั้งเดียว ถ้าไม่ตรงเรียกสองครั้ง กรณีที่ช้าที่สุดคือสองคำที่ไม่มีตัวอักษรร่วมกันเลย เช่น A ล้วนกับ C ล้วน ทุกครั้งแตกเป็นสองทาง วัดบนเครื่องเดียวกับหน้า 19.1 รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ความยาวสตริงละ</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>12</td><td>recursion ไม่จดคำตอบ</td><td>0.06 วินาที</td><td>0.03 วินาที</td></tr>
+            <tr><td>14</td><td>recursion ไม่จดคำตอบ</td><td>0.61 วินาที</td><td>0.19 วินาที</td></tr>
+            <tr><td>16</td><td>recursion ไม่จดคำตอบ</td><td>9.5 วินาที</td><td>3.4 วินาที (5 รอบอยู่ระหว่าง 2.4 ถึง 4.3)</td></tr>
+            <tr><td rowspan="2">5000</td><td>ตารางเต็ม</td><td>0.45 วินาที</td><td>0.10 วินาที</td></tr>
+            <tr><td>สองแถว</td><td>0.40 วินาที</td><td>0.04 วินาที</td></tr>
+            <tr><td rowspan="2">10000</td><td>ตารางเต็ม</td><td>1.8 วินาที</td><td>0.28 วินาที</td></tr>
+            <tr><td>สองแถว</td><td>1.2 วินาที</td><td>0.13 วินาที</td></tr>
+            <tr><td>20000</td><td>สองแถว</td><td>6.1 วินาที</td><td>0.51 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>recursion ยาวขึ้นแค่สองตัว ช้าลง 6 ถึง 18 เท่า สตริงยาว 16 ตัวก็เกินวินาทีแล้ว ส่วน DP ทำสตริงยาวหมื่นตัวได้ในเสี้ยววินาทีเมื่อคอมไพล์ <code>-O2</code> สองแถวเร็วกว่าตารางเต็มด้วย เพราะข้อมูลสองแถวเล็กพอจะอยู่ใน cache ของซีพียู ไม่ต้องวิ่งไปอ่านหน่วยความจำหลักบ่อย สังเกตว่าแบบ Code::Blocks ช้ากว่า <code>-O2</code> ราว 6 ถึง 12 เท่า ลูปซ้อนที่ทำงานเป็นร้อยล้านรอบแบบนี้ต้องทดสอบความเร็วด้วย <code>-O2</code> เหมือน grader</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="off-by-one">แบบที่ 1 ใช้ s[i] แทน s[i - 1]</h3>
+
+      <p>ลืมว่าตารางเริ่มนับที่ 1 แต่สตริงเริ่มที่ 0 แล้วเทียบ <code>s[i] == t[j]</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="lcs-shift"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    string s, t;
+    cin &gt;&gt; s &gt;&gt; t;
+    int n = s.size(), m = t.size();
+    vector&lt;vector&lt;int&gt;&gt; common(n + 1, vector&lt;int&gt;(m + 1, 0));
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i] == t[j]) {
+                common[i][j] = common[i - 1][j - 1] + 1;
+            } else {
+                common[i][j] = max(common[i - 1][j], common[i][j - 1]);
+            }
+        }
+    }
+    cout &lt;&lt; "LCS length = " &lt;&lt; common[n][m] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lcs-shift" data-title="ข้อมูลเข้า"><pre><code>PHUKET RAYONG
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lcs-shift" data-title="C:\code\lcs.exe"><pre><code>LCS length = 1
+</code></pre></div>
+      </div>
+
+      <p>PHUKET กับ RAYONG ไม่มีตัวอักษรร่วมกันเลย คำตอบต้องเป็น 0 แต่ได้ 1 โปรแกรมไม่พังเพราะ <code>s[n]</code> ของ <code>string</code> อ่านได้และได้ตัวอักษรว่าง <code>'\0'</code> แถวสุดท้ายจึงเทียบ <code>'\0'</code> กับ <code>'\0'</code> แล้วนับว่าตรงกัน ส่วนตัวแรกของทั้งสองคำไม่เคยถูกเทียบเลย ที่น่ากลัวคือ TRANG กับ RAYONG ที่ใช้ตลอดหน้านี้ได้ 4 ถูกต้องพอดี เพราะ R ตัวแรกของ RAYONG ที่ไม่เคยถูกเทียบหายไปจาก LCS แต่คู่ <code>'\0'</code> มาชดเชยแทนพอดี ทดสอบ LCS ทุกครั้งด้วยคำที่ไม่มีตัวอักษรร่วมกันเลย ซึ่งคำตอบต้องเป็น 0</p>
+
+      <h3 id="keep-rows">แบบที่ 2 ย้อนรอยด้วยสองแถว</h3>
+
+      <p>ถ้าโจทย์ให้พิมพ์ LCS แล้วใช้สองแถวเพื่อประหยัดหน่วยความจำ จะย้อนรอยไม่ได้ เพราะการย้อนรอยต้องดูช่องบนและช่องซ้ายของทุกแถวที่เดินผ่าน ตั้งแต่แถว n ขึ้นไปถึงแถว 0 แต่ตอนจบเหลือแค่แถว n กับแถว n - 1 ก่อนเลือกวิธีให้อ่านขอบเขตก่อน ถ้าต้องพิมพ์คำตอบและตารางเต็มใส่หน่วยความจำได้ ใช้ตารางเต็ม ถ้าถามแค่ตัวเลข ใช้สองแถว</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>LCS <code>common[i][j]</code> ตัวสุดท้ายตรงกันได้ช่องทแยงบวกหนึ่ง ไม่ตรงได้ค่ามากกว่าของช่องบนกับช่องซ้าย ขอบเป็น 0</li>
+        <li>edit distance <code>cost[i][j]</code> ตรงกันได้ช่องทแยง ไม่ตรงได้ 1 บวกค่าน้อยสุดของสามช่อง (แทนที่ ลบ แทรก) ขอบคือ i กับ j</li>
+        <li>เติมทีละแถวจากบนลงล่าง ซ้ายไปขวา ทั้งคู่เป็น O(nm) ย้อนรอยจากมุมขวาล่างตามทางที่ให้ค่ามา</li>
+        <li>ตารางเริ่มที่ 1 สตริงเริ่มที่ 0 เทียบ <code>s[i - 1]</code> กับ <code>t[j - 1]</code></li>
+        <li>ถ้าถามแค่ตัวเลข เก็บสองแถวพอ หน่วยความจำเหลือ O(m) แต่ย้อนรอยไม่ได้</li>
+      </ul>
+    </article>

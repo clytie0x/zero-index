@@ -372,7 +372,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "25"
 title = "บทที่ 25 dynamic programming แบบคลาสสิก"
 summary = "knapsack LIS LCS และ DP บนตาราง"
-# dir = "algo/25-dp-classic"
+path = "algo/25-dp-classic/index.html"
+pages = [
+  { num = "25.1", title = "0/1 knapsack และ unbounded knapsack", path = "algo/25-dp-classic/knapsack.html" },
+  { num = "25.2", title = "LIS ลำดับย่อยที่เพิ่มขึ้นยาวที่สุด", path = "algo/25-dp-classic/lis.html" },
+  { num = "25.3", title = "LCS และ edit distance", path = "algo/25-dp-classic/lcs-edit.html" },
+  { num = "25.4", title = "DP บนตาราง", path = "algo/25-dp-classic/grid.html" },
+  { num = "25.5", title = "DP ช่วงและ DP บน bitmask", path = "algo/25-dp-classic/interval-bitmask.html" },
+  { num = "25.6", title = "แบบฝึกหัด", path = "algo/25-dp-classic/exercises.html", exercises = "algo/25-dp-classic" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

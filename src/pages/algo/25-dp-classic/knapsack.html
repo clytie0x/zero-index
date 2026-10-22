@@ -1,0 +1,382 @@
+<article class="doc">
+      <h1>25.1 0/1 knapsack และ unbounded knapsack</h1>
+
+      <p>น้องจะไปเข้าค่ายพักแรม กระเป๋าแบกได้ไม่เกิน W กิโลกรัม มีของให้เลือก N ชิ้น แต่ละชิ้นมีน้ำหนักกับความจำเป็นเป็นคะแนน ควรหยิบชิ้นไหนไปบ้างให้คะแนนรวมมากที่สุด โจทย์แบบนี้ชื่อ <strong>knapsack</strong> (เป้) เป็นโจทย์ DP ที่ค่าย 2 สอนทุกปี และซ่อนอยู่ในโจทย์ TOI หลายข้อในรูปของงบประมาณ เวลา หรือพื้นที่ที่มีจำกัด หน้านี้สร้างตารางสองมิติตามวิธีคิดในบทที่ 24 แล้วลดเหลือแถวเดียว จุดที่ต้องเข้าใจให้ได้คือทำไมแถวเดียวต้องวนถอยหลัง เพราะถ้าวนเดินหน้าจะได้โจทย์อีกแบบหนึ่งทันที</p>
+
+      <h2 id="problem">โจทย์และทำไม greedy ไม่พอ</h2>
+
+      <p>ของ 4 ชิ้น กระเป๋าจุ 7 กิโลกรัม แต่ละชิ้นหยิบได้ครั้งเดียว จะหยิบหรือไม่หยิบ จึงเรียกว่า <strong>0/1 knapsack</strong></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ชิ้นที่</th><th>น้ำหนัก (กก.)</th><th>คะแนน</th><th>คะแนนต่อกิโลกรัม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>1</td><td>15</td><td>15</td></tr>
+            <tr><td>2</td><td>3</td><td>40</td><td>13.3</td></tr>
+            <tr><td>3</td><td>4</td><td>50</td><td>12.5</td></tr>
+            <tr><td>4</td><td>5</td><td>60</td><td>12</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าใช้ greedy แบบบทที่ 23 หยิบชิ้นที่คะแนนต่อกิโลกรัมสูงก่อน จะได้ชิ้นที่ 1 กับชิ้นที่ 2 หนักรวม 4 กิโลกรัม ชิ้นที่ 3 ใส่แล้วเป็น 8 เกิน ชิ้นที่ 4 ก็เกิน ได้คะแนน 55 แต่ถ้าทิ้งชิ้นที่ 1 แล้วหยิบชิ้นที่ 2 กับ 3 จะหนักพอดี 7 กิโลกรัม ได้ 90 คะแนน greedy พลาดเพราะชิ้นที่ดูคุ้มที่สุดกินที่ไปหนึ่งกิโลกรัม ทำให้ใส่ชุดที่ดีกว่าไม่ลง</p>
+
+      <p>วิธีที่ถูกแน่นอนคือลองทุกชุด แบบ backtracking ในบทที่ 21 ของแต่ละชิ้นมีสองทาง หยิบหรือไม่หยิบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="knapsack-brute"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n, capacity;
+vector&lt;int&gt; weight, value;
+int best_value = 0;
+
+void try_items(int i, int used, int total)
+{
+    if (i == n) {
+        best_value = max(best_value, total);
+        return;
+    }
+    try_items(i + 1, used, total);
+    if (used + weight[i] &lt;= capacity) {
+        try_items(i + 1, used + weight[i], total + value[i]);
+    }
+}
+
+int main()
+{
+    cin &gt;&gt; n &gt;&gt; capacity;
+    weight.resize(n);
+    value.resize(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; weight[i] &gt;&gt; value[i];
+    }
+    try_items(0, 0, 0);
+    cout &lt;&lt; best_value &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="knapsack-brute" data-title="ข้อมูลเข้า"><pre><code>4 7
+1 15
+3 40
+4 50
+5 60
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="knapsack-brute" data-title="C:\code\knapsack_brute.exe"><pre><code>90
+</code></pre></div>
+      </div>
+
+      <p>ถูกต้อง แต่ N ชิ้นมี 2<sup>N</sup> ชุด 30 ชิ้นก็เกินพันล้านชุดแล้ว ต้องหาส่วนที่ซ้ำกันมาจำไว้แทน</p>
+
+      <h2 id="table">ตารางสองมิติ</h2>
+
+      <p>สังเกตว่าหลังตัดสินใจเรื่องของ i ชิ้นแรกไปแล้ว สิ่งเดียวที่มีผลกับของที่เหลือคือ <strong>น้ำหนักที่ยังเหลือในกระเป๋า</strong> ไม่สำคัญว่าหยิบชิ้นไหนมาถึงตรงนี้ ทำตามวิธีคิด DP สี่ขั้นในหน้า 24.2 ได้ดังนี้</p>
+
+      <ul>
+        <li><strong>นิยามสถานะ</strong> <code>best[i][c]</code> คือคะแนนมากที่สุดเมื่อเลือกได้เฉพาะของ i ชิ้นแรก และน้ำหนักรวมไม่เกิน c</li>
+        <li><strong>หาความสัมพันธ์</strong> ดูของชิ้นที่ i ชิ้นเดียว ถ้าไม่หยิบ ได้เท่ากับ <code>best[i - 1][c]</code> ถ้าหยิบ (ต้องมี <code>c &gt;= w[i]</code>) กระเป๋าเหลือที่ <code>c - w[i]</code> ให้ของ i - 1 ชิ้นแรก ได้ <code>best[i - 1][c - w[i]] + v[i]</code> เลือกทางที่มากกว่า</li>
+        <li><strong>กรณีฐาน</strong> ยังไม่มีของให้เลือกเลย <code>best[0][c] = 0</code> ทุก c</li>
+        <li><strong>ลำดับการเติมและคำตอบสุดท้าย</strong> แถว i ใช้แค่แถว i - 1 จึงเติมทีละแถวจากบนลงล่าง คำตอบอยู่ที่ <code>best[N][W]</code></li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="knapsack-table"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, capacity;
+    cin &gt;&gt; n &gt;&gt; capacity;
+    vector&lt;int&gt; weight(n + 1), value(n + 1);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; weight[i] &gt;&gt; value[i];
+    }
+    vector&lt;vector&lt;int&gt;&gt; best(n + 1, vector&lt;int&gt;(capacity + 1, 0)); // (1)!
+    for (int i = 1; i &lt;= n; i++) {
+        for (int c = 0; c &lt;= capacity; c++) {
+            best[i][c] = best[i - 1][c]; // (2)!
+            if (c &gt;= weight[i]) {
+                best[i][c] = max(best[i][c], best[i - 1][c - weight[i]] + value[i]); // (3)!
+            }
+        }
+    }
+    for (int i = 0; i &lt;= n; i++) {
+        cout &lt;&lt; "i=" &lt;&lt; i &lt;&lt; ":";
+        for (int c = 0; c &lt;= capacity; c++) {
+            cout &lt;&lt; setw(4) &lt;&lt; best[i][c];
+        }
+        cout &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "best value = " &lt;&lt; best[n][capacity] &lt;&lt; '\n';
+    int c = capacity;
+    cout &lt;&lt; "take items:";
+    for (int i = n; i &gt;= 1; i--) {
+        if (best[i][c] != best[i - 1][c]) { // (4)!
+            cout &lt;&lt; ' ' &lt;&lt; i;
+            c -= weight[i];
+        }
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สร้างทั้งตารางเป็น 0 ไว้ก่อน แถว 0 จึงเป็นค่าเริ่มต้นที่ถูกอยู่แล้ว</li>
+        <li>ทางที่ไม่หยิบชิ้นที่ i ใส่ไว้ก่อน แล้วค่อยเทียบกับทางที่หยิบ</li>
+        <li>หยิบชิ้นที่ i ต้องมาจากแถว <code>i - 1</code> เท่านั้น เพราะชิ้นที่ i หยิบได้ครั้งเดียว</li>
+        <li>ค่าเปลี่ยนจากแถวบน แปลว่าคำตอบที่ดีที่สุดของช่องนี้ต้องหยิบชิ้นที่ i ถ้าเท่ากัน ไม่หยิบก็ได้ค่าเท่าเดิม</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="knapsack-table" data-title="ข้อมูลเข้า"><pre><code>4 7
+1 15
+3 40
+4 50
+5 60
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="knapsack-table" data-title="C:\code\knapsack_table.exe"><pre><code>i=0:   0   0   0   0   0   0   0   0
+i=1:   0  15  15  15  15  15  15  15
+i=2:   0  15  15  40  55  55  55  55
+i=3:   0  15  15  40  55  65  65  90
+i=4:   0  15  15  40  55  65  75  90
+best value = 90
+take items: 3 2
+</code></pre></div>
+      </div>
+
+      <p>อ่านตารางทีละช่อง ช่องแถว 3 คอลัมน์ 7 คือ 90 มาจากการเทียบสองทาง ไม่หยิบชิ้นที่ 3 ได้ช่องบนคือ 55 หยิบชิ้นที่ 3 ที่หนัก 4 กิโลกรัม ต้องดูช่องแถว 2 คอลัมน์ 3 ซึ่งเป็น 40 รวมเป็น 40 + 50 = 90 มากกว่า จึงได้ 90 คำตอบอยู่ที่ช่องขวาล่าง</p>
+
+      <p>ส่วนท้ายของโปรแกรมย้อนรอยหาว่าหยิบชิ้นไหน แบบการเก็บเส้นทางย้อนกลับในบทที่ 24 เริ่มที่ช่องคำตอบ <code>best[4][7]</code> = 90 เท่ากับช่องบน จึงไม่ได้หยิบชิ้นที่ 4 ขึ้นไปแถว 3 ได้ 90 แต่ช่องบนเป็น 55 จึงหยิบชิ้นที่ 3 ลดน้ำหนักเหลือ 3 แล้วดูแถว 2 คอลัมน์ 3 เป็น 40 ช่องบนเป็น 15 จึงหยิบชิ้นที่ 2 เหลือ 0 ชิ้นที่ 1 ไม่ได้หยิบ</p>
+
+      <p>ตารางมี (N + 1)(W + 1) ช่อง แต่ละช่องใช้เวลาคงที่ จึงเป็น <strong>O(NW)</strong> ทั้งเวลาและหน่วยความจำ ถ้า N = 100 และ W = 100000 คือราว 10<sup>7</sup> ช่อง เป็น <code>int</code> ราว 40 MB เวลาสบาย แต่หน่วยความจำเริ่มเยอะ ส่วนถัดไปลดให้เหลือแถวเดียว</p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">O(NW) ขึ้นกับขนาดของตัวเลข</p>
+        <p>W ไม่ใช่จำนวนข้อมูล แต่เป็นค่าของตัวเลขตัวหนึ่ง ถ้าโจทย์ให้ W ถึง 10<sup>9</sup> วิธีนี้ใช้ไม่ได้ทันที แม้ N จะมีแค่ 100 ถ้าเจอแบบนั้นให้ดูว่าคะแนนรวมมีค่าไม่มากหรือเปล่า ถ้าใช่ ให้สลับให้ช่องหนึ่งเก็บ "น้ำหนักน้อยที่สุดที่ได้คะแนนรวมเท่านี้พอดี" แล้วหาคะแนนที่มากที่สุดที่น้ำหนักยังไม่เกิน W ตารางจะมีขนาด N คูณคะแนนรวมแทน อ่านขอบเขตทุกตัวก่อนตัดสินใจว่าจะให้มิติไหนเป็นดัชนีของตาราง</p>
+      </div>
+
+      <h2 id="one-row">เหลือแถวเดียว วนถอยหลัง</h2>
+
+      <p>แถว i ใช้แค่แถว i - 1 ไม่เคยย้อนไปดูแถวที่เก่ากว่านั้น จึงเก็บแถวเดียวแล้วเขียนทับไปเรื่อยๆ ได้ ก่อนเริ่มของชิ้นที่ i อาเรย์ <code>best</code> คือแถว i - 1 พอทำชิ้นที่ i เสร็จก็กลายเป็นแถว i แต่ระหว่างที่กำลังเขียนทับ อาเรย์มีค่าของสองแถวปนกัน และนี่คือที่มาของกฎสำคัญ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="knapsack-one-row"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, capacity;
+    cin &gt;&gt; n &gt;&gt; capacity;
+    vector&lt;int&gt; best(capacity + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        int weight, value;
+        cin &gt;&gt; weight &gt;&gt; value;
+        for (int c = capacity; c &gt;= weight; c--) { // (1)!
+            best[c] = max(best[c], best[c - weight] + value);
+        }
+        cout &lt;&lt; "after item " &lt;&lt; i &lt;&lt; ":";
+        for (int c = 0; c &lt;= capacity; c++) {
+            cout &lt;&lt; setw(4) &lt;&lt; best[c];
+        }
+        cout &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "best value = " &lt;&lt; best[capacity] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>วนจาก <code>capacity</code> ลงมาถึง <code>weight</code> ช่องที่น้อยกว่า <code>weight</code> หยิบชิ้นนี้ไม่ได้ ค่าเท่าแถวบนอยู่แล้ว จึงไม่ต้องแตะ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="knapsack-one-row" data-title="ข้อมูลเข้า"><pre><code>4 7
+1 15
+3 40
+4 50
+5 60
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="knapsack-one-row" data-title="C:\code\knapsack_one_row.exe"><pre><code>after item 1:   0  15  15  15  15  15  15  15
+after item 2:   0  15  15  40  55  55  55  55
+after item 3:   0  15  15  40  55  65  65  90
+after item 4:   0  15  15  40  55  65  75  90
+best value = 90
+</code></pre></div>
+      </div>
+
+      <p>ทุกบรรทัดตรงกับแถวของตารางสองมิติ ตอนคำนวณ <code>best[c]</code> ต้องใช้ <code>best[c - weight]</code> ของ <strong>แถวบน</strong> เมื่อวนถอยหลัง ช่อง <code>c - weight</code> อยู่ทางซ้าย ยังไม่ถูกเขียนทับในรอบนี้ จึงยังเป็นค่าของแถวบนจริง หน่วยความจำลดจาก O(NW) เหลือ O(W) เวลายังเป็น O(NW) เท่าเดิม</p>
+
+      <h3 id="forward-is-wrong">วนเดินหน้าแล้วผิดเพราะอะไร</h3>
+
+      <p>เปลี่ยนลูปเป็น <code>for (int c = weight; c &lt;= capacity; c++)</code> ส่วนอื่นเหมือนเดิมทุกตัวอักษร</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="knapsack-forward"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, capacity;
+    cin &gt;&gt; n &gt;&gt; capacity;
+    vector&lt;int&gt; best(capacity + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        int weight, value;
+        cin &gt;&gt; weight &gt;&gt; value;
+        for (int c = weight; c &lt;= capacity; c++) {
+            best[c] = max(best[c], best[c - weight] + value);
+        }
+        cout &lt;&lt; "after item " &lt;&lt; i &lt;&lt; ":";
+        for (int c = 0; c &lt;= capacity; c++) {
+            cout &lt;&lt; setw(4) &lt;&lt; best[c];
+        }
+        cout &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "best value = " &lt;&lt; best[capacity] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="knapsack-forward" data-title="ข้อมูลเข้า"><pre><code>4 7
+1 15
+3 40
+4 50
+5 60
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="knapsack-forward" data-title="C:\code\knapsack_forward.exe"><pre><code>after item 1:   0  15  30  45  60  75  90 105
+after item 2:   0  15  30  45  60  75  90 105
+after item 3:   0  15  30  45  60  75  90 105
+after item 4:   0  15  30  45  60  75  90 105
+best value = 105
+</code></pre></div>
+      </div>
+
+      <p>ได้ 105 ซึ่งเป็นไปไม่ได้ ของสี่ชิ้นรวมกันหนัก 13 กิโลกรัม ใส่ได้ไม่เกิน 7 และ 90 คือดีที่สุดแล้ว ดูของชิ้นที่ 1 ที่หนัก 1 กิโลกรัม ได้ 15 คะแนน ทีละช่อง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>c</th><th>คำนวณ</th><th>ใช้ <code>best[c - 1]</code> ที่</th><th>ได้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><code>max(0, best[0] + 15)</code></td><td>ยังไม่มีชิ้นที่ 1</td><td>15</td></tr>
+            <tr><td>2</td><td><code>max(0, best[1] + 15)</code></td><td>เพิ่งใส่ชิ้นที่ 1 ไปแล้ว</td><td>30</td></tr>
+            <tr><td>3</td><td><code>max(0, best[2] + 15)</code></td><td>ใส่ชิ้นที่ 1 ไปแล้วสองครั้ง</td><td>45</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เมื่อวนเดินหน้า ช่องทางซ้ายถูกเขียนทับในรอบนี้ไปก่อนแล้ว <code>best[c - weight]</code> จึงเป็นค่าของ <strong>แถวเดียวกัน</strong> ซึ่งอาจรวมชิ้นนี้ไว้แล้ว ใส่ซ้ำอีกก็คือหยิบชิ้นเดิมหลายครั้ง สุดท้ายได้ชิ้นที่ 1 เจ็ดชิ้น 7 × 15 = 105 ชิ้นอื่นสู้ไม่ได้ ทุกแถวจึงเหมือนกันหมด</p>
+
+      <h2 id="unbounded">unbounded knapsack</h2>
+
+      <p>ความผิดเมื่อกี้กลายเป็นคำตอบที่ถูกของอีกโจทย์ ร้านขนมจัดกล่องของขวัญที่ใส่ได้ไม่เกิน 10 ช่อง มีขนม 3 แบบ แต่ละแบบมีกี่ชิ้นก็ได้ แบบแรกใช้ 3 ช่อง ขาย 50 บาท แบบที่สองใช้ 4 ช่อง ขาย 70 บาท แบบที่สามใช้ 5 ช่อง ขาย 80 บาท จัดยังไงให้กล่องราคาสูงที่สุด ของแต่ละแบบหยิบซ้ำได้ไม่จำกัด เรียกว่า <strong>unbounded knapsack</strong></p>
+
+      <p>ถ้าคิดเป็นตาราง ตอนหยิบแบบที่ i แล้ว ยังหยิบแบบที่ i ซ้ำได้อีก สูตรจึงมาจาก <strong>แถวเดียวกัน</strong> <code>best[i][c - w[i]] + v[i]</code> ซึ่งตรงกับการวนเดินหน้าในแถวเดียวพอดี</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="unbounded"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, capacity;
+    cin &gt;&gt; n &gt;&gt; capacity;
+    vector&lt;int&gt; best(capacity + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        int weight, value;
+        cin &gt;&gt; weight &gt;&gt; value;
+        for (int c = weight; c &lt;= capacity; c++) {
+            best[c] = max(best[c], best[c - weight] + value);
+        }
+    }
+    for (int c = 0; c &lt;= capacity; c++) {
+        cout &lt;&lt; best[c] &lt;&lt; (c == capacity ? '\n' : ' ');
+    }
+    cout &lt;&lt; "best value = " &lt;&lt; best[capacity] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="unbounded" data-title="ข้อมูลเข้า"><pre><code>3 10
+3 50
+4 70
+5 80
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="unbounded" data-title="C:\code\unbounded.exe"><pre><code>0 0 0 50 70 80 100 120 140 150 170
+best value = 170
+</code></pre></div>
+      </div>
+
+      <p>170 บาทได้จากแบบแรกสองชิ้นกับแบบที่สองหนึ่งชิ้น ใช้ 3 + 3 + 4 = 10 ช่องพอดี ถ้าใส่แบบที่สามสองชิ้นได้แค่ 160 ความต่างของสองโจทย์อยู่ที่ทิศของลูปบรรทัดเดียว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>โจทย์</th><th>ของแต่ละชิ้น</th><th>ลูปในแถวเดียว</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0/1 knapsack</td><td>หยิบได้ครั้งเดียว</td><td><code>for (c = W; c &gt;= w; c--)</code> ถอยหลัง</td></tr>
+            <tr><td>unbounded knapsack</td><td>หยิบซ้ำได้ไม่จำกัด</td><td><code>for (c = w; c &lt;= W; c++)</code> เดินหน้า</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>โปรแกรม count-sets ที่นับวิธีทอนเหรียญในหน้า 24.3 ก็คือ unbounded knapsack ที่เปลี่ยนจากหาค่ามากสุดเป็นการนับ เหรียญแต่ละชนิดใช้ซ้ำได้ ลูปในจึงเดินหน้าเหมือนกัน ส่วนลองทำให้พังของหน้านั้นที่กลับลูปเป็นถอยหลังแล้วได้คำตอบของเหรียญชนิดละเหรียญเดียว ก็คือ 0/1 knapsack ในหน้านี้</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 คือโน้ตบุ๊ก AMD Ryzen AI 9 HX 370 Windows 11 และ GCC 14.2 ของ Code::Blocks ของแต่ละชิ้นหนักสุ่ม 1 ถึง 1000 คะแนนสุ่ม 1 ถึง 1000 กระเป๋าจุครึ่งหนึ่งของน้ำหนักรวม วิธีลองทุกชุดคือโปรแกรม knapsack-brute ข้างบน วิธี DP คือโปรแกรม knapsack-one-row ที่ตัดส่วนพิมพ์ตารางออก และเก็บคะแนนเป็น <code>long long</code> รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">N = 24, W = 4780</td><td>ลองทุกชุด</td><td>0.09 วินาที</td><td>0.04 วินาที</td></tr>
+            <tr><td>DP แถวเดียว</td><td>0.02 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td rowspan="2">N = 28, W = 7162</td><td>ลองทุกชุด</td><td>1.0 วินาที</td><td>0.37 วินาที</td></tr>
+            <tr><td>DP แถวเดียว</td><td>0.02 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td rowspan="2">N = 32, W = 8203</td><td>ลองทุกชุด</td><td>19.8 วินาที (5 รอบอยู่ระหว่าง 18.2 ถึง 21.0)</td><td>5.4 วินาที</td></tr>
+            <tr><td>DP แถวเดียว</td><td>0.02 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td>N = 100, W = 100000</td><td>DP แถวเดียว</td><td>0.07 วินาที</td><td>0.02 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ลองทุกชุดช้าลงราวสิบถึงยี่สิบเท่าทุกครั้งที่ของเพิ่มสี่ชิ้น ใกล้กับ 2<sup>4</sup> = 16 ที่คาดไว้ ส่วน DP ที่ N = 32 เติมแค่ราว 2.6 × 10<sup>5</sup> ช่อง เวลาเกือบทั้งหมดคือการเปิดโปรแกรมกับอ่านข้อมูล แม้ของร้อยชิ้นกับกระเป๋าแสนกิโลกรัม ซึ่งเป็น 10<sup>7</sup> ช่อง ก็ยังไม่ถึงหนึ่งในสิบวินาที</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="big-local-table">แบบที่ 1 ประกาศตารางใหญ่ไว้ใน main</h3>
+
+      <p>เขียนตารางสองมิติเป็นอาเรย์ธรรมดาให้รองรับ N = 100 กับ W = 100000 แบบนี้</p>
+
+      <div class="code" data-lang="cpp"><pre><code>int main()
+{
+    int n, capacity;
+    cin &gt;&gt; n &gt;&gt; capacity;
+    int best[101][100001];
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือน แต่รันกับข้อมูลเข้าชุดสี่ชิ้นข้างบน โปรแกรมปิดตัวทันทีโดยไม่พิมพ์อะไร Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p><code>0xC00000FD</code> คือรหัสของ Windows ที่แปลว่า stack overflow ตัวแปรใน <code>main</code> ใช้ได้รวมราว 2 MB แต่ตารางนี้ใช้ 101 × 100001 × 4 byte ราว 40 MB พังทันทีที่เข้า <code>main</code> แม้ข้อมูลจริงจะมีแค่สี่ชิ้น grader จะให้ผลว่า runtime error แก้ได้สองทาง ใช้ <code>vector</code> แบบโปรแกรม knapsack-table ซึ่งจองตามขนาดจริง หรือย้ายอาเรย์ไปประกาศนอก <code>main</code> ซึ่งไม่ถูกจำกัดแบบนี้ ทางที่ดีกว่าคือใช้แถวเดียว ซึ่งเหลือแค่ราว 400 KB</p>
+
+      <h3 id="wrong-direction">แบบที่ 2 ลูปผิดทิศ</h3>
+
+      <p>เป็นความผิดที่เห็นไปแล้วในหัวข้อวนเดินหน้า แต่อยากให้จำเป็นกฎ เพราะ compiler ไม่เตือน และกับข้อมูลบางชุดก็ได้คำตอบถูกโดยบังเอิญ เช่น ของทุกชิ้นหนักกว่าครึ่งหนึ่งของกระเป๋า จะหยิบซ้ำไม่ลงอยู่แล้ว ทุกครั้งที่เขียน knapsack แถวเดียว ให้ถามตัวเองว่าของแต่ละชิ้นหยิบซ้ำได้ไหม แล้วทดสอบด้วยของชิ้นเดียวที่เบากว่ากระเป๋ามาก เช่น <code>1 7</code> กับ <code>1 15</code> คำตอบที่ถูกคือ 15 ถ้าได้ 105 แปลว่าทิศผิด</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>best[i][c]</code> คือคะแนนมากสุดจากของ i ชิ้นแรกที่หนักไม่เกิน c ได้จากไม่หยิบ <code>best[i - 1][c]</code> หรือหยิบ <code>best[i - 1][c - w] + v</code></li>
+        <li>เวลา O(NW) ซึ่ง W คือค่าของตัวเลข ถ้า W ใหญ่มากต้องเปลี่ยนมิติของตาราง</li>
+        <li>ย้อนรอยหาว่าหยิบชิ้นไหน ด้วยการเทียบช่องกับช่องแถวบน</li>
+        <li>แถวเดียวใช้หน่วยความจำ O(W) 0/1 knapsack วนถอยหลัง unbounded knapsack วนเดินหน้า</li>
+        <li>ตารางใหญ่ห้ามประกาศเป็นอาเรย์ใน <code>main</code> ใช้ <code>vector</code> หรือประกาศนอก <code>main</code></li>
+      </ul>
+    </article>

@@ -1,0 +1,310 @@
+<article class="doc">
+      <h1>25.5 DP ช่วงและ DP บน bitmask</h1>
+
+      <p>หน้านี้มีสองแบบที่สถานะไม่ได้เป็นแค่ "i ตัวแรก" แบบหน้าก่อนๆ แบบแรกคือ <strong>DP ช่วง (interval DP)</strong> สถานะคือช่วงตั้งแต่ i ถึง j และคำตอบของช่วงยาวมาจากช่วงที่สั้นกว่าที่อยู่ข้างใน ใช้กับโจทย์ที่ลำดับการทำมีผลกับต้นทุน เช่น ตัดไม้ คูณเมทริกซ์ หรือรวมกองหิน แบบที่สองคือ <strong>DP บน bitmask</strong> สถานะคือ <strong>เซตของสิ่งที่ทำไปแล้ว</strong> เก็บเป็นบิตของจำนวนเต็มตามหน้า 12.3 ใช้กับโจทย์ที่ N เล็กมาก ไม่เกินราว 20 แต่ต้องเลือกลำดับของทุกตัว ซึ่งถ้าลองทุกลำดับจะเป็น N! ทั้งสองแบบเป็นหัวข้อท้ายของ DP ในค่าย 2 อ่านให้เห็นรูปแบบก่อน แล้วค่อยฝึกในแบบฝึกหัด</p>
+
+      <h2 id="cutting">ตัดไม้ให้ต้นทุนน้อยที่สุด</h2>
+
+      <p>ร้านไม้มีไม้ยาว L เมตร ลูกค้าขีดจุดที่ต้องตัดไว้ K จุด เลื่อยตัดได้ทีละครั้ง และคิดค่าตัดเท่ากับความยาวของท่อนที่กำลังถูกตัด ตัดจุดไหนก่อนก็ได้ แต่ลำดับการตัดทำให้ค่าตัดรวมต่างกัน ไม้ยาว 10 เมตร ตัดที่ 2 4 และ 7 เมตร มีลำดับให้เลือก 3! = 6 แบบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ลำดับ</th><th>ค่าตัดแต่ละครั้ง</th><th>รวม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2 4 7</td><td>10 + 8 + 6</td><td>24</td></tr>
+            <tr><td>2 7 4</td><td>10 + 8 + 5</td><td>23</td></tr>
+            <tr><td>4 2 7</td><td>10 + 4 + 6</td><td>20</td></tr>
+            <tr><td>4 7 2</td><td>10 + 6 + 4</td><td>20</td></tr>
+            <tr><td>7 2 4</td><td>10 + 7 + 5</td><td>22</td></tr>
+            <tr><td>7 4 2</td><td>10 + 7 + 4</td><td>21</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ตัดที่ 4 เมตรก่อนดีที่สุด ได้ 20 ครั้งแรกเสียค่า 10 เสมอ เพราะท่อนแรกคือไม้ทั้งท่อน หลังจากนั้นไม้แยกเป็นสองท่อนที่ไม่เกี่ยวกันอีกเลย ท่อนซ้ายตัดยังไงก็ไม่มีผลกับท่อนขวา นี่คือโครงของ DP ช่วง</p>
+
+      <h2 id="interval-state">สถานะเป็นช่วง</h2>
+
+      <p>เพิ่มจุด 0 กับ L เข้าไปเป็นจุดหัวท้าย ได้ <code>point[0] = 0</code> ถึง <code>point[K + 1] = L</code> จุดต้องเรียงจากน้อยไปมาก ข้อมูลเข้าในตัวอย่างนี้เรียงมาแล้ว ถ้าโจทย์ไม่รับประกันให้ <code>sort</code> ก่อน</p>
+
+      <ul>
+        <li><strong>นิยามสถานะ</strong> <code>cost[i][j]</code> คือค่าตัดน้อยที่สุด ที่ตัดทุกจุดที่อยู่ระหว่าง <code>point[i]</code> กับ <code>point[j]</code> ในท่อนที่มีหัวท้ายเป็นสองจุดนี้</li>
+        <li><strong>หาความสัมพันธ์</strong> ในท่อนนี้ต้องมีจุดที่ถูกตัดเป็นครั้งแรก สมมติว่าเป็นจุด mid ครั้งแรกเสียค่าความยาวท่อน <code>point[j] - point[i]</code> แล้วเหลือสองท่อนที่แยกกัน จึงได้ <code>cost[i][mid] + cost[mid][j] + (point[j] - point[i])</code> ลองทุก mid ที่อยู่ระหว่าง i กับ j แล้วเลือกน้อยสุด</li>
+        <li><strong>กรณีฐาน</strong> j = i + 1 ไม่มีจุดอยู่ระหว่าง ไม่ต้องตัด <code>cost[i][i + 1] = 0</code></li>
+        <li><strong>ลำดับการเติมและคำตอบสุดท้าย</strong> ช่วงหนึ่งใช้แค่ช่วงที่สั้นกว่าที่อยู่ข้างใน จึงเติมตาม <strong>ความยาวของช่วง</strong> จากสั้นไปยาว คำตอบอยู่ที่ <code>cost[0][K + 1]</code></li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="cut-wood-dp"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int length, k;
+    cin &gt;&gt; length &gt;&gt; k;
+    vector&lt;int&gt; point(k + 2);
+    point[0] = 0;
+    for (int i = 1; i &lt;= k; i++) {
+        cin &gt;&gt; point[i];
+    }
+    point[k + 1] = length;
+    int m = k + 1;
+    vector&lt;vector&lt;long long&gt;&gt; cost(m + 1, vector&lt;long long&gt;(m + 1, 0));
+    for (int span = 2; span &lt;= m; span++) { // (1)!
+        for (int i = 0; i + span &lt;= m; i++) {
+            int j = i + span;
+            cost[i][j] = LLONG_MAX; // (2)!
+            for (int mid = i + 1; mid &lt; j; mid++) {
+                cost[i][j] = min(cost[i][j], cost[i][mid] + cost[mid][j]);
+            }
+            cost[i][j] += point[j] - point[i];
+        }
+    }
+    for (int i = 0; i &lt;= m; i++) {
+        for (int j = 0; j &lt;= m; j++) {
+            if (j &lt;= i + 1) {
+                cout &lt;&lt; setw(4) &lt;&lt; '-';
+            } else {
+                cout &lt;&lt; setw(4) &lt;&lt; cost[i][j];
+            }
+        }
+        cout &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "min cost = " &lt;&lt; cost[0][m] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>span</code> คือระยะระหว่าง i กับ j นับเป็นจำนวนจุด ช่วงที่ span เป็น 1 คือกรณีฐาน เป็น 0 อยู่แล้ว จึงเริ่มที่ 2</li>
+        <li>เริ่มด้วยค่าที่ใหญ่กว่าทุกคำตอบ แล้วหาค่าน้อยสุด ค่าความยาวท่อนเหมือนกันทุก mid จึงบวกทีหลังครั้งเดียว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="cut-wood-dp" data-title="ข้อมูลเข้า"><pre><code>10 3
+2 4 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="cut-wood-dp" data-title="C:\code\cut_wood.exe"><pre><code>   -   -   4  11  20
+   -   -   -   5  13
+   -   -   -   -   6
+   -   -   -   -   -
+   -   -   -   -   -
+min cost = 20
+</code></pre></div>
+      </div>
+
+      <p>แถวคือ i คอลัมน์คือ j จุดคือ 0 2 4 7 10 ช่องแถว 0 คอลัมน์ 2 คือท่อน 0 ถึง 4 ที่ต้องตัดที่ 2 ค่า 4 ช่องแถว 1 คอลัมน์ 4 คือท่อน 2 ถึง 10 ที่ต้องตัดที่ 4 กับ 7 ได้ 13 ช่องคำตอบมุมขวาบนลอง mid ทั้งสามจุด ตัดที่ 2 ก่อนได้ 0 + 13 + 10 = 23 ตัดที่ 4 ก่อนได้ 4 + 6 + 10 = 20 ตัดที่ 7 ก่อนได้ 11 + 0 + 10 = 21 น้อยสุดคือ 20 ตรงกับตารางที่ลองมือ ช่อง <code>-</code> คือช่องที่ไม่ใช้ เพราะ j ไม่มากกว่า i + 1</p>
+
+      <p>มีช่วงราว K<sup>2</sup>/2 ช่วง แต่ละช่วงลอง mid ไม่เกิน K ตัว เป็น <strong>O(K<sup>3</sup>)</strong> K เป็นร้อยสบาย K เป็นพันยังทันถ้าคอมไพล์ <code>-O2</code></p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">คูณเมทริกซ์ลูกโซ่ ใช้โครงเดียวกัน</p>
+        <p>คูณเมทริกซ์ A<sub>1</sub> A<sub>2</sub> ... A<sub>n</sub> ที่ A<sub>i</sub> มีขนาด d<sub>i-1</sub> × d<sub>i</sub> การคูณสองเมทริกซ์ขนาด p × q กับ q × r ใช้การคูณตัวเลข pqr ครั้ง ใส่วงเล็บต่างกันได้จำนวนครั้งต่างกันมาก ให้ <code>cost[i][j]</code> คือจำนวนครั้งน้อยสุดที่คูณ A<sub>i</sub> ถึง A<sub>j</sub> ลองทุกจุดแบ่ง k ว่าคูณครั้งสุดท้ายคือ (A<sub>i</sub>...A<sub>k</sub>)(A<sub>k+1</sub>...A<sub>j</sub>) ได้ <code>cost[i][k] + cost[k + 1][j] + d[i - 1] * d[k] * d[j]</code> เติมตามความยาวช่วงเหมือนกัน เป็น O(n<sup>3</sup>) เหมือนกัน ต่างกันแค่ "ชิ้นสุดท้าย" ของการคูณ กับ "ชิ้นแรก" ของการตัด</p>
+      </div>
+
+      <h3 id="interval-timing">เร็วขึ้นแค่ไหน</h3>
+
+      <p>วิธีตรงไปตรงมาคือลองทุกลำดับการตัดด้วย <code>next_permutation</code> แบบบทที่ 21 แต่ละลำดับใช้ <code>set</code> ของจุดที่ตัดแล้วในบทที่ 20 หาท่อนที่กำลังตัด เป็น O(K! · K log K) วัดบนเครื่องเดียวกับหน้า 19.1 ไม้ยาว 10<sup>6</sup> จุดตัดสุ่ม วิธี DP คือโปรแกรม cut-wood-dp ที่ตัดการพิมพ์ตารางออก และเรียงจุดก่อน รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>K</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">9</td><td>ลองทุกลำดับ</td><td>0.77 วินาที</td><td>0.21 วินาที</td></tr>
+            <tr><td>DP ช่วง</td><td>0.02 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td rowspan="2">10</td><td>ลองทุกลำดับ</td><td>8.4 วินาที</td><td>2.2 วินาที</td></tr>
+            <tr><td>DP ช่วง</td><td>0.02 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td rowspan="2">11</td><td>ลองทุกลำดับ</td><td>120 วินาที (5 รอบอยู่ระหว่าง 104 ถึง 139)</td><td>34 วินาที</td></tr>
+            <tr><td>DP ช่วง</td><td>0.03 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td>200</td><td>DP ช่วง</td><td>0.05 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td>1000</td><td>DP ช่วง</td><td>3.2 วินาที</td><td>0.18 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>จุดตัดเพิ่มทีละจุด วิธีลองทุกลำดับช้าลงราวสิบเท่าขึ้นไปทุกครั้ง เพราะ K! โตเร็วกว่ากำลังสองหรือกำลังสามไปมาก ส่วน DP ที่ K = 1000 ทำงานราว 1.7 × 10<sup>8</sup> รอบในลูปใน แบบ Code::Blocks ใช้เกินสามวินาที แต่ <code>-O2</code> ใช้ไม่ถึงหนึ่งในห้าวินาที</p>
+
+      <h3 id="interval-break-it">ลองทำให้พัง เติมตาม i แทนความยาว</h3>
+
+      <p>เขียนลูปแบบตารางสองมิติทั่วไป i จากน้อยไปมาก j จากน้อยไปมาก แทนที่จะเติมตามความยาวช่วง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="cut-wrong-order"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int length, k;
+    cin &gt;&gt; length &gt;&gt; k;
+    vector&lt;int&gt; point(k + 2);
+    point[0] = 0;
+    for (int i = 1; i &lt;= k; i++) {
+        cin &gt;&gt; point[i];
+    }
+    point[k + 1] = length;
+    int m = k + 1;
+    vector&lt;vector&lt;long long&gt;&gt; cost(m + 1, vector&lt;long long&gt;(m + 1, 0));
+    for (int i = 0; i &lt;= m; i++) {
+        for (int j = i + 2; j &lt;= m; j++) {
+            cost[i][j] = LLONG_MAX;
+            for (int mid = i + 1; mid &lt; j; mid++) {
+                cost[i][j] = min(cost[i][j], cost[i][mid] + cost[mid][j]);
+            }
+            cost[i][j] += point[j] - point[i];
+        }
+    }
+    cout &lt;&lt; "min cost = " &lt;&lt; cost[0][m] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="cut-wrong-order" data-title="ข้อมูลเข้า"><pre><code>10 3
+2 4 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="cut-wrong-order" data-title="C:\code\cut_wood.exe"><pre><code>min cost = 10
+</code></pre></div>
+      </div>
+
+      <p>ได้ 10 ซึ่งน้อยกว่า 20 ที่ดีที่สุดจริง เป็นไปไม่ได้ เพราะ 10 คือค่าตัดครั้งแรกอย่างเดียว ตอนเติม <code>cost[0][4]</code> ต้องใช้ <code>cost[1][4]</code> <code>cost[2][4]</code> <code>cost[3][4]</code> ซึ่งอยู่แถวล่างกว่า ยังไม่ถูกเติม ยังเป็น 0 อยู่ ลอง mid = 1 จึงได้ <code>cost[0][1] + cost[1][4]</code> = 0 + 0 โปรแกรมคิดว่าท่อนขวาตัดฟรี DP ช่วงทุกโจทย์ให้วนความยาวช่วงเป็นลูปนอกสุด หรือวน i <strong>ถอยหลัง</strong> จาก K + 1 ลงมา แล้ว j เดินหน้า ซึ่งก็ทำให้ช่วงข้างในเสร็จก่อนเหมือนกัน</p>
+
+      <h2 id="bitmask">DP บน bitmask</h2>
+
+      <p>บุรุษไปรษณีย์ต้องออกจากที่ทำการ (จุด 0) ไปส่งของให้บ้านอีก N - 1 หลัง หลังละครั้ง แล้วกลับที่ทำการ รู้ระยะทางระหว่างทุกคู่ ต้องเลือกลำดับบ้านให้ระยะรวมสั้นที่สุด โจทย์นี้ชื่อ travelling salesman problem (TSP) ลองทุกลำดับมี (N - 1)! แบบ N = 13 ก็เกือบห้าร้อยล้านแบบแล้ว</p>
+
+      <p>สังเกตว่าระหว่างทาง สิ่งที่มีผลกับเส้นทางที่เหลือมีแค่สองอย่าง คือ <strong>ไปบ้านไหนมาแล้วบ้าง</strong> กับ <strong>ตอนนี้อยู่ที่ไหน</strong> ลำดับที่ไปมาแล้วไม่มีผล เก็บ "ไปบ้านไหนมาแล้ว" เป็นจำนวนเต็มหนึ่งตัว ที่บิตที่ k เป็น 1 ถ้าไปจุด k มาแล้ว เรียกว่า <strong>bitmask</strong> ใช้ตัวดำเนินการระดับบิตจากหน้า 12.3</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ต้องการ</th><th>เขียน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เซตที่มีแค่จุด 0</td><td><code>1</code></td></tr>
+            <tr><td>เซตที่มีทุกจุด</td><td><code>(1 &lt;&lt; n) - 1</code></td></tr>
+            <tr><td>จุด k อยู่ในเซตหรือยัง</td><td><code>(mask &amp; (1 &lt;&lt; k)) != 0</code></td></tr>
+            <tr><td>เพิ่มจุด k เข้าเซต</td><td><code>mask | (1 &lt;&lt; k)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul>
+        <li><strong>นิยามสถานะ</strong> <code>best[mask][last]</code> คือระยะทางสั้นที่สุดที่ออกจากจุด 0 ไปครบทุกจุดใน <code>mask</code> พอดี และตอนนี้อยู่ที่จุด <code>last</code></li>
+        <li><strong>หาความสัมพันธ์</strong> จากสถานะหนึ่ง ไปจุด <code>next</code> ที่ยังไม่อยู่ใน <code>mask</code> ได้สถานะ <code>best[mask | (1 &lt;&lt; next)][next]</code> ที่อาจสั้นลงเป็น <code>best[mask][last] + dist[last][next]</code></li>
+        <li><strong>กรณีฐาน</strong> <code>best[1][0] = 0</code> ช่องอื่นเริ่มเป็นค่าที่ใหญ่มาก</li>
+        <li><strong>ลำดับการเติมและคำตอบสุดท้าย</strong> เพิ่มจุดแล้ว mask ใหม่มากกว่า mask เดิมเสมอ จึงวน mask จากน้อยไปมาก คำตอบคือ <code>best[full][last] + dist[last][0]</code> ที่น้อยสุด ซึ่งบวกระยะกลับที่ทำการ</li>
+      </ul>
+
+      <p>ครั้งนี้เขียนแบบ "ส่งค่าไปข้างหน้า" จากสถานะที่รู้ค่าแล้ว ไปปรับสถานะที่ใหญ่กว่า แทนการดึงค่าจากสถานะที่เล็กกว่าแบบหน้าก่อนๆ ได้ผลเท่ากัน เพราะตอนวนถึง mask ใด ทุก mask ที่เล็กกว่าได้ส่งค่ามาให้ครบแล้ว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="delivery-tsp"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int INF = 1000000000;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;vector&lt;int&gt;&gt; dist(n, vector&lt;int&gt;(n));
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = 0; j &lt; n; j++) {
+            cin &gt;&gt; dist[i][j];
+        }
+    }
+    int full = (1 &lt;&lt; n) - 1;
+    vector&lt;vector&lt;int&gt;&gt; best(1 &lt;&lt; n, vector&lt;int&gt;(n, INF));
+    best[1][0] = 0;
+    for (int mask = 1; mask &lt;= full; mask++) {
+        for (int last = 0; last &lt; n; last++) {
+            if (best[mask][last] == INF) { // (1)!
+                continue;
+            }
+            for (int next = 0; next &lt; n; next++) {
+                if ((mask &amp; (1 &lt;&lt; next)) == 0) { // (2)!
+                    int grown = mask | (1 &lt;&lt; next);
+                    best[grown][next] = min(best[grown][next], best[mask][last] + dist[last][next]);
+                }
+            }
+        }
+    }
+    int answer = INF;
+    for (int last = 1; last &lt; n; last++) {
+        answer = min(answer, best[full][last] + dist[last][0]);
+    }
+    cout &lt;&lt; "shortest round trip = " &lt;&lt; answer &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สถานะนี้ยังไปไม่ถึง เช่น mask ที่ไม่มีจุด 0 หรือ <code>last</code> ไม่อยู่ใน mask ข้ามไป และกันไม่ให้ <code>INF</code> บวกระยะจนล้น</li>
+        <li>วงเล็บรอบ <code>mask &amp; (1 &lt;&lt; next)</code> จำเป็น ดูในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="delivery-tsp" data-title="ข้อมูลเข้า"><pre><code>4
+0 4 8 5
+4 0 3 7
+8 3 0 2
+5 7 2 0
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="delivery-tsp" data-title="C:\code\delivery.exe"><pre><code>shortest round trip = 14
+</code></pre></div>
+      </div>
+
+      <p>เส้นที่สั้นที่สุดคือ 0 ไป 1 ไป 2 ไป 3 แล้วกลับ 0 ได้ 4 + 3 + 2 + 5 = 14 มี 2<sup>N</sup> × N สถานะ แต่ละสถานะลอง next N ตัว เป็น <strong>O(2<sup>N</sup> · N<sup>2</sup>)</strong> และใช้หน่วยความจำ 2<sup>N</sup> × N ช่อง ที่ N = 20 คือ <code>int</code> ราว 21 ล้านช่อง โปรแกรมนี้ใช้หน่วยความจำจริงสูงสุด 125 MB บนเครื่องเดียวกับหน้า 19.1 เพิ่ม N อีกหนึ่งก็เป็นสองเท่า นี่คือเหตุที่ DP บน bitmask ใช้ได้กับ N ไม่เกินราว 20 ถ้าเห็นโจทย์ที่ N เล็กผิดปกติแบบนี้ ให้นึกถึง bitmask ก่อน</p>
+
+      <h3 id="bitmask-timing">เร็วขึ้นแค่ไหน</h3>
+
+      <p>วิธีตรงไปตรงมาคือลองทุกลำดับของบ้าน N - 1 หลังด้วย <code>next_permutation</code> แล้วรวมระยะ เป็น O((N - 1)! · N) วัดบนเครื่องเดียวกับหน้า 19.1 ระยะระหว่างทุกคู่สุ่มตั้งแต่ 1 ถึง 1000 รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">11</td><td>ลองทุกลำดับ</td><td>0.50 วินาที</td><td>0.05 วินาที</td></tr>
+            <tr><td>bitmask</td><td>0.02 วินาที</td><td>0.03 วินาที</td></tr>
+            <tr><td rowspan="2">12</td><td>ลองทุกลำดับ</td><td>5.5 วินาที</td><td>0.46 วินาที</td></tr>
+            <tr><td>bitmask</td><td>0.03 วินาที</td><td>0.03 วินาที</td></tr>
+            <tr><td rowspan="2">13</td><td>ลองทุกลำดับ</td><td>68 วินาที (5 รอบอยู่ระหว่าง 63 ถึง 68)</td><td>3.1 วินาที</td></tr>
+            <tr><td>bitmask</td><td>0.02 วินาที</td><td>0.04 วินาที</td></tr>
+            <tr><td>16</td><td>bitmask</td><td>0.07 วินาที</td><td>0.06 วินาที</td></tr>
+            <tr><td>18</td><td>bitmask</td><td>0.46 วินาที</td><td>0.10 วินาที</td></tr>
+            <tr><td>20</td><td>bitmask</td><td>1.1 วินาที</td><td>0.41 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ลองทุกลำดับช้าลงราว 7 ถึง 12 เท่าทุกครั้งที่เพิ่มบ้านหนึ่งหลัง ตาม (N - 1)! ที่คูณเพิ่มด้วย N - 1 ส่วน bitmask เพิ่มบ้านหนึ่งหลัง งานตามทฤษฎีเพิ่มแค่ราวสองเท่า ที่ N = 20 ลูปในทำงานไม่เกินราว 4 × 10<sup>8</sup> รอบ ก็ยังไม่ถึงครึ่งวินาทีแบบ <code>-O2</code> ส่วนวิธีลองทุกลำดับที่ N = 20 ต้องลอง 19! ซึ่งเกิน 10<sup>17</sup> ลำดับ</p>
+
+      <h3 id="bitmask-break-it">ลองทำให้พัง ลืมวงเล็บ</h3>
+
+      <p>ในโปรแกรม delivery-tsp เขียนเงื่อนไขเป็น <code>if (mask &amp; 1 &lt;&lt; next == 0)</code> ซึ่งอ่านด้วยตาเหมือนถูก compiler ของ Code::Blocks เตือนว่า</p>
+
+      <div class="code" data-lang="gcc"><pre><code>delivery.cpp:25:38: warning: suggest parentheses around comparison in operand of '&amp;' [-Wparentheses]
+   25 |                 if (mask &amp; 1 &lt;&lt; next == 0) {
+      |                            ~~~~~~~~~~^~~~
+</code></pre></div>
+
+      <p>ถ้าไม่สนคำเตือนแล้วรันกับข้อมูลเข้าชุดเดิม ได้</p>
+
+      <div class="code" data-lang="text"><pre><code>shortest round trip = 1000000000
+</code></pre></div>
+
+      <p><code>==</code> ทำก่อน <code>&amp;</code> และ <code>&lt;&lt;</code> ทำก่อน <code>==</code> นิพจน์นี้จึงเป็น <code>mask &amp; ((1 &lt;&lt; next) == 0)</code> ซึ่ง <code>(1 &lt;&lt; next) == 0</code> เป็นเท็จเสมอ ได้ 0 เงื่อนไขจึงไม่เคยจริง ไม่มีสถานะไหนถูกขยายเลย ทุกช่องของ <code>full</code> ยังเป็น <code>INF</code> คำตอบจึงไม่เคยถูกปรับ พิมพ์ค่าเริ่มต้น <code>INF</code> ออกมา ทุกครั้งที่ใช้ <code>&amp;</code> <code>|</code> หรือ <code>^</code> คู่กับการเปรียบเทียบ ให้ใส่วงเล็บเสมอ และอย่าข้ามคำเตือน <code>-Wparentheses</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>DP ช่วง <code>cost[i][j]</code> ลองทุกจุดแบ่ง mid ระหว่าง i กับ j แล้วรวมสองช่วงย่อย เติมตามความยาวช่วงจากสั้นไปยาว เป็น O(K<sup>3</sup>)</li>
+        <li>ตัดไม้แบ่งที่ "ครั้งแรก" คูณเมทริกซ์ลูกโซ่แบ่งที่ "ครั้งสุดท้าย" โครงเดียวกัน</li>
+        <li>เติมผิดลำดับ ช่วงยาวจะใช้ช่วงสั้นที่ยังเป็น 0 ได้คำตอบน้อยเกินจริง</li>
+        <li>DP บน bitmask เก็บเซตที่ทำแล้วเป็นบิต <code>best[mask][last]</code> เป็น O(2<sup>N</sup> · N<sup>2</sup>) ใช้เมื่อ N ไม่เกินราว 20</li>
+        <li>ใส่วงเล็บรอบ <code>mask &amp; (1 &lt;&lt; k)</code> ทุกครั้ง</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

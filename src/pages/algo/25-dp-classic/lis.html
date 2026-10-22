@@ -1,0 +1,316 @@
+<article class="doc">
+      <h1>25.2 LIS ลำดับย่อยที่เพิ่มขึ้นยาวที่สุด</h1>
+
+      <p>น้องสอบย่อยวิชาคณิตศาสตร์ 8 ครั้ง ได้คะแนน <code>5 2 8 6 3 6 9 7</code> อยากเลือกบางครั้งมาเรียงตามเวลาให้เห็นว่าคะแนน <strong>สูงขึ้นทุกครั้ง</strong> ได้ยาวที่สุดกี่ครั้ง คำถามนี้ชื่อ <strong>LIS</strong> ย่อมาจาก longest increasing subsequence แปลว่าลำดับย่อยที่เพิ่มขึ้นยาวที่สุด เจอบ่อยในค่าย 2 ทั้งแบบตรงๆ และแบบซ่อน เช่น ซ้อนกล่อง เรียงคนตามความสูง หรือหาจำนวนครั้งน้อยสุดที่ต้องย้ายของให้เรียง หน้านี้เริ่มจาก DP แบบ O(N<sup>2</sup>) ที่คิดตามบทที่ 24 ตรงๆ แล้วเร่งเป็น O(N log N) ด้วย <code>lower_bound</code> จากบทที่ 19 พร้อมพิมพ์ลำดับจริงออกมา</p>
+
+      <h2 id="subsequence">ลำดับย่อยไม่ใช่ช่วงติดกัน</h2>
+
+      <p><strong>ลำดับย่อย (subsequence)</strong> คือเลือกบางตัวโดยคงลำดับเดิมไว้ ข้ามตัวไหนก็ได้ ต่างจาก <strong>ช่วง (subarray)</strong> ในโจทย์ Kadane ของบทที่ 24 ที่ต้องติดกัน จากคะแนนข้างบน <code>2 3 6 9</code> เป็นลำดับย่อยที่เพิ่มขึ้น เพราะ 2 อยู่ครั้งที่ 2 ส่วน 3 6 9 อยู่ครั้งที่ 5 6 7 ตามลำดับ แต่ <code>2 3 6 8</code> ไม่ใช่ เพราะ 8 อยู่ครั้งที่ 3 ก่อน 3 กับ 6 ส่วน "เพิ่มขึ้น" ในหน้านี้หมายถึง <strong>มากกว่าตัวก่อนหน้าจริงๆ</strong> คะแนนเท่ากันไม่นับ</p>
+
+      <p>ลำดับยาว N มีลำดับย่อย 2<sup>N</sup> แบบ ลองทุกแบบไม่ไหว</p>
+
+      <h2 id="quadratic">DP แบบ O(N<sup>2</sup>)</h2>
+
+      <p>ให้ <code>length[i]</code> คือความยาวของลำดับย่อยที่เพิ่มขึ้นที่ยาวที่สุดที่ <strong>จบที่ตัวที่ i พอดี</strong> การบังคับให้จบที่ i ทำให้รู้ว่าตัวสุดท้ายคือ <code>a[i]</code> ตัวก่อนหน้ามันจึงเป็น <code>a[j]</code> ตัวไหนก็ได้ที่ j &lt; i และ <code>a[j] &lt; a[i]</code> เลือกตัวที่ <code>length[j]</code> มากที่สุดแล้วต่อท้ายด้วย <code>a[i]</code> ถ้าไม่มี j แบบนั้นเลย ลำดับมีแค่ <code>a[i]</code> ตัวเดียว ยาว 1 คำตอบคือ <code>length[i]</code> ที่มากที่สุดในทุก i</p>
+
+      <p>จดว่าแต่ละตัวต่อมาจากตัวไหนไว้ใน <code>previous[i]</code> แบบการเก็บเส้นทางย้อนกลับในบทที่ 24 จะพิมพ์ลำดับจริงได้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="lis-quadratic"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    vector&lt;int&gt; length(n, 1), previous(n, -1);
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = 0; j &lt; i; j++) {
+            if (a[j] &lt; a[i] &amp;&amp; length[j] + 1 &gt; length[i]) { // (1)!
+                length[i] = length[j] + 1;
+                previous[i] = j;
+            }
+        }
+    }
+    int last = 0;
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; "i=" &lt;&lt; i &lt;&lt; " a=" &lt;&lt; a[i] &lt;&lt; " length=" &lt;&lt; length[i] &lt;&lt; " previous=" &lt;&lt; previous[i] &lt;&lt; '\n';
+        if (length[i] &gt; length[last]) {
+            last = i;
+        }
+    }
+    vector&lt;int&gt; sequence;
+    for (int i = last; i != -1; i = previous[i]) {
+        sequence.push_back(a[i]);
+    }
+    reverse(sequence.begin(), sequence.end());
+    cout &lt;&lt; "LIS length = " &lt;&lt; sequence.size() &lt;&lt; '\n';
+    for (int k = 0; k &lt; (int)sequence.size(); k++) {
+        cout &lt;&lt; sequence[k] &lt;&lt; (k + 1 == (int)sequence.size() ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เงื่อนไข <code>&gt;</code> ทำให้ <code>previous[i]</code> เก็บ j ตัวแรกที่ให้ความยาวมากสุด ถ้าเปลี่ยนเป็น <code>&gt;=</code> ความยาวยังเท่าเดิม แต่ลำดับที่พิมพ์อาจเปลี่ยนไป</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lis-quadratic" data-title="ข้อมูลเข้า"><pre><code>8
+5 2 8 6 3 6 9 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lis-quadratic" data-title="C:\code\lis_quadratic.exe"><pre><code>i=0 a=5 length=1 previous=-1
+i=1 a=2 length=1 previous=-1
+i=2 a=8 length=2 previous=0
+i=3 a=6 length=2 previous=0
+i=4 a=3 length=2 previous=1
+i=5 a=6 length=3 previous=4
+i=6 a=9 length=4 previous=5
+i=7 a=7 length=4 previous=5
+LIS length = 4
+2 3 6 9
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรมนับตำแหน่งจาก 0 ดูบรรทัด <code>i=6</code> คือคะแนน 9 ตัวก่อนหน้าน้อยกว่า 9 ทุกตัว ตัวที่ยาวที่สุดคือ <code>i=5</code> (คะแนน 6) ยาว 3 จึงได้ 4 ย้อนจาก <code>i=6</code> ไป <code>i=5</code> <code>i=4</code> และ <code>i=1</code> ได้ <code>9 6 3 2</code> กลับลำดับเป็น <code>2 3 6 9</code> บรรทัด <code>i=7</code> (คะแนน 7) ก็ยาว 4 เหมือนกัน แปลว่า <code>2 3 6 7</code> ก็เป็นคำตอบได้ LIS มักมีหลายแบบ โจทย์ที่ให้พิมพ์ลำดับจึงต้องบอกว่าเอาแบบไหน หรือยอมรับแบบไหนก็ได้</p>
+
+      <p>ทุก i ไล่ j ทุกตัวก่อนหน้า รวม N(N - 1)/2 คู่ เป็น <strong>O(N<sup>2</sup>)</strong> N เป็นหมื่นยังไหว แต่ N เป็นแสนไม่ทัน ซึ่งจะเห็นในตารางเวลาท้ายหน้า</p>
+
+      <h2 id="tails">เก็บหางที่เล็กที่สุดของแต่ละความยาว</h2>
+
+      <p>เปลี่ยนมุมมอง ไล่ตัวเลขจากซ้ายไปขวา แล้วถามว่า <strong>ลำดับย่อยที่เพิ่มขึ้นยาว k ที่เจอมาแล้ว ตัวสุดท้ายเล็กได้แค่ไหน</strong> เก็บคำตอบไว้ใน <code>tails[k - 1]</code> เหตุผลคือ ถ้ามีลำดับยาวเท่ากันสองแบบ แบบที่จบด้วยตัวเล็กกว่าดีกว่าเสมอ เพราะตัวเลขที่จะมาต่อท้ายได้ในอนาคต ต่อแบบที่หางใหญ่ได้ ก็ต่อแบบที่หางเล็กได้แน่นอน</p>
+
+      <p><code>tails</code> เรียงจากน้อยไปมากเสมอ (ลำดับยาว k + 1 มีส่วนต้นยาว k ที่จบด้วยตัวที่น้อยกว่าหางของมัน) จึงใช้ binary search ได้ พอเจอตัวเลข x ใหม่</p>
+
+      <ul>
+        <li>หาช่องแรกใน <code>tails</code> ที่ <code>&gt;= x</code> ด้วย <code>lower_bound</code> สมมติว่าเป็นช่อง <code>pos</code></li>
+        <li>ทุกช่องก่อน <code>pos</code> มีหางน้อยกว่า x จึงต่อ x ท้ายลำดับยาว <code>pos</code> ได้ กลายเป็นลำดับยาว <code>pos + 1</code> ที่หางคือ x</li>
+        <li>ถ้า <code>pos</code> เลยท้าย <code>tails</code> แปลว่าได้ลำดับที่ยาวกว่าที่เคยมี ต่อท้าย <code>tails</code> ถ้าไม่ ให้ทับ <code>tails[pos]</code> ด้วย x ซึ่งเล็กกว่าหรือเท่าของเดิม</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="lis-tails"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    vector&lt;int&gt; tails;
+    for (int i = 0; i &lt; n; i++) {
+        int pos = lower_bound(tails.begin(), tails.end(), a[i]) - tails.begin();
+        if (pos == (int)tails.size()) {
+            tails.push_back(a[i]);
+        } else {
+            tails[pos] = a[i];
+        }
+        cout &lt;&lt; "a=" &lt;&lt; a[i] &lt;&lt; " pos=" &lt;&lt; pos &lt;&lt; " tails:";
+        for (int k = 0; k &lt; (int)tails.size(); k++) {
+            cout &lt;&lt; ' ' &lt;&lt; tails[k];
+        }
+        cout &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "LIS length = " &lt;&lt; tails.size() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lis-tails" data-title="ข้อมูลเข้า"><pre><code>8
+5 2 8 6 3 6 9 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lis-tails" data-title="C:\code\lis_tails.exe"><pre><code>a=5 pos=0 tails: 5
+a=2 pos=0 tails: 2
+a=8 pos=1 tails: 2 8
+a=6 pos=1 tails: 2 6
+a=3 pos=1 tails: 2 3
+a=6 pos=2 tails: 2 3 6
+a=9 pos=3 tails: 2 3 6 9
+a=7 pos=3 tails: 2 3 6 7
+LIS length = 4
+</code></pre></div>
+      </div>
+
+      <p>ตอนเจอ 3 <code>tails</code> คือ <code>2 6</code> ช่องแรกที่ไม่น้อยกว่า 3 คือ 6 ที่ช่อง 1 แปลว่าลำดับยาว 2 ตอนนี้จบด้วย 3 ได้แล้ว ซึ่งดีกว่าจบด้วย 6 เลยทับ 6 ด้วย 3 พอ 6 ตัวที่สองมา ต่อจาก 3 ได้ยาว 3 ทั้งที่ถ้ายังเก็บ 6 ไว้จะต่อไม่ได้ เพราะต้องมากกว่าจริงๆ ตัวเลขแต่ละตัวทำ <code>lower_bound</code> หนึ่งครั้ง O(log N) ทั้งหมดจึงเป็น <strong>O(N log N)</strong> ความยาวของ <code>tails</code> ตอนจบคือคำตอบ</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">tails ไม่ใช่ LIS</p>
+        <p>ป้อน <code>4</code> กับ <code>3 4 5 1</code> ให้โปรแกรม lis-tails บรรทัดสุดท้ายของการไล่จะเป็น <code>a=1 pos=0 tails: 1 4 5</code> ความยาว 3 ถูก แต่ <code>1 4 5</code> ไม่ใช่ลำดับย่อย เพราะ 1 อยู่หลัง 4 กับ 5 <code>tails</code> แต่ละช่องมาจากลำดับคนละชุดกัน ช่อง 0 คือลำดับ <code>1</code> ช่อง 2 คือลำดับ <code>3 4 5</code> ถ้าโจทย์ให้พิมพ์ลำดับ ห้ามพิมพ์ <code>tails</code></p>
+      </div>
+
+      <h2 id="print-sequence">พิมพ์ลำดับจริง</h2>
+
+      <p>เก็บเพิ่มสองอย่าง <code>tail_index[k]</code> คือ <strong>ตำแหน่ง</strong> ของตัวที่เป็นหางใน <code>tails[k]</code> และตอนวาง <code>a[i]</code> ลงช่อง <code>pos</code> ให้จดว่ามันต่อจากหางของช่อง <code>pos - 1</code> ณ ตอนนั้น คือ <code>previous[i] = tail_index[pos - 1]</code> พอจบ เริ่มจากหางของช่องสุดท้ายแล้วตาม <code>previous</code> ย้อนกลับ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="lis-print"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    vector&lt;int&gt; tails, tail_index, previous(n, -1);
+    for (int i = 0; i &lt; n; i++) {
+        int pos = lower_bound(tails.begin(), tails.end(), a[i]) - tails.begin(); // (1)!
+        if (pos &gt; 0) {
+            previous[i] = tail_index[pos - 1]; // (2)!
+        }
+        if (pos == (int)tails.size()) {
+            tails.push_back(a[i]);
+            tail_index.push_back(i);
+        } else {
+            tails[pos] = a[i];
+            tail_index[pos] = i;
+        }
+    }
+    vector&lt;int&gt; sequence;
+    for (int i = tail_index.back(); i != -1; i = previous[i]) { // (3)!
+        sequence.push_back(a[i]);
+    }
+    reverse(sequence.begin(), sequence.end());
+    cout &lt;&lt; sequence.size() &lt;&lt; '\n';
+    for (int k = 0; k &lt; (int)sequence.size(); k++) {
+        cout &lt;&lt; sequence[k] &lt;&lt; (k + 1 == (int)sequence.size() ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ส่วนนี้เหมือนโปรแกรม lis-tails ต่างกันแค่ไม่พิมพ์การไล่ และอ่านเร็วตามบทที่ 15 เพราะจะใช้กับข้อมูลล้านตัว</li>
+        <li>ต้องจดตอนนี้ เพราะ <code>tail_index[pos - 1]</code> อาจถูกทับภายหลังด้วยตัวที่อยู่ทางขวาของ i ซึ่งต่อหน้า <code>a[i]</code> ไม่ได้แล้ว</li>
+        <li>ได้ตัวเลขจากท้ายไปหน้า จึงต้อง <code>reverse</code> ก่อนพิมพ์</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lis-print" data-title="ข้อมูลเข้า"><pre><code>8
+5 2 8 6 3 6 9 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lis-print" data-title="C:\code\lis_print.exe"><pre><code>4
+2 3 6 7
+</code></pre></div>
+      </div>
+
+      <p>ได้ <code>2 3 6 7</code> ไม่ใช่ <code>2 3 6 9</code> แบบโปรแกรม O(N<sup>2</sup>) ทั้งคู่ถูก วิธีนี้ให้ลำดับที่หางของแต่ละความยาวเล็กที่สุดตอนจบ ถ้าโจทย์ระบุว่าต้องการแบบไหน ต้องคิดเงื่อนไขการเลือกเพิ่ม และทดสอบกับวิธี O(N<sup>2</sup>) ด้วยข้อมูลเล็กเสมอ</p>
+
+      <h2 id="non-decreasing">ไม่ลดลง ใช้ upper_bound</h2>
+
+      <p>ถ้าโจทย์ยอมให้ค่าเท่ากันได้ เช่น "ลำดับย่อยที่ไม่ลดลงยาวที่สุด" ตัว x ต้องต่อท้ายลำดับที่หาง <strong>ไม่เกิน</strong> x ได้ด้วย จึงต้องหาช่องแรกที่ <code>&gt; x</code> แทน คือเปลี่ยน <code>lower_bound</code> เป็น <code>upper_bound</code> คำเดียว ตามความหมายของสองฟังก์ชันในหน้า 19.2</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>โจทย์ต้องการ</th><th>ตัวถัดไปต้อง</th><th>ใช้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เพิ่มขึ้น (strictly increasing)</td><td>มากกว่าตัวก่อน</td><td><code>lower_bound</code></td></tr>
+            <tr><td>ไม่ลดลง (non-decreasing)</td><td>มากกว่าหรือเท่ากับตัวก่อน</td><td><code>upper_bound</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าโจทย์ถามลำดับที่ <strong>ลดลง</strong> ไม่ต้องเขียนใหม่ ให้กลับเครื่องหมายทุกตัวเป็นค่าติดลบก่อน ลำดับที่ลดลงของค่าเดิมคือลำดับที่เพิ่มขึ้นของค่าติดลบ</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 19.1 ตัวเลขสุ่มตั้งแต่ 1 ถึง 10<sup>9</sup> วิธี O(N<sup>2</sup>) คือโปรแกรม lis-quadratic ที่ตัดส่วนพิมพ์และส่วนย้อนรอยออก เหลือแค่หาความยาว และอ่านเร็วแบบเดียวกัน วิธี O(N log N) คือโปรแกรม lis-print ทั้งโปรแกรม รวมการพิมพ์ลำดับ รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th><th>คำตอบ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">20000</td><td>O(N<sup>2</sup>)</td><td>2.2 วินาที</td><td>0.44 วินาที</td><td rowspan="2">270</td></tr>
+            <tr><td>O(N log N)</td><td>0.03 วินาที</td><td>0.03 วินาที</td></tr>
+            <tr><td rowspan="2">100000</td><td>O(N<sup>2</sup>)</td><td>44 วินาที (5 รอบอยู่ระหว่าง 37 ถึง 50)</td><td>14.5 วินาที</td><td rowspan="2">629</td></tr>
+            <tr><td>O(N log N)</td><td>0.04 วินาที</td><td>0.04 วินาที</td></tr>
+            <tr><td>1000000</td><td>O(N log N)</td><td>0.30 วินาที</td><td>0.17 วินาที</td><td>1974</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>N เพิ่มห้าเท่าจากสองหมื่นเป็นแสน วิธี O(N<sup>2</sup>) ช้าลงราว 20 ถึง 33 เท่า ใกล้กับ 5<sup>2</sup> = 25 ที่คาดไว้ ข้อมูลแสนตัวเป็นขนาดปกติของโจทย์ TOI ถ้าเห็น N ถึงแสนแล้วโจทย์ถาม LIS ให้ใช้วิธี <code>tails</code> ทันที</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="wrong-bound">แบบที่ 1 ใช้ upper_bound กับโจทย์ที่ต้องเพิ่มขึ้นจริงๆ</h3>
+
+      <p>นักเรียน 10 คนยืนเรียงแถว แต่ละคนมีคะแนนเต็ม 10 ครูจะเลือกคนออกมาโดยคงลำดับเดิม ให้ <strong>คนหลังได้คะแนนมากกว่าคนหน้าทุกคู่</strong> เลือกได้มากสุดกี่คน ในโปรแกรม lis-print เปลี่ยน <code>lower_bound</code> เป็น <code>upper_bound</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="lis-upper"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    vector&lt;int&gt; tails, tail_index, previous(n, -1);
+    for (int i = 0; i &lt; n; i++) {
+        int pos = upper_bound(tails.begin(), tails.end(), a[i]) - tails.begin();
+        if (pos &gt; 0) {
+            previous[i] = tail_index[pos - 1];
+        }
+        if (pos == (int)tails.size()) {
+            tails.push_back(a[i]);
+            tail_index.push_back(i);
+        } else {
+            tails[pos] = a[i];
+            tail_index[pos] = i;
+        }
+    }
+    vector&lt;int&gt; sequence;
+    for (int i = tail_index.back(); i != -1; i = previous[i]) {
+        sequence.push_back(a[i]);
+    }
+    reverse(sequence.begin(), sequence.end());
+    cout &lt;&lt; sequence.size() &lt;&lt; '\n';
+    for (int k = 0; k &lt; (int)sequence.size(); k++) {
+        cout &lt;&lt; sequence[k] &lt;&lt; (k + 1 == (int)sequence.size() ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lis-upper" data-title="ข้อมูลเข้า"><pre><code>10
+4 4 7 2 7 7 9 3 9 10
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lis-upper" data-title="C:\code\lis_print.exe"><pre><code>8
+4 4 7 7 7 9 9 10
+</code></pre></div>
+      </div>
+
+      <p>ได้ 8 คน แต่ลำดับที่พิมพ์มี 4 กับ 4 ติดกัน และ 7 สามครั้ง ซึ่งผิดเงื่อนไขว่าต้องมากกว่า คำตอบที่ถูกคือ 4 ใช้ <code>lower_bound</code> แล้วได้ <code>2 3 9 10</code> ความผิดนี้จับยากเพราะข้อมูลที่ไม่มีค่าซ้ำเลยจะได้คำตอบเท่ากันทั้งสองแบบ ตัวอย่างในโจทย์มักไม่มีค่าซ้ำ แต่ชุดทดสอบที่ซ่อนไว้มีแน่ ทดสอบ LIS ทุกครั้งด้วยข้อมูลที่ทุกตัวเท่ากัน คำตอบแบบเพิ่มขึ้นต้องเป็น 1 แบบไม่ลดลงต้องเป็น N</p>
+
+      <h3 id="print-tails">แบบที่ 2 พิมพ์ tails เป็นคำตอบ</h3>
+
+      <p>ความผิดนี้เห็นในกล่องเตือนข้างบนแล้ว ความยาวของ <code>tails</code> ถูกเสมอ จึงผ่านโจทย์ที่ถามแค่ความยาว แต่ถ้าโจทย์ให้พิมพ์ลำดับ แล้วพิมพ์ <code>tails</code> จะได้ตัวเลขที่เรียงสวยแต่ไม่ใช่ลำดับย่อยจริง กับข้อมูล <code>3 4 5 1</code> ได้ <code>1 4 5</code> ต้องเก็บ <code>tail_index</code> กับ <code>previous</code> แบบโปรแกรม lis-print</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>length[i]</code> คือ LIS ที่จบที่ตัวที่ i ได้จาก <code>length[j] + 1</code> ที่มากสุด เมื่อ j &lt; i และ <code>a[j] &lt; a[i]</code> เป็น O(N<sup>2</sup>)</li>
+        <li><code>tails[k]</code> เก็บหางที่เล็กที่สุดของลำดับยาว k + 1 เรียงอยู่เสมอ ใช้ <code>lower_bound</code> หาช่องแล้วทับหรือต่อท้าย เป็น O(N log N)</li>
+        <li><code>tails</code> ไม่ใช่ LIS ถ้าต้องพิมพ์ ให้เก็บ <code>tail_index</code> กับ <code>previous</code> แล้วย้อนกลับ</li>
+        <li>เพิ่มขึ้นใช้ <code>lower_bound</code> ไม่ลดลงใช้ <code>upper_bound</code> ลดลงให้กลับเครื่องหมายก่อน</li>
+        <li>N ถึงแสนต้องใช้ O(N log N) วิธี O(N<sup>2</sup>) ใช้ไม่ทันแม้คอมไพล์ <code>-O2</code></li>
+      </ul>
+    </article>

@@ -1,0 +1,368 @@
+<article class="doc">
+      <h1>25.4 DP บนตาราง</h1>
+
+      <p>โจทย์ที่ให้ตารางมาแล้วให้เดินจากมุมซ้ายบนไปมุมขวาล่าง โดยเดินได้แค่ <strong>ขวา</strong> กับ <strong>ลง</strong> เป็น DP ที่เห็นภาพง่ายที่สุด เพราะตารางของโจทย์ก็คือตาราง DP เลย ช่องหนึ่งมาได้จากช่องบนกับช่องซ้ายเท่านั้น เติมทีละแถวจากบนลงล่างก็ได้คำตอบ หน้านี้มีสามแบบที่เจอในค่าย 2 และ TOI บ่อย นับทางเดิน นับทางเดินเมื่อมีสิ่งกีดขวาง และหาเส้นทางที่เก็บของได้มากที่สุดพร้อมพิมพ์เส้นทาง ปิดท้ายด้วยการลดตารางเหลือแถวเดียว</p>
+
+      <h2 id="count-paths">นับทางเดิน</h2>
+
+      <p>สวนสาธารณะแบ่งเป็นตาราง 4 แถว 5 คอลัมน์ น้องเริ่มที่มุมซ้ายบน จะไปมุมขวาล่าง เดินทีละช่องไปทางขวาหรือลงล่างเท่านั้น มีกี่เส้นทาง</p>
+
+      <ul>
+        <li><strong>นิยามสถานะ</strong> <code>ways[r][c]</code> คือจำนวนเส้นทางจากมุมซ้ายบนมาถึงช่องแถว r คอลัมน์ c</li>
+        <li><strong>หาความสัมพันธ์</strong> ก้าวสุดท้ายที่มาถึงช่องนี้ ถ้าไม่มาจากช่องบนก็มาจากช่องซ้าย สองกลุ่มนี้ไม่ซ้ำกัน จึงบวกกัน <code>ways[r - 1][c] + ways[r][c - 1]</code></li>
+        <li><strong>กรณีฐาน</strong> ช่องในแถวบนสุดมาได้ทางเดียวคือเดินขวาล้วน ช่องในคอลัมน์ซ้ายสุดเดินลงล้วน จึงเป็น 1</li>
+        <li><strong>ลำดับการเติมและคำตอบสุดท้าย</strong> ช่องบนกับช่องซ้ายต้องเสร็จก่อน เติมทีละแถวจากบนลงล่าง ในแถวซ้ายไปขวา คำตอบอยู่ช่องขวาล่าง</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="grid-count"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;vector&lt;long long&gt;&gt; ways(rows, vector&lt;long long&gt;(cols, 0));
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (r == 0 || c == 0) {
+                ways[r][c] = 1;
+            } else {
+                ways[r][c] = ways[r - 1][c] + ways[r][c - 1];
+            }
+        }
+    }
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            cout &lt;&lt; setw(4) &lt;&lt; ways[r][c];
+        }
+        cout &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "paths = " &lt;&lt; ways[rows - 1][cols - 1] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="grid-count" data-title="ข้อมูลเข้า"><pre><code>4 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="grid-count" data-title="C:\code\grid_count.exe"><pre><code>   1   1   1   1   1
+   1   2   3   4   5
+   1   3   6  10  15
+   1   4  10  20  35
+paths = 35
+</code></pre></div>
+      </div>
+
+      <p>ตรวจด้วยการนับในหน้า 12.4 ได้ ทุกเส้นทางเดินลง 3 ครั้งและเดินขวา 4 ครั้ง รวม 7 ก้าว แค่เลือกว่าก้าวไหนเป็นก้าวลง ได้ C(7, 3) = 35 ตรงกัน ถ้าตารางว่างเปล่าแบบนี้ ใช้สูตรนับได้เลย แต่พอมีสิ่งกีดขวาง สูตรใช้ไม่ได้ ส่วน DP แก้แค่บรรทัดเดียว</p>
+
+      <h2 id="obstacles">มีสิ่งกีดขวาง</h2>
+
+      <p>สวนมีบ่อน้ำบางช่อง แทนด้วย <code>#</code> ช่องที่เดินได้แทนด้วย <code>.</code> ห้ามเดินผ่านบ่อน้ำ ตารางใหญ่ได้ถึง 1000 × 1000 จำนวนเส้นทางจึงใหญ่เกิน <code>long long</code> ไปมาก โจทย์ให้ตอบเป็นเศษจากการหารด้วย 1000000007 แบบ mod ในบทที่ 24</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="grid-blocked"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long MOD = 1000000007;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;string&gt; grid(rows);
+    for (int r = 0; r &lt; rows; r++) {
+        cin &gt;&gt; grid[r];
+    }
+    vector&lt;vector&lt;long long&gt;&gt; ways(rows, vector&lt;long long&gt;(cols, 0));
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (grid[r][c] == '#') { // (1)!
+                ways[r][c] = 0;
+            } else if (r == 0 &amp;&amp; c == 0) {
+                ways[r][c] = 1;
+            } else {
+                long long from_up = (r &gt; 0 ? ways[r - 1][c] : 0); // (2)!
+                long long from_left = (c &gt; 0 ? ways[r][c - 1] : 0);
+                ways[r][c] = (from_up + from_left) % MOD; // (3)!
+            }
+        }
+    }
+    cout &lt;&lt; ways[rows - 1][cols - 1] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ช่องบ่อน้ำไม่มีทางมาถึง เป็น 0 ช่องถัดไปที่บวกค่านี้ก็เหมือนไม่มีทางมาจากทางนั้น</li>
+        <li>ช่องในแถวบนสุดไม่มีช่องบน ให้ถือว่ามาจากทางนั้นได้ 0 ทาง คอลัมน์ซ้ายสุดก็เช่นกัน ไม่ต้องเขียนกรณีของขอบแยก</li>
+        <li>ค่าทั้งสองน้อยกว่า 1000000007 ผลบวกจึงไม่เกิน <code>long long</code> แน่นอน แล้ว mod ทุกช่อง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="grid-blocked" data-title="ข้อมูลเข้า"><pre><code>4 5
+.....
+.#...
+...#.
+#....
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="grid-blocked" data-title="C:\code\grid_blocked.exe"><pre><code>6
+</code></pre></div>
+      </div>
+
+      <p>ค่าใน <code>ways</code> ของตารางนี้คือ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>แถว</th><th>คอลัมน์ 0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+            <tr><td>1</td><td>1</td><td>0 (บ่อ)</td><td>1</td><td>2</td><td>3</td></tr>
+            <tr><td>2</td><td>1</td><td>1</td><td>2</td><td>0 (บ่อ)</td><td>3</td></tr>
+            <tr><td>3</td><td>0 (บ่อ)</td><td>1</td><td>3</td><td>3</td><td>6</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ดูแถว 1 คอลัมน์ 2 มีบ่อน้ำอยู่ทางซ้าย จึงมาได้จากช่องบนทางเดียว ได้ 1 ตารางมี R × C ช่อง ช่องละ O(1) เป็น <strong>O(RC)</strong> ตาราง 1000 × 1000 คือล้านช่อง</p>
+
+      <h2 id="max-path">เก็บของให้ได้มากที่สุด</h2>
+
+      <p>สวนมะม่วงแบ่งเป็นตาราง แต่ละช่องมีมะม่วงหล่นอยู่จำนวนหนึ่ง น้องเดินจากมุมซ้ายบนไปมุมขวาล่าง ขวาหรือลงเท่านั้น เก็บมะม่วงทุกช่องที่เดินผ่าน รวมช่องแรกกับช่องสุดท้ายด้วย จะเก็บได้มากที่สุดกี่ลูก และต้องเดินทางไหน</p>
+
+      <p>เปลี่ยนจากนับเป็นหาค่ามากสุด <code>best[r][c]</code> คือมะม่วงมากที่สุดที่เก็บได้ตั้งแต่ต้นจนถึงช่องนี้ มาจากช่องบนหรือช่องซ้าย เลือกทางที่ได้มากกว่าแล้วบวกมะม่วงของช่องนี้ ช่องในแถวบนสุดกับคอลัมน์ซ้ายสุดมาได้ทางเดียว ต้องแยกกรณี เพราะคราวนี้ไม่มีค่าไหนแทน "ไม่มีทาง" ได้ง่ายๆ แบบ 0 ของการนับ ซึ่งจะเห็นผลในส่วนลองทำให้พัง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="mango-path"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;vector&lt;int&gt;&gt; mango(rows, vector&lt;int&gt;(cols));
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            cin &gt;&gt; mango[r][c];
+        }
+    }
+    vector&lt;vector&lt;long long&gt;&gt; best(rows, vector&lt;long long&gt;(cols, 0));
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (r == 0 &amp;&amp; c == 0) {
+                best[r][c] = mango[r][c];
+            } else if (r == 0) {
+                best[r][c] = best[r][c - 1] + mango[r][c];
+            } else if (c == 0) {
+                best[r][c] = best[r - 1][c] + mango[r][c];
+            } else {
+                best[r][c] = max(best[r - 1][c], best[r][c - 1]) + mango[r][c];
+            }
+        }
+    }
+    string path;
+    int r = rows - 1, c = cols - 1;
+    while (r &gt; 0 || c &gt; 0) {
+        if (c == 0 || (r &gt; 0 &amp;&amp; best[r - 1][c] &gt;= best[r][c - 1])) { // (1)!
+            path += 'D';
+            r--;
+        } else {
+            path += 'R';
+            c--;
+        }
+    }
+    reverse(path.begin(), path.end());
+    cout &lt;&lt; "most mangoes = " &lt;&lt; best[rows - 1][cols - 1] &lt;&lt; '\n';
+    cout &lt;&lt; "path = " &lt;&lt; path &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ย้อนรอยจากช่องขวาล่าง ถ้าค่ามาจากช่องบน ก้าวสุดท้ายคือลง (<code>D</code>) ถ้ามาจากช่องซ้ายคือขวา (<code>R</code>) คอลัมน์ 0 ต้องมาจากบนเสมอ ถ้าสองทางเท่ากันเลือกบน ได้ตัวอักษรจากท้ายไปหน้า จึงกลับลำดับก่อนพิมพ์</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="mango-path" data-title="ข้อมูลเข้า"><pre><code>4 5
+3 1 0 7 2
+4 8 2 1 5
+0 6 9 3 1
+2 1 4 8 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="mango-path" data-title="C:\code\mango_path.exe"><pre><code>most mangoes = 48
+path = DRDRDRR
+</code></pre></div>
+      </div>
+
+      <p>เดินตาม <code>DRDRDRR</code> ผ่านช่องที่มีมะม่วง 3 4 8 6 9 4 8 6 รวม 48 ลูก ถ้ามีหลายเส้นทางที่ได้เท่ากัน การเลือกตอนเสมอกำหนดว่าจะพิมพ์เส้นไหน ถ้าโจทย์บังคับให้พิมพ์เส้นทางที่ตัวอักษรเรียงตามพจนานุกรมก่อน ต้องคิดเพิ่ม เพราะการเลือกตอนย้อนจากท้ายไม่ได้ทำให้ได้เส้นที่ดีที่สุดเมื่ออ่านจากหน้า ทางหนึ่งคือคิดตารางกลับทิศ ให้ช่องเก็บค่ามากสุด <strong>จากช่องนี้ไปถึงปลายทาง</strong> แล้วเดินจากมุมซ้ายบนไปข้างหน้า เลือก <code>D</code> ก่อนเมื่อเสมอ ซึ่งจะได้ลองในแบบฝึกหัด</p>
+
+      <h2 id="one-row">เหลือแถวเดียว</h2>
+
+      <p>ทั้งสามโปรแกรม แถว r ใช้แค่แถว r กับแถว r - 1 แบบ LCS ในหน้า 25.3 แต่คราวนี้ช่องซ้ายเป็นค่าใหม่ ช่องบนเป็นค่าเก่า <strong>ที่ตำแหน่งเดียวกัน</strong> จึงใช้แถวเดียวได้เลย ก่อนเขียนทับ <code>ways[c]</code> ยังเป็นค่าของแถวบน ส่วน <code>ways[c - 1]</code> ถูกเขียนทับเป็นค่าของแถวนี้ไปแล้ว ตรงกับที่สูตรต้องการพอดี วนซ้ายไปขวาตามปกติ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="grid-one-row"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long MOD = 1000000007;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;long long&gt; ways(cols, 0);
+    ways[0] = 1;
+    for (int r = 0; r &lt; rows; r++) {
+        string line;
+        cin &gt;&gt; line;
+        for (int c = 0; c &lt; cols; c++) {
+            if (line[c] == '#') {
+                ways[c] = 0;
+            } else if (c &gt; 0) {
+                ways[c] = (ways[c] + ways[c - 1]) % MOD; // (1)!
+            }
+        }
+    }
+    cout &lt;&lt; ways[cols - 1] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ทางซ้ายของเครื่องหมาย <code>=</code> คือแถวนี้ <code>ways[c]</code> ทางขวาคือแถวบน <code>ways[c - 1]</code> คือแถวนี้ ช่อง 0 ไม่มีช่องซ้าย จึงเก็บค่าแถวบนไว้ตามเดิม</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="grid-one-row" data-title="ข้อมูลเข้า"><pre><code>4 5
+.....
+.#...
+...#.
+#....
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="grid-one-row" data-title="C:\code\grid_one_row.exe"><pre><code>6
+</code></pre></div>
+      </div>
+
+      <p>ได้ 6 เท่ากับแบบตาราง แต่ใช้หน่วยความจำ O(C) และอ่านตารางทีละแถวได้โดยไม่ต้องเก็บทั้งตาราง ซึ่งช่วยมากเมื่อตารางใหญ่ถึง 5000 × 5000 ข้อเสียเหมือนหน้า 25.3 คือย้อนรอยไม่ได้</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วิธีตรงไปตรงมาคือ recursion ที่เดินทุกเส้นทางจริงๆ จากช่องหนึ่งแตกไปลงกับไปขวา แล้วนับเส้นที่ถึงปลายทาง จำนวนครั้งที่ถึงปลายทางเท่ากับจำนวนเส้นทาง ซึ่งโตเร็วมาก ตาราง N × N ว่างเปล่ามี C(2N - 2, N - 1) เส้น วัดบนเครื่องเดียวกับหน้า 19.1 วิธี DP คือโปรแกรม grid-blocked รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ตาราง</th><th>จำนวนเส้นทาง</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>14 × 14</td><td>10400600</td><td>เดินทุกเส้น</td><td>0.28 วินาที</td><td>0.12 วินาที</td></tr>
+            <tr><td>16 × 16</td><td>155117520</td><td>เดินทุกเส้น</td><td>3.5 วินาที</td><td>1.4 วินาที</td></tr>
+            <tr><td rowspan="2">18 × 18</td><td rowspan="2">2333606220</td><td>เดินทุกเส้น</td><td>57 วินาที (5 รอบอยู่ระหว่าง 52 ถึง 74)</td><td>15.9 วินาที</td></tr>
+            <tr><td>DP</td><td>0.02 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td>1000 × 1000</td><td>มากเกินพิมพ์</td><td>DP</td><td>0.03 วินาที</td><td>0.03 วินาที</td></tr>
+            <tr><td>2000 × 2000</td><td>มากเกินพิมพ์</td><td>DP</td><td>0.07 วินาที</td><td>0.04 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ตารางโตขึ้นด้านละสองช่อง วิธีเดินทุกเส้นช้าลงสิบกว่าเท่า ตาราง 18 × 18 ซึ่งเล็กกว่าโจทย์จริงมาก ใช้เวลาเกือบนาทีแบบ Code::Blocks และ 16 วินาทีแบบ <code>-O2</code> ส่วน DP ทำตารางสี่ล้านช่องในเสี้ยววินาที โปรแกรมเดินทุกเส้นที่ 18 × 18 นับได้ 2333606220 เส้นแล้วค่อย mod ได้ 333606206 ตรงกับ DP</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="edge-after-block">แบบที่ 1 ตั้งขอบเป็น 1 ทั้งแถว</h3>
+
+      <p>ใช้กรณีฐานจากโปรแกรม grid-count ที่ให้แถวบนสุดกับคอลัมน์ซ้ายสุดเป็น 1 ทั้งหมด มาใช้กับตารางที่มีบ่อน้ำ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="grid-edge-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const long long MOD = 1000000007;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;string&gt; grid(rows);
+    for (int r = 0; r &lt; rows; r++) {
+        cin &gt;&gt; grid[r];
+    }
+    vector&lt;vector&lt;long long&gt;&gt; ways(rows, vector&lt;long long&gt;(cols, 0));
+    for (int r = 0; r &lt; rows; r++) {
+        for (int c = 0; c &lt; cols; c++) {
+            if (grid[r][c] == '#') {
+                ways[r][c] = 0;
+            } else if (r == 0 || c == 0) {
+                ways[r][c] = 1;
+            } else {
+                ways[r][c] = (ways[r - 1][c] + ways[r][c - 1]) % MOD;
+            }
+        }
+    }
+    cout &lt;&lt; ways[rows - 1][cols - 1] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="grid-edge-bug" data-title="ข้อมูลเข้า"><pre><code>3 5
+..#..
+.....
+.....
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="grid-edge-bug" data-title="C:\code\grid_blocked.exe"><pre><code>12
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ 9 ซึ่งโปรแกรม grid-blocked ตอบได้ บ่อน้ำในแถวบนสุดกั้นทางไว้ ช่องที่อยู่ทางขวาของบ่อในแถวบนสุดจึงไปถึงไม่ได้เลย ต้องเป็น 0 แต่โปรแกรมนี้ตั้งเป็น 1 ทุกช่องในแถวบน เส้นทางที่ไม่มีจริงจึงถูกนับเพิ่มมา 3 เส้น ถ้าบ่อน้ำไม่อยู่บนขอบเลย โปรแกรมนี้ตอบถูก ชุดทดสอบต้องมีสิ่งกีดขวางบนแถวแรกกับคอลัมน์แรก และบนช่องเริ่มต้นด้วย</p>
+
+      <h3 id="zero-border">แบบที่ 2 ขอบศูนย์กับค่าติดลบ</h3>
+
+      <p>บางคนชอบทำตารางเริ่มที่ 1 แล้วปล่อยแถว 0 กับคอลัมน์ 0 เป็นศูนย์ไว้เป็นขอบ จะได้ไม่ต้องเขียนกรณีของขอบ วิธีนี้ใช้ได้กับการนับ และกับค่าที่ไม่ติดลบ แต่ลองกับเกมเดินบนกระดานที่บางช่องเป็นกับดัก เดินผ่านแล้วเสียแต้ม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="zero-border"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int rows, cols;
+    cin &gt;&gt; rows &gt;&gt; cols;
+    vector&lt;vector&lt;long long&gt;&gt; best(rows + 1, vector&lt;long long&gt;(cols + 1, 0));
+    for (int r = 1; r &lt;= rows; r++) {
+        for (int c = 1; c &lt;= cols; c++) {
+            int score;
+            cin &gt;&gt; score;
+            if (r == 1 &amp;&amp; c == 1) {
+                best[r][c] = score;
+            } else {
+                best[r][c] = max(best[r - 1][c], best[r][c - 1]) + score;
+            }
+        }
+    }
+    cout &lt;&lt; "best score = " &lt;&lt; best[rows][cols] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="zero-border" data-title="ข้อมูลเข้า"><pre><code>3 4
+-2 -3 4 1
+-1 5 -6 2
+3 -2 4 -1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="zero-border" data-title="C:\code\board_game.exe"><pre><code>best score = 6
+</code></pre></div>
+      </div>
+
+      <p>ป้อนกระดานเดียวกันให้โปรแกรม mango-path ได้ 3 ซึ่งถูก ส่วนโปรแกรมนี้ได้ 6 เพราะช่องในแถวบนสุดเทียบระหว่างช่องซ้ายที่ติดลบ กับขอบที่เป็น 0 แล้วเลือกขอบ เหมือนเริ่มเดินใหม่ที่ช่องนั้นโดยไม่ผ่านช่องเริ่มต้น 6 คือเส้นที่เริ่มจากช่องที่มี 4 ในแถวบน ซึ่งเดินจริงไม่ได้ ขอบที่หมายถึง "มาทางนี้ไม่ได้" ต้องเป็นค่าที่แย่กว่าทุกคำตอบ เช่น <code>LLONG_MIN / 2</code> หรือแยกกรณีของขอบแบบโปรแกรม mango-path</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เดินได้แค่ขวากับลง ช่องหนึ่งมาจากช่องบนกับช่องซ้าย เติมทีละแถวจากบนลงล่าง เป็น O(RC)</li>
+        <li>นับทางเดินคือบวกสองช่อง ช่องสิ่งกีดขวางเป็น 0 ตอบเป็น mod ถ้าเลขใหญ่</li>
+        <li>ค่ามากสุดคือเลือกช่องที่ดีกว่าแล้วบวกค่าของช่อง ย้อนรอยจากปลายทางเพื่อพิมพ์เส้นทาง</li>
+        <li>เก็บแถวเดียวได้ วนซ้ายไปขวาตามปกติ เพราะช่องบนคือค่าเก่าที่ตำแหน่งเดียวกัน</li>
+        <li>ระวังขอบ ช่องหลังสิ่งกีดขวางบนขอบไปไม่ถึง และขอบศูนย์ใช้ไม่ได้เมื่อค่าติดลบได้</li>
+      </ul>
+    </article>
