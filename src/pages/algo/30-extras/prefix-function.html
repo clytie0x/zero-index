@@ -1,0 +1,285 @@
+<article class="doc">
+      <h1>30.4 ค้นหาข้อความด้วย prefix function</h1>
+
+      <p>หน้า 13.5 หาคำในประโยคด้วยการวางคำไว้ทุกตำแหน่งแล้วเทียบทีละตัวอักษร ข้อความยาว n คำยาว m ใช้เวลาไม่เกิน O(nm) ข้อมูลทั่วไปเทียบไม่กี่ตัวก็เจอตัวที่ไม่ตรงแล้ว จึงเร็วมาก แต่ข้อมูลบางแบบทำให้ต้องเทียบเกือบครบทุกครั้ง หน้านี้สอน <strong>prefix function</strong> ซึ่งเป็นแกนของวิธี KMP (Knuth Morris Pratt) ค้นหาคำได้ใน O(n + m) เสมอ และยังบอกโครงสร้างการซ้ำของข้อความได้อีกด้วย</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">หัวข้อนี้เสริมจริงๆ</p>
+        <p>IOI Syllabus ฉบับที่ใช้กับ IOI 2023 นับการค้นหาข้อความแบบไล่เทียบตรงๆ (naive substring search) ว่าอยู่ในขอบเขต แต่จัดกลุ่มอัลกอริทึมสตริงอย่าง KMP Rabin-Karp และ suffix array ไว้ในกลุ่มที่ไม่ออกข้อสอบ (explicitly excluded) หน้านี้จึงเป็นความรู้เพิ่มเติมสำหรับคนที่ชอบโจทย์สตริงหรือจะแข่งรายการอื่นต่อ ข้ามไปก่อนได้โดยไม่เสียอะไรกับบทอื่น</p>
+      </div>
+
+      <h2 id="slow-case">ข้อมูลที่ทำให้วิธีไล่ช้า</h2>
+
+      <p>ข้อความเป็น <code>a</code> ล้านตัว คำเป็น <code>a</code> 999 ตัวตามด้วย <code>b</code> ทุกตำแหน่งที่วางคำลงไป ตัวอักษร 999 ตัวแรกตรงหมด มาไม่ตรงที่ตัวสุดท้าย จึงเทียบราวพันครั้งต่อตำแหน่ง รวมราว 10<sup>9</sup> ครั้ง ถ้าคำยาวขึ้นเป็นหมื่น ก็เป็นราว 10<sup>10</sup> ครั้ง</p>
+
+      <p>สิ่งที่วิธีไล่ทิ้งไปคือความรู้ที่ได้จากการเทียบรอบก่อน ตอนที่เทียบตรงมาแล้ว 999 ตัว เรารู้อยู่แล้วว่าข้อความช่วงนั้นคืออะไร แต่พอเลื่อนคำไปหนึ่งช่อง วิธีไล่ก็กลับไปเทียบตั้งแต่ตัวแรกใหม่ prefix function เก็บความรู้นั้นไว้ใช้ต่อ</p>
+
+      <h2 id="border">ส่วนต้นที่เป็นส่วนท้ายด้วย</h2>
+
+      <p>ส่วนต้นของข้อความ s ที่ไม่ใช่ทั้งข้อความ และบังเอิญเป็นส่วนท้ายของ s ด้วย เรียกว่า <strong>border</strong> เช่น <code>abacaba</code> มี border สองตัวคือ <code>a</code> กับ <code>aba</code> ส่วน <code>abcd</code> ไม่มีเลย</p>
+
+      <p><strong>prefix function</strong> ของข้อความ s คืออาเรย์ <code>border</code> ที่ <code>border[i]</code> เท่ากับความยาวของ border ที่ยาวที่สุดของส่วนต้นยาว i + 1 ตัว คือ <code>s[0]</code> ถึง <code>s[i]</code> ถ้าไม่มี border เลยก็เป็น 0 ค่าของ <code>abababaa</code> ทุกตำแหน่งอยู่ในผลของโปรแกรมในหัวข้อถัดไป</p>
+
+      <h2 id="compute">คำนวณใน O(n)</h2>
+
+      <p>สมมติรู้ <code>border[i - 1]</code> แล้ว ให้ j เป็นค่านั้น แปลว่า j ตัวแรกของ s ตรงกับ j ตัวที่จบที่ตำแหน่ง i - 1 อยากต่อ border นี้ให้ยาวขึ้นอีกตัวด้วย <code>s[i]</code></p>
+
+      <ul>
+        <li>ถ้า <code>s[i] == s[j]</code> ต่อได้ทันที <code>border[i] = j + 1</code></li>
+        <li>ถ้าไม่ตรง ต้องลอง border ที่สั้นกว่าของส่วนที่จบที่ i - 1 border ตัวถัดไปที่สั้นกว่า j ก็คือ border ของส่วนต้นยาว j ตัวนั้นเอง เพราะมันเป็นทั้งส่วนต้นและส่วนท้ายของ j ตัวนั้น ซึ่งคือ <code>border[j - 1]</code> ค่าที่คำนวณไว้แล้ว ถอย j ไปแบบนี้จนต่อได้หรือ j เป็น 0</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="border-table"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    string s;
+    cin &gt;&gt; s;
+    int n = s.size();
+    vector&lt;int&gt; border(n, 0);
+    for (int i = 1; i &lt; n; i++) {
+        int j = border[i - 1]; // (1)!
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            cout &lt;&lt; "i=" &lt;&lt; i &lt;&lt; " '" &lt;&lt; s[i] &lt;&lt; "' != '" &lt;&lt; s[j] &lt;&lt; "', fall back from " &lt;&lt; j &lt;&lt; " to " &lt;&lt; border[j - 1] &lt;&lt; '\n';
+            j = border[j - 1]; // (2)!
+        }
+        if (s[i] == s[j]) {
+            j++; // (3)!
+        }
+        border[i] = j;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; s.substr(0, i + 1) &lt;&lt; " " &lt;&lt; border[i] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เริ่มจาก border ที่ยาวที่สุดของตัวก่อนหน้า ซึ่งเป็นตัวที่ดีที่สุดที่อาจต่อได้</li>
+        <li>ต่อไม่ได้ ถอยไป border ที่ยาวรองลงมา ต้องเป็น <code>while</code> เพราะอาจต้องถอยหลายครั้ง</li>
+        <li>ตัวอักษรตรงกัน border ยาวขึ้นหนึ่ง ถ้า j ถอยจนเป็น 0 แล้วยังไม่ตรงอีก border ก็เป็น 0</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="border-table" data-title="ข้อมูลเข้า"><pre><code>abababaa
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="border-table" data-title="C:\code\border_table.exe"><pre><code>i=7 'a' != 'b', fall back from 5 to 3
+i=7 'a' != 'b', fall back from 3 to 1
+i=7 'a' != 'b', fall back from 1 to 0
+a 0
+ab 0
+aba 1
+abab 2
+ababa 3
+ababab 4
+abababa 5
+abababaa 1
+</code></pre></div>
+      </div>
+
+      <p>ตัวที่ 2 คือ <code>b</code> ไม่ตรงกับตัวแรก จึงได้ 0 ตั้งแต่ตัวที่ 3 ถึงตัวที่ 7 ต่อได้ทุกครั้ง border ยาวขึ้นทีละหนึ่งจนเป็น 5 คือ <code>ababa</code> ซึ่งเป็นทั้งส่วนต้นและส่วนท้ายของ <code>abababa</code> ตัวสุดท้าย <code>a</code> ต่อกับ <code>ababa</code> ไม่ได้ จึงถอยไป border ยาว 3 คือ <code>aba</code> ต่อไม่ได้อีก ถอยไป 1 คือ <code>a</code> ต่อไม่ได้อีก ถอยไป 0 แล้วเทียบกับตัวแรกจึงต่อได้ ได้ 1 ซึ่งคือ <code>a</code> ตัวเดียวที่เป็นทั้งตัวแรกและตัวสุดท้าย</p>
+
+      <p>ดูเหมือนจะช้าเพราะมีลูปซ้อน แต่ j เพิ่มได้ครั้งละไม่เกินหนึ่ง ตลอดทั้งข้อความจึงเพิ่มรวมไม่เกิน n ส่วนการถอยแต่ละครั้งทำให้ j ลดลงอย่างน้อยหนึ่ง และ j ไม่มีวันติดลบ จำนวนครั้งที่ถอยรวมทั้งข้อความจึงไม่เกินจำนวนที่เคยเพิ่ม คือไม่เกิน n ทั้งหมดเป็น O(n) แบบเดียวกับการวิเคราะห์สองตัวชี้ในหน้า 18.5</p>
+
+      <p>ค่าสุดท้ายของอาเรย์บอก border ที่ยาวที่สุดของทั้งข้อความ ซึ่งเกี่ยวกับการที่ข้อความซ้ำตัวเองเป็นลาย ลองคิดต่อในแบบฝึกหัด</p>
+
+      <h2 id="search">ค้นหาคำ</h2>
+
+      <p>ต่อคำ ตัวคั่น และข้อความเข้าด้วยกันเป็น <code>word + "#" + text</code> แล้วหา prefix function ของข้อความที่ต่อแล้ว ตำแหน่งที่ border ยาวเท่ากับ m พอดี แปลว่าส่วนท้ายยาว m ตัวที่จบตรงนั้นตรงกับส่วนต้นยาว m ตัว ซึ่งก็คือคำ เท่ากับเจอคำในข้อความ ตัวคั่น <code>#</code> ต้องไม่อยู่ในคำและข้อความ border จึงข้ามตัวคั่นไม่ได้ และยาวเกิน m ไม่ได้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="find-all"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(const string &amp;s)
+{
+    int n = s.size();
+    vector&lt;int&gt; border(n, 0);
+    for (int i = 1; i &lt; n; i++) {
+        int j = border[i - 1];
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = border[j - 1];
+        }
+        if (s[i] == s[j]) {
+            j++;
+        }
+        border[i] = j;
+    }
+    return border;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string text, word;
+    cin &gt;&gt; text &gt;&gt; word;
+    int m = word.size();
+    string joined = word + "#" + text; // (1)!
+    vector&lt;int&gt; border = prefix_function(joined);
+    int count = 0;
+    for (int i = m + 1; i &lt; (int)joined.size(); i++) {
+        if (border[i] == m) {
+            cout &lt;&lt; "found at " &lt;&lt; i - 2 * m &lt;&lt; '\n'; // (2)!
+            count++;
+        }
+    }
+    cout &lt;&lt; "count = " &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตัวอักษรของ <code>text</code> ช่องที่ k อยู่ช่อง m + 1 + k ของ <code>joined</code></li>
+        <li>คำจบที่ช่อง i ของ <code>joined</code> คือช่อง i - m - 1 ของข้อความ จึงเริ่มที่ช่อง i - m - 1 - (m - 1) = i - 2m ของข้อความ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="find-all" data-title="ข้อมูลเข้า"><pre><code>abaababaabaab
+abaab
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="find-all" data-title="C:\code\find_all.exe"><pre><code>found at 0
+found at 5
+found at 8
+count = 3
+</code></pre></div>
+      </div>
+
+      <p>คำที่ตำแหน่ง 5 กับ 8 ซ้อนกันสองตัวอักษร นับได้ทั้งคู่แบบนับซ้อนในหน้า 13.5 ทั้งหมดเป็น O(n + m) ไม่ว่าข้อมูลจะเป็นแบบไหน อัลกอริทึม KMP แบบดั้งเดิมไม่ได้ต่อข้อความ แต่เดินบนข้อความโดยใช้ prefix function ของคำ ผลเหมือนกัน แบบต่อข้อความเขียนสั้นกว่าและจำง่ายกว่า อีกเครื่องมือที่ทำงานคล้ายกันคือ Z-function ซึ่งก็ค้นหาคำได้ใน O(n + m) เลือกจำแบบเดียวก็พอ</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>เทียบสามวิธี คือวิธีไล่แบบหน้า 13.5 เขียนด้วย <code>string</code> การเรียก <code>text.find(word, pos + 1)</code> วนหาทุกตำแหน่งแบบหน้า 15.4 และ prefix function ทุกวิธีนับจำนวนตำแหน่งที่เจอเท่านั้น ข้อความยาวล้านตัวอักษร วัดบนเครื่องเดียวกับหน้า 18.2 แบบ <code>-O2</code> รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อความ กับ คำ</th><th>ไล่เทียบ</th><th><code>string::find</code></th><th>prefix function</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ตัวอักษรสุ่ม a ถึง z กับคำ 6 ตัวที่ตัดมาจากข้อความ</td><td>0.014 วินาที</td><td>0.015 วินาที</td><td>0.016 วินาที</td></tr>
+            <tr><td>a ล้านตัว กับ a 999 ตัวตามด้วย b</td><td>0.25 วินาที</td><td>0.035 วินาที</td><td>0.018 วินาที</td></tr>
+            <tr><td>a ล้านตัว กับ a 9999 ตัวตามด้วย b</td><td>2.16 วินาที</td><td>0.21 วินาที</td><td>0.021 วินาที</td></tr>
+            <tr><td>a ล้านตัว กับ a 99999 ตัวตามด้วย b</td><td>19.8 วินาที (วัดครั้งเดียว)</td><td>1.79 วินาที</td><td>0.023 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กับข้อความสุ่ม ทั้งสามวิธีเร็วเท่ากัน เพราะวิธีไล่เจอตัวที่ไม่ตรงตั้งแต่ตัวแรกๆ <code>string::find</code> ของ g++ เทียบได้เร็วกว่าลูปที่เราเขียนเองราวสิบเท่า แต่ยังโตตามความยาวของคำ คำยาวขึ้นสิบเท่า เวลาก็ยาวขึ้นราวสิบเท่า ส่วน prefix function แทบไม่เปลี่ยนเลย ถ้าโจทย์ไม่ได้บอกว่าข้อมูลสุ่ม และขอบเขตทำให้ n × m เกินราว 10<sup>9</sup> อย่าพึ่ง <code>find</code></p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-separator">แบบที่ 1 ลืมตัวคั่น</h3>
+
+      <p>ในโปรแกรม find-all ต่อเป็น <code>word + text</code> เฉยๆ แล้วปรับสูตรตำแหน่งให้ตรงกับที่ข้อความเริ่มช่อง m แทน m + 1 ค้น <code>aa</code> ใน <code>aaa</code> ซึ่งโปรแกรม find-all ตอบว่าเจอที่ 0 กับ 1 รวม 2 ตำแหน่ง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="no-separator"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(const string &amp;s)
+{
+    int n = s.size();
+    vector&lt;int&gt; border(n, 0);
+    for (int i = 1; i &lt; n; i++) {
+        int j = border[i - 1];
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = border[j - 1];
+        }
+        if (s[i] == s[j]) {
+            j++;
+        }
+        border[i] = j;
+    }
+    return border;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    string text, word;
+    cin &gt;&gt; text &gt;&gt; word;
+    int m = word.size();
+    string joined = word + text;
+    vector&lt;int&gt; border = prefix_function(joined);
+    int count = 0;
+    for (int i = m; i &lt; (int)joined.size(); i++) {
+        if (border[i] == m) {
+            cout &lt;&lt; "found at " &lt;&lt; i - 2 * m + 1 &lt;&lt; '\n';
+            count++;
+        }
+    }
+    cout &lt;&lt; "count = " &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="no-separator" data-title="ข้อมูลเข้า"><pre><code>aaa
+aa
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="no-separator" data-title="C:\code\find_all.exe"><pre><code>found at -1
+count = 1
+</code></pre></div>
+      </div>
+
+      <p>ข้อความที่ต่อแล้วคือ <code>aaaaa</code> prefix function เป็น 0 1 2 3 4 ที่ช่อง 2 border ยาว 2 พอดี แต่ <code>aa</code> ตัวนั้นใช้ <code>a</code> ตัวท้ายของคำกับ <code>a</code> ตัวแรกของข้อความ จึงได้ตำแหน่ง -1 ที่ไม่มีอยู่จริง ส่วนสองช่องหลังได้ border ยาว 3 กับ 4 เกิน m ไปแล้ว ตำแหน่งที่เจอจริงทั้งสองจึงหายไป ตัวคั่นทำหน้าที่กั้นไม่ให้ border ยาวเกินคำ และไม่ให้ข้ามจากคำมาที่ข้อความ</p>
+
+      <h3 id="if-not-while">แบบที่ 2 ถอยแค่ครั้งเดียว</h3>
+
+      <p>ในโปรแกรม border-table เปลี่ยน <code>while</code> เป็น <code>if</code> เพราะคิดว่าถอยครั้งเดียวก็พอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="if-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    string s;
+    cin &gt;&gt; s;
+    int n = s.size();
+    vector&lt;int&gt; border(n, 0);
+    for (int i = 1; i &lt; n; i++) {
+        int j = border[i - 1];
+        if (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = border[j - 1];
+        }
+        if (s[i] == s[j]) {
+            j++;
+        }
+        border[i] = j;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; s.substr(0, i + 1) &lt;&lt; " " &lt;&lt; border[i] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="if-bug" data-title="ข้อมูลเข้า"><pre><code>abababaa
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="if-bug" data-title="C:\code\border_table.exe"><pre><code>a 0
+ab 0
+aba 1
+abab 2
+ababa 3
+ababab 4
+abababa 5
+abababaa 3
+</code></pre></div>
+      </div>
+
+      <p>ทุกบรรทัดตรงกับของจริง ยกเว้นบรรทัดสุดท้ายที่ได้ 3 แทน 1 ถอยจาก 5 ไป 3 แล้ว <code>s[3]</code> คือ <code>b</code> ยังไม่ตรงกับ <code>a</code> แต่ไม่ได้ถอยต่อ และไม่ได้บวกหนึ่ง j จึงค้างที่ 3 ซึ่งผิด เพราะ <code>aba</code> ไม่ใช่ส่วนท้ายของ <code>abababaa</code> ที่ลงท้ายด้วย <code>baa</code> ข้อความส่วนใหญ่ถอยครั้งเดียวก็พอ ความผิดนี้จึงหลุดชุดทดสอบเล็กๆ ได้ง่าย ทดสอบ prefix function ด้วยข้อความที่ต้องถอยหลายครั้งแบบ <code>abababaa</code> เสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>border คือส่วนต้นที่เป็นส่วนท้ายด้วย <code>border[i]</code> คือ border ที่ยาวที่สุดของ i + 1 ตัวแรก</li>
+        <li>คำนวณจาก j = <code>border[i - 1]</code> ถ้าไม่ตรงให้ถอย <code>j = border[j - 1]</code> ด้วย <code>while</code> ตรงแล้วบวกหนึ่ง รวมทั้งข้อความเป็น O(n)</li>
+        <li>หาคำด้วย prefix function ของ <code>word + "#" + text</code> ตำแหน่งที่ได้ m คือเจอคำ เริ่มที่ช่อง i - 2m ของข้อความ ทั้งหมด O(n + m)</li>
+        <li>ตัวคั่นต้องไม่อยู่ในคำและข้อความ ลืมตัวคั่นแล้วจะได้ตำแหน่งปลอมและหายบางตำแหน่ง</li>
+        <li>วิธีไล่และ <code>string::find</code> เร็วกับข้อมูลทั่วไป แต่ช้าเป็น O(nm) กับข้อมูลที่ตั้งใจดัก</li>
+        <li>IOI Syllabus 2023 จัด KMP ไว้ในกลุ่มที่ไม่ออกข้อสอบ หัวข้อนี้เป็นความรู้เสริมสำหรับคนที่ชอบสตริง</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

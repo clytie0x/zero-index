@@ -1,0 +1,494 @@
+<article class="doc">
+      <h1>30.2 Fenwick tree</h1>
+
+      <p>หน้า 19.5 ทิ้งท้ายไว้ว่า prefix sum กับ difference array เร็วมากเมื่อข้อมูลไม่เปลี่ยน หรือเมื่อเปลี่ยนครบก่อนแล้วค่อยถาม แต่โจทย์ค่าย 2 และ TOI หลายข้อให้ข้อมูลเปลี่ยนสลับกับคำถามไปเรื่อยๆ เช่น ยอดขายของแต่ละสาขาที่เข้ามาทั้งวัน ระหว่างที่ผู้จัดการถามยอดรวมของหลายสาขา หน้านี้สอน <strong>Fenwick tree</strong> หรือ binary indexed tree (BIT) ที่ทั้งปรับค่าช่องเดียวและหาผลรวม prefix ได้ใน O(log N) โค้ดทั้งหมดสั้นกว่าสิบบรรทัด</p>
+
+      <h2 id="two-slow-ways">สองวิธีตรงไปตรงมา</h2>
+
+      <p>โรงเรียนตั้งกล่องรับบริจาคไว้ 8 ห้องเรียน ยอดเงินในกล่องเปลี่ยนตลอดวัน และครูถามยอดรวมของห้องที่ l ถึง r เป็นระยะ ถ้าจำจากบทก่อนๆ จะมีสองทาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เก็บแบบ</th><th>ปรับค่าช่องเดียว</th><th>ถามผลรวมช่วง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>อาเรย์ธรรมดา ถามแล้ววนบวก</td><td>O(1)</td><td>O(N)</td></tr>
+            <tr><td>อาเรย์ prefix sum ปรับแล้วสร้างใหม่ตั้งแต่ช่องนั้นถึงท้าย</td><td>O(N)</td><td>O(1)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทั้งสองทางมีงานหนึ่งที่เป็น O(N) ถ้ามี Q เหตุการณ์ปนกัน รวมเป็น O(NQ) ซึ่งเกินเวลาเมื่อ N กับ Q เป็นแสน Fenwick tree ยอมให้ทั้งสองงานเป็น O(log N) แทน</p>
+
+      <h2 id="idea">แบ่ง prefix ตามเลขฐานสอง</h2>
+
+      <p>13 เขียนเป็นฐานสองได้ 1101 คือ 8 + 4 + 1 ผลรวม 13 ช่องแรกจึงแบ่งเป็นสามก้อนได้ คือช่อง 1 ถึง 8 ช่อง 9 ถึง 12 และช่อง 13 แต่ละก้อนยาวเป็นกำลังของสอง ถ้าเตรียมผลรวมของก้อนพวกนี้ไว้ล่วงหน้า หาผลรวม 13 ช่องแรกก็บวกแค่สามค่า</p>
+
+      <p>Fenwick tree เตรียมไว้ในอาเรย์ <code>tree</code> ขนาด N + 1 โดยใช้กฎข้อเดียว <strong><code>tree[i]</code> เก็บผลรวมของก้อนที่จบที่ช่อง i และยาวเท่ากับ bit ขวาสุดของ i</strong> เช่น 12 คือ 1100 bit ขวาสุดมีค่า 4 <code>tree[12]</code> จึงเก็บช่อง 9 ถึง 12 ส่วน 13 คือ 1101 bit ขวาสุดมีค่า 1 <code>tree[13]</code> เก็บแค่ช่อง 13 ภาพนี้วาดก้อนของ <code>tree[1]</code> ถึง <code>tree[16]</code> ก้อนที่ยาวช่องเดียวเขียนไว้แค่เลขช่อง</p>
+
+      <figure>
+        <svg viewBox="0 0 616 274" width="616" style="max-width:100%;height:auto" role="img" aria-label="ช่อง tree ของ Fenwick tree ขนาด 16 แต่ละช่อง i เป็นแถบที่ครอบช่วงยาว i and -i ช่องที่จบที่ i แถบล่างสุดยาว 1 ช่อง แถบบนสุดคือ tree 16 ยาว 16 ช่อง แถบ tree 13 tree 12 และ tree 8 ถูกระบายสี รวมกันได้ช่วง 1 ถึง 13 พอดี">
+          <g style="font-family:var(--font-code);font-size:13px;fill:var(--muted)" text-anchor="middle">
+            <text x="38" y="20">1</text>
+            <text x="74" y="20">2</text>
+            <text x="110" y="20">3</text>
+            <text x="146" y="20">4</text>
+            <text x="182" y="20">5</text>
+            <text x="218" y="20">6</text>
+            <text x="254" y="20">7</text>
+            <text x="290" y="20">8</text>
+            <text x="326" y="20">9</text>
+            <text x="362" y="20">10</text>
+            <text x="398" y="20">11</text>
+            <text x="434" y="20">12</text>
+            <text x="470" y="20">13</text>
+            <text x="506" y="20">14</text>
+            <text x="542" y="20">15</text>
+            <text x="578" y="20">16</text>
+          </g>
+          <rect x="22" y="174" width="32" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="50" y="192" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">1</text>
+          <rect x="22" y="140" width="68" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="86" y="158" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">tree[2]</text>
+          <rect x="94" y="174" width="32" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="122" y="192" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">3</text>
+          <rect x="22" y="106" width="140" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="158" y="124" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">tree[4]</text>
+          <rect x="166" y="174" width="32" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="194" y="192" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">5</text>
+          <rect x="166" y="140" width="68" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="230" y="158" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">tree[6]</text>
+          <rect x="238" y="174" width="32" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="266" y="192" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">7</text>
+          <rect x="22" y="72" width="284" height="26" rx="4" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <text x="302" y="90" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--brand-text)">tree[8]</text>
+          <rect x="310" y="174" width="32" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="338" y="192" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">9</text>
+          <rect x="310" y="140" width="68" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="374" y="158" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">tree[10]</text>
+          <rect x="382" y="174" width="32" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="410" y="192" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">11</text>
+          <rect x="310" y="106" width="140" height="26" rx="4" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <text x="446" y="124" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--brand-text)">tree[12]</text>
+          <rect x="454" y="174" width="32" height="26" rx="4" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <text x="482" y="192" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--brand-text)">13</text>
+          <rect x="454" y="140" width="68" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="518" y="158" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">tree[14]</text>
+          <rect x="526" y="174" width="32" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="554" y="192" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">15</text>
+          <rect x="22" y="38" width="572" height="26" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="590" y="56" text-anchor="end" style="font-family:var(--font-code);font-size:12px;fill:var(--ink)">tree[16]</text>
+          <line x1="20" y1="210" x2="488" y2="210" style="stroke:var(--brand);stroke-width:3"/>
+          <text x="20" y="234" style="font-family:var(--font-text);font-size:14px;fill:var(--brand-text)">ผลรวม 13 ตัวแรก = tree[8] + tree[12] + tree[13]</text>
+          <text x="20" y="258" style="font-family:var(--font-text);font-size:13px;fill:var(--muted)">แถวล่างสุดคือช่องเลขคี่ ครอบช่องเดียว ยิ่งเลขลงท้ายด้วย 0 ในฐานสองมาก แถบยิ่งยาว</text>
+        </svg>
+      </figure>
+
+      <p>ก้อนที่ระบายสีคือสามก้อนที่ต่อกันเป็น 13 ช่องแรกพอดี สังเกตว่าเลขคี่ทุกตัวมีก้อนยาวหนึ่งช่อง และ <code>tree[16]</code> เก็บผลรวมทั้ง 16 ช่อง prefix ใดๆ แบ่งเป็นก้อนได้ไม่เกินจำนวน bit ที่เป็น 1 ของมัน ซึ่งไม่เกิน log<sub>2</sub> N + 1 ก้อน</p>
+
+      <h2 id="lowbit">หา bit ขวาสุดด้วย i &amp; -i</h2>
+
+      <p>ค่าของ bit ขวาสุดที่เป็น 1 เรียกกันว่า lowbit หาได้ด้วย <code>i &amp; -i</code> ใช้ <code>&amp;</code> จากหน้า 12.3 เหตุผลอยู่ที่วิธีเก็บเลขติดลบ คอมพิวเตอร์เก็บ -i ด้วยการกลับทุก bit ของ i แล้วบวก 1 เรียกว่า two's complement โปรแกรมนี้พิมพ์ 8 bit ขวาของแต่ละค่าออกมาดู</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="lowbit"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+string last_bits(int x)
+{
+    string bits = "";
+    for (int k = 7; k &gt;= 0; k--) {
+        bits += ((x &gt;&gt; k) &amp; 1) ? '1' : '0';
+    }
+    return bits;
+}
+
+int main()
+{
+    int numbers[] = {12, 13, 6, 8};
+    for (int i : numbers) {
+        cout &lt;&lt; "i = " &lt;&lt; setw(2) &lt;&lt; i &lt;&lt; "  i: " &lt;&lt; last_bits(i) &lt;&lt; "  -i: " &lt;&lt; last_bits(-i)
+             &lt;&lt; "  i &amp; -i: " &lt;&lt; last_bits(i &amp; -i) &lt;&lt; " = " &lt;&lt; (i &amp; -i) &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="lowbit" data-title="C:\code\lowbit.exe"><pre><code>i = 12  i: 00001100  -i: 11110100  i &amp; -i: 00000100 = 4
+i = 13  i: 00001101  -i: 11110011  i &amp; -i: 00000001 = 1
+i =  6  i: 00000110  -i: 11111010  i &amp; -i: 00000010 = 2
+i =  8  i: 00001000  -i: 11111000  i &amp; -i: 00001000 = 8
+</code></pre></div>
+
+      <p>ดู 12 ที่เป็น <code>00001100</code> กลับทุก bit ได้ <code>11110011</code> บวก 1 แล้ว 1 ที่ท้ายทดต่อไปเรื่อยๆ จนไปหยุดตรงหลักที่เคยเป็น bit 1 ขวาสุดของ 12 ได้ <code>11110100</code> หลักทางขวาของจุดนั้นกลับเป็น 0 เหมือนเดิม หลักนั้นเองกลับเป็น 1 ส่วนหลักทางซ้ายทั้งหมดยังเป็นค่าที่กลับแล้ว ซึ่งตรงข้ามกับของ 12 พอ <code>&amp;</code> กัน จึงเหลือแค่ bit นั้น bit เดียว ได้ 4</p>
+
+      <h2 id="query-update">ถามผลรวมและปรับค่า</h2>
+
+      <p><strong>ถามผลรวม i ช่องแรก</strong> บวก <code>tree[i]</code> ซึ่งครอบช่วงท้ายยาว lowbit ของ i แล้วตัดช่วงนั้นทิ้งด้วย <code>i -= i &amp; -i</code> ทำซ้ำจน i เป็น 0 ทุกรอบ bit 1 ขวาสุดหายไปหนึ่งตัว เช่น 13 → 12 → 8 → 0</p>
+
+      <p><strong>ปรับค่าช่อง i</strong> ทุกก้อนที่ครอบช่อง i ต้องเปลี่ยนตาม ในภาพ ก้อนที่ครอบคอลัมน์ 5 คือ <code>tree[5]</code> <code>tree[6]</code> <code>tree[8]</code> และ <code>tree[16]</code> ไล่ได้ด้วย <code>i += i &amp; -i</code> ซึ่งกระโดดไปก้อนถัดไปที่ใหญ่กว่าและยังครอบช่อง i อยู่ จน i เกิน N</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="fenwick-path"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n = 16;
+    int i = 13;
+    cout &lt;&lt; "sum of first 13 uses:";
+    while (i &gt; 0) {
+        cout &lt;&lt; " tree[" &lt;&lt; i &lt;&lt; "]";
+        i -= i &amp; -i;
+    }
+    cout &lt;&lt; '\n';
+    i = 5;
+    cout &lt;&lt; "changing a[5] updates:";
+    while (i &lt;= n) {
+        cout &lt;&lt; " tree[" &lt;&lt; i &lt;&lt; "]";
+        i += i &amp; -i;
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="fenwick-path" data-title="C:\code\fenwick_path.exe"><pre><code>sum of first 13 uses: tree[13] tree[12] tree[8]
+changing a[5] updates: tree[5] tree[6] tree[8] tree[16]
+</code></pre></div>
+
+      <p>ทั้งสองลูปวนไม่เกินจำนวนหลักของ N ในฐานสอง N เป็นแสนวนไม่เกิน 17 รอบ ทั้งถามและปรับค่าจึงเป็น O(log N) ผลรวมช่วง l ถึง r ได้จาก <code>prefix_sum(r) - prefix_sum(l - 1)</code> แบบเดียวกับ prefix sum ในหน้า 5.4</p>
+
+      <h2 id="full-program">โปรแกรมเต็ม</h2>
+
+      <p>เหตุการณ์แบบ <code>1 i v</code> คือกล่องห้อง i ได้เงินเพิ่ม v บาท ถ้า v ติดลบคือครูนำเงินออกไป เหตุการณ์แบบ <code>2 l r</code> คือถามยอดรวมห้อง l ถึง r</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="fenwick"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;long long&gt; tree; // (1)!
+
+void add(int i, long long delta)
+{
+    for (; i &lt;= n; i += i &amp; -i) {
+        tree[i] += delta;
+    }
+}
+
+long long prefix_sum(int i)
+{
+    long long total = 0;
+    for (; i &gt; 0; i -= i &amp; -i) {
+        total += tree[i];
+    }
+    return total;
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int q;
+    cin &gt;&gt; n &gt;&gt; q;
+    tree.assign(n + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        long long value;
+        cin &gt;&gt; value;
+        add(i, value); // (2)!
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int type, a, b;
+        cin &gt;&gt; type &gt;&gt; a &gt;&gt; b;
+        if (type == 1) {
+            add(a, b);
+        } else {
+            cout &lt;&lt; "sum " &lt;&lt; a &lt;&lt; ".." &lt;&lt; b &lt;&lt; " = " &lt;&lt; prefix_sum(b) - prefix_sum(a - 1) &lt;&lt; '\n'; // (3)!
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใช้ช่อง 1 ถึง n ช่อง 0 ไม่ใช้ เพราะ 0 ไม่มี bit ที่เป็น 1 เลย เหตุผลอยู่ในส่วนลองทำให้พัง</li>
+        <li>เริ่มจากต้นไม้ที่เป็น 0 ทั้งหมด แล้วบวกค่าเริ่มต้นเข้าไปทีละช่อง ใช้ O(N log N) ซึ่งเร็วพอสำหรับ N เป็นแสน</li>
+        <li>ผลรวม b ช่องแรกลบผลรวม a - 1 ช่องแรก</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="fenwick" data-title="ข้อมูลเข้า"><pre><code>8 6
+30 0 15 20 0 45 10 5
+2 1 8
+2 3 6
+1 5 25
+1 3 -15
+2 3 6
+2 5 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="fenwick" data-title="C:\code\fenwick.exe"><pre><code>sum 1..8 = 125
+sum 3..6 = 80
+sum 3..6 = 90
+sum 5..5 = 25
+</code></pre></div>
+      </div>
+
+      <p>คำถามที่สองได้ 15 + 20 + 0 + 45 = 80 จากนั้นห้อง 5 ได้เงินเพิ่ม 25 และครูนำเงินห้อง 3 ออก 15 คำถามเดิมจึงได้ 0 + 20 + 25 + 45 = 90 ผลรวมช่วงใหญ่ได้ถึง N × 10<sup>9</sup> ต้นไม้จึงเก็บ <code>long long</code></p>
+
+      <h2 id="range-add">บวกทั้งช่วง ถามทีละช่อง</h2>
+
+      <p>กลับด้านได้ด้วยความคิดของ difference array ในหน้า 19.5 การบวก g ให้ช่อง l ถึง r เปลี่ยนแค่สองจุด คือบวก g ที่ l และลบ g ที่ r + 1 ค่าจริงของช่อง i คือผลรวมของการเปลี่ยนแปลงตั้งแต่ช่อง 1 ถึง i ถ้าเก็บการเปลี่ยนแปลงไว้ใน Fenwick tree แทนอาเรย์ธรรมดา ค่าของช่อง i ก็คือ <code>prefix_sum(i)</code> ถามสลับกับบวกได้ตลอด ตัวอย่างนี้คือไฟประดับ 6 ดวงในงานโรงเรียน เหตุการณ์ <code>1 l r g</code> เพิ่มความสว่างดวง l ถึง r อีก g หน่วย และ <code>2 i</code> ถามความสว่างของดวง i</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="range-add"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;long long&gt; tree;
+
+void add(int i, long long delta)
+{
+    for (; i &lt;= n; i += i &amp; -i) {
+        tree[i] += delta;
+    }
+}
+
+long long prefix_sum(int i)
+{
+    long long total = 0;
+    for (; i &gt; 0; i -= i &amp; -i) {
+        total += tree[i];
+    }
+    return total;
+}
+
+int main()
+{
+    int q;
+    cin &gt;&gt; n &gt;&gt; q;
+    tree.assign(n + 1, 0);
+    for (int k = 0; k &lt; q; k++) {
+        int type;
+        cin &gt;&gt; type;
+        if (type == 1) {
+            int l, r;
+            long long amount;
+            cin &gt;&gt; l &gt;&gt; r &gt;&gt; amount;
+            add(l, amount);
+            add(r + 1, -amount); // (1)!
+        } else {
+            int i;
+            cin &gt;&gt; i;
+            cout &lt;&lt; "lamp " &lt;&lt; i &lt;&lt; " = " &lt;&lt; prefix_sum(i) &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ถ้า r เป็นดวงสุดท้าย r + 1 เกิน n ลูปใน <code>add</code> ไม่ทำงานเลย ซึ่งถูกต้อง เพราะไม่มีดวงไหนอยู่หลังดวงสุดท้ายให้ลบ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="range-add" data-title="ข้อมูลเข้า"><pre><code>6 6
+1 2 5 10
+2 3
+1 4 6 3
+2 4
+2 6
+2 1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="range-add" data-title="C:\code\range_add.exe"><pre><code>lamp 3 = 10
+lamp 4 = 13
+lamp 6 = 3
+lamp 1 = 0
+</code></pre></div>
+      </div>
+
+      <p>ถ้าโจทย์ต้องการทั้งบวกทั้งช่วงและถามผลรวมทั้งช่วง ยังใช้ Fenwick tree ได้ด้วยการเก็บสองต้น แต่เกินขอบเขตของหน้านี้ โจทย์แบบนั้นใช้ segment tree แบบ lazy propagation ที่จะพูดถึงในหน้า 30.3 ได้เหมือนกัน</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 18.2 แบบ <code>-O2</code> ข้อมูล N ช่องเป็นเลขสุ่มไม่เกิน 10<sup>9</sup> มี Q = N เหตุการณ์ ครึ่งหนึ่งปรับค่าช่องสุ่ม อีกครึ่งถามผลรวมช่วงสุ่ม รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>N = Q = 100000</th><th>N = Q = 200000</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>อาเรย์ธรรมดา ถามแล้ววนบวก O(NQ)</td><td>0.88 วินาที (5 รอบอยู่ระหว่าง 0.44 ถึง 1.09)</td><td>1.61 วินาที</td></tr>
+            <tr><td>prefix sum สร้างใหม่ทุกครั้งที่ปรับ O(NQ)</td><td>0.71 วินาที</td><td>2.51 วินาที</td></tr>
+            <tr><td>Fenwick tree O((N + Q) log N)</td><td>0.050 วินาที</td><td>0.077 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>สองวิธีแรกยังพอไหวที่แสน เพราะ <code>-O2</code> บวกเลขที่เรียงติดกันในหน่วยความจำได้เร็วมาก แต่พอข้อมูลเพิ่มเป็นสองเท่า งานเพิ่มเป็นราวสี่เท่า วิธีสร้าง prefix sum ใหม่ช้าลงจาก 0.71 เป็น 2.51 วินาที ส่วน Fenwick tree ใช้เวลาเกือบทั้งหมดไปกับการอ่านข้อมูล</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="index-zero">แบบที่ 1 เก็บตั้งแต่ช่อง 0</h3>
+
+      <p>ติดนิสัยใช้อาเรย์ตั้งแต่ช่อง 0 จึงเรียก <code>add</code> ด้วย i ตั้งแต่ 0</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;long long&gt; tree;
+
+void add(int i, long long delta)
+{
+    for (; i &lt;= n; i += i &amp; -i) {
+        tree[i] += delta;
+    }
+}
+
+int main()
+{
+    n = 5;
+    tree.assign(n + 1, 0);
+    int values[] = {4, 7, 1, 3, 9};
+    for (int i = 0; i &lt; n; i++) {
+        add(i, values[i]);
+    }
+    cout &lt;&lt; "built\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p>โปรแกรมค้าง ไม่พิมพ์ <code>built</code> ออกมาเลย ทดลองรันไว้ 5 วินาทีแล้วต้องสั่งหยุดเอง เพราะ <code>0 &amp; -0</code> ได้ 0 บรรทัด <code>i += i &amp; -i</code> จึงไม่ทำให้ i ขยับ <code>tree[0]</code> ถูกบวกไปเรื่อยๆ ไม่มีวันจบ ถ้าส่งให้ grader จะได้ผลว่าเกินเวลา ถ้าข้อมูลในโจทย์นับจาก 0 ให้บวกหนึ่งก่อนเรียก <code>add</code> และ <code>prefix_sum</code> ทุกครั้ง</p>
+
+      <h3 id="set-not-add">แบบที่ 2 โจทย์ให้แทนค่า แต่บวกค่า</h3>
+
+      <p>นักเรียน 4 คนได้คะแนน 80 65 90 70 ครูตรวจกระดาษคำตอบของคนที่ 2 ใหม่ แล้วแก้คะแนนเป็น 75 ผลรวมที่ถูกต้องคือ 80 + 75 + 90 + 70 = 315 โปรแกรมนี้ใช้ Fenwick tree เหมือนเดิม แต่ส่งคะแนนใหม่ให้ <code>add</code> ตรงๆ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="set-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;long long&gt; tree;
+
+void add(int i, long long delta)
+{
+    for (; i &lt;= n; i += i &amp; -i) {
+        tree[i] += delta;
+    }
+}
+
+long long prefix_sum(int i)
+{
+    long long total = 0;
+    for (; i &gt; 0; i -= i &amp; -i) {
+        total += tree[i];
+    }
+    return total;
+}
+
+int main()
+{
+    int q;
+    cin &gt;&gt; n &gt;&gt; q;
+    tree.assign(n + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        long long value;
+        cin &gt;&gt; value;
+        add(i, value);
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int type, a, b;
+        cin &gt;&gt; type &gt;&gt; a &gt;&gt; b;
+        if (type == 1) {
+            add(a, b);
+        } else {
+            cout &lt;&lt; prefix_sum(b) - prefix_sum(a - 1) &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="set-bug" data-title="ข้อมูลเข้า"><pre><code>4 3
+80 65 90 70
+2 1 4
+1 2 75
+2 1 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="set-bug" data-title="C:\code\scores.exe"><pre><code>305
+380
+</code></pre></div>
+      </div>
+
+      <p>ได้ 380 เพราะ 65 เดิมยังอยู่ในต้นไม้ แล้วบวก 75 ทับลงไปอีก Fenwick tree รู้จักแต่การบวก ไม่รู้ว่าค่าเดิมของช่องคือเท่าไร ถ้าโจทย์บอกค่าใหม่ ต้องเก็บค่าปัจจุบันของทุกช่องไว้อีกอาเรย์ แล้วบวกส่วนต่าง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="set-fix"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;long long&gt; tree;
+
+void add(int i, long long delta)
+{
+    for (; i &lt;= n; i += i &amp; -i) {
+        tree[i] += delta;
+    }
+}
+
+long long prefix_sum(int i)
+{
+    long long total = 0;
+    for (; i &gt; 0; i -= i &amp; -i) {
+        total += tree[i];
+    }
+    return total;
+}
+
+int main()
+{
+    int q;
+    cin &gt;&gt; n &gt;&gt; q;
+    tree.assign(n + 1, 0);
+    vector&lt;long long&gt; score(n + 1);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; score[i];
+        add(i, score[i]);
+    }
+    for (int k = 0; k &lt; q; k++) {
+        int type, a, b;
+        cin &gt;&gt; type &gt;&gt; a &gt;&gt; b;
+        if (type == 1) {
+            add(a, b - score[a]); // (1)!
+            score[a] = b;
+        } else {
+            cout &lt;&lt; prefix_sum(b) - prefix_sum(a - 1) &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ส่วนต่างระหว่างค่าใหม่กับค่าเดิม ค่าใหม่น้อยกว่าเดิมก็ได้ส่วนต่างติดลบ ซึ่ง <code>add</code> รับได้ แล้วต้องจำค่าใหม่ไว้ใช้รอบหน้าด้วย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="set-fix" data-title="ข้อมูลเข้า"><pre><code>4 3
+80 65 90 70
+2 1 4
+1 2 75
+2 1 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="set-fix" data-title="C:\code\scores.exe"><pre><code>305
+315
+</code></pre></div>
+      </div>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>tree[i]</code> เก็บผลรวมของก้อนยาว <code>i &amp; -i</code> ที่จบที่ช่อง i ใช้ช่อง 1 ถึง N เท่านั้น</li>
+        <li>ผลรวม i ช่องแรก วน <code>i -= i &amp; -i</code> ปรับค่าช่อง i วน <code>i += i &amp; -i</code> ทั้งคู่เป็น O(log N)</li>
+        <li>ผลรวมช่วงคือ <code>prefix_sum(r) - prefix_sum(l - 1)</code></li>
+        <li>เก็บการเปลี่ยนแปลงแบบ difference array ไว้ในต้นไม้ ได้การบวกทั้งช่วงกับการถามค่าทีละช่องใน O(log N)</li>
+        <li>Fenwick tree บวกได้อย่างเดียว ถ้าโจทย์ให้แทนค่า ต้องบวกส่วนต่างจากค่าเดิม</li>
+        <li>ใช้กับค่าน้อยสุดหรือมากสุดทั่วไปไม่ได้ เพราะลบก้อนที่เกินออกไม่ได้ งานแบบนั้นใช้ segment tree ในหน้าถัดไป</li>
+      </ul>
+    </article>

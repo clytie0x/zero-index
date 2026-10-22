@@ -1,0 +1,41 @@
+<article class="doc">
+      <h1>บทที่ 30 หัวข้อเสริม</h1>
+
+      <p>จบบทนี้ น้องจะเรียงงานที่มีเงื่อนไขก่อนหลังด้วย topological sort ตรวจได้ว่าเงื่อนไขวนกันหรือไม่ และหาเส้นทางที่ยาวที่สุดบนกราฟที่ไม่มีวงด้วย DP จะมีโครงสร้างข้อมูลสองตัวที่รับทั้งการปรับค่าและการถามช่วงสลับกันไปได้ใน O(log N) คือ Fenwick tree สำหรับผลรวม และ segment tree สำหรับค่าต่ำสุด ค่าสูงสุด และการรวมแบบอื่น ปิดท้ายด้วยการค้นหาคำในข้อความใน O(n + m) ด้วย prefix function เครื่องมือเหล่านี้ใช้กับโจทย์ที่ข้อมูลเปลี่ยนไปเรื่อยๆ ระหว่างที่ต้องตอบคำถาม และโจทย์ลำดับงาน ซึ่งวิธีจากบทก่อนๆ ช้าเป็น O(NQ) หรือ O(N<sup>2</sup>)</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">บทนี้ไม่ใช่เนื้อหาบังคับของค่าย 2</p>
+        <p>หัวข้อในบทนี้ไม่ได้ระบุไว้ชัดในหลักสูตรค่าย สอวน. บทนี้มีไว้สำหรับน้องที่จะแข่ง TOI ต่อ ถ้ากำลังเตรียมค่าย 2 ให้ทำบทที่ 18 ถึง 29 ให้คล่องก่อน แล้วค่อยกลับมาอ่านบทนี้ IOI Syllabus ฉบับที่ใช้กับ IOI 2023 นับ topological sort Fenwick tree และ segment tree ว่าอยู่ในขอบเขต แต่จัด KMP และอัลกอริทึมสตริงแบบอื่นไว้ในกลุ่มที่ไม่ออกข้อสอบ หน้า 30.4 จึงเสริมยิ่งกว่าหน้าอื่น</p>
+      </div>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="topological-sort.html">30.1 topological sort และ DP บน DAG</a></td><td>Kahn ด้วย in-degree กับ queue ตรวจวง DFS แบบสามสถานะ เส้นทางที่ได้คะแนนมากสุดบน DAG และกับดักทำ DP ตามเลขจุด</td></tr>
+            <tr><td><a href="fenwick-tree.html">30.2 Fenwick tree</a></td><td>ก้อนตามเลขฐานสอง <code>i &amp; -i</code> ปรับค่าและหาผลรวม prefix ใน O(log N) บวกทั้งช่วงแล้วถามทีละช่อง และกับดักช่อง 0 กับการแทนค่า</td></tr>
+            <tr><td><a href="segment-tree.html">30.3 segment tree</a></td><td>ต้นไม้ของช่วง ถามค่าต่ำสุดและปรับค่าช่องเดียวใน O(log N) ทำไมต้องจอง 4N เปลี่ยนเป็นผลรวมหรือค่าสูงสุด และ lazy propagation ที่มีอยู่</td></tr>
+            <tr><td><a href="prefix-function.html">30.4 ค้นหาข้อความด้วย prefix function</a></td><td>border และ prefix function ใน O(n) ค้นหาคำด้วยตัวคั่น และข้อมูลที่ทำให้วิธีไล่กับ <code>string::find</code> ช้า</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>รัน Kahn กับกราฟหกจุดในหน้า 30.1 ได้ลำดับ <code>1 2 4 3 5 6</code> แล้วเพิ่มลูกศร 6 → 2 จนโปรแกรมบอกว่าวางได้แค่ 3 จาก 6 จุด</span></label></li>
+        <li><label><input type="checkbox"><span>เขียน DP บน DAG หาคะแนนสูงสุดของทางจักรยานได้ 16 และอธิบายได้ว่าทำไมการวนตามเลขจุดได้ 10 แทน 18</span></label></li>
+        <li><label><input type="checkbox"><span>เขียน Fenwick tree เองโดยไม่เปิดดู ได้ยอดบริจาคห้อง 3 ถึง 6 เป็น 80 แล้วเป็น 90 หลังปรับค่า และบอกได้ว่า <code>tree[12]</code> เก็บผลรวมของช่องไหนบ้าง</span></label></li>
+        <li><label><input type="checkbox"><span>เขียน segment tree ค่าต่ำสุดได้ <code>min 2..6 = 1</code> แล้วได้ 3 หลังสถานี 5 เปลี่ยนเป็น 10 องศา และอธิบายได้ว่าทำไมต้องจอง 4N ช่อง</span></label></li>
+        <li><label><input type="checkbox"><span>หา prefix function ของ <code>abababaa</code> ได้ <code>0 0 1 2 3 4 5 1</code> และค้น <code>abaab</code> ใน <code>abaababaabaab</code> ได้ตำแหน่ง 0 5 8</span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 5 ข้อจาก 8 ข้อ รวมข้อที่ใช้ Fenwick tree หรือ segment tree อย่างน้อย 2 ข้อ</span></label></li>
+      </ul>
+
+      <h2 id="after">หลังจากบทนี้</h2>
+
+      <p>บทนี้เป็นบทสุดท้ายของเว็บ ถึงตรงนี้น้องมีเครื่องมือครบสำหรับโจทย์ค่าย 2 และโจทย์ TOI ส่วนใหญ่แล้ว สิ่งที่ช่วยได้มากที่สุดต่อจากนี้คือทำโจทย์เก่าให้มาก จับเวลาเหมือนแข่งจริง อ่านขอบเขตก่อนเลือกวิธีตามหน้า 18.2 และทุกครั้งที่ผิด ให้ย้อนดูว่าเป็นกับดักแบบไหนในส่วนลองทำให้พังของบทต่างๆ</p>
+    </article>

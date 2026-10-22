@@ -1,0 +1,555 @@
+<article class="doc">
+      <h1>30.3 segment tree</h1>
+
+      <p>Fenwick tree ตอบผลรวมได้เพราะลบส่วนที่เกินออกได้ แต่ค่าต่ำสุดของช่วงลบกันไม่ได้ ถ้ารู้ค่าต่ำสุดของ 8 ช่องแรกกับ 3 ช่องแรก ก็ยังไม่รู้ค่าต่ำสุดของช่อง 4 ถึง 8 อยู่ดี หน้านี้สอน <strong>segment tree</strong> ต้นไม้ที่แต่ละโหนดเก็บคำตอบของช่วงหนึ่ง ใช้ได้กับค่าต่ำสุด ค่าสูงสุด ผลรวม และการรวมแบบอื่นอีกหลายแบบ ทั้งปรับค่าช่องเดียวและถามช่วงเป็น O(log N) โจทย์ที่เจอบ่อยคือ ข้อมูลเปลี่ยนไปเรื่อยๆ แล้วถามค่าต่ำสุดหรือสูงสุดของช่วง หรือถามว่าช่องแรกที่มีค่าถึงเกณฑ์อยู่ตรงไหน</p>
+
+      <h2 id="structure">ต้นไม้ของช่วง</h2>
+
+      <p>สถานีวัดอุณหภูมิ 8 สถานีเรียงตามแนวเขา อุณหภูมิตอนนี้คือ <code>5 3 8 6 1 9 4 7</code> สร้างต้นไม้แบบนี้</p>
+
+      <ul>
+        <li>รากคือโหนด 1 ดูแลช่วง 1 ถึง 8 ทั้งหมด</li>
+        <li>โหนดที่ดูแลช่วง l ถึง r แบ่งตรงกลาง mid = (l + r) / 2 ลูกซ้ายดูแล l ถึง mid ลูกขวาดูแล mid + 1 ถึง r</li>
+        <li>แบ่งไปจนเหลือช่วงยาวหนึ่งช่อง ซึ่งเป็นใบ</li>
+        <li>ทุกโหนดเก็บค่าต่ำสุดของช่วงที่มันดูแล ซึ่งก็คือค่าต่ำสุดของลูกสองตัว</li>
+        <li>เก็บในอาเรย์แบบ binary heap ในหน้า 26.5 ลูกของโหนด k คือ 2k กับ 2k + 1 ไม่ต้องมี pointer</li>
+      </ul>
+
+      <figure>
+        <svg viewBox="0 0 556 332" width="556" style="max-width:100%;height:auto" role="img" aria-label="segment tree ของอุณหภูมิ 5 3 8 6 1 9 4 7 รากคือโหนด 1 ครอบช่วง 1 ถึง 8 ค่าต่ำสุด 1 แต่ละโหนดแบ่งช่วงครึ่งให้ลูกสองตัว คำถามช่วง 2 ถึง 6 ใช้คำตอบจากโหนด 9 โหนด 5 และโหนด 6">
+          <g style="stroke:var(--line-strong);stroke-width:1.5">
+            <line x1="278" y1="56" x2="146" y2="82"/>
+            <line x1="278" y1="56" x2="410" y2="82"/>
+            <line x1="146" y1="126" x2="80" y2="152"/>
+            <line x1="146" y1="126" x2="212" y2="152"/>
+            <line x1="80" y1="196" x2="47" y2="222"/>
+            <line x1="80" y1="196" x2="113" y2="222"/>
+            <line x1="212" y1="196" x2="179" y2="222"/>
+            <line x1="212" y1="196" x2="245" y2="222"/>
+            <line x1="410" y1="126" x2="344" y2="152"/>
+            <line x1="410" y1="126" x2="476" y2="152"/>
+            <line x1="344" y1="196" x2="311" y2="222"/>
+            <line x1="344" y1="196" x2="377" y2="222"/>
+            <line x1="476" y1="196" x2="443" y2="222"/>
+            <line x1="476" y1="196" x2="509" y2="222"/>
+          </g>
+          <rect x="249" y="12" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--brand);stroke-width:1.5;stroke-dasharray:4 3"/>
+          <text x="278" y="30" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">1 [1,8]</text>
+          <text x="278" y="49" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">1</text>
+          <rect x="117" y="82" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--brand);stroke-width:1.5;stroke-dasharray:4 3"/>
+          <text x="146" y="100" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">2 [1,4]</text>
+          <text x="146" y="119" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">3</text>
+          <rect x="51" y="152" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--brand);stroke-width:1.5;stroke-dasharray:4 3"/>
+          <text x="80" y="170" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">4 [1,2]</text>
+          <text x="80" y="189" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">3</text>
+          <rect x="18" y="222" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="47" y="240" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">8 [1]</text>
+          <text x="47" y="259" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--muted)">5</text>
+          <rect x="84" y="222" width="58" height="44" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2.5"/>
+          <text x="113" y="240" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">9 [2]</text>
+          <text x="113" y="259" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">3</text>
+          <rect x="183" y="152" width="58" height="44" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2.5"/>
+          <text x="212" y="170" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">5 [3,4]</text>
+          <text x="212" y="189" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">6</text>
+          <rect x="150" y="222" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="179" y="240" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">10 [3]</text>
+          <text x="179" y="259" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">8</text>
+          <rect x="216" y="222" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="245" y="240" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">11 [4]</text>
+          <text x="245" y="259" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">6</text>
+          <rect x="381" y="82" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--brand);stroke-width:1.5;stroke-dasharray:4 3"/>
+          <text x="410" y="100" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">3 [5,8]</text>
+          <text x="410" y="119" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">1</text>
+          <rect x="315" y="152" width="58" height="44" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2.5"/>
+          <text x="344" y="170" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">6 [5,6]</text>
+          <text x="344" y="189" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">1</text>
+          <rect x="282" y="222" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="311" y="240" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">12 [5]</text>
+          <text x="311" y="259" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">1</text>
+          <rect x="348" y="222" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="377" y="240" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">13 [6]</text>
+          <text x="377" y="259" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">9</text>
+          <rect x="447" y="152" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="476" y="170" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">7 [7,8]</text>
+          <text x="476" y="189" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--muted)">4</text>
+          <rect x="414" y="222" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="443" y="240" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">14 [7]</text>
+          <text x="443" y="259" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">4</text>
+          <rect x="480" y="222" width="58" height="44" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+          <text x="509" y="240" text-anchor="middle" style="font-family:var(--font-code);font-size:12px;fill:var(--muted)">15 [8]</text>
+          <text x="509" y="259" text-anchor="middle" style="font-family:var(--font-code);font-size:16px;fill:var(--ink)">7</text>
+          <text x="14" y="306" style="font-family:var(--font-text);font-size:14px;fill:var(--brand-text)">กรอบทึบคือโหนดที่อยู่ในช่วง 2 ถึง 6 ทั้งก้อน กรอบเส้นประคือโหนดที่ต้องแบ่งลงไปต่อ</text>
+        </svg>
+      </figure>
+
+      <p>ต้นไม้นี้ลึก log<sub>2</sub> N ชั้น เพราะช่วงสั้นลงครึ่งหนึ่งทุกชั้น ภาพระบายโหนดที่ใช้ตอบคำถาม "ค่าต่ำสุดของสถานี 2 ถึง 6" ช่วง 2 ถึง 6 ประกอบจากโหนด 9 ที่ดูแลช่อง 2 โหนด 5 ที่ดูแลช่อง 3 ถึง 4 และโหนด 6 ที่ดูแลช่อง 5 ถึง 6 คำตอบคือค่าต่ำสุดของสามโหนดนี้ คือ min(3, 6, 1) = 1</p>
+
+      <h2 id="query">ถามช่วงด้วย recursion</h2>
+
+      <p>ฟังก์ชันถามเริ่มที่ราก แล้วแยกตามว่าช่วงของโหนด [left, right] กับช่วงที่ถาม [from, to] ซ้อนกันแบบไหน</p>
+
+      <ol>
+        <li><strong>ไม่ซ้อนกันเลย</strong> โหนดนี้ไม่เกี่ยว คืนค่าที่ไม่มีผลกับ <code>min</code> คือ <code>INT_MAX</code></li>
+        <li><strong>อยู่ในช่วงที่ถามทั้งก้อน</strong> คืนค่าที่เก็บไว้ได้ทันที ไม่ต้องลงไปดูลูก</li>
+        <li><strong>ซ้อนกันบางส่วน</strong> ถามลูกทั้งสองข้าง แล้วเอาค่าต่ำสุดของสองคำตอบ</li>
+      </ol>
+
+      <p>โปรแกรมนี้พิมพ์ทุกโหนดที่ฟังก์ชันถามเดินผ่าน เพื่อให้เห็นว่าเดินแค่ไหน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="seg-trace"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;int&gt; temperature, tree;
+int visited = 0;
+
+void build(int node, int left, int right)
+{
+    if (left == right) {
+        tree[node] = temperature[left];
+        return;
+    }
+    int mid = (left + right) / 2;
+    build(2 * node, left, mid);
+    build(2 * node + 1, mid + 1, right);
+    tree[node] = min(tree[2 * node], tree[2 * node + 1]);
+}
+
+int query(int node, int left, int right, int from, int to)
+{
+    visited++;
+    if (to &lt; left || right &lt; from) {
+        cout &lt;&lt; "node " &lt;&lt; node &lt;&lt; " [" &lt;&lt; left &lt;&lt; "," &lt;&lt; right &lt;&lt; "] outside\n";
+        return INT_MAX;
+    }
+    if (from &lt;= left &amp;&amp; right &lt;= to) {
+        cout &lt;&lt; "node " &lt;&lt; node &lt;&lt; " [" &lt;&lt; left &lt;&lt; "," &lt;&lt; right &lt;&lt; "] inside, min " &lt;&lt; tree[node] &lt;&lt; '\n';
+        return tree[node];
+    }
+    cout &lt;&lt; "node " &lt;&lt; node &lt;&lt; " [" &lt;&lt; left &lt;&lt; "," &lt;&lt; right &lt;&lt; "] split\n";
+    int mid = (left + right) / 2;
+    int left_min = query(2 * node, left, mid, from, to);
+    int right_min = query(2 * node + 1, mid + 1, right, from, to);
+    return min(left_min, right_min);
+}
+
+int main()
+{
+    cin &gt;&gt; n;
+    temperature.assign(n + 1, 0);
+    tree.assign(4 * n, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; temperature[i];
+    }
+    build(1, 1, n);
+    int from, to;
+    cin &gt;&gt; from &gt;&gt; to;
+    int answer = query(1, 1, n, from, to);
+    cout &lt;&lt; "min of " &lt;&lt; from &lt;&lt; ".." &lt;&lt; to &lt;&lt; " = " &lt;&lt; answer &lt;&lt; ", visited " &lt;&lt; visited &lt;&lt; " nodes\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="seg-trace" data-title="ข้อมูลเข้า"><pre><code>8
+5 3 8 6 1 9 4 7
+2 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="seg-trace" data-title="C:\code\seg_trace.exe"><pre><code>node 1 [1,8] split
+node 2 [1,4] split
+node 4 [1,2] split
+node 8 [1,1] outside
+node 9 [2,2] inside, min 3
+node 5 [3,4] inside, min 6
+node 3 [5,8] split
+node 6 [5,6] inside, min 1
+node 7 [7,8] outside
+min of 2..6 = 1, visited 9 nodes
+</code></pre></div>
+      </div>
+
+      <p>โหนดที่ต้องแบ่งต่อมีแค่โหนดที่ช่วงคร่อมขอบซ้ายหรือขอบขวาของคำถาม แต่ละชั้นของต้นไม้มีโหนดที่คร่อมขอบได้ไม่เกินสองโหนด คือฝั่งขอบซ้ายหนึ่งกับฝั่งขอบขวาหนึ่ง โหนดที่ฟังก์ชันเดินผ่านจึงไม่เกินราวสี่โหนดต่อชั้น รวมเป็น O(log N) ตัวอย่างนี้เดินผ่าน 9 โหนดจาก 15 โหนด ถ้า N เป็นแสน ต้นไม้ลึกราว 17 ชั้น คำถามหนึ่งข้อเดินผ่านไม่เกินราวเจ็ดสิบโหนด แทนที่จะไล่ดูแสนช่อง</p>
+
+      <p>บรรทัดที่ 33 ถึง 35 ถามลูกซ้ายก่อนแล้วเก็บไว้ในตัวแปร ไม่ได้เขียน <code>min(query(...), query(...))</code> ในบรรทัดเดียว เพราะ C++ ไม่ได้กำหนดว่าต้องคำนวณอาร์กิวเมนต์ตัวไหนก่อน ถ้าเขียนบรรทัดเดียว บนเครื่องที่เขียนเอกสารนี้ทั้งแบบ Code::Blocks และแบบ <code>-O2</code> ถามลูกขวาก่อน บรรทัดที่สองที่พิมพ์ออกมาจึงเป็นโหนด 3 คำตอบยังถูก แต่อ่านตามยาก</p>
+
+      <h2 id="update">ปรับค่าช่องเดียว</h2>
+
+      <p>ถ้าสถานี i รายงานค่าใหม่ ใบของช่อง i เปลี่ยน และทุกโหนดที่ดูแลช่วงที่มีช่อง i อยู่ข้างในต้องคำนวณใหม่ ซึ่งคือบรรพบุรุษของใบนั้นตลอดทางขึ้นไปถึงราก มีหนึ่งโหนดต่อชั้น ฟังก์ชันปรับค่าเดินลงไปหาใบตามฝั่งที่ช่อง i อยู่ แก้ใบ แล้วตอนเดินกลับขึ้นก็คำนวณค่าของแต่ละโหนดใหม่จากลูกสองตัว ใช้ O(log N)</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="seg-min"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;int&gt; temperature, tree;
+
+void build(int node, int left, int right) // (1)!
+{
+    if (left == right) {
+        tree[node] = temperature[left];
+        return;
+    }
+    int mid = (left + right) / 2;
+    build(2 * node, left, mid);
+    build(2 * node + 1, mid + 1, right);
+    tree[node] = min(tree[2 * node], tree[2 * node + 1]);
+}
+
+void update(int node, int left, int right, int pos, int value)
+{
+    if (left == right) {
+        tree[node] = value;
+        return;
+    }
+    int mid = (left + right) / 2;
+    if (pos &lt;= mid) {
+        update(2 * node, left, mid, pos, value);
+    } else {
+        update(2 * node + 1, mid + 1, right, pos, value);
+    }
+    tree[node] = min(tree[2 * node], tree[2 * node + 1]); // (2)!
+}
+
+int query(int node, int left, int right, int from, int to)
+{
+    if (to &lt; left || right &lt; from) {
+        return INT_MAX; // (3)!
+    }
+    if (from &lt;= left &amp;&amp; right &lt;= to) {
+        return tree[node];
+    }
+    int mid = (left + right) / 2;
+    int left_min = query(2 * node, left, mid, from, to);
+    int right_min = query(2 * node + 1, mid + 1, right, from, to);
+    return min(left_min, right_min);
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int q;
+    cin &gt;&gt; n &gt;&gt; q;
+    temperature.assign(n + 1, 0);
+    tree.assign(4 * n, 0); // (4)!
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; temperature[i];
+    }
+    build(1, 1, n);
+    for (int k = 0; k &lt; q; k++) {
+        int type, a, b;
+        cin &gt;&gt; type &gt;&gt; a &gt;&gt; b;
+        if (type == 1) {
+            update(1, 1, n, a, b);
+        } else {
+            cout &lt;&lt; "min " &lt;&lt; a &lt;&lt; ".." &lt;&lt; b &lt;&lt; " = " &lt;&lt; query(1, 1, n, a, b) &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สร้างครั้งแรกจากล่างขึ้นบน ทุกโหนดถูกคำนวณครั้งเดียว ต้นไม้มีไม่ถึง 2N โหนด จึงเป็น O(N)</li>
+        <li>ลูกฝั่งหนึ่งเปลี่ยนแล้ว ต้องคำนวณโหนดนี้ใหม่ บรรทัดนี้คือหัวใจของการปรับค่า</li>
+        <li>ค่าที่ไม่มีผลกับ <code>min</code> ห้ามใช้ 0 ดูในส่วนลองทำให้พัง</li>
+        <li>จอง 4N ช่อง เหตุผลอยู่ในหัวข้อถัดไป</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="seg-min" data-title="ข้อมูลเข้า"><pre><code>8 6
+5 3 8 6 1 9 4 7
+2 2 6
+2 6 8
+1 5 10
+2 2 6
+1 3 2
+2 1 8
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="seg-min" data-title="C:\code\seg_min.exe"><pre><code>min 2..6 = 1
+min 6..8 = 4
+min 2..6 = 3
+min 1..8 = 2
+</code></pre></div>
+      </div>
+
+      <p>สถานี 5 ซึ่งเคยหนาวที่สุดรายงาน 10 องศา ค่าต่ำสุดของสถานี 2 ถึง 6 จึงกลายเป็น 3 ของสถานี 2 จากนั้นสถานี 3 ลดเหลือ 2 องศา ค่าต่ำสุดของทั้งแนวจึงเป็น 2</p>
+
+      <h2 id="size">ทำไมต้องจอง 4N ช่อง</h2>
+
+      <p>ถ้า N เป็นกำลังของสอง ต้นไม้เต็มทุกชั้นพอดี ใช้โหนด 1 ถึง 2N - 1 แต่ N อื่นๆ ต้นไม้ไม่สมดุลพอดี ฝั่งซ้ายได้ช่วงยาวกว่าฝั่งขวาหนึ่งช่องอยู่เรื่อย เลขโหนดลึกๆ ทางซ้ายจึงกระโดดไปไกลกว่า 2N ได้ โปรแกรมนี้เดินทั้งต้นไม้แล้วหาเลขโหนดที่มากที่สุด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="max-index"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int largest = 0;
+
+void walk(int node, int left, int right)
+{
+    largest = max(largest, node);
+    if (left == right) {
+        return;
+    }
+    int mid = (left + right) / 2;
+    walk(2 * node, left, mid);
+    walk(2 * node + 1, mid + 1, right);
+}
+
+int main()
+{
+    int sizes[] = {4, 5, 6, 8, 9, 17, 100000};
+    for (int n : sizes) {
+        largest = 0;
+        walk(1, 1, n);
+        cout &lt;&lt; "n = " &lt;&lt; n &lt;&lt; "  largest node = " &lt;&lt; largest &lt;&lt; "  2n = " &lt;&lt; 2 * n &lt;&lt; "  4n = " &lt;&lt; 4 * n &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="max-index" data-title="C:\code\max_index.exe"><pre><code>n = 4  largest node = 7  2n = 8  4n = 16
+n = 5  largest node = 9  2n = 10  4n = 20
+n = 6  largest node = 13  2n = 12  4n = 24
+n = 8  largest node = 15  2n = 16  4n = 32
+n = 9  largest node = 17  2n = 18  4n = 36
+n = 17  largest node = 33  2n = 34  4n = 68
+n = 100000  largest node = 262141  2n = 200000  4n = 400000
+</code></pre></div>
+
+      <p>N = 6 ใช้ถึงโหนด 13 เกิน 2N = 12 แล้ว และ N = 100000 ใช้ถึงโหนด 262141 ถ้าจองแค่ 2N ช่อง การเขียนโหนดเหล่านี้คือเขียนนอก vector ซึ่งอาจพังหรือทับข้อมูลอื่นเงียบๆ แบบหน้า 5.5 เลขโหนดมากที่สุดไม่เกิน 4N เสมอ จึงจอง 4N ช่องไว้ให้สบายใจ ต้นไม้ของแสนช่องเป็น <code>int</code> สี่แสนตัว ราว 1.6 MB ประกาศใน vector จึงไม่มีปัญหาเรื่องขนาด</p>
+
+      <h2 id="other-merge">เปลี่ยนการรวม</h2>
+
+      <p>โครงของ segment tree ไม่ได้ผูกกับ <code>min</code> เปลี่ยนสองจุดก็ได้ต้นไม้แบบอื่น คือวิธีรวมคำตอบของลูกสองตัว กับค่าที่คืนเมื่อโหนดไม่เกี่ยว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ต้องการ</th><th>รวมลูกด้วย</th><th>โหนดไม่เกี่ยวคืน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ค่าต่ำสุด</td><td><code>min(a, b)</code></td><td><code>INT_MAX</code></td></tr>
+            <tr><td>ค่าสูงสุด</td><td><code>max(a, b)</code></td><td><code>INT_MIN</code></td></tr>
+            <tr><td>ผลรวม</td><td><code>a + b</code></td><td><code>0</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ค่าที่คืนเมื่อโหนดไม่เกี่ยวต้องเป็นค่าที่รวมกับอะไรแล้วได้สิ่งนั้นกลับมาเหมือนเดิม เช่น บวก 0 ได้ค่าเดิม <code>min</code> กับ <code>INT_MAX</code> ได้ค่าเดิม งานผลรวมอย่างเดียวใช้ Fenwick tree ที่สั้นกว่าได้ segment tree เหมาะกับงานที่ Fenwick tree ทำไม่ได้ ต้นไม้ค่าสูงสุดยังเดินลงหา "ช่องแรกที่มีค่าอย่างน้อย x" ได้ใน O(log N) ด้วย โดยเลือกเดินลงฝั่งซ้ายเมื่อลูกซ้ายมีค่าถึง x คล้ายรอยต่อของ binary search ในหน้า 19.1 ลองทำในแบบฝึกหัด</p>
+
+      <div class="adm adm-note" role="note">
+        <p class="adm-title">lazy propagation</p>
+        <p>หน้านี้ปรับค่าได้ทีละช่อง ถ้าโจทย์ให้ปรับทั้งช่วง เช่น บวก 5 ให้ทุกช่องตั้งแต่ l ถึง r สลับกับถามค่าต่ำสุดของช่วง การปรับทีละช่องจะช้าเป็น O(N log N) ต่อครั้ง มีเทคนิคต่อยอดชื่อ lazy propagation ที่จดงานค้างไว้ที่โหนดแล้วค่อยส่งลงไปให้ลูกเมื่อจำเป็น ทำให้ปรับทั้งช่วงได้ใน O(log N) เทคนิคนี้อยู่นอกขอบเขตของเว็บนี้ ถ้าจะแข่ง TOI ต่อ ให้รู้ไว้ว่ามีอยู่และหาอ่านต่อได้</p>
+      </div>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วิธีตรงไปตรงมาคือปรับค่าในอาเรย์ตรงๆ แล้วไล่หาค่าต่ำสุดทุกครั้งที่ถาม ปรับเป็น O(1) แต่ถามเป็น O(N) รวม O(NQ) วัดบนเครื่องเดียวกับหน้า 18.2 แบบ <code>-O2</code> อุณหภูมิสุ่ม มี Q = N เหตุการณ์ ครึ่งหนึ่งปรับค่า อีกครึ่งถามช่วงสุ่ม รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>N = Q = 100000</th><th>N = Q = 200000</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ไล่หาค่าต่ำสุดทุกคำถาม O(NQ)</td><td>1.18 วินาที</td><td>4.48 วินาที</td></tr>
+            <tr><td>segment tree O(N + Q log N)</td><td>0.057 วินาที</td><td>0.097 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้อมูลเพิ่มสองเท่า วิธีไล่ช้าลงเกือบสี่เท่าตาม N × Q ส่วน segment tree ช้าลงไม่ถึงสองเท่า สังเกตว่าที่ N = Q = 200000 การไล่หาค่าต่ำสุดใช้ 4.48 วินาที แต่การไล่บวกในหน้า 30.2 ใช้ 1.61 วินาที ทั้งที่เป็น O(NQ) เหมือนกัน วิธีที่ดูเหมือนงานเท่ากันอาจใช้เวลาต่างกันหลายเท่า ต้องวัดจริงทุกครั้ง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="zero-identity">แบบที่ 1 โหนดที่ไม่เกี่ยวคืน 0</h3>
+
+      <p>ในโปรแกรม seg-min เขียนบรรทัดของโหนดที่ไม่เกี่ยวเป็น <code>return 0;</code> เพราะเคยชินกับผลรวม แล้วป้อนอุณหภูมิตอนกลางวันซึ่งเป็นบวกทั้งหมด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="zero-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;int&gt; temperature, tree;
+
+void build(int node, int left, int right)
+{
+    if (left == right) {
+        tree[node] = temperature[left];
+        return;
+    }
+    int mid = (left + right) / 2;
+    build(2 * node, left, mid);
+    build(2 * node + 1, mid + 1, right);
+    tree[node] = min(tree[2 * node], tree[2 * node + 1]);
+}
+
+void update(int node, int left, int right, int pos, int value)
+{
+    if (left == right) {
+        tree[node] = value;
+        return;
+    }
+    int mid = (left + right) / 2;
+    if (pos &lt;= mid) {
+        update(2 * node, left, mid, pos, value);
+    } else {
+        update(2 * node + 1, mid + 1, right, pos, value);
+    }
+    tree[node] = min(tree[2 * node], tree[2 * node + 1]);
+}
+
+int query(int node, int left, int right, int from, int to)
+{
+    if (to &lt; left || right &lt; from) {
+        return 0;
+    }
+    if (from &lt;= left &amp;&amp; right &lt;= to) {
+        return tree[node];
+    }
+    int mid = (left + right) / 2;
+    int left_min = query(2 * node, left, mid, from, to);
+    int right_min = query(2 * node + 1, mid + 1, right, from, to);
+    return min(left_min, right_min);
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int q;
+    cin &gt;&gt; n &gt;&gt; q;
+    temperature.assign(n + 1, 0);
+    tree.assign(4 * n, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; temperature[i];
+    }
+    build(1, 1, n);
+    for (int k = 0; k &lt; q; k++) {
+        int type, a, b;
+        cin &gt;&gt; type &gt;&gt; a &gt;&gt; b;
+        if (type == 1) {
+            update(1, 1, n, a, b);
+        } else {
+            cout &lt;&lt; "min " &lt;&lt; a &lt;&lt; ".." &lt;&lt; b &lt;&lt; " = " &lt;&lt; query(1, 1, n, a, b) &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="zero-bug" data-title="ข้อมูลเข้า"><pre><code>5 2
+30 25 28 35 32
+2 1 5
+2 2 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="zero-bug" data-title="C:\code\seg_min.exe"><pre><code>min 1..5 = 25
+min 2..4 = 0
+</code></pre></div>
+      </div>
+
+      <p>คำถามแรกถามทั้งแนว รากอยู่ในช่วงทั้งก้อน ไม่มีโหนดไหนไม่เกี่ยว จึงได้ 25 ถูกต้อง แต่คำถามที่สองมีโหนดที่ไม่เกี่ยวคืน 0 กลับขึ้นมา 0 น้อยกว่าทุกค่าจริง คำตอบจึงเป็น 0 ทั้งที่ไม่มีสถานีไหนวัดได้ 0 องศา โปรแกรม seg-min ที่ใช้ <code>INT_MAX</code> ตอบ 25 กับข้อมูลชุดเดียวกัน ถ้าทดสอบด้วยข้อมูลที่มีค่าติดลบจะไม่เห็นความผิดนี้ เพราะ 0 ไม่ใช่ค่าต่ำสุดอยู่แล้ว ต้องทดสอบด้วยข้อมูลที่เป็นบวกทั้งหมดด้วย</p>
+
+      <h3 id="forgot-parent">แบบที่ 2 ลืมคำนวณโหนดพ่อหลังปรับค่า</h3>
+
+      <p>ลบบรรทัด <code>tree[node] = min(tree[2 * node], tree[2 * node + 1]);</code> ท้ายฟังก์ชัน <code>update</code> ออก คิดว่าแก้ใบแล้วก็พอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="stale-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;int&gt; temperature, tree;
+
+void build(int node, int left, int right)
+{
+    if (left == right) {
+        tree[node] = temperature[left];
+        return;
+    }
+    int mid = (left + right) / 2;
+    build(2 * node, left, mid);
+    build(2 * node + 1, mid + 1, right);
+    tree[node] = min(tree[2 * node], tree[2 * node + 1]);
+}
+
+void update(int node, int left, int right, int pos, int value)
+{
+    if (left == right) {
+        tree[node] = value;
+        return;
+    }
+    int mid = (left + right) / 2;
+    if (pos &lt;= mid) {
+        update(2 * node, left, mid, pos, value);
+    } else {
+        update(2 * node + 1, mid + 1, right, pos, value);
+    }
+}
+
+int query(int node, int left, int right, int from, int to)
+{
+    if (to &lt; left || right &lt; from) {
+        return INT_MAX;
+    }
+    if (from &lt;= left &amp;&amp; right &lt;= to) {
+        return tree[node];
+    }
+    int mid = (left + right) / 2;
+    int left_min = query(2 * node, left, mid, from, to);
+    int right_min = query(2 * node + 1, mid + 1, right, from, to);
+    return min(left_min, right_min);
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int q;
+    cin &gt;&gt; n &gt;&gt; q;
+    temperature.assign(n + 1, 0);
+    tree.assign(4 * n, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; temperature[i];
+    }
+    build(1, 1, n);
+    for (int k = 0; k &lt; q; k++) {
+        int type, a, b;
+        cin &gt;&gt; type &gt;&gt; a &gt;&gt; b;
+        if (type == 1) {
+            update(1, 1, n, a, b);
+        } else {
+            cout &lt;&lt; "min " &lt;&lt; a &lt;&lt; ".." &lt;&lt; b &lt;&lt; " = " &lt;&lt; query(1, 1, n, a, b) &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="stale-bug" data-title="ข้อมูลเข้า"><pre><code>8 6
+5 3 8 6 1 9 4 7
+2 2 6
+2 6 8
+1 5 10
+2 2 6
+1 3 2
+2 1 8
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="stale-bug" data-title="C:\code\seg_min.exe"><pre><code>min 2..6 = 1
+min 6..8 = 4
+min 2..6 = 1
+min 1..8 = 1
+</code></pre></div>
+      </div>
+
+      <p>สองคำถามแรกยังไม่มีการปรับค่า จึงตรงกับโปรแกรม seg-min ทุกบรรทัด แต่หลังจากสถานี 5 เปลี่ยนเป็น 10 องศา คำถามที่สามยังได้ 1 ซึ่งเป็นค่าเก่า เพราะโหนด 6 ยังจำค่าต่ำสุดเดิมไว้ และคำถามสุดท้ายควรได้ 2 แต่ได้ 1 จากโหนด 1 ที่ไม่เคยถูกคำนวณใหม่ ใบถูกแก้แล้วแต่ไม่มีใครอ่านใบโดยตรง เพราะคำถามหยุดที่โหนดบนๆ ที่อยู่ในช่วงทั้งก้อน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>โหนด k ดูแลช่วงหนึ่ง ลูกคือ 2k กับ 2k + 1 แบ่งช่วงที่จุดกลาง เก็บคำตอบของช่วงนั้น จองอาเรย์ 4N ช่อง</li>
+        <li>ถามช่วงแยกสามกรณี ไม่เกี่ยวคืนค่ากลาง อยู่ทั้งก้อนคืนค่าที่เก็บไว้ ซ้อนบางส่วนถามลูกทั้งสอง เดินไม่เกินราวสี่โหนดต่อชั้น เป็น O(log N)</li>
+        <li>ปรับค่าเดินลงไปแก้ใบ แล้วคำนวณทุกโหนดบนทางกลับขึ้นใหม่ O(log N)</li>
+        <li>เปลี่ยนวิธีรวมกับค่ากลางได้ต้นไม้ค่าต่ำสุด ค่าสูงสุด หรือผลรวม ค่ากลางต้องรวมแล้วไม่เปลี่ยนคำตอบ</li>
+        <li>ปรับค่าทั้งช่วงต้องใช้ lazy propagation ซึ่งอยู่นอกขอบเขตของเว็บนี้</li>
+      </ul>
+    </article>

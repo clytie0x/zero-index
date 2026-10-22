@@ -1,0 +1,462 @@
+<article class="doc">
+      <h1>30.1 topological sort และ DP บน DAG</h1>
+
+      <p>งานหลายอย่างมีลำดับบังคับ ต้องร่อนแป้งก่อนผสม ต้องเรียนวิชาพื้นฐานก่อนวิชาต่อยอด ต้องติดตั้งโปรแกรมที่ถูกพึ่งพาก่อนโปรแกรมที่พึ่งมัน ถ้าเขียนงานเป็นจุด และเขียนลูกศร a → b แทนเงื่อนไข "a ต้องมาก่อน b" ก็ได้กราฟมีทิศทางแบบบทที่ 27 หน้านี้เรียงจุดทั้งหมดให้ทุกลูกศรชี้ไปข้างหน้า เรียกว่า <strong>topological sort</strong> ทำได้สองวิธี คือหยิบจุดที่ไม่ต้องรอใครออกทีละจุด กับใช้ DFS แล้วต่อยอดเป็น DP บนกราฟ ซึ่งหาเส้นทางที่ยาวที่สุดได้ในเวลาเชิงเส้น</p>
+
+      <h2 id="dag">กราฟไม่มีวงและลำดับ topological</h2>
+
+      <p>ภาพนี้คือหัวข้อในเว็บนี้หกหัวข้อ ลูกศร a → b แปลว่าต้องเรียน a ก่อน b เช่น ต้องรู้เรื่องอาเรย์ก่อนเรียน sort และต้องรู้ทั้งอาเรย์และ recursion ก่อนเรียน DP</p>
+
+      <figure>
+        <svg viewBox="0 0 500 250" width="500" style="max-width:100%;height:auto" role="img" aria-label="กราฟมีทิศทางหกจุด ลูกศรจาก 1 ไป 4 จาก 4 ไป 5 จาก 2 ไป 3 จาก 3 ไป 6 และจาก 1 ไป 6">
+          <defs>
+            <marker id="topo-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="stroke:var(--brand);stroke-width:2;fill:none">
+            <line x1="92.0" y1="60.0" x2="226.0" y2="60.0" marker-end="url(#topo-arrow)"/>
+            <line x1="272.0" y1="60.0" x2="406.0" y2="60.0" marker-end="url(#topo-arrow)"/>
+            <line x1="92.0" y1="190.0" x2="226.0" y2="190.0" marker-end="url(#topo-arrow)"/>
+            <line x1="272.0" y1="190.0" x2="406.0" y2="190.0" marker-end="url(#topo-arrow)"/>
+            <line x1="90.7" y1="67.5" x2="407.4" y2="181.8" marker-end="url(#topo-arrow)"/>
+          </g>
+          <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+            <circle cx="70" cy="60" r="22"/>
+            <circle cx="70" cy="190" r="22"/>
+            <circle cx="250" cy="190" r="22"/>
+            <circle cx="250" cy="60" r="22"/>
+            <circle cx="430" cy="60" r="22"/>
+            <circle cx="430" cy="190" r="22"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:17px;fill:var(--ink)" text-anchor="middle">
+            <text x="70" y="66">1</text>
+            <text x="70" y="196">2</text>
+            <text x="250" y="196">3</text>
+            <text x="250" y="66">4</text>
+            <text x="430" y="66">5</text>
+            <text x="430" y="196">6</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--muted)" text-anchor="middle">
+            <text x="70" y="102">อาเรย์</text>
+            <text x="70" y="232">ฟังก์ชัน</text>
+            <text x="250" y="232">recursion</text>
+            <text x="250" y="102">sort</text>
+            <text x="430" y="102">binary search</text>
+            <text x="430" y="232">DP</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p><strong>ลำดับ topological (topological order)</strong> คือการเรียงทุกจุดเป็นแถวเดียว ให้ทุกลูกศร a → b มี a อยู่ก่อน b ในแถว เช่น <code>1 2 4 3 5 6</code> ใช้ได้ <code>2 3 1 6 4 5</code> ก็ใช้ได้ ลำดับจึงไม่จำเป็นต้องมีแบบเดียว ถ้าโจทย์ต้องการคำตอบเดียว จะบอกกติกาเพิ่ม เช่น ให้เลือกจุดเลขน้อยก่อน</p>
+
+      <p>ลำดับแบบนี้มีได้ก็ต่อเมื่อกราฟ <strong>ไม่มีวง</strong> ถ้ามีวง a → b → c → a จะต้องให้ a มาก่อน b ก่อน c แล้วก่อน a อีกที ซึ่งเป็นไปไม่ได้ กราฟมีทิศทางที่ไม่มีวงเรียกว่า <strong>DAG</strong> ย่อมาจาก directed acyclic graph โจทย์ส่วนใหญ่รับประกันว่าไม่มีวง แต่บางโจทย์ให้ตรวจเองว่ามีวงไหม ซึ่งทั้งสองวิธีในหน้านี้ตรวจได้ไปพร้อมกัน</p>
+
+      <h2 id="kahn">Kahn หยิบจุดที่ไม่ต้องรอใคร</h2>
+
+      <p>จุดที่ไม่มีลูกศรชี้เข้าเลยไม่ต้องรอใคร วางไว้หน้าแถวได้ทันที ในภาพคือ 1 กับ 2 พอวาง 1 แล้ว ลูกศรที่ออกจาก 1 ก็หมดความหมาย ลบทิ้งได้ จุด 4 จึงไม่ต้องรอใครอีก ทำแบบนี้ซ้ำไปเรื่อยๆ จำนวนลูกศรที่ชี้เข้าจุดหนึ่งเรียกว่า <strong>in-degree</strong> วิธีนี้ชื่อ Kahn's algorithm เก็บจุดที่ in-degree เป็น 0 ไว้ใน queue แบบเดียวกับ BFS ในบทที่ 27</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="kahn"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;int&gt;&gt; graph(n + 1);
+    vector&lt;int&gt; indegree(n + 1, 0); // (1)!
+    for (int i = 0; i &lt; m; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+        graph[a].push_back(b);
+        indegree[b]++;
+    }
+    queue&lt;int&gt; ready;
+    for (int v = 1; v &lt;= n; v++) {
+        if (indegree[v] == 0) {
+            ready.push(v);
+        }
+    }
+    vector&lt;int&gt; order;
+    while (!ready.empty()) {
+        int v = ready.front();
+        ready.pop();
+        order.push_back(v);
+        cout &lt;&lt; "take " &lt;&lt; v &lt;&lt; ":";
+        for (int next : graph[v]) {
+            indegree[next]--; // (2)!
+            if (indegree[next] == 0) {
+                ready.push(next);
+                cout &lt;&lt; " " &lt;&lt; next &lt;&lt; " is ready";
+            }
+        }
+        cout &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "order:";
+    for (int v : order) {
+        cout &lt;&lt; " " &lt;&lt; v;
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>indegree[v]</code> นับว่ายังมีลูกศรชี้เข้า v อีกกี่เส้น คือ v ยังต้องรออีกกี่จุด นับตอนอ่านลูกศร</li>
+        <li>วาง <code>v</code> แล้ว ลบลูกศร v → next ด้วยการลดตัวนับ ไม่ต้องลบออกจาก vector จริง พอตัวนับเหลือ 0 แปลว่า next ไม่ต้องรอใครแล้ว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="kahn" data-title="ข้อมูลเข้า"><pre><code>6 5
+1 4
+4 5
+2 3
+3 6
+1 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="kahn" data-title="C:\code\kahn.exe"><pre><code>take 1: 4 is ready
+take 2: 3 is ready
+take 4: 5 is ready
+take 3: 6 is ready
+take 5:
+take 6:
+order: 1 2 4 3 5 6
+</code></pre></div>
+      </div>
+
+      <p>ตอนเริ่ม queue มี 1 กับ 2 หยิบ 1 ออกมาแล้วลดตัวนับของ 4 กับ 6 จุด 4 เหลือ 0 จึงเข้า queue ส่วน 6 ยังรอ 3 อยู่ หยิบ 2 ทำให้ 3 พร้อม หยิบ 4 ทำให้ 5 พร้อม หยิบ 3 ทำให้ 6 พร้อม ได้ลำดับ <code>1 2 4 3 5 6</code> ตรวจกับภาพได้ว่าทุกลูกศรชี้ไปทางขวาของแถว</p>
+
+      <p>แต่ละจุดเข้าและออกจาก queue ครั้งเดียว แต่ละลูกศรถูกลดตัวนับครั้งเดียว ทั้งหมดจึงเป็น O(N + M) เมื่อ N คือจำนวนจุด และ M คือจำนวนลูกศร เท่ากับการอ่านข้อมูลเข้า ถ้าโจทย์ให้เลือกจุดเลขน้อยที่สุดก่อนเมื่อมีหลายจุดพร้อมกัน ให้เปลี่ยน <code>queue</code> เป็น <code>priority_queue</code> แบบน้อยสุดก่อนในหน้า 20.5 เวลาจะเป็น O(N log N + M)</p>
+
+      <h2 id="cycle">ตรวจว่ามีวง</h2>
+
+      <p>ถ้ากราฟมีวง จุดในวงจะรอกันเองตลอด ตัวนับของมันไม่มีวันลดถึง 0 จึงไม่เคยเข้า queue ลำดับที่ได้จะมีไม่ครบ N จุด ตรวจแค่นี้ก็รู้ว่ามีวง ลองเพิ่มลูกศร 6 → 2 เข้าไป ทำให้เกิดวง 2 → 3 → 6 → 2</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="cycle-check"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;int&gt;&gt; graph(n + 1);
+    vector&lt;int&gt; indegree(n + 1, 0);
+    for (int i = 0; i &lt; m; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+        graph[a].push_back(b);
+        indegree[b]++;
+    }
+    queue&lt;int&gt; ready;
+    for (int v = 1; v &lt;= n; v++) {
+        if (indegree[v] == 0) {
+            ready.push(v);
+        }
+    }
+    vector&lt;int&gt; order;
+    while (!ready.empty()) {
+        int v = ready.front();
+        ready.pop();
+        order.push_back(v);
+        for (int next : graph[v]) {
+            indegree[next]--;
+            if (indegree[next] == 0) {
+                ready.push(next);
+            }
+        }
+    }
+    if ((int)order.size() &lt; n) {
+        cout &lt;&lt; "impossible, only " &lt;&lt; order.size() &lt;&lt; " of " &lt;&lt; n &lt;&lt; " placed\n";
+        cout &lt;&lt; "stuck:";
+        for (int v = 1; v &lt;= n; v++) {
+            if (indegree[v] &gt; 0) {
+                cout &lt;&lt; " " &lt;&lt; v;
+            }
+        }
+        cout &lt;&lt; '\n';
+        return 0;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; order[i] &lt;&lt; (i + 1 == n ? '\n' : ' ');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="cycle-check" data-title="ข้อมูลเข้า"><pre><code>6 6
+1 4
+4 5
+2 3
+3 6
+1 6
+6 2
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="cycle-check" data-title="C:\code\cycle_check.exe"><pre><code>impossible, only 3 of 6 placed
+stuck: 2 3 6
+</code></pre></div>
+      </div>
+
+      <p>จุดที่ตัวนับยังไม่เป็น 0 คือจุดที่ติด ซึ่งมีทั้งจุดในวง และจุดที่ต้องรอจุดในวงอีกต่อหนึ่ง ตัวอย่างนี้บังเอิญมีแต่จุดในวง ถ้ามีลูกศร 6 → 7 เพิ่ม 7 ก็จะติดด้วยทั้งที่ไม่ได้อยู่ในวง</p>
+
+      <p>ถ้าลืมเทียบขนาดกับ N โปรแกรม kahn ด้านบนที่รับข้อมูลเข้าชุดนี้ จะพิมพ์ <code>order: 1 4 5</code> ออกมาเฉยๆ ดูเหมือนคำตอบปกติ ทั้งที่ขาดไปครึ่งหนึ่ง</p>
+
+      <h2 id="dfs">topological sort ด้วย DFS</h2>
+
+      <p>อีกวิธีใช้ DFS จากบทที่ 27 สังเกตว่าตอนที่ DFS <strong>ออกจาก</strong> จุด v ทุกจุดที่เดินต่อจาก v ได้ถูกออกไปก่อนแล้ว ถ้าจดจุดตามลำดับที่ออก แล้วกลับลำดับ v จะอยู่ก่อนทุกจุดที่ v ชี้ไปถึง ซึ่งคือลำดับ topological พอดี</p>
+
+      <p>DFS ตรวจวงได้ด้วย ถ้าแต่ละจุดมีสามสถานะ ได้แก่ ยังไม่ไป กำลังเดินอยู่ในเส้นทางปัจจุบัน และออกไปแล้ว ลูกศรที่ชี้กลับไปหาจุดที่ <strong>กำลังเดินอยู่</strong> แปลว่าวนกลับมาหาจุดที่ยังไม่ได้ออก นั่นคือวง ส่วนลูกศรที่ชี้ไปจุดที่ออกไปแล้วไม่เป็นไร เช่นลูกศร 3 → 6 ในตัวอย่างข้างล่าง ตอนที่เดินมาถึง 3 จุด 6 ออกไปแล้วตั้งแต่รอบที่เดินจาก 1 ไม่ได้วนกลับ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="dfs-topo"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;vector&lt;int&gt;&gt; graph;
+vector&lt;int&gt; state; // (1)!
+vector&lt;int&gt; finished;
+bool has_cycle = false;
+
+void visit(int v)
+{
+    state[v] = 1;
+    for (int next : graph[v]) {
+        if (state[next] == 1) { // (2)!
+            has_cycle = true;
+        } else if (state[next] == 0) {
+            visit(next);
+        }
+    }
+    state[v] = 2;
+    finished.push_back(v); // (3)!
+}
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    graph.assign(n + 1, vector&lt;int&gt;());
+    state.assign(n + 1, 0);
+    for (int i = 0; i &lt; m; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+        graph[a].push_back(b);
+    }
+    for (int v = 1; v &lt;= n; v++) {
+        if (state[v] == 0) {
+            visit(v);
+        }
+    }
+    if (has_cycle) {
+        cout &lt;&lt; "cycle found\n";
+        return 0;
+    }
+    cout &lt;&lt; "finished:";
+    for (int v : finished) {
+        cout &lt;&lt; " " &lt;&lt; v;
+    }
+    cout &lt;&lt; '\n';
+    reverse(finished.begin(), finished.end());
+    cout &lt;&lt; "order:";
+    for (int v : finished) {
+        cout &lt;&lt; " " &lt;&lt; v;
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>0 คือยังไม่ไป 1 คือกำลังเดินอยู่ในเส้นทางปัจจุบัน ยังไม่ได้ออก 2 คือออกไปแล้ว</li>
+        <li>ชี้กลับไปหาจุดที่ยังไม่ได้ออก แปลว่ามีทางเดินจาก next มาถึง v แล้วยังมีลูกศร v → next อีก จึงเป็นวง</li>
+        <li>จดตอนออก ทุกจุดที่เดินต่อจาก v ได้ถูกจดไปก่อนหน้านี้แล้ว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="dfs-topo" data-title="ข้อมูลเข้า"><pre><code>6 5
+1 4
+4 5
+2 3
+3 6
+1 6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="dfs-topo" data-title="C:\code\dfs_topo.exe"><pre><code>finished: 5 4 6 1 3 2
+order: 2 3 1 6 4 5
+</code></pre></div>
+      </div>
+
+      <p>DFS เริ่มที่ 1 เดินไป 4 แล้ว 5 จุด 5 ไม่มีทางไปต่อ จึงออกเป็นจุดแรก ตามด้วย 4 จากนั้นกลับมาที่ 1 แล้วไป 6 ออก 6 แล้วออก 1 รอบต่อมาเริ่มที่ 2 ไป 3 ลูกศร 3 → 6 ชี้ไปจุดที่ออกแล้ว จึงไม่ต้องไปซ้ำ ออก 3 แล้วออก 2 กลับลำดับได้ <code>2 3 1 6 4 5</code> ต่างจากของ Kahn แต่ถูกต้องเหมือนกัน เวลาก็เป็น O(N + M) เพราะเยี่ยมทุกจุดและทุกลูกศรครั้งเดียว</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">DFS ลึกเท่าทางที่ยาวที่สุด</p>
+        <p>ฟังก์ชัน <code>visit</code> เรียกตัวเองลึกเท่ากับทางเดินที่ยาวที่สุดในกราฟ หน้า 26.3 วัดไว้ว่า recursion ลึกราวสองหมื่นหกพันชั้นก็เริ่มพังบนเครื่องน้องแล้ว กราฟที่เป็นสายตรงแสนจุดทำให้โปรแกรมนี้พังแน่นอน ดูได้ในส่วนลองทำให้พัง ถ้าโจทย์มีจุดเป็นแสน ใช้ Kahn ซึ่งไม่มี recursion เลยจะปลอดภัยกว่า</p>
+      </div>
+
+      <h2 id="dp-on-dag">DP บน DAG</h2>
+
+      <p>ประโยชน์ใหญ่ของลำดับ topological คือ ถ้าคำนวณจุดตามลำดับนี้ ตอนที่มาถึงจุด v ทุกจุดที่มีลูกศรชี้เข้า v ได้คำนวณเสร็จไปแล้ว ซึ่งเป็นเงื่อนไขของ DP ในบทที่ 24 พอดี สถานะคือจุด และค่าของจุดได้จากจุดที่ชี้เข้ามา</p>
+
+      <p>สวนจักรยานบนเขามีจุดพัก N จุด ทางจักรยานแต่ละเส้นวิ่งจากจุดพักหนึ่งลงไปอีกจุดพักหนึ่ง และมีคะแนนความสนุกของทางเส้นนั้น ทุกเส้นลงเขาอย่างเดียว จึงไม่มีทางวนกลับมาที่เดิม กราฟเป็น DAG แน่นอน อยากรู้ว่าปั่นต่อกันได้คะแนนรวมมากที่สุดเท่าไร เริ่มและจบที่จุดไหนก็ได้</p>
+
+      <p>ให้ <code>best[v]</code> คือคะแนนรวมมากที่สุดของเส้นทางที่จบที่ v ทางที่จบที่ v ต้องมาจากจุด u สักจุดที่มีทาง u → v ได้ <code>best[v]</code> เป็นค่ามากสุดของ <code>best[u] + fun</code> ของทุกทางที่เข้า v หรือเป็น 0 ถ้าเริ่มที่ v เลย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="downhill"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; graph(n + 1);
+    vector&lt;int&gt; indegree(n + 1, 0);
+    for (int i = 0; i &lt; m; i++) {
+        int a, b, fun;
+        cin &gt;&gt; a &gt;&gt; b &gt;&gt; fun;
+        graph[a].push_back({b, fun});
+        indegree[b]++;
+    }
+    queue&lt;int&gt; ready;
+    for (int v = 1; v &lt;= n; v++) {
+        if (indegree[v] == 0) {
+            ready.push(v);
+        }
+    }
+    vector&lt;long long&gt; best(n + 1, 0); // (1)!
+    vector&lt;int&gt; came_from(n + 1, 0);
+    while (!ready.empty()) {
+        int v = ready.front();
+        ready.pop();
+        for (auto [next, fun] : graph[v]) {
+            if (best[v] + fun &gt; best[next]) { // (2)!
+                best[next] = best[v] + fun;
+                came_from[next] = v;
+            }
+            indegree[next]--;
+            if (indegree[next] == 0) {
+                ready.push(next);
+            }
+        }
+    }
+    int end = 1;
+    for (int v = 2; v &lt;= n; v++) {
+        if (best[v] &gt; best[end]) {
+            end = v;
+        }
+    }
+    vector&lt;int&gt; path;
+    for (int v = end; v != 0; v = came_from[v]) { // (3)!
+        path.push_back(v);
+    }
+    reverse(path.begin(), path.end());
+    cout &lt;&lt; "best fun = " &lt;&lt; best[end] &lt;&lt; '\n';
+    cout &lt;&lt; "route:";
+    for (int v : path) {
+        cout &lt;&lt; " " &lt;&lt; v;
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เริ่มที่ 0 ทุกจุด เพราะเริ่มปั่นที่จุดไหนก็ได้ เส้นทางที่ยังไม่ได้ปั่นเลยได้ 0 คะแนน</li>
+        <li>ตอนที่ v ออกจาก queue ทุกทางที่เข้า v ถูกพิจารณาครบแล้ว <code>best[v]</code> จึงเป็นค่าสุดท้าย ส่งต่อให้จุดถัดไปได้ จด <code>came_from</code> ไว้ย้อนดูเส้นทาง</li>
+        <li>เดินย้อนจากจุดจบตาม <code>came_from</code> จนถึงจุดเริ่ม ซึ่งไม่มีใครส่งมาให้ ค่าจึงเป็น 0 ที่ตั้งไว้ตอนแรก แล้วกลับลำดับ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="downhill" data-title="ข้อมูลเข้า"><pre><code>7 9
+1 2 4
+1 3 2
+2 4 3
+3 4 6
+2 5 9
+4 6 5
+5 6 1
+6 7 2
+3 7 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="downhill" data-title="C:\code\downhill.exe"><pre><code>best fun = 16
+route: 1 2 5 6 7
+</code></pre></div>
+      </div>
+
+      <p>เส้นทาง 1 → 2 → 5 → 6 → 7 ได้ 4 + 9 + 1 + 2 = 16 เส้นทางอื่นที่น่าสนใจอย่าง 1 → 3 → 4 → 6 → 7 ได้ 15 ทั้งหมดเป็น O(N + M) ถ้าเป็นกราฟทั่วไปที่มีวงได้ การหาเส้นทางที่ยาวที่สุดที่ไม่เดินซ้ำจุดเป็นปัญหาที่ยากมาก ต้องลองแบบบทที่ 21 แต่บน DAG ไม่มีทางเดินซ้ำจุดได้อยู่แล้ว DP จึงทำได้ทันที</p>
+
+      <p>ใช้แบบเดียวกันได้อีกหลายอย่าง เปลี่ยน <code>max</code> เป็น <code>min</code> ได้ทางที่สั้นที่สุด ซึ่งใช้ได้แม้น้ำหนักติดลบ ต่างจาก Dijkstra ในบทที่ 28 หรือเปลี่ยนเป็นบวกสะสม <code>ways[next] += ways[v]</code> ก็นับได้ว่ามีกี่เส้นทางจากจุดเริ่มถึงแต่ละจุด</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วิธีที่คนส่วนใหญ่คิดออกก่อนคือ ทุกรอบไล่ดูจุด 1 ถึง N หาจุดที่ยังไม่ได้วางและไม่ต้องรอใคร วางจุดนั้นแล้วลดตัวนับของจุดที่มันชี้ไป ทำ N รอบ แต่ละรอบไล่ได้ถึง N จุด เป็น O(N<sup>2</sup> + M) ส่วน Kahn เป็น O(N + M) วัดบนเครื่องเดียวกับหน้า 18.2 แบบ <code>-O2</code> N = 100000 จุด รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง ทั้งสองแบบอ่านข้อมูลเร็วแบบหน้า 15.3 และไม่พิมพ์ทีละจุด</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>กราฟ</th><th>ไล่หาทีละรอบ O(N<sup>2</sup> + M)</th><th>Kahn O(N + M)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>สายตรง 100000 → 99999 → ... → 1</td><td>2.07 วินาที</td><td>0.035 วินาที</td></tr>
+            <tr><td>สุ่ม ลูกศร 200000 เส้น ไม่มีวง</td><td>6.25 วินาที</td><td>0.078 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>สายตรงที่ลูกศรชี้จากเลขมากไปเลขน้อยทำให้จุดที่พร้อมเป็นจุดเลขมากที่สุดที่ยังไม่ได้วางเสมอ ทุกรอบจึงต้องไล่ผ่านทุกจุดที่ยังไม่ได้วาง รวมราว N<sup>2</sup>/2 ครั้ง กราฟสุ่มก็ช้าระดับวินาทีเหมือนกัน ส่วน Kahn ใช้เวลาเกือบทั้งหมดไปกับการอ่านข้อมูล</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="number-order">แบบที่ 1 ทำ DP ตามเลขจุดแทนลำดับ topological</h3>
+
+      <p>เห็นว่าข้อมูลตัวอย่างของ downhill ทุกทางวิ่งจากเลขน้อยไปเลขมาก จึงตัด queue ทิ้ง แล้ววน v ตั้งแต่ 1 ถึง N ตรงๆ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="downhill-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; graph(n + 1);
+    for (int i = 0; i &lt; m; i++) {
+        int a, b, fun;
+        cin &gt;&gt; a &gt;&gt; b &gt;&gt; fun;
+        graph[a].push_back({b, fun});
+    }
+    vector&lt;long long&gt; best(n + 1, 0);
+    for (int v = 1; v &lt;= n; v++) {
+        for (auto [next, fun] : graph[v]) {
+            best[next] = max(best[next], best[v] + fun);
+        }
+    }
+    cout &lt;&lt; "best fun = " &lt;&lt; *max_element(best.begin(), best.end()) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="downhill-bug" data-title="ข้อมูลเข้า"><pre><code>5 4
+5 4 3
+4 1 6
+1 3 2
+2 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="downhill-bug" data-title="C:\code\downhill.exe"><pre><code>best fun = 10
+</code></pre></div>
+      </div>
+
+      <p>ข้อมูลชุดนี้ไม่ได้ตั้งเลขจุดตามความสูง เส้นทางที่ดีที่สุดคือ 2 → 5 → 4 → 1 → 3 ได้ 7 + 3 + 6 + 2 = 18 โปรแกรม downhill ที่ใช้ Kahn ตอบ 18 กับข้อมูลชุดนี้ แต่โปรแกรมนี้ได้ 10 ตอนที่วนถึงจุด 1 ค่าของจุด 4 ยังเป็น 0 เพราะจุด 4 รับค่ามาจาก 5 ซึ่งยังวนไม่ถึง ค่าที่ส่งต่อจากจุด 1 จึงขาดส่วนหน้าไป ไม่มี error ไม่มีคำเตือน และผ่านทุกชุดที่บังเอิญเรียงเลขมาให้ ห้ามเดาว่าเลขจุดเรียงตามลำดับ ถ้าโจทย์ไม่ได้รับประกัน</p>
+
+      <h3 id="deep-dfs">แบบที่ 2 DFS บนสายตรงแสนจุด</h3>
+
+      <p>ป้อนสายตรง 1 → 2 → ... → 100000 ให้โปรแกรม dfs-topo รันจาก PowerShell 5 ครั้ง ทั้งแบบ Code::Blocks และแบบ <code>-O2</code> ไม่พิมพ์อะไรออกมาเลยทุกครั้ง และได้</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741571 (0xC00000FD)
+</code></pre></div>
+
+      <p>เป็นรหัส stack overflow แบบเดียวกับหน้า 26.3 ส่วนสายตรง 20000 จุดยังผ่านทุกครั้งทั้งสองแบบ ข้อมูลชุดเดียวกันนี้ Kahn แบบที่ใช้วัดเวลาในหัวข้อก่อนหน้าทำเสร็จใน 0.03 วินาที ถ้าจะใช้ DFS กับกราฟใหญ่ ต้องเปลี่ยนเป็น stack ที่เขียนเองแบบหน้า 26.3</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ลำดับ topological คือเรียงจุดให้ทุกลูกศรชี้ไปข้างหน้า มีได้เมื่อกราฟเป็น DAG และมีได้หลายแบบ</li>
+        <li>Kahn นับ in-degree หยิบจุดที่เป็น 0 ด้วย queue แล้วลดตัวนับของจุดที่ชี้ไป O(N + M) ถ้าวางได้ไม่ครบ N จุดแปลว่ามีวง</li>
+        <li>DFS จดจุดตอนออกแล้วกลับลำดับ ตรวจวงด้วยลูกศรที่ชี้กลับไปหาจุดที่กำลังเดินอยู่ แต่ระวัง recursion ลึกเกิน</li>
+        <li>คำนวณ DP ตามลำดับ topological ได้เส้นทางยาวสุด สั้นสุด หรือจำนวนเส้นทางบน DAG ใน O(N + M)</li>
+        <li>อย่าทำ DP ตามเลขจุดถ้าโจทย์ไม่ได้รับประกันว่าลูกศรชี้จากเลขน้อยไปเลขมาก</li>
+      </ul>
+    </article>

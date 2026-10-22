@@ -423,4 +423,11 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "30"
 title = "บทที่ 30 หัวข้อเสริม"
 summary = "topological sort Fenwick tree segment tree และค้นหาข้อความ"
-# dir = "algo/30-extras"
+path = "algo/30-extras/index.html"
+pages = [
+  { num = "30.1", title = "topological sort และ DP บน DAG", path = "algo/30-extras/topological-sort.html" },
+  { num = "30.2", title = "Fenwick tree", path = "algo/30-extras/fenwick-tree.html" },
+  { num = "30.3", title = "segment tree", path = "algo/30-extras/segment-tree.html" },
+  { num = "30.4", title = "ค้นหาข้อความด้วย prefix function", path = "algo/30-extras/prefix-function.html" },
+  { num = "30.5", title = "แบบฝึกหัด", path = "algo/30-extras/exercises.html", exercises = "algo/30-extras" },
+]
