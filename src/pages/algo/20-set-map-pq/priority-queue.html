@@ -1,0 +1,469 @@
+<article class="doc">
+      <h1>20.5 priority_queue</h1>
+
+      <p>ห้องฉุกเฉินไม่ได้รักษาตามลำดับที่มาถึง แต่รักษาคนที่อาการหนักที่สุดก่อน คนไข้ใหม่เข้ามาตลอดเวลา และทุกครั้งที่หมอว่างต้องรู้ทันทีว่าใครหนักที่สุดในตอนนั้น งานแบบ "เพิ่มของเข้าไปเรื่อยๆ แล้วหยิบตัวที่มากที่สุดออก" เจอบ่อยมากในโจทย์ เช่น จำลองเหตุการณ์ตามเวลา รวมข้อมูลหลายแถว หรือหาเส้นทางสั้นสุดในบทที่ 28 <code>priority_queue</code> (คิวตามลำดับความสำคัญ) ทำงานนี้อย่างเดียว และทำได้เร็วมาก</p>
+
+      <h2 id="basics">หยิบค่ามากสุดก่อน</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="er"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    priority_queue&lt;int&gt; patients;
+    patients.push(3);
+    patients.push(9);
+    patients.push(5);
+    patients.push(9);
+    patients.push(1);
+    cout &lt;&lt; "waiting " &lt;&lt; patients.size() &lt;&lt; '\n';
+    while (!patients.empty()) {
+        cout &lt;&lt; patients.top() &lt;&lt; ' ';
+        patients.pop();
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="er" data-title="C:\code\er.exe"><pre><code>waiting 5
+9 9 5 3 1
+</code></pre></div>
+
+      <ul>
+        <li><code>push(x)</code> ใส่ค่าเข้าไป ค่าซ้ำได้</li>
+        <li><code>top()</code> ดูค่าที่มากที่สุดโดยไม่เอาออก</li>
+        <li><code>pop()</code> เอาค่าที่มากที่สุดออก ไม่คืนค่าอะไรกลับมา จึงต้อง <code>top()</code> ก่อนแล้วค่อย <code>pop()</code> เสมอ</li>
+        <li><code>size()</code> กับ <code>empty()</code> เหมือน container อื่น</li>
+      </ul>
+
+      <p>ชื่อมีคำว่า queue และใช้ <code>push</code> <code>pop</code> เหมือน queue ในบทที่ 17 แต่ตัวที่ออกไม่ใช่ตัวที่เข้ามาก่อน เป็นตัวที่มากที่สุด สิ่งที่ priority_queue <strong>ทำไม่ได้</strong>คือ ดูตัวอื่นนอกจากตัวบนสุด วนดูทุกตัว ค้นหาค่า หรือลบค่าที่อยู่ตรงกลาง ถ้าต้องการสิ่งเหล่านี้ให้ใช้ multiset แทน</p>
+
+      <h2 id="min-heap">หยิบค่าน้อยสุดก่อน</h2>
+
+      <p>ค่าเริ่มต้นคือมากสุดก่อน ถ้าอยากได้น้อยสุดก่อน ต้องบอกสามอย่างในวงเล็บมุม ชนิดของค่า ที่เก็บข้างใน (ใช้ <code>vector</code> เสมอ) และวิธีเปรียบเทียบ <code>greater&lt;int&gt;</code> ซึ่งกลับลำดับให้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="laps"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; lap_times;
+    lap_times.push(58);
+    lap_times.push(52);
+    lap_times.push(61);
+    lap_times.push(49);
+    while (!lap_times.empty()) {
+        cout &lt;&lt; lap_times.top() &lt;&lt; ' ';
+        lap_times.pop();
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="laps" data-title="C:\code\laps.exe"><pre><code>49 52 58 61
+</code></pre></div>
+
+      <p>อีกวิธีที่เห็นบ่อยในโค้ดของคนอื่นคือใส่ค่าติดลบเข้าไปใน priority_queue ปกติ <code>push(-x)</code> แล้วตอนดึงออกก็กลับเครื่องหมาย <code>-top()</code> ค่าที่น้อยที่สุดจะกลายเป็นค่าติดลบที่มากที่สุด ใช้ได้กับตัวเลข แต่อ่านยากกว่าและลืมกลับเครื่องหมายได้ง่าย เอกสารนี้ใช้ <code>greater</code></p>
+
+      <h2 id="pairs">เก็บ pair</h2>
+
+      <p>บ่อยครั้งที่ต้องเก็บมากกว่าตัวเลขตัวเดียว เช่น ระดับความหนักของอาการคู่กับหมายเลขบัตรคิว priority_queue ของ <code>pair</code> เทียบ <code>first</code> ก่อน ถ้าเท่ากันค่อยเทียบ <code>second</code> เหมือน <code>sort</code> ของ pair ในบทที่ 16 กติกาของห้องฉุกเฉินคือ หนักกว่าได้ก่อน ถ้าหนักเท่ากัน คนที่มาก่อน (บัตรคิวเลขน้อย) ได้ก่อน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="triage"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int q;
+    cin &gt;&gt; q;
+    priority_queue&lt;pair&lt;int, int&gt;&gt; waiting;
+    int next_ticket = 1;
+    for (int i = 0; i &lt; q; i++) {
+        char op;
+        cin &gt;&gt; op;
+        if (op == '+') {
+            int level;
+            cin &gt;&gt; level;
+            waiting.push({level, -next_ticket}); // (1)!
+            next_ticket++;
+        } else if (waiting.empty()) {
+            cout &lt;&lt; "nobody\n";
+        } else {
+            pair&lt;int, int&gt; top = waiting.top();
+            waiting.pop();
+            cout &lt;&lt; "ticket " &lt;&lt; -top.second &lt;&lt; " level " &lt;&lt; top.first &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>priority_queue ปกติเอาค่ามากออกก่อนทั้ง <code>first</code> และ <code>second</code> ถ้าเก็บเลขบัตรตรงๆ บัตรเลขมาก (มาทีหลัง) จะได้ก่อน จึงเก็บเป็นค่าติดลบ บัตร 1 กลายเป็น -1 ซึ่งมากกว่า -3 ตอนพิมพ์ค่อยกลับเครื่องหมาย</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="triage" data-title="ข้อมูลเข้า"><pre><code>9
++ 2
++ 5
++ 2
++ 5
+-
+-
+-
+-
+-
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="triage" data-title="C:\code\triage.exe"><pre><code>ticket 2 level 5
+ticket 4 level 5
+ticket 1 level 2
+ticket 3 level 2
+nobody
+</code></pre></div>
+      </div>
+
+      <p>บัตร 2 กับ 4 หนักระดับ 5 เท่ากัน บัตร 2 มาก่อนจึงได้ก่อน ตรงนี้คือจุดที่ใช้ค่าติดลบแล้วอ่านง่ายกว่าเขียนวิธีเปรียบเทียบเอง เพราะเงื่อนไขมีทั้งมากก่อนและน้อยก่อนปนกัน</p>
+
+      <h2 id="complexity">เร็วแค่ไหน</h2>
+
+      <p>ข้างใน priority_queue คือ <strong>heap</strong> ต้นไม้ที่ทุกโหนดมากกว่าหรือเท่ากับลูกของมัน ค่ามากสุดจึงอยู่ที่ยอดเสมอ เก็บอยู่ใน vector ธรรมดาโดยไม่ต้องมี pointer เลย <code>push</code> กับ <code>pop</code> แค่สลับของขึ้นลงตามความสูงของต้นไม้ วิธีทำ heap เองทีละขั้นจะได้เรียนในบทที่ 26</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่ง</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>push(x)</code> <code>pop()</code></td><td>O(log N)</td></tr>
+            <tr><td><code>top()</code> <code>size()</code> <code>empty()</code></td><td>O(1)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>multiset ก็หยิบค่ามากสุดได้ด้วย <code>prev(ms.end())</code> และลบได้ใน O(log N) เท่ากัน แต่ priority_queue เก็บในอาเรย์ติดกัน จึงเร็วกว่าและใช้หน่วยความจำน้อยกว่า ถ้าต้องการแค่ตัวบนสุด ใช้ priority_queue</p>
+
+      <p>เทียบกับวิธีตรงไปตรงมา คือเก็บใน vector แล้วไล่หาตัวมากสุดทุกครั้งที่ต้องหยิบ ทดลองใส่ค่าสุ่ม N ค่า แล้วทำซ้ำ N รอบ รอบละหยิบค่ามากสุดออกหนึ่งตัวและใส่ค่าใหม่หนึ่งตัว ของในที่เก็บจึงมี N ตัวตลอด</p>
+
+      <div class="code" data-lang="cpp"><pre><code>int best = 0;
+for (int j = 1; j &lt; (int)pile.size(); j++) {
+    if (pile[j] &gt; pile[best]) {
+        best = j;
+    }
+}
+sum_vector += pile[best];
+pile[best] = pile.back();
+pile.pop_back();
+pile.push_back(values[i]);
+</code></pre></div>
+
+      <p>วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 แรม 32 GB ระบบ Windows 11 คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks ตัวเลขเป็นวินาที ช่องแบบ <code>-O2</code> เป็นค่ากลางของการรันสามครั้ง ช่องแบบ Code::Blocks ที่ N ตั้งแต่ 10<sup>5</sup> รันครั้งเดียว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>vector แบบ -O2</th><th>priority_queue แบบ -O2</th><th>vector แบบ Code::Blocks</th><th>priority_queue แบบ Code::Blocks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10<sup>4</sup></td><td>0.034</td><td>0.001</td><td>0.404</td><td>0.006</td></tr>
+            <tr><td>10<sup>5</sup></td><td>4.410</td><td>0.011</td><td>42.7</td><td>0.064</td></tr>
+            <tr><td>2 × 10<sup>5</sup></td><td>15.7</td><td>0.023</td><td>178.3</td><td>0.159</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>vector ต้องไล่ดูของ N ตัวทุกรอบ รวม O(N<sup>2</sup>) ที่ N สองแสนใช้เวลาเกือบสามนาทีในแบบ Code::Blocks ส่วน priority_queue ใช้ O(log N) ต่อรอบ รวม O(N log N) ไม่ถึงสองในสิบวินาทีทุกแบบ</p>
+
+      <h2 id="simulation">จำลองเหตุการณ์ตามเวลา</h2>
+
+      <p>โรงเรียนมีการประชุม N รายการ แต่ละรายการมีเวลาเริ่มและเวลาจบเป็นนาที ประชุมที่เวลาซ้อนกันใช้ห้องเดียวกันไม่ได้ แต่ห้องที่ประชุมจบเวลา 600 พอดี ประชุมถัดไปที่เริ่ม 600 ใช้ต่อได้ ต้องมีห้องประชุมอย่างน้อยกี่ห้อง</p>
+
+      <p>คิดแบบเดินตามเวลา เรียงการประชุมตามเวลาเริ่ม แล้วจัดทีละรายการ ทุกครั้งที่มีประชุมจะเริ่ม คำถามเดียวที่สำคัญคือ ในห้องที่มีอยู่ ห้องไหนว่างเร็วที่สุด ถ้าห้องนั้นว่างทันก็ใช้ห้องนั้น ถ้าไม่ทันแปลว่าทุกห้องยังไม่ว่าง ต้องเปิดห้องใหม่ คำถาม "ห้องไหนว่างเร็วที่สุด" คือค่าน้อยสุดของเวลาจบ งานของ priority_queue แบบน้อยสุดก่อนพอดี</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="rooms"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; meetings(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; meetings[i].first &gt;&gt; meetings[i].second;
+    }
+    sort(meetings.begin(), meetings.end()); // (1)!
+    priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; ends; // (2)!
+    int rooms = 0;
+    for (auto meeting : meetings) {
+        int start = meeting.first;
+        int finish = meeting.second;
+        if (!ends.empty() &amp;&amp; ends.top() &lt;= start) { // (3)!
+            ends.pop();
+        } else {
+            rooms++;
+        }
+        ends.push(finish);
+    }
+    cout &lt;&lt; rooms &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>pair เรียงตาม <code>first</code> ซึ่งคือเวลาเริ่ม</li>
+        <li>เก็บเวลาจบของทุกห้องที่เปิดแล้ว ห้องละหนึ่งค่า ตัวบนสุดคือห้องที่ว่างเร็วที่สุด</li>
+        <li>ห้องที่ว่างเร็วที่สุดว่างทันก่อนประชุมนี้เริ่ม ใช้ห้องนั้นต่อ เอาเวลาจบเก่าออก แล้วใส่เวลาจบใหม่ในบรรทัดที่ 25 ถ้าไม่ทัน เปิดห้องใหม่</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="rooms" data-title="ข้อมูลเข้า"><pre><code>6
+540 600
+600 660
+570 630
+630 700
+545 560
+660 720
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="rooms" data-title="C:\code\rooms.exe"><pre><code>2
+</code></pre></div>
+      </div>
+
+      <p>เรียงแล้วได้ 540 545 570 600 630 660 ห้องแรกรับ 540 ถึง 600 ประชุม 545 เริ่มตอนห้องแรกยังไม่ว่างจึงเปิดห้องที่สอง ซึ่งจบ 560 ประชุม 570 ใช้ห้องที่สองต่อ ประชุม 600 ใช้ห้องแรกที่ว่างพอดี ที่เหลือหมุนเวียนอยู่ในสองห้องนี้ ใช้เวลา O(N log N) ทั้งการเรียงและ heap</p>
+
+      <p>โจทย์จำลองเหตุการณ์ส่วนใหญ่มีรูปแบบนี้ เก็บ "เหตุการณ์ถัดไปของแต่ละสิ่ง" ไว้ใน heap แล้วหยิบเหตุการณ์ที่เกิดเร็วที่สุดออกมาจัดการทีละอัน แบบฝึกหัดข้อ 9 เป็นร้านซักผ้าที่ต้องใช้ heap สองตัว</p>
+
+      <h2 id="merge">รวมรายการที่เรียงแล้ว k รายการ</h2>
+
+      <p>ร้านสาขา k แห่งส่งยอดขายรายบิลมา แต่ละสาขาเรียงจากน้อยไปมากแล้ว สำนักงานใหญ่อยากได้รายการรวมที่เรียงแล้ว ค่าที่น้อยที่สุดของทั้งหมดต้องเป็นตัวแรกของสาขาใดสาขาหนึ่ง จึงพอที่จะดูแค่ตัวหน้าสุดของทุกสาขา ใส่ตัวหน้าของทุกสาขาลง heap แบบน้อยสุดก่อน หยิบตัวน้อยสุดออกมา แล้วใส่ตัวถัดไปของสาขาเดียวกันเข้าไปแทน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="merge"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int k;
+    cin &gt;&gt; k;
+    vector&lt;vector&lt;int&gt;&gt; lists(k);
+    for (int i = 0; i &lt; k; i++) {
+        int length;
+        cin &gt;&gt; length;
+        lists[i].resize(length);
+        for (int j = 0; j &lt; length; j++) {
+            cin &gt;&gt; lists[i][j];
+        }
+    }
+    priority_queue&lt;pair&lt;int, int&gt;, vector&lt;pair&lt;int, int&gt;&gt;, greater&lt;pair&lt;int, int&gt;&gt;&gt; heads; // (1)!
+    vector&lt;int&gt; next_index(k, 0); // (2)!
+    for (int i = 0; i &lt; k; i++) {
+        if (!lists[i].empty()) {
+            heads.push({lists[i][0], i});
+            next_index[i] = 1;
+        }
+    }
+    while (!heads.empty()) {
+        int value = heads.top().first;
+        int list = heads.top().second;
+        heads.pop();
+        cout &lt;&lt; value &lt;&lt; ' ';
+        if (next_index[list] &lt; (int)lists[list].size()) { // (3)!
+            heads.push({lists[list][next_index[list]], list});
+            next_index[list]++;
+        }
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บคู่ (ค่า, หมายเลขสาขา) ต้องรู้ว่าค่าที่หยิบออกมาเป็นของสาขาไหน จะได้ใส่ตัวถัดไปของสาขานั้นถูก ชื่อชนิดยาวเพราะต้องเขียน <code>pair&lt;int, int&gt;</code> ซ้ำสามที่</li>
+        <li><code>next_index[i]</code> คือตำแหน่งของตัวถัดไปในสาขา i ที่ยังไม่ได้ใส่ลง heap</li>
+        <li>สาขานี้ยังมีของเหลือ ใส่ตัวถัดไปเข้า heap ถ้าหมดแล้วก็ไม่ใส่ heap จะเล็กลงเรื่อยๆ จนว่าง</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="merge" data-title="ข้อมูลเข้า"><pre><code>3
+4 120 250 250 900
+3 80 300 310
+2 95 1000
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="merge" data-title="C:\code\merge.exe"><pre><code>80 95 120 250 250 300 310 900 1000
+</code></pre></div>
+      </div>
+
+      <p>heap มีของไม่เกิน k ตัวตลอดเวลา ถ้ารวมทุกสาขามี T ค่า ใช้เวลา O(T log k) ถ้าเอาทุกค่ามาต่อกันแล้ว <code>sort</code> จะเป็น O(T log T) ซึ่งในทางปฏิบัติก็เร็วพอเมื่อทุกค่าอยู่ในหน่วยความจำได้ วิธี heap ได้เปรียบจริงในสองกรณี คือข้อมูลใหญ่เกินกว่าจะโหลดมาเรียงพร้อมกัน เช่น ไฟล์หลายไฟล์ที่อ่านทีละบรรทัด และกรณีที่ต้องการแค่ M ค่าแรก ซึ่งหยุดหลังหยิบออก M ครั้งได้เลย ใช้เวลาแค่ O(k + M log k)</p>
+
+      <h2 id="median">ค่ามัธยฐานแบบไหลเข้า</h2>
+
+      <p>แอปวัดเวลาวิ่งรับเวลาของนักวิ่งเข้ามาทีละคน และหลังทุกคนต้องแสดงค่ามัธยฐานของเวลาทั้งหมดที่ได้มาแล้ว ถ้ามีจำนวนคู่ ให้ใช้ตัวกลางตัวที่น้อยกว่า วิธีตรงไปตรงมาคือแทรกเวลาใหม่ลงอาเรย์ที่เรียงไว้แล้วอ่านตัวตรงกลาง แต่การแทรกต้องเลื่อนของครึ่งแถวโดยเฉลี่ย O(N) ต่อครั้ง รวม O(N<sup>2</sup>)</p>
+
+      <p>เคล็ดลับคือแบ่งค่าทั้งหมดเป็นสองกอง กองล่างเก็บครึ่งที่น้อย กองบนเก็บครึ่งที่มาก ค่ามัธยฐานคือค่ามากสุดของกองล่าง กองล่างจึงเป็น heap แบบมากสุดก่อน กองบนเป็น heap แบบน้อยสุดก่อน แล้วรักษาขนาดให้กองล่างมีเท่ากับกองบน หรือมากกว่าหนึ่งตัว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="median"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    priority_queue&lt;int&gt; lower; // (1)!
+    priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; upper; // (2)!
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        cin &gt;&gt; x;
+        if (lower.empty() || x &lt;= lower.top()) {
+            lower.push(x);
+        } else {
+            upper.push(x);
+        }
+        if (lower.size() &gt; upper.size() + 1) { // (3)!
+            upper.push(lower.top());
+            lower.pop();
+        } else if (upper.size() &gt; lower.size()) {
+            lower.push(upper.top());
+            upper.pop();
+        }
+        cout &lt;&lt; lower.top() &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>กองล่าง ครึ่งที่น้อย ตัวบนสุดคือตัวที่มากที่สุดในครึ่งนี้</li>
+        <li>กองบน ครึ่งที่มาก ตัวบนสุดคือตัวที่น้อยที่สุดในครึ่งนี้ ทุกค่าในกองล่างจึงไม่เกินทุกค่าในกองบน</li>
+        <li>ใส่ค่าใหม่แล้วขนาดอาจเสียสมดุล ย้ายตัวบนสุดข้ามกองหนึ่งตัวก็กลับมาสมดุล และการย้ายตัวบนสุดไม่ทำให้กฎเรื่องกองล่างไม่เกินกองบนเสีย</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="median" data-title="ข้อมูลเข้า"><pre><code>7
+50 20 80 70 10 90 60
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="median" data-title="C:\code\median.exe"><pre><code>50
+20
+50
+50
+50
+50
+60
+</code></pre></div>
+      </div>
+
+      <p>หลังค่าที่สี่ ข้อมูลคือ 20 50 70 80 กองล่างมี 20 50 กองบนมี 70 80 ตัวกลางที่น้อยกว่าคือ 50 พอดี ทุกค่าใหม่ทำ <code>push</code> หนึ่งครั้งกับย้ายข้ามกองไม่เกินหนึ่งครั้ง จึงเป็น O(log N) ต่อค่า รวม O(N log N) แทน O(N<sup>2</sup>)</p>
+
+      <p>เทคนิคเก็บค่าเฉพาะส่วนที่สนใจไว้ใน heap ใช้ได้กับคำถามอื่นด้วย เช่น อยากรู้ค่ามากเป็นอันดับที่ K ก็เก็บแค่ K ค่าที่มากที่สุดไว้ใน heap แบบน้อยสุดก่อน ซึ่งเป็นแบบฝึกหัดข้อ 7</p>
+
+      <h2 id="all-in-chapter">เทียบทุกโครงสร้างในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>โครงสร้าง</th><th>เพิ่ม ลบ ค้นหา</th><th>ค่าน้อยสุด มากสุด</th><th>ค่าแรกที่ ≥ x</th><th>ค่าซ้ำ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>set</code></td><td>O(log N)</td><td>O(1)</td><td>O(log N)</td><td>ตัดทิ้ง</td></tr>
+            <tr><td><code>multiset</code></td><td>O(log N)</td><td>O(1)</td><td>O(log N)</td><td>เก็บ</td></tr>
+            <tr><td><code>map</code></td><td>O(log N) ตามคีย์</td><td>O(1) ตามคีย์</td><td>O(log N) ตามคีย์</td><td>คีย์ไม่ซ้ำ</td></tr>
+            <tr><td><code>unordered_set</code> <code>unordered_map</code></td><td>เฉลี่ย O(1) แย่สุด O(N)</td><td>ไม่มี</td><td>ไม่มี</td><td>แบบเดียวกับ set และ map</td></tr>
+            <tr><td><code>priority_queue</code></td><td>เพิ่มและลบตัวบนสุด O(log N) ค้นหาไม่ได้</td><td>เฉพาะด้านเดียว O(1)</td><td>ไม่มี</td><td>เก็บ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="max-not-min">แบบที่ 1 ลืมว่าค่าเริ่มต้นคือมากสุดก่อน</h3>
+
+      <p>อยากได้เวลาวิ่งที่<strong>เร็วที่สุด</strong> K คน ซึ่งคือเวลาน้อยที่สุด แต่ใช้ priority_queue แบบปกติ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="fastest-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    priority_queue&lt;int&gt; times;
+    for (int i = 0; i &lt; n; i++) {
+        int t;
+        cin &gt;&gt; t;
+        times.push(t);
+    }
+    cout &lt;&lt; "fastest " &lt;&lt; k &lt;&lt; ":";
+    for (int i = 0; i &lt; k; i++) {
+        cout &lt;&lt; ' ' &lt;&lt; times.top();
+        times.pop();
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="fastest-bug" data-title="ข้อมูลเข้า"><pre><code>6 3
+58 52 61 49 55 60
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="fastest-bug" data-title="C:\code\fastest.exe"><pre><code>fastest 3: 61 60 58
+</code></pre></div>
+      </div>
+
+      <p>ได้สามคนที่ช้าที่สุดแทน คำตอบที่ถูกคือ 49 52 55 ต้องประกาศเป็น <code>priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt;</code> ทุกครั้งที่ใช้ priority_queue ให้ถามตัวเองว่าอยากได้ตัวมากหรือตัวน้อยออกก่อน</p>
+
+      <h3 id="empty-top">แบบที่ 2 เรียก top() ตอนว่าง</h3>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    priority_queue&lt;int&gt; patients;
+    patients.push(4);
+    patients.pop();
+    cout &lt;&lt; patients.top() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <p>Code::Blocks คอมไพล์ผ่านโดยไม่มีคำเตือน บนเครื่องที่เขียนเอกสารนี้พิมพ์ <code>4</code> ทุกครั้ง ดูเหมือนคนไข้ยังอยู่ ทั้งที่ <code>pop</code> ไปแล้ว เพราะ <code>pop</code> แค่ลดขนาดของ vector ข้างใน ค่าเดิมยังค้างอยู่ในหน่วยความจำ ถ้าคอมไพล์ด้วย <code>-O2</code> gcc จะเตือน <code>'*&lt;unknown&gt;' is used uninitialized</code> และพิมพ์เลขขยะที่เปลี่ยนไปทุกครั้งที่รัน เช่น <code>-1205706608</code> การเรียก <code>top()</code> ตอนว่างไม่มี error ให้เห็น ต้องเช็ก <code>empty()</code> ก่อนเองทุกครั้ง</p>
+
+      <h3 id="missing-vector">แบบที่ 3 ลืม vector ตรงกลาง</h3>
+
+      <div class="code" data-lang="cpp"><pre><code>priority_queue&lt;int, greater&lt;int&gt;&gt; lap_times;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>laps.cpp:6:36: error: no type named 'value_type' in 'struct std::greater&lt;int&gt;'
+    6 |     priority_queue&lt;int, greater&lt;int&gt;&gt; lap_times;
+      |                                    ^~
+laps.cpp:6:36: error: template argument 3 is invalid
+laps.cpp:7:15: error: request for member 'push' in 'lap_times', which is of non-class type 'int'
+    7 |     lap_times.push(58);
+      |               ^~~~
+</code></pre></div>
+
+      <p>ช่องที่สองในวงเล็บมุมต้องเป็นที่เก็บ compiler จึงพยายามใช้ <code>greater&lt;int&gt;</code> เป็นที่เก็บแล้วหา <code>value_type</code> ไม่เจอ error ต่อจากนั้นเป็นผลพวง บรรทัดที่ใช้ <code>lap_times</code> ทุกบรรทัดจะขึ้น <code>request for member</code> ซ้ำแบบเดียวกัน แก้ตัวแรกตัวเดียวก็หายหมด ลำดับที่ถูกคือ ชนิด ที่เก็บ วิธีเปรียบเทียบ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>priority_queue&lt;T&gt;</code> ให้ค่ามากสุดที่ <code>top()</code> <code>push</code> กับ <code>pop</code> เป็น O(log N) <code>top</code> เป็น O(1)</li>
+        <li>อยากได้น้อยสุดก่อน ใช้ <code>priority_queue&lt;T, vector&lt;T&gt;, greater&lt;T&gt;&gt;</code></li>
+        <li>เก็บ pair ได้ เทียบ <code>first</code> ก่อนแล้วค่อย <code>second</code> ใช้ค่าติดลบเมื่อเงื่อนไขของสองค่าต่างทิศกัน</li>
+        <li>เช็ก <code>empty()</code> ก่อน <code>top()</code> และ <code>pop()</code> เสมอ</li>
+        <li>งานจำลองตามเวลา เก็บเหตุการณ์ถัดไปไว้ใน heap แล้วหยิบตัวที่เกิดเร็วที่สุด</li>
+        <li>รวม k รายการที่เรียงแล้วใช้ heap ขนาด k ค่ามัธยฐานแบบไหลเข้าใช้ heap สองกอง</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

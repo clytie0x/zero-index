@@ -1,0 +1,440 @@
+<article class="doc">
+      <h1>20.1 set เก็บของไม่ซ้ำ</h1>
+
+      <p>ด่านเก็บเงินบนทางด่วนบันทึกเลขทะเบียนรถทุกคันที่ผ่าน วันหนึ่งมีรถผ่านเป็นแสนครั้ง คันเดียวกันผ่านไปกลับหลายรอบ ถ้าอยากรู้ว่ามีรถกี่คัน หรือรถทะเบียนนี้เคยผ่านแล้วหรือยัง เครื่องมือที่เรามีตอนนี้ยังไม่พอดีมือ อาเรย์นับในหน้า 5.3 ใช้ไม่ได้เมื่อค่าใหญ่ถึง 10<sup>9</sup> การเรียงข้อมูลในบทที่ 16 ใช้ได้ถ้าข้อมูลมาครบก่อนแล้วค่อยตอบ แต่ถ้ารถผ่านไปเรื่อยๆ และมีคนถามแทรกเข้ามาตลอดเวลา จะเรียงใหม่ทุกครั้งก็ไม่ทัน</p>
+
+      <p><strong>set</strong> (แปลว่าเซต แบบเซตในวิชาคณิตศาสตร์) คือที่เก็บของที่ไม่ยอมให้มีค่าซ้ำ และจัดเรียงค่าจากน้อยไปมากให้ตลอดเวลา เพิ่ม ลบ หรือค้นหาค่าหนึ่งตัวใช้เวลา O(log N) ซึ่งเร็วพอจะทำเป็นแสนครั้งในเสี้ยววินาที</p>
+
+      <h2 id="first-set">set ตัวแรก</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="plates"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    set&lt;int&gt; plates; // (1)!
+    plates.insert(4521); // (2)!
+    plates.insert(1088);
+    plates.insert(7310);
+    plates.insert(1088);
+    plates.insert(4521);
+    plates.insert(2950);
+    cout &lt;&lt; "distinct: " &lt;&lt; plates.size() &lt;&lt; '\n';
+    for (int plate : plates) { // (3)!
+        cout &lt;&lt; plate &lt;&lt; ' ';
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ประกาศ set ที่เก็บ <code>int</code> เขียนชนิดในวงเล็บมุมเหมือน <code>vector&lt;int&gt;</code> ตอนเริ่มยังว่าง</li>
+        <li><code>insert</code> ใส่ค่าลงไป ถ้ามีค่านั้นอยู่แล้ว set ไม่ทำอะไรเลย</li>
+        <li>วนด้วย <code>for</code> แบบเดียวกับ vector ได้ แต่ค่าจะออกมาเรียงจากน้อยไปมากเสมอ ไม่ใช่ตามลำดับที่ใส่</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="plates" data-title="C:\code\plates.exe"><pre><code>distinct: 4
+1088 2950 4521 7310
+</code></pre></div>
+
+      <p>ใส่ไปหกครั้ง เหลือสี่ค่า เพราะ 1088 กับ 4521 ใส่ซ้ำ <code>size()</code> จึงเป็นจำนวนค่าที่ไม่ซ้ำกันพอดี โจทย์ "มีกี่แบบ" หรือ "มีกี่คนที่ไม่ซ้ำ" จึงจบได้ในไม่กี่บรรทัด</p>
+
+      <p>set เก็บอะไรก็ได้ที่เปรียบเทียบมากน้อยได้ เช่น <code>set&lt;string&gt;</code> จะเรียงข้อความตามพจนานุกรม หรือ <code>set&lt;pair&lt;int, int&gt;&gt;</code> จะเรียงตาม <code>first</code> ก่อนแล้วค่อย <code>second</code> แบบเดียวกับที่ <code>sort</code> เรียง pair ในบทที่ 16</p>
+
+      <h2 id="count-find">ถามว่ามีไหมด้วย count และ find</h2>
+
+      <p>สหกรณ์โรงเรียนมีรายชื่อรหัสสมาชิก N คน แล้วมีคนมาถามว่ารหัสนี้เป็นสมาชิกหรือเปล่า Q ครั้ง <code>count(x)</code> ของ set คืนจำนวนค่า x ที่มีอยู่ ซึ่งเป็นได้แค่ 0 หรือ 1 เพราะ set ไม่เก็บค่าซ้ำ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="members"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    set&lt;int&gt; members;
+    for (int i = 0; i &lt; n; i++) {
+        int id;
+        cin &gt;&gt; id;
+        members.insert(id);
+    }
+    for (int i = 0; i &lt; q; i++) {
+        int id;
+        cin &gt;&gt; id;
+        if (members.count(id) == 1) {
+            cout &lt;&lt; id &lt;&lt; " yes\n";
+        } else {
+            cout &lt;&lt; id &lt;&lt; " no\n";
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="members" data-title="ข้อมูลเข้า"><pre><code>5 4
+640012 100345 999999999 640012 2
+100345
+5
+999999999
+640013
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="members" data-title="C:\code\members.exe"><pre><code>100345 yes
+5 no
+999999999 yes
+640013 no
+</code></pre></div>
+      </div>
+
+      <p>รหัสใหญ่ถึง 999999999 ก็ไม่ต้องจองอาเรย์พันล้านช่อง set ใช้หน่วยความจำตามจำนวนค่าที่ใส่จริงเท่านั้น</p>
+
+      <p>อีกวิธีคือ <code>find(x)</code> ซึ่งคืน <strong>iterator</strong> ตัวชี้ตำแหน่งแบบเดียวกับที่ <code>lower_bound</code> ของ vector คืนในหน้า 19.2 ถ้าไม่เจอจะคืน <code>end()</code> ซึ่งเป็นตำแหน่งเลยตัวสุดท้ายไปหนึ่งช่อง ไม่ใช่ค่าจริงในเซต อ่านค่าที่ iterator ชี้ด้วย <code>*</code> ข้างหน้า</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="find"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    set&lt;int&gt; scores = {72, 85, 91, 60};
+    auto it = scores.find(85);
+    if (it != scores.end()) {
+        cout &lt;&lt; "found " &lt;&lt; *it &lt;&lt; '\n';
+    }
+    it = scores.find(100);
+    if (it == scores.end()) {
+        cout &lt;&lt; "100 not found\n";
+    }
+    cout &lt;&lt; "smallest " &lt;&lt; *scores.begin() &lt;&lt; '\n';
+    cout &lt;&lt; "largest " &lt;&lt; *scores.rbegin() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="find" data-title="C:\code\find.exe"><pre><code>found 85
+100 not found
+smallest 60
+largest 91
+</code></pre></div>
+
+      <ul>
+        <li>ใส่ค่าเริ่มต้นในปีกกาได้เหมือน vector ค่าซ้ำในปีกกาก็ถูกตัดทิ้งเหมือนกัน</li>
+        <li><code>auto</code> ให้ compiler ใส่ชนิดของ iterator ให้เองตามหน้า 15.5 ชนิดจริงยาวมาก</li>
+        <li><code>begin()</code> ชี้ค่าที่น้อยที่สุด <code>rbegin()</code> (reverse begin) ชี้ค่าที่มากที่สุด ทั้งสองตัวใช้ได้เฉพาะตอนที่ set ไม่ว่าง</li>
+      </ul>
+
+      <p>ถ้าแค่อยากรู้ว่ามีหรือไม่มี ใช้ <code>count</code> อ่านง่ายกว่า ส่วน <code>find</code> ใช้เมื่ออยากได้ตำแหน่งไปทำอย่างอื่นต่อ เช่น ลบตัวนั้นทิ้ง</p>
+
+      <h2 id="erase">ลบด้วย erase</h2>
+
+      <p>ห้องสมุดบันทึกว่าใครอยู่ในห้องบ้าง <code>+ id</code> คือมีคนเข้า <code>- id</code> คือมีคนออก หลังทุกเหตุการณ์ บรรณารักษ์อยากรู้ว่าในห้องมีกี่คน และรหัสน้อยสุดกับมากสุดเป็นเท่าไร</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="room"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int q;
+    cin &gt;&gt; q;
+    set&lt;int&gt; inside;
+    for (int i = 0; i &lt; q; i++) {
+        char op;
+        int id;
+        cin &gt;&gt; op &gt;&gt; id;
+        if (op == '+') {
+            inside.insert(id);
+        } else {
+            inside.erase(id);
+        }
+        if (inside.empty()) {
+            cout &lt;&lt; "empty\n";
+        } else {
+            cout &lt;&lt; inside.size() &lt;&lt; " people, ids " &lt;&lt; *inside.begin() &lt;&lt; " to " &lt;&lt; *inside.rbegin() &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="room" data-title="ข้อมูลเข้า"><pre><code>7
++ 305
++ 112
++ 480
+- 112
++ 305
+- 999
+- 305
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="room" data-title="C:\code\room.exe"><pre><code>1 people, ids 305 to 305
+2 people, ids 112 to 305
+3 people, ids 112 to 480
+2 people, ids 305 to 480
+2 people, ids 305 to 480
+2 people, ids 305 to 480
+1 people, ids 480 to 480
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li><code>erase(x)</code> ลบค่า x ออก ถ้าไม่มี x อยู่ก็ไม่เกิดอะไรขึ้น บรรทัดที่หกของข้อมูลเข้าลบ 999 ที่ไม่เคยเข้าห้อง จำนวนคนจึงเท่าเดิม</li>
+        <li>บรรทัดที่ห้าใส่ 305 ซ้ำ set ไม่เปลี่ยน</li>
+        <li><code>erase</code> รับ iterator ได้ด้วย เช่น <code>inside.erase(inside.begin())</code> ลบค่าน้อยสุดทิ้ง</li>
+        <li><code>empty()</code> บอกว่า set ว่างหรือไม่ ต้องเช็กก่อนอ่าน <code>*inside.begin()</code> ทุกครั้ง</li>
+      </ul>
+
+      <p>ทุกเหตุการณ์ได้ค่าน้อยสุดและมากสุดมาทันที ถ้าใช้ vector ต้องไล่หาใหม่ทุกครั้ง และการลบตรงกลาง vector ก็ต้องเลื่อนของทั้งแถว</p>
+
+      <h2 id="iterator-walk">เดินใน set ด้วย iterator</h2>
+
+      <p>set ไม่มีช่องหมายเลข 0 1 2 แบบ vector จะไปตัวถัดไปต้องเลื่อน iterator ทีละก้าว <code>++it</code> คือไปตัวถัดไป <code>next(it)</code> คืน iterator ของตัวถัดไปโดยไม่เปลี่ยน <code>it</code> และ <code>prev(it)</code> คืนของตัวก่อนหน้า</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="walk"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    set&lt;int&gt; heights = {158, 171, 149, 165};
+    for (auto it = heights.begin(); it != heights.end(); ++it) {
+        cout &lt;&lt; *it &lt;&lt; ' ';
+    }
+    cout &lt;&lt; '\n';
+    auto last = prev(heights.end());
+    cout &lt;&lt; "tallest " &lt;&lt; *last &lt;&lt; '\n';
+    cout &lt;&lt; "second tallest " &lt;&lt; *prev(last) &lt;&lt; '\n';
+    cout &lt;&lt; "second shortest " &lt;&lt; *next(heights.begin()) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="walk" data-title="C:\code\walk.exe"><pre><code>149 158 165 171
+tallest 171
+second tallest 165
+second shortest 158
+</code></pre></div>
+
+      <p><code>prev(heights.end())</code> คือตัวสุดท้ายจริงๆ ได้ค่าเดียวกับ <code>*heights.rbegin()</code> วิธีนี้จะใช้บ่อยมากในหน้า 20.2 ส่วนการกระโดดไปตัวที่ k ตรงๆ ทำไม่ได้ ต้องเดินไปทีละก้าว k ครั้ง</p>
+
+      <h2 id="complexity">ทำไมเร็ว และเร็วแค่ไหน</h2>
+
+      <p>ข้างใน set ไม่ได้เก็บเป็นแถวแบบอาเรย์ แต่เก็บเป็น<strong>ต้นไม้ค้นหาแบบทวิภาค (binary search tree)</strong> ทุกโหนดมีค่าที่น้อยกว่าอยู่ทางซ้าย และค่าที่มากกว่าอยู่ทางขวา การหาค่าหนึ่งตัวจึงเริ่มจากยอด แล้วเลือกเลี้ยวซ้ายหรือขวาทีละชั้น เหมือน binary search ในบทที่ 19 ที่ตัดครึ่งไปเรื่อยๆ</p>
+
+      <figure>
+        <svg viewBox="0 0 440 210" width="440" style="max-width:100%;height:auto" role="img" aria-label="ต้นไม้ค้นหาที่มี 165 เป็นยอด ทางซ้ายคือ 152 มีลูก 149 กับ 158 ทางขวาคือ 176 มีลูก 171 กับ 180 เส้นทางค้นหา 171 ผ่าน 165 176 แล้วถึง 171">
+          <g style="stroke:var(--line-strong);stroke-width:2">
+            <line x1="220" y1="40" x2="120" y2="100"/>
+            <line x1="120" y1="100" x2="65" y2="165"/>
+            <line x1="120" y1="100" x2="175" y2="165"/>
+            <line x1="320" y1="100" x2="375" y2="165"/>
+          </g>
+          <g style="stroke:var(--brand);stroke-width:4">
+            <line x1="220" y1="40" x2="320" y2="100"/>
+            <line x1="320" y1="100" x2="265" y2="165"/>
+          </g>
+          <g style="font-family:var(--font-code);font-size:15px" text-anchor="middle">
+            <circle cx="220" cy="40" r="22" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="220" y="45" style="fill:var(--ink)">165</text>
+            <circle cx="120" cy="100" r="22" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="120" y="105" style="fill:var(--ink)">152</text>
+            <circle cx="320" cy="100" r="22" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="320" y="105" style="fill:var(--ink)">176</text>
+            <circle cx="65" cy="165" r="22" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="65" y="170" style="fill:var(--ink)">149</text>
+            <circle cx="175" cy="165" r="22" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="175" y="170" style="fill:var(--ink)">158</text>
+            <circle cx="265" cy="165" r="22" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="265" y="170" style="fill:var(--ink)">171</text>
+            <circle cx="375" cy="165" r="22" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="375" y="170" style="fill:var(--ink)">180</text>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--muted)">
+            <text x="10" y="205">หา 171  มากกว่า 165 ไปขวา  น้อยกว่า 176 ไปซ้าย  เจอ</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>เจ็ดค่าใช้การเทียบแค่สามครั้ง set ใน C++ คอยจัดต้นไม้ให้สมดุลเองทุกครั้งที่ใส่หรือลบ ความสูงของต้นไม้จึงอยู่ราว log<sub>2</sub> N เสมอ วิธีสร้างต้นไม้แบบนี้และการทำให้สมดุลจะได้เรียนในบทที่ 26 บทนี้ใช้งานอย่างเดียว</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่ง</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>insert(x)</code> <code>erase(x)</code></td><td>O(log N)</td></tr>
+            <tr><td><code>count(x)</code> <code>find(x)</code></td><td>O(log N)</td></tr>
+            <tr><td><code>size()</code> <code>empty()</code> <code>begin()</code> <code>rbegin()</code></td><td>O(1)</td></tr>
+            <tr><td><code>++it</code> <code>prev(it)</code> <code>next(it)</code></td><td>เฉลี่ย O(1) ไม่เกิน O(log N)</td></tr>
+            <tr><td>วนทุกค่าด้วย <code>for</code></td><td>O(N)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>log<sub>2</sub> ของแสนประมาณ 17 และของล้านประมาณ 20 ทำคำสั่งละ O(log N) เป็นแสนครั้งจึงเป็นงานราวสองล้านก้าว สบายมากใน 1 วินาที แต่ต้องรู้ไว้ว่าแต่ละก้าวของต้นไม้ช้ากว่าการอ่านอาเรย์ช่องถัดไปหลายเท่า และแต่ละค่าในเซตกินหน่วยความจำมากกว่า <code>int</code> ในอาเรย์หลายเท่าเช่นกัน</p>
+
+      <h2 id="distinct">ตัวอย่าง ลบตัวซ้ำ</h2>
+
+      <p>รับตัวเลข N ตัว แล้วพิมพ์ตัวที่ไม่ซ้ำ <strong>ตามลำดับที่เจอครั้งแรก</strong> ถ้าพิมพ์จาก set ตรงๆ จะได้ลำดับจากน้อยไปมาก ซึ่งไม่ใช่สิ่งที่โจทย์ถาม จึงใช้ set เป็นแค่สมุดจดว่าเคยเห็นแล้ว ส่วนลำดับเก็บไว้ใน vector</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="first-seen"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    set&lt;int&gt; seen;
+    vector&lt;int&gt; order;
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        cin &gt;&gt; x;
+        if (seen.count(x) == 0) {
+            seen.insert(x);
+            order.push_back(x);
+        }
+    }
+    for (int x : order) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="first-seen" data-title="ข้อมูลเข้า"><pre><code>9
+700 15 700 3000000 15 42 3000000 700 8
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="first-seen" data-title="C:\code\first_seen.exe"><pre><code>700 15 3000000 42 8
+</code></pre></div>
+      </div>
+
+      <p>วิธีตรงไปตรงมาที่ไม่ใช้ set คือเก็บค่าที่เคยเห็นไว้ใน vector แล้วไล่หาทุกครั้งที่อ่านค่าใหม่ ค่าที่ N ต้องไล่ดูค่าเก่าเกือบ N ตัว รวมเป็น O(N<sup>2</sup>)</p>
+
+      <div class="code" data-lang="cpp"><pre><code>vector&lt;int&gt; seen;
+for (int x : plates) {
+    bool found = false;
+    for (int y : seen) {
+        if (y == x) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        seen.push_back(x);
+    }
+}
+</code></pre></div>
+
+      <p>อีกวิธีที่ใช้ได้ถ้าไม่สนลำดับ คือ <code>sort</code> แล้วนับเฉพาะตัวที่ต่างจากตัวก่อนหน้า แบบหน้า 13.1 ซึ่งเป็น O(N log N) เท่ากับ set ลองนับจำนวนค่าที่ไม่ซ้ำด้วยทั้งสามวิธี ใช้เลขทะเบียนสุ่ม 0 ถึง 10<sup>9</sup> จาก <code>mt19937</code> ตัวสุ่มของ C++ ที่ให้เลขใหญ่กว่า <code>rand()</code> แล้วจับเวลาเฉพาะช่วงนับด้วย <code>clock()</code></p>
+
+      <p>วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 แรม 32 GB ระบบ Windows 11 คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks แบบ <code>-O2</code> ตัวเลขเป็นวินาที แต่ละช่องคือค่ากลางของการรันสามครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>vector ไล่หา O(N<sup>2</sup>)</th><th>set O(N log N)</th><th>sort O(N log N)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10<sup>4</sup></td><td>0.022</td><td>0.002</td><td>ไม่ถึง 0.001</td></tr>
+            <tr><td>10<sup>5</sup></td><td>1.503</td><td>0.018</td><td>0.006</td></tr>
+            <tr><td>2 × 10<sup>5</sup></td><td>4.719</td><td>0.057</td><td>0.010</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คอมไพล์แบบ Code::Blocks ที่ไม่มี <code>-O2</code> วิธี vector ช้าลงอีกมาก N = 10<sup>5</sup> ใช้ 26.9 วินาที และ N = 2 × 10<sup>5</sup> ใช้ราว 111 วินาที ส่วน set กับ sort ยังไม่ถึง 0.12 วินาทีทุกขนาด</p>
+
+      <p>สองเรื่องที่ตารางนี้บอก เรื่องแรก วิธี O(N<sup>2</sup>) ช้าลงราวสามถึงสี่เท่าทุกครั้งที่ N เพิ่มเป็นสองเท่า และไม่มีทางทันที่ N สองแสน เรื่องที่สอง เมื่อข้อมูลมาครบก่อนแล้วค่อยตอบ <code>sort</code> เร็วกว่า set อีกหลายเท่า เพราะอาเรย์เรียงกันในหน่วยความจำ ส่วนต้นไม้กระโดดไปมา set จึงคุ้มเมื่อข้อมูลเปลี่ยนไปเรื่อยๆ และต้องตอบคำถามแทรกระหว่างทาง แบบโปรแกรมห้องสมุดข้างบน ซึ่งการเรียงใหม่ทุกครั้งไม่ทัน</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="duplicates-matter">แบบที่ 1 ใช้ set ทั้งที่ค่าซ้ำมีความหมาย</h3>
+
+      <p>อยากได้คะแนนต่ำสุดของห้อง เลยใส่คะแนนทุกคนลง set เพราะ <code>begin()</code> ให้ค่าน้อยสุดมาฟรีๆ แล้วใช้ <code>size()</code> เป็นจำนวนนักเรียนไปด้วย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="average-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    set&lt;int&gt; scores;
+    int total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int score;
+        cin &gt;&gt; score;
+        scores.insert(score);
+        total += score;
+    }
+    cout &lt;&lt; "students " &lt;&lt; scores.size() &lt;&lt; '\n';
+    cout &lt;&lt; "lowest " &lt;&lt; *scores.begin() &lt;&lt; '\n';
+    cout &lt;&lt; fixed &lt;&lt; setprecision(2);
+    cout &lt;&lt; "average " &lt;&lt; (double)total / scores.size() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="average-bug" data-title="ข้อมูลเข้า"><pre><code>6
+70 85 70 90 85 70
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="average-bug" data-title="C:\code\average.exe"><pre><code>students 3
+lowest 70
+average 156.67
+</code></pre></div>
+      </div>
+
+      <p>นักเรียนหกคนเหลือสามคน และค่าเฉลี่ยเกินคะแนนเต็ม เพราะ set ตัดคะแนนที่ซ้ำทิ้ง ส่วน <code>total</code> บวกครบทุกคน คะแนนต่ำสุดยังถูกเพราะค่าน้อยสุดไม่เปลี่ยนแม้ตัดตัวซ้ำ ซึ่งทำให้ตายใจ ก่อนใช้ set ให้ถามตัวเองเสมอว่า ถ้ามีค่าซ้ำ ต้องนับแยกกันไหม ถ้าต้องนับ ใช้ <code>multiset</code> ในหน้า 20.2 หรือนับจำนวนด้วยวิธีอื่น</p>
+
+      <h3 id="no-index">แบบที่ 2 เรียก s[0] แบบอาเรย์</h3>
+
+      <div class="code" data-lang="cpp"><pre><code>set&lt;int&gt; heights = {158, 171, 149, 165};
+cout &lt;&lt; heights[0] &lt;&lt; '\n';
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>index.cpp:7:20: error: no match for 'operator[]' (operand types are 'std::set&lt;int&gt;' and 'int')
+    7 |     cout &lt;&lt; heights[0] &lt;&lt; '\n';
+      |                    ^
+</code></pre></div>
+
+      <p><code>no match for 'operator[]'</code> แปลว่าชนิดนี้ไม่มีวงเล็บเหลี่ยมให้ใช้ set ไม่มีช่องหมายเลข ค่าน้อยสุดใช้ <code>*heights.begin()</code></p>
+
+      <h3 id="iterator-plus">แบบที่ 3 บวกเลขเข้ากับ iterator</h3>
+
+      <p>เคยเขียน <code>v.begin() + 1</code> กับ vector ได้ เลยลองกับ set</p>
+
+      <div class="code" data-lang="cpp"><pre><code>auto it = heights.begin() + 1;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>plus.cpp:7:31: error: no match for 'operator+' (operand types are 'std::set&lt;int&gt;::iterator' {aka 'std::_Rb_tree&lt;int, int, std::_Identity&lt;int&gt;, std::less&lt;int&gt;, std::allocator&lt;int&gt; &gt;::const_iterator'} and 'int')
+    7 |     auto it = heights.begin() + 1;
+      |               ~~~~~~~~~~~~~~~ ^ ~
+      |                            |    |
+      |                            |    int
+      |                            std::set&lt;int&gt;::iterator {aka std::_Rb_tree&lt;int, int, std::_Identity&lt;int&gt;, std::less&lt;int&gt;, std::allocator&lt;int&gt; &gt;::const_iterator}
+</code></pre></div>
+
+      <p>ข้อความจริงยาวเกือบ 200 บรรทัด ที่เหลือเป็นบรรทัด <code>note</code> ที่ compiler ไล่บอกว่าลองจับคู่กับ <code>operator+</code> แบบไหนไปแล้วบ้าง ให้อ่านแค่บรรทัด error แรก iterator ของ set บวกเลขไม่ได้ เพราะไปตัวถัดไปต้องเดินตามกิ่งของต้นไม้ ไม่ได้อยู่ติดกันแบบอาเรย์ ใช้ <code>next(heights.begin())</code> แทน คำว่า <code>_Rb_tree</code> ในข้อความคือต้นไม้แบบ red-black tree ที่ set ใช้อยู่ข้างใน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>set&lt;T&gt;</code> เก็บค่าไม่ซ้ำ และเรียงจากน้อยไปมากเสมอ</li>
+        <li><code>insert</code> <code>erase</code> <code>count</code> <code>find</code> ใช้เวลา O(log N) <code>size</code> กับ <code>empty</code> ใช้ O(1)</li>
+        <li>ค่าน้อยสุด <code>*s.begin()</code> ค่ามากสุด <code>*s.rbegin()</code> หรือ <code>*prev(s.end())</code> เช็ก <code>empty()</code> ก่อนเสมอ</li>
+        <li>set ไม่มี <code>s[i]</code> และบวกเลขเข้ากับ iterator ไม่ได้ ใช้ <code>next</code> <code>prev</code> แทน</li>
+        <li>ข้อมูลมาครบก่อนแล้วค่อยตอบ <code>sort</code> เร็วกว่า ข้อมูลเปลี่ยนไปเรื่อยๆ ระหว่างตอบ ใช้ set</li>
+        <li>ค่าซ้ำมีความหมายเมื่อไร set จะตัดทิ้งเงียบๆ ทำให้คำตอบผิด</li>
+      </ul>
+    </article>

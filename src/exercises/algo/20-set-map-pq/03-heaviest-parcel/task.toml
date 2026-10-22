@@ -1,0 +1,3 @@
+title = "ส่งพัสดุชิ้นที่หนักที่สุด"
+level = 1
+hint = '''<p>เก็บน้ำหนักไว้ใน <code>priority_queue&lt;int&gt;</code> ซึ่งให้ค่ามากที่สุดที่ <code>top()</code> คำสั่ง <code>-</code> คือ <code>top()</code> แล้ว <code>pop()</code> แต่ต้องเช็ก <code>empty()</code> ก่อนทุกครั้ง เรียก <code>top()</code> ตอนคิวว่างไม่มี error แต่ได้ค่าขยะ ถ้าไล่หาค่ามากสุดใน <code>vector</code> ทุกครั้ง จะต้องดูของเป็นแสนชิ้นทุกรอบ ไม่ทัน</p>'''

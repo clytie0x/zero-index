@@ -1,0 +1,376 @@
+<article class="doc">
+      <h1>20.2 ค้นหาใน set และ multiset</h1>
+
+      <p>set เรียงค่าไว้ให้ตลอดเวลา จึงถามได้มากกว่าแค่ว่ามีหรือไม่มี เช่น รถเมล์คันถัดไปออกกี่โมง สถานีที่ใกล้บ้านที่สุดอยู่ตรงไหน หนังสือเล่มแพงที่สุดที่ราคาไม่เกินงบคือเล่มไหน คำถามแบบนี้ในหน้า 19.2 ตอบด้วย <code>lower_bound</code> บน vector ที่เรียงแล้ว แต่ vector เรียงครั้งเดียวแล้วต้องอยู่นิ่ง ถ้ามีการเพิ่มหรือลบแทรกระหว่างคำถาม ต้องใช้ set ส่วนครึ่งหลังของหน้าเป็นเรื่อง <code>multiset</code> สำหรับงานที่ค่าซ้ำได้</p>
+
+      <h2 id="lower-bound">lower_bound และ upper_bound ของ set</h2>
+
+      <p>ตารางรถเมล์บอกเวลาออกเป็นนาทีนับจากเที่ยงคืน เช่น 430 คือ 7 โมง 10 นาที ผู้โดยสารมาถึงป้ายเวลา <code>now</code> อยากรู้ว่าคันแรกที่ยังไม่ออกไปคือคันไหน รถที่ออกเวลาเดียวกับที่มาถึงพอดียังทัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bus"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    set&lt;int&gt; departures;
+    for (int i = 0; i &lt; n; i++) {
+        int minute;
+        cin &gt;&gt; minute;
+        departures.insert(minute);
+    }
+    for (int i = 0; i &lt; q; i++) {
+        int now;
+        cin &gt;&gt; now;
+        auto it = departures.lower_bound(now);
+        if (it == departures.end()) {
+            cout &lt;&lt; now &lt;&lt; ": no more buses\n";
+        } else {
+            cout &lt;&lt; now &lt;&lt; ": next bus at " &lt;&lt; *it &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="bus" data-title="ข้อมูลเข้า"><pre><code>6 4
+430 360 545 395 480 610
+400
+430
+611
+0
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bus" data-title="C:\code\bus.exe"><pre><code>400: next bus at 430
+430: next bus at 430
+611: no more buses
+0: next bus at 360
+</code></pre></div>
+      </div>
+
+      <p><code>departures.lower_bound(now)</code> คืน iterator ของค่าแรกที่ <strong>มากกว่าหรือเท่ากับ</strong> <code>now</code> ความหมายเดียวกับ <code>lower_bound</code> ของ vector ในหน้า 19.2 แต่เขียนเป็นคำสั่งของ set เอง เรียกผ่านจุดหลังชื่อ set และส่งแค่ค่าที่หา ถ้าไม่มีค่าไหนผ่านเงื่อนไข จะได้ <code>end()</code> ซึ่งต้องเช็กก่อนอ่านค่าทุกครั้ง</p>
+
+      <p>คู่ของมันคือ <code>upper_bound(x)</code> ค่าแรกที่ <strong>มากกว่า</strong> x อย่างเดียว ไม่นับที่เท่ากัน ส่วนคำถามฝั่งตรงข้าม เช่น คันล่าสุดที่ออกไปแล้ว ใช้ <code>prev</code> ถอยหลังหนึ่งก้าวจากผลของสองคำสั่งนี้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bounds"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    set&lt;int&gt; departures = {360, 395, 430, 480, 545, 610};
+    cout &lt;&lt; *departures.lower_bound(430) &lt;&lt; '\n';
+    cout &lt;&lt; *departures.upper_bound(430) &lt;&lt; '\n';
+    auto it = departures.upper_bound(500);
+    cout &lt;&lt; *prev(it) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bounds" data-title="C:\code\bounds.exe"><pre><code>430
+480
+480
+</code></pre></div>
+
+      <p>บรรทัดที่ 9 กับ 10 หาคันสุดท้ายที่ออกไม่เกินเวลา 500 ค่าแรกที่มากกว่า 500 คือ 545 ถอยกลับหนึ่งก้าวได้ 480 สี่คำถามที่เจอบ่อยสรุปได้แบบนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>อยากได้</th><th>เขียน</th><th>ไม่มีคำตอบเมื่อ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ค่าน้อยสุดที่ ≥ x</td><td><code>s.lower_bound(x)</code></td><td>ได้ <code>s.end()</code></td></tr>
+            <tr><td>ค่าน้อยสุดที่ &gt; x</td><td><code>s.upper_bound(x)</code></td><td>ได้ <code>s.end()</code></td></tr>
+            <tr><td>ค่ามากสุดที่ ≤ x</td><td><code>prev(s.upper_bound(x))</code></td><td><code>s.upper_bound(x)</code> เป็น <code>s.begin()</code></td></tr>
+            <tr><td>ค่ามากสุดที่ &lt; x</td><td><code>prev(s.lower_bound(x))</code></td><td><code>s.lower_bound(x)</code> เป็น <code>s.begin()</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถอยหลังจาก <code>begin()</code> ไม่ได้ เพราะไม่มีตัวก่อนหน้าแล้ว จึงต้องเช็กก่อนเรียก <code>prev</code> ทุกครั้ง</p>
+
+      <h2 id="nearest">ค่าที่ใกล้ที่สุด</h2>
+
+      <p>ทางหลวงมีสถานีชาร์จรถไฟฟ้าที่ทยอยเปิดเพิ่ม <code>+ km</code> คือเปิดสถานีที่กิโลเมตรนั้น <code>? km</code> คือมีคนอยู่ที่กิโลเมตรนั้นถามว่าสถานีที่ใกล้ที่สุดห่างไปกี่กิโลเมตร ข้างหน้าหรือข้างหลังก็ได้</p>
+
+      <p>สถานีที่ใกล้ที่สุดต้องเป็นหนึ่งในสองตัว คือตัวแรกที่อยู่ที่ km หรือเลยไปข้างหน้า กับตัวสุดท้ายที่อยู่ข้างหลัง ตัวอื่นไกลกว่าสองตัวนี้แน่นอน ทั้งสองตัวอยู่ติดกันใน set พอดี</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="charger"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int q;
+    cin &gt;&gt; q;
+    set&lt;int&gt; stations;
+    for (int i = 0; i &lt; q; i++) {
+        char op;
+        int km;
+        cin &gt;&gt; op &gt;&gt; km;
+        if (op == '+') {
+            stations.insert(km);
+            continue;
+        }
+        if (stations.empty()) {
+            cout &lt;&lt; "none\n";
+            continue;
+        }
+        int best = INT_MAX;
+        auto it = stations.lower_bound(km); // (1)!
+        if (it != stations.end()) {
+            best = min(best, *it - km);
+        }
+        if (it != stations.begin()) { // (2)!
+            best = min(best, km - *prev(it));
+        }
+        cout &lt;&lt; best &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สถานีแรกที่อยู่ที่ km พอดีหรือข้างหน้า ถ้าเป็น <code>end()</code> แปลว่าข้างหน้าไม่มีสถานีเลย</li>
+        <li>ตัวก่อนหน้า <code>it</code> คือสถานีสุดท้ายที่อยู่ข้างหลัง มีได้ก็ต่อเมื่อ <code>it</code> ไม่ใช่ตัวแรกของ set ถ้า <code>it</code> เป็น <code>end()</code> แต่ set ไม่ว่าง <code>prev(it)</code> ก็คือตัวสุดท้ายพอดี ใช้ได้</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="charger" data-title="ข้อมูลเข้า"><pre><code>7
+? 50
++ 120
+? 50
++ 30
+? 50
+? 75
+? 400
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="charger" data-title="C:\code\charger.exe"><pre><code>none
+70
+20
+45
+280
+</code></pre></div>
+      </div>
+
+      <p>คำถามที่ km 75 อยู่กึ่งกลางระหว่าง 30 กับ 120 ได้ 45 ทั้งสองทาง ส่วนคำถามที่ km 400 ไม่มีสถานีข้างหน้า <code>it</code> เป็น <code>end()</code> จึงเหลือแค่ตัวข้างหลังคือ 120 <code>INT_MAX</code> คือค่ามากสุดของ <code>int</code> จาก <code>climits</code> ใช้เป็นค่าเริ่มต้นที่อะไรก็น้อยกว่า</p>
+
+      <p>แต่ละคำถามใช้ <code>lower_bound</code> หนึ่งครั้งกับ <code>prev</code> หนึ่งครั้ง จึงเป็น O(log N) ถ้าเก็บสถานีใน vector แล้วไล่ดูทุกสถานี จะเป็น O(N) ต่อคำถาม มีสถานีหนึ่งแสนกับคำถามหนึ่งแสนก็เป็นงาน 10<sup>10</sup> ก้าว ไม่ทันแน่นอน แบบฝึกหัดข้อ 5 ให้ลองวัดเอง</p>
+
+      <h2 id="std-lower-bound">อย่าใช้ std::lower_bound กับ set</h2>
+
+      <p>ในบทที่ 19 เขียน <code>lower_bound(v.begin(), v.end(), x)</code> กับ vector จนชินมือ เลยเผลอเขียนแบบเดียวกันกับ set ซึ่งคอมไพล์ผ่าน ไม่มีคำเตือน และได้คำตอบถูกทุกข้อ แต่ช้ามาก โปรแกรมนี้ใส่ค่าสุ่ม n ค่าลง set แล้วถาม n ครั้งด้วยสองวิธี จับเวลาแยกกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    mt19937 rng(2569);
+    set&lt;int&gt; s;
+    for (int i = 0; i &lt; n; i++) {
+        s.insert(rng() % 1000000000);
+    }
+    vector&lt;int&gt; queries(n);
+    for (int i = 0; i &lt; n; i++) {
+        queries[i] = rng() % 1000000000;
+    }
+
+    clock_t start = clock();
+    long long total1 = 0;
+    for (int x : queries) {
+        auto it = s.lower_bound(x);
+        if (it != s.end()) {
+            total1 += *it;
+        }
+    }
+    clock_t middle = clock();
+    long long total2 = 0;
+    for (int x : queries) {
+        auto it = lower_bound(s.begin(), s.end(), x);
+        if (it != s.end()) {
+            total2 += *it;
+        }
+    }
+    clock_t end = clock();
+
+    cout &lt;&lt; total1 &lt;&lt; ' ' &lt;&lt; total2 &lt;&lt; '\n';
+    cout &lt;&lt; fixed &lt;&lt; setprecision(3);
+    cout &lt;&lt; "s.lower_bound:    " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    cout &lt;&lt; "std::lower_bound: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p><code>mt19937</code> เป็นตัวสุ่มของ C++ ที่ให้เลขได้ถึงราว 4 × 10<sup>9</sup> ต่างจาก <code>rand()</code> บน Windows ที่ให้ได้แค่ 32767 เลข 2569 ในวงเล็บคือจุดเริ่ม รันกี่ครั้งก็ได้ชุดเดิม <code>total1</code> กับ <code>total2</code> พิมพ์ไว้ยืนยันว่าสองวิธีได้คำตอบเดียวกัน</p>
+
+      <p>วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 แรม 32 GB ระบบ Windows 11 คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks ตัวเลขเป็นวินาที ช่องที่ N ไม่เกิน 2 × 10<sup>4</sup> เป็นค่ากลางของการรันสามครั้ง ช่อง <code>std::lower_bound</code> แบบ Code::Blocks ที่ N = 5 × 10<sup>4</sup> รันครั้งเดียวเพราะนานเกือบสองนาที</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th><code>s.lower_bound</code> แบบ -O2</th><th><code>std::lower_bound</code> แบบ -O2</th><th><code>std::lower_bound</code> แบบ Code::Blocks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10<sup>4</sup></td><td>ไม่ถึง 0.001</td><td>0.957</td><td>1.062</td></tr>
+            <tr><td>2 × 10<sup>4</sup></td><td>0.001</td><td>5.392</td><td>6.260</td></tr>
+            <tr><td>5 × 10<sup>4</sup></td><td>0.005</td><td>84.2</td><td>104.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ข้อมูลแค่ห้าหมื่นตัว วิธีที่ผิดใช้เวลาเกินนาที ส่วนวิธีที่ถูกใช้ไม่ถึงหนึ่งในร้อยวินาที ทั้งที่ได้คำตอบเดียวกันทุกข้อ</p>
+
+      <p>ทำไมต่างกันขนาดนี้ <code>std::lower_bound</code> คือ binary search ที่ต้องกระโดดไปตรงกลางช่วงได้ทันที ซึ่งทำได้กับ vector เพราะช่องเรียงติดกัน แต่ iterator ของ set เดินได้ทีละก้าวตามที่เห็นในหน้า 20.1 การกระโดดไปตรงกลางจึงกลายเป็นเดินทีละก้าวครึ่งเซต เทียบค่าแค่ราว log N ครั้งก็จริง แต่เดินรวมราว N ก้าวต่อคำถาม คำถาม N ครั้งจึงเป็น O(N<sup>2</sup>) ส่วน <code>s.lower_bound(x)</code> เดินลงตามกิ่งของต้นไม้ตรงๆ แค่ O(log N)</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">จำง่ายๆ</p>
+        <p>กับ set multiset และ map ให้เรียก <code>s.lower_bound(x)</code> <code>s.upper_bound(x)</code> <code>s.count(x)</code> <code>s.find(x)</code> แบบมีจุดหลังชื่อเสมอ ฟังก์ชันชื่อเดียวกันที่รับ <code>begin()</code> กับ <code>end()</code> ใช้กับ vector อาเรย์ และ string</p>
+      </div>
+
+      <h2 id="multiset">multiset เก็บค่าซ้ำได้</h2>
+
+      <p>ราคาสินค้า คะแนนสอบ ความสูงของนักเรียน ซ้ำกันได้เสมอ ถ้าใช้ set จะหายไปเงียบๆ แบบที่เห็นในหน้า 20.1 <code>multiset</code> คือ set ที่ยอมให้ค่าซ้ำ ยังเรียงให้ และใช้คำสั่งชุดเดียวกันทุกอย่าง แต่มีสองจุดที่ทำงานต่างไป</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="multiset"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    multiset&lt;int&gt; scores = {72, 85, 60, 85, 91, 85};
+    for (int s : scores) {
+        cout &lt;&lt; s &lt;&lt; ' ';
+    }
+    cout &lt;&lt; '\n';
+    cout &lt;&lt; "size " &lt;&lt; scores.size() &lt;&lt; '\n';
+    cout &lt;&lt; "count 85: " &lt;&lt; scores.count(85) &lt;&lt; '\n';
+
+    scores.erase(scores.find(85));
+    cout &lt;&lt; "after erasing one 85: count " &lt;&lt; scores.count(85) &lt;&lt; ", size " &lt;&lt; scores.size() &lt;&lt; '\n';
+
+    scores.erase(85);
+    cout &lt;&lt; "after erase(85): count " &lt;&lt; scores.count(85) &lt;&lt; ", size " &lt;&lt; scores.size() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="multiset" data-title="C:\code\multiset.exe"><pre><code>60 72 85 85 85 91
+size 6
+count 85: 3
+after erasing one 85: count 2, size 5
+after erase(85): count 0, size 3
+</code></pre></div>
+
+      <ul>
+        <li><code>count(x)</code> คืนจำนวนตัวที่เท่ากับ x ซึ่งมากกว่า 1 ได้ ใช้เวลา O(log N + k) เมื่อ k คือจำนวนตัวที่นับได้ ถ้ามี x ซ้ำเป็นแสนตัว <code>count</code> ก็ช้าตาม ถ้าแค่อยากรู้ว่ามีไหม ใช้ <code>find(x) != end()</code> เร็วกว่า</li>
+        <li><code>erase(x)</code> ลบ <strong>ทุกตัว</strong>ที่เท่ากับ x ถ้าอยากลบตัวเดียว ต้องหา iterator ด้วย <code>find(x)</code> แล้วส่ง iterator นั้นให้ <code>erase</code> และถ้าไม่แน่ใจว่ามี x ต้องเช็กว่า <code>find</code> ไม่ได้คืน <code>end()</code> ก่อน เพราะลบ <code>end()</code> ทำให้โปรแกรมพัง บนเครื่องที่เขียนเอกสารนี้ได้ <code>Process returned -1073740940 (0xC0000374)</code> ทันที</li>
+      </ul>
+
+      <p>ค่าน้อยสุด ค่ามากสุด <code>lower_bound</code> และ <code>upper_bound</code> ใช้ได้เหมือน set ทุกอย่าง ถ้ามีค่า x ซ้ำหลายตัว <code>lower_bound(x)</code> ชี้ตัวแรกในกลุ่ม และ <code>upper_bound(x)</code> ชี้ตัวแรกที่เลยกลุ่มไปแล้ว</p>
+
+      <p>งานที่ multiset ทำได้ดีคือ "หยิบตัวที่ดีที่สุดที่เข้าเงื่อนไขออกไปหนึ่งตัว" เช่น ลูกค้ามีงบ b บาท จะซื้อของชิ้นที่แพงที่สุดที่ไม่เกินงบ หาได้ด้วย <code>prev(ms.upper_bound(b))</code> แล้วลบชิ้นนั้นทิ้งด้วย <code>erase(it)</code> ทั้งหมดเป็น O(log N) แบบฝึกหัดข้อ 8 เป็นโจทย์แนวนี้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่งของ set และ multiset</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>lower_bound(x)</code> <code>upper_bound(x)</code> <code>find(x)</code></td><td>O(log N)</td></tr>
+            <tr><td><code>erase(it)</code> ลบตัวที่ iterator ชี้</td><td>O(log N)</td></tr>
+            <tr><td><code>count(x)</code> และ <code>erase(x)</code> ของ multiset</td><td>O(log N + k) เมื่อ k คือจำนวนตัวที่เท่ากับ x</td></tr>
+            <tr><td><code>lower_bound(s.begin(), s.end(), x)</code> กับ set</td><td>O(N) ต่อครั้ง ห้ามใช้</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="erase-all">แบบที่ 1 erase ด้วยค่าใน multiset</h3>
+
+      <p>ชั้นวางมีสินค้าหลายชิ้นราคาเท่ากัน ลูกค้าซื้อไปทีละชิ้น แต่ใช้ <code>erase(price)</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sold-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    multiset&lt;int&gt; shelf;
+    for (int i = 0; i &lt; n; i++) {
+        int price;
+        cin &gt;&gt; price;
+        shelf.insert(price);
+    }
+    for (int i = 0; i &lt; q; i++) {
+        int price;
+        cin &gt;&gt; price;
+        shelf.erase(price);
+        cout &lt;&lt; "sold " &lt;&lt; price &lt;&lt; ", left " &lt;&lt; shelf.size() &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="sold-bug" data-title="ข้อมูลเข้า"><pre><code>6 2
+35 20 35 35 50 20
+35
+20
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sold-bug" data-title="C:\code\shelf.exe"><pre><code>sold 35, left 3
+sold 20, left 1
+</code></pre></div>
+      </div>
+
+      <p>ขายไปสองชิ้น ของบนชั้นควรเหลือ 5 กับ 4 แต่เหลือ 3 กับ 1 เพราะขายชิ้นราคา 35 ไปชิ้นเดียว ชิ้นราคา 35 หายไปทั้งสามชิ้น ไม่มีคำเตือนใดๆ แก้เป็น</p>
+
+      <div class="code" data-lang="cpp"><pre><code>auto it = shelf.find(price);
+if (it != shelf.end()) {
+    shelf.erase(it);
+}
+</code></pre></div>
+
+      <h3 id="read-end">แบบที่ 2 อ่านค่าจาก end()</h3>
+
+      <p>ในโปรแกรมรถเมล์ ลืมเช็กว่า <code>lower_bound</code> ได้ <code>end()</code> หรือเปล่า แล้วผู้โดยสารมาถึงตอนรถคันสุดท้ายออกไปแล้ว</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    set&lt;int&gt; departures = {360, 395, 430, 480, 545, 610};
+    int now;
+    cin &gt;&gt; now;
+    cout &lt;&lt; "next bus at " &lt;&lt; *departures.lower_bound(now) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>700
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือน และโปรแกรมไม่พัง บนเครื่องที่เขียนเอกสารนี้พิมพ์ <code>next bus at 6</code> ทุกครั้ง ทั้งแบบ Code::Blocks และแบบ <code>-O2</code> เลข 6 ไม่ใช่เวลารถ <code>end()</code> ไม่ได้ชี้ค่าในเซต สิ่งที่อ่านได้จึงเป็นข้อมูลอื่นที่อยู่ตรงนั้นในหน่วยความจำ ซึ่งบังเอิญเท่ากับจำนวนค่าในเซตพอดี เครื่องอื่นหรือ compiler อื่นอาจได้ค่าอื่นหรือพังเลย อันตรายตรงที่ดูเหมือนคำตอบปกติ ทุกครั้งที่ได้ iterator จาก <code>lower_bound</code> <code>upper_bound</code> หรือ <code>find</code> ต้องเช็กกับ <code>end()</code> ก่อนใส่ <code>*</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>s.lower_bound(x)</code> ค่าแรกที่ ≥ x <code>s.upper_bound(x)</code> ค่าแรกที่ &gt; x ไม่มีคำตอบได้ <code>end()</code></li>
+        <li>ค่ามากสุดที่ ≤ x คือ <code>prev(s.upper_bound(x))</code> เช็กก่อนว่าไม่ใช่ <code>begin()</code></li>
+        <li>ค่าที่ใกล้ x ที่สุด ดูแค่ <code>lower_bound(x)</code> กับตัวก่อนหน้า</li>
+        <li><code>lower_bound(s.begin(), s.end(), x)</code> กับ set ได้คำตอบถูกแต่เป็น O(N) ต่อครั้ง ใช้แบบมีจุด <code>s.lower_bound(x)</code> เท่านั้น</li>
+        <li><code>multiset</code> เก็บค่าซ้ำได้ <code>erase(x)</code> ลบทุกตัว ลบตัวเดียวใช้ <code>erase(find(x))</code> หลังเช็กว่าไม่ใช่ <code>end()</code></li>
+      </ul>
+    </article>

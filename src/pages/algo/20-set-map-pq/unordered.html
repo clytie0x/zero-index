@@ -1,0 +1,281 @@
+<article class="doc">
+      <h1>20.4 unordered_map และ unordered_set</h1>
+
+      <p>set กับ map เรียงข้อมูลให้ตลอดเวลา จึงตอบได้ว่าค่าน้อยสุดคืออะไร หรือค่าแรกที่ ≥ x คืออะไร แต่ถ้าโจทย์ถามแค่ว่ามีไหม หรือนับว่ากี่ครั้ง การเรียงไว้ก็เป็นงานที่เปล่าประโยชน์ C++ มีอีกคู่หนึ่งที่ไม่เรียง คือ <code>unordered_set</code> กับ <code>unordered_map</code> ใช้คำสั่งชุดเดียวกัน แต่ข้างในเป็น<strong>ตารางแฮช (hash table)</strong> ซึ่งแต่ละคำสั่งใช้เวลาเฉลี่ย O(1) หน้านี้ดูว่าเร็วขึ้นจริงแค่ไหน และกรณีไหนที่มันช้าลงจนแพ้ map แบบไม่เห็นฝุ่น</p>
+
+      <h2 id="hash-idea">ตารางแฮชทำงานยังไง</h2>
+
+      <p>นึกถึงอาเรย์นับในหน้า 5.3 ที่ใช้ค่าเป็นหมายเลขช่องตรงๆ เร็วมากแต่ต้องมีช่องเท่ากับช่วงของค่า ตารางแฮชแก้ด้วยการมีช่องจำนวนพอประมาณ เรียกว่า <strong>bucket</strong> แล้วแปลงค่าเป็นหมายเลขช่องด้วยการ mod กับจำนวนช่อง ถ้ามี 7 ช่อง ค่า 40 ไปอยู่ช่อง 40 % 7 = 5 ค่าที่ตกช่องเดียวกันต่อกันเป็นรายการในช่องนั้น เหมือน linked list ในบทที่ 14</p>
+
+      <figure>
+        <svg viewBox="0 0 480 250" width="480" style="max-width:100%;height:auto" role="img" aria-label="ตารางแฮช 7 ช่อง ค่า 15 กับ 22 อยู่ช่อง 1 ค่า 9 อยู่ช่อง 2 ค่า 40 อยู่ช่อง 5 ค่า 1000 อยู่ช่อง 6 ช่องอื่นว่าง">
+          <g style="font-family:var(--font-code);font-size:14px">
+            <g style="fill:var(--muted)" text-anchor="end">
+              <text x="40" y="29">0</text>
+              <text x="40" y="61">1</text>
+              <text x="40" y="93">2</text>
+              <text x="40" y="125">3</text>
+              <text x="40" y="157">4</text>
+              <text x="40" y="189">5</text>
+              <text x="40" y="221">6</text>
+            </g>
+            <g style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2">
+              <rect x="50" y="10" width="40" height="28"/>
+              <rect x="50" y="42" width="40" height="28"/>
+              <rect x="50" y="74" width="40" height="28"/>
+              <rect x="50" y="106" width="40" height="28"/>
+              <rect x="50" y="138" width="40" height="28"/>
+              <rect x="50" y="170" width="40" height="28"/>
+              <rect x="50" y="202" width="40" height="28"/>
+            </g>
+            <g style="stroke:var(--line-strong);stroke-width:2">
+              <line x1="90" y1="56" x2="120" y2="56"/>
+              <line x1="180" y1="56" x2="210" y2="56"/>
+              <line x1="90" y1="88" x2="120" y2="88"/>
+              <line x1="90" y1="184" x2="120" y2="184"/>
+              <line x1="90" y1="216" x2="120" y2="216"/>
+            </g>
+            <g style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2">
+              <rect x="120" y="42" width="60" height="28" rx="6"/>
+              <rect x="210" y="42" width="60" height="28" rx="6"/>
+              <rect x="120" y="74" width="60" height="28" rx="6"/>
+              <rect x="120" y="170" width="60" height="28" rx="6"/>
+              <rect x="120" y="202" width="60" height="28" rx="6"/>
+            </g>
+            <g style="fill:var(--ink)" text-anchor="middle">
+              <text x="150" y="61">15</text>
+              <text x="240" y="61">22</text>
+              <text x="150" y="93">9</text>
+              <text x="150" y="189">40</text>
+              <text x="150" y="221">1000</text>
+            </g>
+          </g>
+          <g style="font-family:var(--font-text);font-size:14px;fill:var(--muted)">
+            <text x="290" y="61">15 % 7 = 1  22 % 7 = 1</text>
+            <text x="200" y="93">9 % 7 = 2</text>
+            <text x="200" y="189">40 % 7 = 5</text>
+            <text x="200" y="221">1000 % 7 = 6</text>
+          </g>
+        </svg>
+      </figure>
+
+      <p>หาค่า 22 ก็คำนวณ 22 % 7 = 1 แล้วไล่ดูเฉพาะช่อง 1 ซึ่งมีแค่สองตัว ไม่ต้องดูช่องอื่นเลย ตารางแฮชของ C++ คอยเพิ่มจำนวนช่องให้มากกว่าจำนวนค่าเสมอ พอค่าเพิ่มจนแน่นก็ขยายตารางแล้วย้ายทุกค่าไปช่องใหม่ ถ้าค่ากระจายตัวดี แต่ละช่องมีของแค่หนึ่งสองตัว ทุกคำสั่งจึงใช้เวลาเฉลี่ย O(1) ค่าที่ไม่ใช่ตัวเลขเช่นข้อความ จะถูกแปลงเป็นตัวเลขด้วย<strong>ฟังก์ชันแฮช</strong>ก่อน แล้วค่อย mod</p>
+
+      <h2 id="usage">ใช้งานเหมือน set และ map</h2>
+
+      <p>เปลี่ยนชื่อชนิดอย่างเดียว คำสั่ง <code>insert</code> <code>count</code> <code>find</code> <code>erase</code> <code>size</code> และวงเล็บเหลี่ยมของ map ใช้ได้เหมือนเดิมทุกอย่าง รวมถึงกับดักวงเล็บเหลี่ยมสร้างคีย์ในหน้า 20.3 ด้วย สิ่งที่หายไปคือทุกอย่างที่อาศัยลำดับ</p>
+
+      <ul>
+        <li>ไม่มี <code>lower_bound</code> <code>upper_bound</code></li>
+        <li><code>begin()</code> ไม่ใช่ค่าน้อยสุด และไม่มี <code>rbegin()</code></li>
+        <li>วนด้วย <code>for</code> แล้วได้ลำดับที่เดาไม่ได้ ไม่ใช่จากน้อยไปมาก และไม่ใช่ตามลำดับที่ใส่</li>
+      </ul>
+
+      <p>ตัวอย่างการใช้งานจริงอยู่ในหัวข้อจับคู่ผลรวมข้างล่าง</p>
+
+      <h2 id="speed">เร็วกว่า map แค่ไหน</h2>
+
+      <p>นับความถี่ของตัวเลขสุ่ม 0 ถึง 10<sup>9</sup> ด้วย <code>map&lt;int, int&gt;</code> เทียบกับ <code>unordered_map&lt;int, int&gt;</code> โค้ดเหมือนโปรแกรม calls ในหน้า 20.3 ต่างกันแค่ชื่อชนิด จับเวลาเฉพาะช่วงนับ</p>
+
+      <div class="code" data-lang="cpp"><pre><code>map&lt;int, int&gt; tree_count;
+for (int x : values) {
+    tree_count[x]++;
+}
+unordered_map&lt;int, int&gt; hash_count;
+for (int x : values) {
+    hash_count[x]++;
+}
+</code></pre></div>
+
+      <p>วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 แรม 32 GB ระบบ Windows 11 คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks ตัวเลขเป็นวินาที แต่ละช่องคือค่ากลางของการรันสามครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>map แบบ -O2</th><th>unordered_map แบบ -O2</th><th>map แบบ Code::Blocks</th><th>unordered_map แบบ Code::Blocks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>สุ่ม 2 × 10<sup>5</sup> ตัว</td><td>0.049</td><td>0.019</td><td>0.146</td><td>0.088</td></tr>
+            <tr><td>สุ่ม 10<sup>6</sup> ตัว</td><td>0.787</td><td>0.490</td><td>1.267</td><td>0.540</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เร็วกว่าจริงแต่ไม่ได้ต่างกันเป็นสิบเท่าอย่างที่ O(1) กับ O(log N) ชวนให้คิด เพราะการคำนวณ mod การจองหน่วยความจำให้ของแต่ละตัว และการขยายตารางกินเวลาไม่น้อย ในโจทย์ส่วนใหญ่ map ก็ทันสบายอยู่แล้ว unordered_map ช่วยได้ตอนที่เวลาเฉียดขอบจริงๆ</p>
+
+      <h2 id="worst-case">กรณีแย่สุด</h2>
+
+      <p>O(1) เป็นแค่ค่าเฉลี่ยเมื่อค่ากระจายไปหลายช่อง ถ้าค่าส่วนใหญ่ตกช่องเดียวกัน ช่องนั้นจะยาวเป็นหมื่น ทุกคำสั่งต้องไล่ทั้งรายการ กลายเป็น O(N) ต่อครั้ง ตารางแฮชของ GCC แปลง <code>int</code> เป็นหมายเลขช่องด้วยการ mod กับจำนวนช่องตรงๆ และจำนวนช่องเป็นจำนวนเฉพาะชุดที่รู้กันล่วงหน้า เช่น ตอนเก็บค่าไว้ราวหนึ่งหมื่นถึงสองหมื่นค่า ตารางมี 20753 ช่อง ถ้าทุกค่าเป็นพหุคูณของ 20753 ทุกค่าจะตกช่อง 0 หมด</p>
+
+      <p>ลองนับความถี่ของตัวเลขสองแสนตัว ที่สุ่มมาจากพหุคูณของ 20753 สองหมื่นแบบ ทุกค่ายังไม่เกิน 10<sup>9</sup> ตามขอบเขตโจทย์ทั่วไป</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>map แบบ -O2</th><th>unordered_map แบบ -O2</th><th>map แบบ Code::Blocks</th><th>unordered_map แบบ Code::Blocks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>สุ่ม 2 × 10<sup>5</sup> ตัว</td><td>0.049</td><td>0.019</td><td>0.146</td><td>0.088</td></tr>
+            <tr><td>พหุคูณของ 20753 จำนวน 2 × 10<sup>5</sup> ตัว</td><td>0.023</td><td>4.224</td><td>0.065</td><td>54.3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วัดบนเครื่องเดิม ช่องแบบ <code>-O2</code> เป็นค่ากลางของการรันสามครั้ง ช่องแบบ Code::Blocks ของแถวที่สองรันครั้งเดียว</p>
+
+      <p>map ไม่สนว่าค่าหน้าตาเป็นอย่างไร ยังเป็น O(log N) เสมอ ส่วน unordered_map ช้าลงหลายร้อยเท่า ข้อมูลแบบนี้ไม่เกิดขึ้นเองตามธรรมชาติ แต่คนออกโจทย์ตั้งใจสร้างได้ การแข่งที่เปิดให้ผู้เข้าแข่งขันส่งชุดทดสอบมาโจมตีโปรแกรมของคนอื่นได้ เช่น Codeforces มีคนทำแบบนี้จริงเป็นประจำ ส่วนการสอบที่ชุดทดสอบเตรียมไว้ล่วงหน้าเจอน้อยกว่ามาก แต่ก็ไม่มีอะไรรับประกัน ตารางแฮชกันได้ด้วยการเขียนฟังก์ชันแฮชเอง ซึ่งเกินขอบเขตของบทนี้</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">เลือกตัวไหนเป็นค่าเริ่มต้น</p>
+        <p>ใช้ map กับ set เป็นค่าเริ่มต้น เพราะเวลาแน่นอนทุกกรณีและใช้ <code>lower_bound</code> ได้ เปลี่ยนเป็นแบบ unordered เมื่อไม่ต้องการลำดับ และวัดแล้วว่าเวลาเฉียดขอบ</p>
+      </div>
+
+      <h2 id="pair-sum">ตัวอย่าง จับคู่ผลรวมเท่ากับ K</h2>
+
+      <p>น้องได้บัตรของขวัญมูลค่า K บาท ร้านมีสินค้า N ชิ้นเรียงบนชั้น อยากซื้อของ<strong>สองชิ้น</strong>ที่ราคารวมเท่ากับ K พอดี ให้บอกตำแหน่งของสองชิ้นนั้น ถ้ามีหลายคู่ ตอบคู่ไหนก็ได้ ถ้าไม่มีให้พิมพ์ <code>no pair</code></p>
+
+      <p>ไล่ชิ้นที่ j จากซ้ายไปขวา ชิ้นที่ j ราคา p ต้องการคู่ราคา K - p ถ้าราคานั้นเคยเจอในชิ้นก่อนหน้าก็จบ จึงต้องจดไว้ว่าราคาที่เคยเจออยู่ตำแหน่งไหน งานแบบนี้คือ map ที่ไม่ต้องเรียง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="gift"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    long long target;
+    cin &gt;&gt; n &gt;&gt; target;
+    unordered_map&lt;long long, int&gt; position;
+    for (int j = 1; j &lt;= n; j++) {
+        long long price;
+        cin &gt;&gt; price;
+        auto it = position.find(target - price); // (1)!
+        if (it != position.end()) {
+            cout &lt;&lt; it-&gt;second &lt;&lt; ' ' &lt;&lt; j &lt;&lt; '\n';
+            return 0;
+        }
+        position[price] = j; // (2)!
+    }
+    cout &lt;&lt; "no pair\n";
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใช้ <code>find</code> ไม่ใช่วงเล็บเหลี่ยม เพราะแค่ถาม ไม่อยากสร้างคีย์ราคาที่ไม่มีอยู่จริงทิ้งไว้</li>
+        <li>จดราคานี้<strong>หลัง</strong>จากถามแล้ว ถ้าจดก่อน ของราคา K/2 ชิ้นเดียวจะจับคู่กับตัวเอง ถ้าราคาซ้ำ ตำแหน่งจะถูกเขียนทับด้วยชิ้นหลัง ซึ่งไม่ผิดเพราะโจทย์ขอคู่ไหนก็ได้</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="gift" data-title="ข้อมูลเข้า"><pre><code>6 1000
+350 720 500 280 650 500
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="gift" data-title="C:\code\gift.exe"><pre><code>2 4
+</code></pre></div>
+      </div>
+
+      <p>ชิ้นที่ 4 ราคา 280 ต้องการ 720 ซึ่งอยู่ชิ้นที่ 2 คู่ 350 กับ 650 และคู่ 500 กับ 500 ก็ใช้ได้ แต่ชิ้นที่ 4 เจอคู่ก่อน ถ้ามีของราคา 450 แค่ชิ้นเดียวกับ K = 900 โปรแกรมจะตอบ <code>no pair</code> ถูกต้อง เพราะ 450 ถูกจดหลังจากถามไปแล้ว</p>
+
+      <p>ถ้าราคาถึง 10<sup>9</sup> K อาจถึง 2 × 10<sup>9</sup> ซึ่งเฉียดขอบของ <code>int</code> มาก โปรแกรมนี้จึงเก็บทั้ง K และราคาเป็น <code>long long</code> จะได้ไม่ต้องคิดว่าบวกลบกันแล้วล้นหรือเปล่า</p>
+
+      <p>เทียบสี่วิธีกับราคาสุ่ม 1 ถึง 10<sup>9</sup> N ชิ้น K = 10<sup>9</sup> และนับทุกคู่ให้ครบแทนการหยุดที่คู่แรก ทุกวิธีจะได้ทำงานเต็มที่</p>
+
+      <ul>
+        <li><strong>สองลูป</strong> ลองทุกคู่ i &lt; j ตรงๆ O(N<sup>2</sup>)</li>
+        <li><strong>sort แล้วค้นหา</strong> เรียงราคา แล้วแต่ละชิ้นใช้ <code>lower_bound</code> กับ <code>upper_bound</code> ในหน้า 19.2 นับว่าราคา K - p มีกี่ชิ้นถัดไปทางขวา O(N log N)</li>
+        <li><strong>map</strong> แบบโปรแกรม gift แต่เก็บจำนวนชิ้นของแต่ละราคา O(N log N)</li>
+        <li><strong>unordered_map</strong> เหมือนข้อก่อน เฉลี่ย O(N)</li>
+      </ul>
+
+      <p>วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 แรม 32 GB ระบบ Windows 11 คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks แบบ <code>-O2</code> ตัวเลขเป็นวินาที แต่ละช่องคือค่ากลางของการรันสามครั้ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>สองลูป</th><th>sort แล้วค้นหา</th><th>map</th><th>unordered_map</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10<sup>4</sup></td><td>0.023</td><td>0.001</td><td>0.002</td><td>0.001</td></tr>
+            <tr><td>10<sup>5</sup></td><td>2.156</td><td>0.011</td><td>0.033</td><td>0.010</td></tr>
+            <tr><td>2 × 10<sup>5</sup></td><td>8.912</td><td>0.021</td><td>0.090</td><td>0.031</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คอมไพล์แบบ Code::Blocks สองลูปใช้ 13.2 วินาทีที่ N = 10<sup>5</sup> และ 60.6 วินาทีที่ N = 2 × 10<sup>5</sup> อีกสามวิธีไม่ถึง 0.2 วินาที</p>
+
+      <p>สามวิธีหลังทันสบาย และน่าสังเกตว่า sort แล้วค้นหาเร็วพอๆ กับตารางแฮช เพราะอาเรย์ที่เรียงแล้วอ่านต่อเนื่องในหน่วยความจำ ถ้าข้อมูลมาครบตั้งแต่ต้น วิธีเรียงก็เป็นคำตอบที่ดีมาก map กับ unordered_map ได้เปรียบเมื่อข้อมูลไหลเข้ามาเรื่อยๆ และต้องตอบทันทีว่ามีคู่แล้วหรือยัง</p>
+
+      <h2 id="choose">เลือกใช้อะไรดี</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>งาน</th><th>ใช้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ค่าอยู่ในช่วงเล็ก เช่น 0 ถึง 10<sup>6</sup></td><td>อาเรย์นับ เร็วที่สุด</td></tr>
+            <tr><td>ข้อมูลมาครบแล้วค่อยตอบครั้งเดียว</td><td><code>sort</code> แล้วนับหรือค้นหา</td></tr>
+            <tr><td>เพิ่ม ลบ ถามแทรกกัน และต้องการค่าน้อยสุด มากสุด หรือค่าแรกที่ ≥ x</td><td><code>set</code> <code>multiset</code> <code>map</code></td></tr>
+            <tr><td>เพิ่ม ลบ ถามแทรกกัน ถามแค่มีไหมหรือกี่ครั้ง และเวลาเฉียดขอบ</td><td><code>unordered_set</code> <code>unordered_map</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-lower-bound">แบบที่ 1 เรียก lower_bound ของ unordered_set</h3>
+
+      <div class="code" data-lang="cpp"><pre><code>unordered_set&lt;int&gt; departures = {360, 395, 430, 480, 545, 610};
+cout &lt;&lt; *departures.lower_bound(400) &lt;&lt; '\n';
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>bus.cpp:7:25: error: 'class std::unordered_set&lt;int&gt;' has no member named 'lower_bound'
+    7 |     cout &lt;&lt; *departures.lower_bound(400) &lt;&lt; '\n';
+      |                         ^~~~~~~~~~~
+</code></pre></div>
+
+      <p><code>has no member named</code> แปลว่าชนิดนี้ไม่มีคำสั่งชื่อนี้ ตารางแฮชไม่รู้ว่าค่าไหนน้อยกว่าค่าไหน จึงตอบคำถามเรื่องลำดับไม่ได้ ถ้าต้องใช้ <code>lower_bound</code> ต้องกลับไปใช้ set</p>
+
+      <h3 id="unsorted">แบบที่ 2 คาดว่าวนแล้วจะได้ค่าเรียง</h3>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    unordered_set&lt;int&gt; plates = {4521, 1088, 7310, 2950, 15, 999999};
+    for (int plate : plates) {
+        cout &lt;&lt; plate &lt;&lt; ' ';
+    }
+    cout &lt;&lt; '\n';
+    unordered_map&lt;string, int&gt; score = {{"nok", 82}, {"ploy", 91}, {"arm", 66}, {"beam", 74}};
+    for (auto entry : score) {
+        cout &lt;&lt; entry.first &lt;&lt; ' ' &lt;&lt; entry.second &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ได้ผลแบบนี้ ทั้งแบบ Code::Blocks และแบบ <code>-O2</code></p>
+
+      <div class="code" data-lang="output" data-title="C:\code\order.exe"><pre><code>999999 15 2950 7310 1088 4521
+beam 74
+arm 66
+ploy 91
+nok 82
+</code></pre></div>
+
+      <p>ไม่เรียงจากน้อยไปมาก และไม่ตรงกับลำดับที่ใส่ด้วย ลำดับนี้ขึ้นกับจำนวนช่องและฟังก์ชันแฮชของ compiler แต่ละรุ่น เครื่อง grader อาจได้ลำดับอื่น ถ้าโจทย์ให้พิมพ์เรียง แต่ใช้แบบ unordered แล้วบังเอิญผ่านตัวอย่าง ก็อาจตกชุดทดสอบที่เหลือ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>unordered_set</code> กับ <code>unordered_map</code> ใช้คำสั่งเหมือน set กับ map แต่ไม่เรียง ไม่มี <code>lower_bound</code> และวนได้ลำดับที่เดาไม่ได้</li>
+        <li>ข้างในเป็นตารางแฮช แต่ละคำสั่งเฉลี่ย O(1) แต่ถ้าค่าชนช่องเดียวกันมากๆ จะเป็น O(N)</li>
+        <li>วัดจริงเร็วกว่า map ไม่กี่เท่า แต่กรณีแย่สุดช้ากว่าหลายร้อยเท่า ใช้ map เป็นค่าเริ่มต้น</li>
+        <li>จับคู่ผลรวมเท่ากับ K ไล่ไปทีละตัวแล้วถามว่าเคยเห็น K - x ไหม ถามก่อนแล้วค่อยจด</li>
+        <li>ข้อมูลมาครบตั้งแต่ต้น <code>sort</code> แล้วค้นหาก็เร็วพอๆ กัน</li>
+      </ul>
+    </article>

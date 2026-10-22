@@ -1,0 +1,312 @@
+<article class="doc">
+      <h1>20.3 map จับคู่คีย์กับค่า</h1>
+
+      <p>อาเรย์คือการจับคู่หมายเลขช่องกับค่า <code>count[5]</code> เก็บว่าเลข 5 เจอกี่ครั้ง แต่หมายเลขช่องต้องเป็นจำนวนเต็มเล็กๆ ที่เริ่มจาก 0 ถ้าอยากนับว่าเบอร์โทร 812345678 โทรเข้ามากี่ครั้ง ต้องมีอาเรย์เกือบพันล้านช่อง กิน 4 GB ซึ่งประกาศไม่ได้ ถ้าอยากนับว่าคำว่า <code>the</code> เจอกี่ครั้ง ใช้ข้อความเป็นหมายเลขช่องไม่ได้เลย</p>
+
+      <p><strong>map</strong> คืออาเรย์ที่หมายเลขช่องเป็นอะไรก็ได้ที่เรียงลำดับได้ เราเรียกหมายเลขช่องว่า <strong>คีย์ (key)</strong> และสิ่งที่เก็บว่า <strong>ค่า (value)</strong> ข้างในเป็นต้นไม้แบบเดียวกับ set ที่เรียงตามคีย์ แต่ละคีย์มีค่าติดมาด้วยหนึ่งค่า ทุกคำสั่งจึงเป็น O(log N) และวนแล้วได้คีย์เรียงจากน้อยไปมาก</p>
+
+      <h2 id="count-big">นับความถี่เมื่อค่ากว้างเกินอาเรย์นับ</h2>
+
+      <p>ศูนย์รับแจ้งเหตุอยากรู้ว่าแต่ละเบอร์โทรเข้ามากี่ครั้ง เบอร์เป็นตัวเลขถึง 10<sup>9</sup></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="calls"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    map&lt;int, int&gt; count; // (1)!
+    for (int i = 0; i &lt; n; i++) {
+        int phone;
+        cin &gt;&gt; phone;
+        count[phone]++; // (2)!
+    }
+    for (auto entry : count) { // (3)!
+        cout &lt;&lt; entry.first &lt;&lt; " called " &lt;&lt; entry.second &lt;&lt; " times\n";
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>map&lt;ชนิดคีย์, ชนิดค่า&gt;</code> ตัวนี้มีคีย์เป็นเบอร์โทร ค่าเป็นจำนวนครั้ง ตอนเริ่มยังไม่มีคีย์ไหนเลย</li>
+        <li>เขียนเหมือนอาเรย์นับในหน้า 5.3 ทุกตัวอักษร ถ้าเบอร์นี้ยังไม่มีใน map วงเล็บเหลี่ยมจะสร้างคีย์ใหม่ให้พร้อมค่าเริ่มต้น 0 ก่อน แล้ว <code>++</code> จึงได้ 1</li>
+        <li>วนแล้วได้ทีละคู่ เป็น <code>pair</code> ที่ <code>first</code> คือคีย์ และ <code>second</code> คือค่า เรียงตามคีย์จากน้อยไปมาก</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="calls" data-title="ข้อมูลเข้า"><pre><code>8
+812345678 21000777 812345678 990000001 21000777 812345678 5 990000001
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="calls" data-title="C:\code\calls.exe"><pre><code>5 called 1 times
+21000777 called 2 times
+812345678 called 3 times
+990000001 called 2 times
+</code></pre></div>
+      </div>
+
+      <p>map มีแค่สี่คีย์ตามจำนวนเบอร์ที่ไม่ซ้ำ ไม่ว่าเบอร์จะใหญ่แค่ไหน หน่วยความจำจึงขึ้นกับจำนวนค่าที่ไม่ซ้ำ ไม่ใช่ขนาดของค่า ใช้ map เมื่อ</p>
+
+      <ul>
+        <li>ค่าที่นับกว้างเกินกว่าจะประกาศอาเรย์ได้ เช่น ถึง 10<sup>9</sup> หรือ 10<sup>18</sup></li>
+        <li>ค่าติดลบปนกับค่าบวกในช่วงกว้าง ซึ่งการบวกค่าคงที่แบบหน้า 5.3 ช่วยไม่ได้</li>
+        <li>คีย์ไม่ใช่ตัวเลข เช่น ข้อความ หรือ <code>pair</code> ของพิกัด</li>
+      </ul>
+
+      <h2 id="map-string">map&lt;string, int&gt;</h2>
+
+      <p>เก็บคะแนนสอบตามชื่อเล่น ใช้ชื่อเป็นคีย์</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="scores"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    map&lt;string, int&gt; score;
+    score["nok"] = 78;
+    score["ploy"] = 91;
+    score["arm"] = 66;
+    score["nok"] = 82;
+    cout &lt;&lt; "size " &lt;&lt; score.size() &lt;&lt; '\n';
+    cout &lt;&lt; "nok " &lt;&lt; score["nok"] &lt;&lt; '\n';
+    if (score.count("beam") == 0) {
+        cout &lt;&lt; "beam not found\n";
+    }
+    auto it = score.find("ploy");
+    if (it != score.end()) {
+        cout &lt;&lt; it-&gt;first &lt;&lt; ' ' &lt;&lt; it-&gt;second &lt;&lt; '\n';
+    }
+    score.erase("arm");
+    for (auto entry : score) {
+        cout &lt;&lt; entry.first &lt;&lt; ' ' &lt;&lt; entry.second &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="scores" data-title="C:\code\scores.exe"><pre><code>size 3
+nok 82
+beam not found
+ploy 91
+nok 82
+ploy 91
+</code></pre></div>
+
+      <ul>
+        <li>บรรทัดที่ 10 ใส่ <code>nok</code> ซ้ำ ไม่ได้เพิ่มคีย์ใหม่ แต่เขียนทับค่าเดิม <code>size</code> จึงเป็น 3 คีย์ใน map ไม่ซ้ำกันเหมือน set</li>
+        <li><code>count(key)</code> กับ <code>find(key)</code> ใช้เหมือน set ทุกอย่าง ถามด้วยคีย์ ไม่ใช่ด้วยค่า</li>
+        <li>iterator ของ map ชี้ไปที่ pair <code>it-&gt;first</code> เขียนย่อมาจาก <code>(*it).first</code> ลูกศรนี้เป็นเครื่องหมายเดียวกับที่ใช้กับ pointer ของ struct ในหน้า 11.4</li>
+        <li><code>erase(key)</code> ลบทั้งคีย์และค่าออก</li>
+        <li>ถ้ามีคนชื่อซ้ำกันได้ ชื่อเป็นคีย์ไม่ได้ เพราะคะแนนของคนหลังจะเขียนทับคนแรก ให้ใช้คีย์ที่ไม่ซ้ำแน่นอน เช่น รหัสนักเรียน</li>
+      </ul>
+
+      <p>map มี <code>lower_bound</code> <code>upper_bound</code> <code>begin</code> <code>rbegin</code> แบบเดียวกับ set ด้วย ทุกตัวทำงานกับคีย์ เช่น <code>score.begin()-&gt;first</code> คือชื่อที่มาก่อนสุดตามพจนานุกรม</p>
+
+      <h2 id="word-count">ตัวอย่าง นับคำที่พบบ่อยที่สุด</h2>
+
+      <p>อ่านข้อความจนหมดข้อมูล แล้วบอกว่ามีคำต่างกันกี่คำ และคำไหนพบบ่อยที่สุด ถ้าเสมอกันให้ตอบคำที่มาก่อนตามพจนานุกรม การอ่านจนหมดใช้ <code>while (cin &gt;&gt; word)</code> ตามหน้า 15.2 ในหน้าต่างดำจบข้อมูลด้วย <span class="keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Z</kbd></span> ที่ต้นบรรทัดใหม่แล้วกด <span class="keys"><kbd>Enter</kbd></span> แบบหน้า 4.3</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="words"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    map&lt;string, int&gt; count;
+    string word;
+    while (cin &gt;&gt; word) {
+        count[word]++;
+    }
+    string best_word;
+    int best_count = 0;
+    for (auto entry : count) {
+        if (entry.second &gt; best_count) { // (1)!
+            best_word = entry.first;
+            best_count = entry.second;
+        }
+    }
+    cout &lt;&lt; count.size() &lt;&lt; " different words\n";
+    cout &lt;&lt; best_word &lt;&lt; ' ' &lt;&lt; best_count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใช้ <code>&gt;</code> ไม่ใช่ <code>&gt;=</code> map วนตามพจนานุกรมอยู่แล้ว คำที่เจอก่อนจึงมาก่อนตามพจนานุกรม ถ้าคำหลังมีจำนวนแค่เท่ากัน จะไม่แย่งที่ ได้กติกาเรื่องเสมอมาฟรีๆ</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="words" data-title="ข้อมูลเข้า"><pre><code>the cat and the dog and the bird
+saw a cat and a dog
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="words" data-title="C:\code\words.exe"><pre><code>7 different words
+and 3
+</code></pre></div>
+      </div>
+
+      <p><code>and</code> กับ <code>the</code> เจอสามครั้งเท่ากัน <code>and</code> มาก่อนตามพจนานุกรมจึงชนะ ถ้าโจทย์อยากได้คำยอดนิยมหลายอันดับ ให้ย้ายทุกคู่ไปใส่ vector แล้ว <code>sort</code> ตามจำนวนครั้ง ซึ่งเป็นแบบฝึกหัดข้อ 4</p>
+
+      <h2 id="bracket">วงเล็บเหลี่ยมสร้างคีย์ให้เอง</h2>
+
+      <p>ตัวอย่างนับคำทำงานได้เพราะ <code>count[word]</code> สร้างคีย์ใหม่ที่มีค่า 0 ให้ทันทีเมื่อยังไม่มีคีย์นั้น ข้อดีนี้กลายเป็นกับดักตอนที่แค่อยาก<strong>อ่าน</strong>ค่า เพราะการอ่านด้วยวงเล็บเหลี่ยมก็สร้างคีย์ด้วยเหมือนกัน โปรแกรมนี้นับตัวเลข แล้วตอบคำถามว่าค่าที่ถามมีอยู่ในข้อมูลหรือไม่</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bracket-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    map&lt;int, int&gt; count;
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        cin &gt;&gt; x;
+        count[x]++;
+    }
+    cout &lt;&lt; "keys before: " &lt;&lt; count.size() &lt;&lt; '\n';
+    int found = 0;
+    for (int i = 0; i &lt; q; i++) {
+        int x;
+        cin &gt;&gt; x;
+        if (count[x] &gt; 0) {
+            found++;
+        }
+    }
+    cout &lt;&lt; "found " &lt;&lt; found &lt;&lt; '\n';
+    cout &lt;&lt; "keys after: " &lt;&lt; count.size() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="bracket-bug" data-title="ข้อมูลเข้า"><pre><code>5 6
+10 20 10 30 20
+10 40 50 20 60 70
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bracket-bug" data-title="C:\code\bracket.exe"><pre><code>keys before: 3
+found 2
+keys after: 7
+</code></pre></div>
+      </div>
+
+      <p>คำตอบ <code>found 2</code> ถูก แต่ map โตจาก 3 คีย์เป็น 7 คีย์ เพราะคำถาม 40 50 60 70 ถูกสร้างเป็นคีย์ที่มีค่า 0 ทิ้งไว้ ผลเสียมีสามอย่าง</p>
+
+      <ul>
+        <li>ถ้าหลังจากนั้นพิมพ์ <code>count.size()</code> เป็นจำนวนค่าที่ไม่ซ้ำ หรือวนพิมพ์ทุกคีย์ จะได้คำตอบผิด เพราะมีคีย์ที่ไม่เคยอยู่ในข้อมูลปนมา</li>
+        <li>คำถามเป็นแสนข้อที่ส่วนใหญ่ไม่มีในข้อมูล ทำให้ map โตเป็นแสนคีย์ กินหน่วยความจำและเวลาเพิ่มโดยไม่จำเป็น</li>
+        <li>ถ้าคีย์เป็น <code>string</code> แต่ละคีย์ที่สร้างเกินมาก็เก็บข้อความทั้งคำไว้ด้วย</li>
+      </ul>
+
+      <p>อยากแค่ถามว่ามีไหม ใช้ <code>count.count(x)</code> อยากได้ค่าด้วย ใช้ <code>find</code> แล้วเช็ก <code>end()</code> สองคำสั่งนี้ไม่สร้างคีย์ใหม่ ส่วนวงเล็บเหลี่ยมเก็บไว้ใช้ตอนตั้งใจจะเขียนค่า</p>
+
+      <div class="code" data-lang="cpp"><pre><code>if (count.count(x) == 1) {
+    found++;
+}
+</code></pre></div>
+
+      <h2 id="complexity">เร็วแค่ไหน</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่งของ map</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>m[key]</code> อ่าน เขียน หรือสร้างคีย์</td><td>O(log N)</td></tr>
+            <tr><td><code>count(key)</code> <code>find(key)</code> <code>erase(key)</code></td><td>O(log N)</td></tr>
+            <tr><td><code>lower_bound(key)</code> <code>upper_bound(key)</code></td><td>O(log N)</td></tr>
+            <tr><td><code>size()</code> <code>empty()</code></td><td>O(1)</td></tr>
+            <tr><td>วนทุกคู่</td><td>O(N)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>N ในตารางคือจำนวนคีย์ ถ้าคีย์เป็นข้อความ การเทียบแต่ละครั้งต้องเทียบทีละตัวอักษร คำยาว L ตัวจึงใช้ราว O(L log N)</p>
+
+      <p>เทียบกับวิธีตรงไปตรงมาที่ไม่มี map คือเก็บคู่ (คำ, จำนวน) ใน vector แล้วไล่หาคำเดิมทุกครั้งที่อ่านคำใหม่ และวิธีเรียงคำทั้งหมดด้วย <code>sort</code> แล้วนับคำที่ติดกัน ใช้คำสุ่มยาว 5 ถึง 8 ตัวอักษร N คำ จากคำที่ต่างกัน N/4 คำ</p>
+
+      <div class="code" data-lang="cpp"><pre><code>vector&lt;pair&lt;string, int&gt;&gt; table;
+for (const string &amp;word : words) {
+    bool found = false;
+    for (auto &amp;entry : table) {
+        if (entry.first == word) {
+            entry.second++;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        table.push_back({word, 1});
+    }
+}
+</code></pre></div>
+
+      <p>วัดบนโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 แรม 32 GB ระบบ Windows 11 คอมไพล์ด้วย GCC 14.2 ของ Code::Blocks แบบ <code>-O2</code> ตัวเลขเป็นวินาที แต่ละช่องคือค่ากลางของการรันสามครั้ง ระหว่างวัดเครื่องมีงานอื่นรันอยู่ด้วย ตัวเลขของแต่ละรอบจึงแกว่งได้ราวหนึ่งในห้า</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>vector ไล่หา</th><th>map</th><th>sort</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10<sup>4</sup></td><td>0.009</td><td>0.001</td><td>0.001</td></tr>
+            <tr><td>10<sup>5</sup></td><td>1.802</td><td>0.015</td><td>0.018</td></tr>
+            <tr><td>2 × 10<sup>5</sup></td><td>19.5</td><td>0.084</td><td>0.087</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คอมไพล์แบบ Code::Blocks วิธี vector ใช้ 21.7 วินาทีที่ N = 10<sup>5</sup> และ 51.9 วินาทีที่ N = 2 × 10<sup>5</sup> ส่วน map กับ sort ไม่ถึง 0.12 วินาที</p>
+
+      <p>vector ไล่หาเป็น O(N × จำนวนคำที่ต่างกัน) จึงพังเมื่อคำมีเป็นหมื่น map กับ <code>sort</code> เป็น O(N log N) ทั้งคู่ ถ้าได้ข้อมูลครบแล้วค่อยนับครั้งเดียว <code>sort</code> ก็ใช้ได้ดี แต่ map ยังได้เปรียบเมื่อต้องตอบระหว่างทาง เช่น หลังอ่านแต่ละคำต้องบอกว่าคำนี้เจอมาแล้วกี่ครั้ง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="copy-entry">แบบที่ 1 แก้ค่าผ่านตัวแปรที่เป็นสำเนา</h3>
+
+      <p>ครูให้คะแนนพิเศษทุกคน 5 คะแนน เลยวน map แล้วบวกเข้าไป</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bonus-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    map&lt;string, int&gt; score = {{"arm", 66}, {"nok", 82}, {"ploy", 91}};
+    for (auto entry : score) {
+        entry.second += 5;
+    }
+    for (auto entry : score) {
+        cout &lt;&lt; entry.first &lt;&lt; ' ' &lt;&lt; entry.second &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bonus-bug" data-title="C:\code\bonus.exe"><pre><code>arm 66
+nok 82
+ploy 91
+</code></pre></div>
+
+      <p>ไม่มีใครได้คะแนนเพิ่ม <code>auto entry</code> คือสร้าง pair ใหม่ที่ก๊อปค่ามาจาก map แล้วแก้ที่ตัวก๊อป ของจริงใน map ไม่เปลี่ยน เป็นเรื่องเดียวกับการส่งค่าแบบสำเนาในหน้า 8.2 แก้ด้วย reference จากหน้า 15.5 เติม <code>&amp;</code> เป็น <code>for (auto &amp;entry : score)</code> จะได้ 71 87 96 ส่วน <code>entry.first</code> แก้ไม่ได้แม้ใช้ <code>&amp;</code> เพราะถ้าเปลี่ยนคีย์ ลำดับในต้นไม้จะผิด อยากเปลี่ยนคีย์ต้องลบคีย์เก่าแล้วใส่คีย์ใหม่</p>
+
+      <h3 id="read-creates">แบบที่ 2 พิมพ์ค่าของคีย์ที่ไม่มี</h3>
+
+      <p>ในโปรแกรม scores เพิ่มบรรทัด <code>cout &lt;&lt; score["beam"] &lt;&lt; '\n';</code> ก่อนวนพิมพ์ จะได้ <code>0</code> ไม่มี error และตอนวนพิมพ์ท้ายโปรแกรมจะมี <code>beam 0</code> โผล่มาเป็นบรรทัดแรก ทั้งที่ไม่มีใครชื่อ beam สอบเลย เป็นกับดักเดียวกับหัวข้อก่อน คือวงเล็บเหลี่ยมสร้างคีย์ทุกครั้งที่หาไม่เจอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>map&lt;K, V&gt;</code> จับคู่คีย์กับค่า คีย์ไม่ซ้ำและเรียงจากน้อยไปมาก ทุกคำสั่งหลักเป็น O(log N)</li>
+        <li>นับความถี่ของค่าที่กว้างเกินอาเรย์ ใช้ <code>m[x]++</code> ได้เลย</li>
+        <li>วนได้ทีละ pair คีย์อยู่ใน <code>first</code> ค่าอยู่ใน <code>second</code> จะแก้ค่าระหว่างวนต้องใช้ <code>auto &amp;</code></li>
+        <li><code>m[key]</code> สร้างคีย์ใหม่ที่ค่าเป็น 0 ถ้ายังไม่มี แม้แค่อ่าน ถามว่ามีไหมให้ใช้ <code>count</code> หรือ <code>find</code></li>
+        <li>เสมอกันแล้วต้องเลือกคีย์ที่น้อยกว่า ใช้ <code>&gt;</code> ตอนวนหาค่ามากสุด เพราะ map วนจากคีย์น้อยไปมากอยู่แล้ว</li>
+      </ul>
+    </article>
