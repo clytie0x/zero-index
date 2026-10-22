@@ -223,10 +223,10 @@ terminate called after throwing an instance of 'std::out_of_range'
   what():  vector::_M_range_check: __n (which is 5) &gt;= this-&gt;size() (which is 5)
 </code></pre></div>
 
-      <div class="code" data-lang="text"><pre><code>Process returned 3 (0x3)
+      <div class="code" data-lang="text"><pre><code>Process returned -1073740791 (0xC0000409)
 </code></pre></div>
 
-      <p>รหัส 3 คือผลที่ได้บนเครื่องที่เขียนเอกสารนี้เมื่อรันในหน้าต่าง cmd ข้อความบอกตรงๆ ว่าขอช่อง <code>__n</code> ที่ 5 แต่ <code>size()</code> มีแค่ 5 ช่อง คือ 0 ถึง 4 โปรแกรมหยุดที่บรรทัดนั้น ไม่ไปต่อ ส่วนถ้าเขียน <code>score[5]</code> แทน บนเครื่องที่เขียนเอกสารนี้ได้ <code>0</code> ออกมาเฉยๆ ไม่มีอะไรเตือน คำว่า exception กับ throw ในข้อความคือกลไกแจ้งข้อผิดพลาดของ C++ ซึ่งไม่อยู่ในเนื้อหาของเอกสารนี้ จำแค่ว่าเห็นข้อความนี้แปลว่าใช้ index เกินขอบ</p>
+      <p>รหัสนี้เหมือนตอน <code>substr</code> ตัดเกินความยาวในหน้า 15.4 ข้อความบอกตรงๆ ว่าขอช่อง <code>__n</code> ที่ 5 แต่ <code>size()</code> มีแค่ 5 ช่อง คือ 0 ถึง 4 โปรแกรมหยุดที่บรรทัดนั้น ไม่ไปต่อ ส่วนถ้าเขียน <code>score[5]</code> แทน บนเครื่องที่เขียนเอกสารนี้ได้ <code>0</code> ออกมาเฉยๆ ไม่มีอะไรเตือน คำว่า exception กับ throw ในข้อความคือกลไกแจ้งข้อผิดพลาดของ C++ ซึ่งไม่อยู่ในเนื้อหาของเอกสารนี้ จำแค่ว่าเห็นข้อความนี้แปลว่าใช้ index เกินขอบ</p>
 
       <div class="adm adm-tip" role="note">
         <p class="adm-title">หาบั๊ก index ด้วย at()</p>
