@@ -293,6 +293,22 @@ class LinkCollector(HTMLParser):
             self.h1[-1] += data
 
 
+def check_page_refs(site: dict, order: list[Page]) -> list[str]:
+    """ข้อความอย่าง "หน้า 15.2" ต้องชี้ไปหน้าที่มีอยู่จริง ยกเว้นบทที่ยังวางแผนไว้"""
+    nums = {p.num for p in order if p.kind == "page"}
+    planned = {ch["num"] for ch in site.get("chapters", []) if "path" not in ch}
+    errors = []
+    for page in order:
+        if page.exercises:
+            continue
+        text = re.sub(r"<pre>.*?</pre>", "", (PAGES / page.path).read_text(encoding="utf-8"), flags=re.S)
+        for m in re.finditer(r"หน้า\s*(?:<[^>]+>)?(\d+)\.(\d+)", text):
+            ref = f"{m.group(1)}.{m.group(2)}"
+            if ref not in nums and m.group(1) not in planned:
+                errors.append(f"{page.path}: อ้าง หน้า {ref} ซึ่งไม่มีอยู่")
+    return errors
+
+
 def check(order: list[Page]) -> list[str]:
     errors = []
     parsed = {}
@@ -365,7 +381,7 @@ def build() -> int:
     (DIST / missing.path).write_text(render(site, layout, missing, home, tree, None, None, article),
                                      encoding="utf-8", newline="\n")
 
-    errors = check(order)
+    errors = check(order) + check_page_refs(site, order)
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
