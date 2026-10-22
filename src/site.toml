@@ -358,7 +358,15 @@ track = "อัลกอริทึม  ระดับค่าย 2 และ
 num = "23"
 title = "บทที่ 23 greedy"
 summary = "เลือกสิ่งที่ดีที่สุดตอนนี้ และพิสูจน์ว่าทำไมถึงถูก"
-# dir = "algo/23-greedy"
+path = "algo/23-greedy/index.html"
+pages = [
+  { num = "23.1", title = "คิดแบบ greedy และทอนเหรียญ", path = "algo/23-greedy/greedy.html" },
+  { num = "23.2", title = "เลือกกิจกรรมที่ไม่ซ้อนกัน", path = "algo/23-greedy/activities.html" },
+  { num = "23.3", title = "เรียงงาน เส้นตาย และ knapsack แบบแบ่งได้", path = "algo/23-greedy/scheduling.html" },
+  { num = "23.4", title = "greedy กับ priority_queue", path = "algo/23-greedy/with-heap.html" },
+  { num = "23.5", title = "ตรวจ greedy ด้วย stress test", path = "algo/23-greedy/stress-test.html" },
+  { num = "23.6", title = "แบบฝึกหัด", path = "algo/23-greedy/exercises.html", exercises = "algo/23-greedy" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

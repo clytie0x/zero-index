@@ -1,0 +1,287 @@
+<article class="doc">
+      <h1>23.2 เลือกกิจกรรมที่ไม่ซ้อนกัน</h1>
+
+      <p>หอประชุมของโรงเรียนมีห้องเดียว แต่มีชมรมขอจองหลายรายการ แต่ละรายการบอกเวลาเริ่มกับเวลาจบ สองรายการที่เวลาทับกันใช้ห้องพร้อมกันไม่ได้ ส่วนรายการที่จบ 10 โมงพอดีกับรายการที่เริ่ม 10 โมงพอดีใช้ต่อกันได้ ครูอยากอนุมัติให้ได้ <strong>จำนวนรายการมากที่สุด</strong> โจทย์นี้เรียกว่า activity selection เป็นโจทย์ greedy ที่เจอบ่อยที่สุด และโจทย์ในค่ายหลายข้อแปลงกลับมาเป็นโจทย์นี้ได้ หน้านี้ลองกฎการเลือกสามแบบ หาว่าแบบไหนถูก แล้วพิสูจน์ด้วยการแลกเปลี่ยน</p>
+
+      <h2 id="three-rules">กฎที่ฟังดูดีสามแบบ</h2>
+
+      <p>ทุกกฎทำเหมือนกัน คือเรียงรายการตามค่าบางอย่าง แล้วไล่ไปทีละรายการ รับรายการไหนที่ไม่ทับกับที่รับไว้แล้ว ต่างกันแค่ค่าที่ใช้เรียง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>กฎ</th><th>เหตุผลที่ฟังดูดี</th><th>ตัวอย่างที่พัง</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>เริ่มเร็วที่สุดก่อน</td><td>ไม่ปล่อยห้องว่างตอนเช้า</td><td><code>8-17</code> <code>9-10</code> <code>10-11</code> เลือก 8-17 ก่อน ได้รายการเดียว ทั้งที่เลือกอีกสองรายการได้ 2</td></tr>
+            <tr><td>สั้นที่สุดก่อน</td><td>ใช้ห้องน้อย เหลือเวลาให้คนอื่น</td><td><code>1-5</code> <code>5-9</code> <code>4-6</code> เลือก 4-6 ก่อน ซึ่งทับทั้งสองรายการ ได้ 1 แทนที่จะได้ 2</td></tr>
+            <tr><td>จบเร็วที่สุดก่อน</td><td>คืนห้องเร็วที่สุด เหลือเวลาไว้มากที่สุด</td><td>ไม่มี พิสูจน์ได้ว่าถูกเสมอ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>กฎแรกพังเมื่อรายการที่เริ่มเช้าสุดยาวมาก กฎที่สองพังเมื่อรายการสั้นอยู่คร่อมรอยต่อของสองรายการ ทั้งสองกฎดูตัวอย่างในโจทย์แล้วอาจได้คำตอบถูกด้วยซ้ำ เพราะตัวอย่างไม่ได้ตั้งใจดัก สิ่งที่สำคัญจริงคือ <strong>ห้องว่างเมื่อไร</strong> ไม่ใช่รายการเริ่มเมื่อไรหรือยาวแค่ไหน</p>
+
+      <h2 id="earliest-finish">เลือกรายการที่จบเร็วที่สุด</h2>
+
+      <p>เรียงตามเวลาจบ แล้วไล่ไป รับรายการที่เริ่มไม่ก่อนเวลาจบของรายการล่าสุดที่รับไว้ ตัวอย่างนี้ใช้เวลาเป็นชั่วโมง เช่น <code>9 10</code> คือ 9 โมงถึง 10 โมง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="activity"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; events(n);
+    for (int i = 0; i &lt; n; i++) {
+        int start, finish;
+        cin &gt;&gt; start &gt;&gt; finish;
+        events[i] = {finish, start}; // (1)!
+    }
+    sort(events.begin(), events.end());
+    int count = 0;
+    int last_finish = INT_MIN; // (2)!
+    for (int i = 0; i &lt; n; i++) {
+        int finish = events[i].first;
+        int start = events[i].second;
+        if (start &gt;= last_finish) { // (3)!
+            cout &lt;&lt; "take " &lt;&lt; start &lt;&lt; "-" &lt;&lt; finish &lt;&lt; '\n';
+            count++;
+            last_finish = finish;
+        }
+    }
+    cout &lt;&lt; "count = " &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บเวลาจบไว้เป็น <code>first</code> เพราะ <code>sort</code> ของ pair เรียงตาม <code>first</code> ก่อนตามหน้า 16.4 ได้การเรียงตามเวลาจบโดยไม่ต้องเขียน lambda</li>
+        <li>ยังไม่ได้รับรายการไหน ให้ค่าเริ่มต้นน้อยกว่าทุกเวลา รายการแรกจึงผ่านเงื่อนไขเสมอ <code>INT_MIN</code> คือค่าน้อยสุดของ <code>int</code></li>
+        <li>ใช้ <code>&gt;=</code> เพราะโจทย์ให้เริ่มตอนที่รายการก่อนจบพอดีได้ ถ้าโจทย์ห้าม ต้องเปลี่ยนเป็น <code>&gt;</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="activity" data-title="ข้อมูลเข้า"><pre><code>8
+8 12
+9 10
+10 11
+11 13
+12 14
+13 15
+14 16
+15 17
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="activity" data-title="C:\code\activity.exe"><pre><code>take 9-10
+take 10-11
+take 11-13
+take 13-15
+take 15-17
+count = 5
+</code></pre></div>
+      </div>
+
+      <p>เรียงแล้วรายการแรกคือ 9-10 รับไว้ ต่อไป 10-11 เริ่มตอนที่ 9-10 จบพอดี รับได้ รายการ 8-12 จบเป็นลำดับที่สามแต่เริ่ม 8 โมง ทับแล้ว ข้ามไป ไล่จนครบได้ 5 รายการ เรียงใช้เวลา O(N log N) ไล่อีก O(N) รวมเป็น O(N log N)</p>
+
+      <h2 id="exchange">พิสูจน์ด้วยการแลกเปลี่ยน</h2>
+
+      <p>ต้องแสดงว่าไม่มีวิธีเลือกไหนได้มากกว่า greedy เริ่มจากรายการแรกที่ greedy รับ เรียกว่า g ซึ่งเป็นรายการที่จบเร็วที่สุดในทั้งหมด ลองหยิบคำตอบที่ดีที่สุดมาสักแบบ ไม่ต้องรู้ว่าเป็นแบบไหน เรียงรายการในคำตอบนั้นตามเวลา ให้ o เป็นรายการแรกของมัน</p>
+
+      <figure>
+        <svg viewBox="0 0 600 210" width="600" style="max-width:100%;height:auto" role="img" aria-label="แถวบนคือคำตอบที่ดีที่สุด มีรายการ o กับรายการถัดไปอีกสองรายการ แถวล่างแลก o เป็น g ซึ่งจบก่อนหรือพร้อม o รายการที่เหลือยังไม่ทับ จำนวนเท่าเดิม">
+          <g style="font-family:var(--font-text)">
+            <text x="10" y="44" style="fill:var(--muted);font-size:14px">คำตอบที่ดีที่สุด</text>
+            <text x="10" y="124" style="fill:var(--muted);font-size:14px">แลก o เป็น g</text>
+            <text x="300" y="196" text-anchor="middle" style="fill:var(--brand-text);font-size:14px">g จบไม่ช้ากว่า o รายการที่ตามมาจึงยังไม่ทับ</text>
+          </g>
+          <line x1="130" y1="160" x2="590" y2="160" style="stroke:var(--line-strong);stroke-width:2"/>
+          <rect x="150" y="56" width="150" height="30" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <rect x="330" y="56" width="110" height="30" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <rect x="460" y="56" width="110" height="30" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <rect x="190" y="136" width="80" height="30" rx="4" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+          <rect x="330" y="136" width="110" height="30" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <rect x="460" y="136" width="110" height="30" rx="4" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+          <line x1="270" y1="20" x2="270" y2="176" style="stroke:var(--brand);stroke-width:2;stroke-dasharray:5 4"/>
+          <line x1="300" y1="20" x2="300" y2="176" style="stroke:var(--muted);stroke-width:2;stroke-dasharray:5 4"/>
+          <g style="font-family:var(--font-code)">
+            <text x="225" y="76" text-anchor="middle" style="fill:var(--ink);font-size:15px">o</text>
+            <text x="230" y="156" text-anchor="middle" style="fill:var(--ink);font-size:15px">g</text>
+            <text x="270" y="16" text-anchor="middle" style="fill:var(--brand-text);font-size:12px">g ends</text>
+            <text x="318" y="16" text-anchor="start" style="fill:var(--muted);font-size:12px">o ends</text>
+          </g>
+        </svg>
+      </figure>
+
+      <ol>
+        <li>g จบเร็วที่สุดในทุกรายการ จึงจบไม่ช้ากว่า o</li>
+        <li>รายการที่เหลือในคำตอบที่ดีที่สุดทุกรายการเริ่มไม่ก่อนเวลาที่ o จบ จึงเริ่มไม่ก่อนเวลาที่ g จบด้วย</li>
+        <li>เอา o ออก ใส่ g แทน ไม่มีอะไรทับกัน จำนวนรายการเท่าเดิม ได้คำตอบที่ดีที่สุดอีกแบบหนึ่งที่ขึ้นต้นด้วย g</li>
+        <li>ตัดรายการที่ทับกับ g ทิ้งทั้งหมด ที่เหลือคือโจทย์เดิมที่เล็กลง และ greedy ก็เลือกรายการที่จบเร็วที่สุดในส่วนที่เหลือ ใช้เหตุผลข้อ 1 ถึง 3 ซ้ำได้ทุกขั้น</li>
+      </ol>
+
+      <p>ทุกขั้น greedy เลือกเหมือนคำตอบที่ดีที่สุดแบบใดแบบหนึ่งได้เสมอ จำนวนที่ greedy ได้จึงเท่ากับจำนวนที่ดีที่สุด ลองใช้เหตุผลเดียวกันกับกฎ "เริ่มเร็วที่สุด" จะติดที่ข้อ 1 เพราะรายการที่เริ่มเร็วที่สุดอาจจบช้ากว่า o มาก แลกแล้วไปทับรายการถัดไป ตรงกับตัวอย่างที่พังในตาราง</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">เขียนเหตุผลด้วยคำพูดก่อนเขียนโค้ด</p>
+        <p>การพิสูจน์แบบแลกเปลี่ยนมีโครงเดิมเสมอ หยิบคำตอบที่ดีที่สุดมาหนึ่งแบบ หาจุดแรกที่มันต่างจาก greedy แล้วแสดงว่าแลกตรงนั้นให้เหมือน greedy ได้โดยไม่แย่ลง ถ้าเขียนประโยค "แลกแล้วไม่แย่ลงเพราะ..." ไม่ได้ ให้สงสัยกฎนั้นไว้ก่อน</p>
+      </div>
+
+      <h2 id="brute-check">เทียบกับการลองทุกแบบ</h2>
+
+      <p>วิธีที่ถูกแน่ๆ คือลองทุกเซตของรายการแบบบทที่ 21 แต่ละรายการเลือกว่าไม่รับ หรือรับถ้ายังไม่ทับกับที่รับไว้ แล้วจำจำนวนที่มากที่สุด สองรายการทับกันเมื่อแต่ละรายการเริ่มก่อนอีกรายการจบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="activity-brute"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;int&gt; start_time, finish_time;
+vector&lt;int&gt; chosen;
+int best = 0;
+
+bool fits(int k)
+{
+    for (int j : chosen) {
+        if (start_time[k] &lt; finish_time[j] &amp;&amp; start_time[j] &lt; finish_time[k]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void try_events(int k)
+{
+    if (k == n) {
+        best = max(best, (int)chosen.size());
+        return;
+    }
+    try_events(k + 1);
+    if (fits(k)) {
+        chosen.push_back(k);
+        try_events(k + 1);
+        chosen.pop_back();
+    }
+}
+
+int main()
+{
+    cin &gt;&gt; n;
+    start_time.resize(n);
+    finish_time.resize(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; start_time[i] &gt;&gt; finish_time[i];
+    }
+    try_events(0);
+    cout &lt;&lt; "best = " &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="activity-brute" data-title="ข้อมูลเข้า"><pre><code>8
+8 12
+9 10
+10 11
+11 13
+12 14
+13 15
+14 16
+15 17
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="activity-brute" data-title="C:\code\activity_brute.exe"><pre><code>best = 5
+</code></pre></div>
+      </div>
+
+      <p>ได้ 5 เท่ากับ greedy ป้อนตัวอย่างของกฎ "สั้นที่สุดก่อน" ในตารางข้างบน ได้ <code>best = 2</code> ยืนยันว่ากฎนั้นผิด แต่วิธีนี้ลองได้ถึง 2<sup>N</sup> แบบ วัดบนเครื่องเดียวกับหน้า 23.1 รายการสุ่มเวลาเริ่ม 0 ถึง 1000 ยาว 1 ถึง 100 รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>20</td><td>ลองทุกเซต</td><td>0.04 วินาที</td><td>0.02 วินาที</td></tr>
+            <tr><td>30</td><td>ลองทุกเซต</td><td>0.08 วินาที</td><td>0.03 วินาที</td></tr>
+            <tr><td>40</td><td>ลองทุกเซต</td><td>1.9 วินาที</td><td>0.24 วินาที</td></tr>
+            <tr><td>50</td><td>ลองทุกเซต</td><td>เกิน 60 วินาที</td><td>12 วินาที</td></tr>
+            <tr><td>1000000</td><td>greedy</td><td>0.75 วินาที</td><td>0.44 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>การลองทุกเซตเร็วกว่า 2<sup>N</sup> มาก เพราะรายการที่ทับกันถูกตัดทิ้งตั้งแต่ต้น แต่ก็ยังโตเร็วจนใช้ไม่ได้ตั้งแต่ราว N = 50 ส่วน greedy กับรายการหนึ่งล้านรายการ เวลาเกือบทั้งหมดคือการอ่านข้อมูลกับการเรียง โปรแกรม greedy ที่วัดตัดบรรทัดพิมพ์ <code>take</code> ออกและเปิดการอ่านเขียนแบบเร็วตามหน้า 15.3</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="pair-order">แบบที่ 1 เก็บ pair ผิดลำดับ</h3>
+
+      <p>เก็บเป็น <code>{start, finish}</code> ตามลำดับที่อ่านเข้ามา ซึ่งดูเป็นธรรมชาติกว่า</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="by-start"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; events(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; events[i].first &gt;&gt; events[i].second;
+    }
+    sort(events.begin(), events.end());
+    int count = 0;
+    int last_finish = INT_MIN;
+    for (int i = 0; i &lt; n; i++) {
+        int start = events[i].first;
+        int finish = events[i].second;
+        if (start &gt;= last_finish) {
+            cout &lt;&lt; "take " &lt;&lt; start &lt;&lt; "-" &lt;&lt; finish &lt;&lt; '\n';
+            count++;
+            last_finish = finish;
+        }
+    }
+    cout &lt;&lt; "count = " &lt;&lt; count &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="by-start" data-title="ข้อมูลเข้า"><pre><code>8
+8 12
+9 10
+10 11
+11 13
+12 14
+13 15
+14 16
+15 17
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="by-start" data-title="C:\code\activity.exe"><pre><code>take 8-12
+take 12-14
+take 14-16
+count = 3
+</code></pre></div>
+      </div>
+
+      <p>คอมไพล์ผ่าน รันได้ ไม่มีอะไรเตือน แต่ <code>sort</code> เรียงตาม <code>first</code> ซึ่งตอนนี้คือเวลาเริ่ม โปรแกรมจึงกลายเป็นกฎ "เริ่มเร็วที่สุดก่อน" รับ 8-12 ที่ยาวสี่ชั่วโมงไปก่อน ได้แค่ 3 รายการ เวลาเรียง pair ให้ถามตัวเองทุกครั้งว่าค่าไหนต้องเป็นตัวหลักในการเรียง แล้ววางไว้เป็น <code>first</code></p>
+
+      <h3 id="strict">แบบที่ 2 ใช้ &gt; แทน &gt;=</h3>
+
+      <p>ในโปรแกรม activity เปลี่ยนเงื่อนไขเป็น <code>if (start &gt; last_finish)</code> แล้วป้อนข้อมูลเข้าชุดเดิม</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\activity.exe"><pre><code>take 9-10
+take 11-13
+take 14-16
+count = 3
+</code></pre></div>
+
+      <p>เหลือ 3 รายการแทน 5 รายการ 10-11 เริ่มตอน 9-10 จบพอดีจึงถูกข้าม 13-15 ก็ถูกข้ามด้วยเหตุผลเดียวกัน แล้ว 14-16 ที่รับแทนยังไปทับ 15-17 อีก โจทย์แต่ละข้อนิยามเรื่องเวลาชนกันพอดีไม่เหมือนกัน บางข้อให้ต่อกันได้ บางข้อต้องห่างอย่างน้อยหนึ่งหน่วย อ่านโจทย์ให้ชัดแล้วทดสอบด้วยรายการที่จบกับเริ่มตรงกันพอดีทุกครั้ง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เลือกกิจกรรมให้ได้มากที่สุด เรียงตามเวลาจบ รับรายการที่เริ่มไม่ก่อนรายการล่าสุดจบ ใช้เวลา O(N log N)</li>
+        <li>กฎเริ่มเร็วสุดและสั้นสุดฟังดูดีแต่ผิด มีตัวอย่างสามรายการที่ทำให้พังได้</li>
+        <li>พิสูจน์แบบแลกเปลี่ยน รายการแรกของคำตอบที่ดีที่สุดแลกเป็นรายการที่จบเร็วที่สุดได้เสมอโดยจำนวนไม่ลด</li>
+        <li>เก็บค่าที่ใช้เรียงไว้เป็น <code>first</code> ของ pair และระวัง <code>&gt;</code> กับ <code>&gt;=</code> ตรงเวลาที่ชนกันพอดี</li>
+      </ul>
+    </article>

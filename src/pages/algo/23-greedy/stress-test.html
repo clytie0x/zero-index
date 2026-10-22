@@ -1,0 +1,189 @@
+<article class="doc">
+      <h1>23.5 ตรวจ greedy ด้วย stress test</h1>
+
+      <p>ในห้องสอบไม่มีเวลาพิสูจน์ทุกข้อให้ละเอียด และ greedy ที่ผิดก็มักผ่านตัวอย่างในโจทย์ เพราะตัวอย่างมีไม่กี่ชุดและไม่ได้ตั้งใจดัก แล้วไปตกในชุดทดสอบที่ซ่อนไว้ ทักษะที่ช่วยได้มากที่สุดคือ <strong>stress test</strong> เขียนวิธีที่ช้าแต่ถูกแน่ๆ แล้วให้คอมพิวเตอร์สุ่มข้อมูลเล็กๆ มาเทียบกับวิธีเร็วเป็นหมื่นชุด จนเจอชุดที่คำตอบไม่ตรงกัน หน้านี้ใช้ stress test ตอบคำถามที่ค้างไว้ในหน้า 23.4 ว่าทำไมงานต้องลงวันว่าง <strong>วันสุดท้าย</strong> ไม่ใช่วันว่างวันแรก</p>
+
+      <h2 id="four-parts">สี่ส่วนของ stress test</h2>
+
+      <ol>
+        <li><strong>วิธีที่จะตรวจ</strong> เขียนเป็นฟังก์ชันที่รับข้อมูลแล้วคืนคำตอบ แทนที่จะอ่านจาก <code>cin</code> และพิมพ์ออก <code>cout</code> ตรงๆ</li>
+        <li><strong>brute force</strong> วิธีที่ช้าแต่ถูกแน่ เขียนให้ตรงกับนิยามของโจทย์ที่สุด และห้ามใช้ความคิดเดียวกับวิธีที่จะตรวจ</li>
+        <li><strong>ตัวสุ่มข้อมูล</strong> สร้างข้อมูลเข้าที่ถูกต้องตามโจทย์ แต่ขนาดเล็ก</li>
+        <li><strong>ลูปเทียบ</strong> สุ่ม เรียกทั้งสองวิธี ถ้าไม่ตรงกันให้พิมพ์ข้อมูลชุดนั้นแล้วหยุด</li>
+      </ol>
+
+      <p>เขียนทั้งหมดไว้ในไฟล์เดียว กด <span class="keys"><kbd>F9</kbd></span> ใน Code::Blocks ได้ทันที ไม่ต้องมีสคริปต์หรือไฟล์ข้อมูลแยก</p>
+
+      <h2 id="first-free-day">ตรวจวิธีลงวันว่างวันแรก</h2>
+
+      <p>โจทย์คืองานซ่อมคอมพิวเตอร์ในหน้า 23.4 ทุกงานใช้หนึ่งวัน งานที่ i ต้องเสร็จภายในวันที่ d<sub>i</sub> ได้ค่าจ้าง p<sub>i</sub> หาค่าจ้างรวมมากที่สุด วิธีที่จะตรวจคือรับงานค่าจ้างสูงก่อน แต่ลงวันว่าง <strong>วันแรก</strong> ซึ่งฟังดูสมเหตุสมผลไม่แพ้วันสุดท้าย ทำงานได้เงินเร็วดี</p>
+
+      <p>brute force ทำตามนิยามตรงๆ แบบบทที่ 21 แต่ละงานเลือกว่าไม่รับ หรือรับแล้วลงวันว่างวันไหนก็ได้ที่ไม่เกินเส้นตาย ลองทุกทาง แล้วจำค่าจ้างรวมที่มากที่สุด ไม่มีการเรียง ไม่มีกฎว่าต้องเลือกวันไหน จึงไม่มีทางผิดแบบเดียวกับ greedy</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="stress"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long greedy(vector&lt;pair&lt;int, int&gt;&gt; jobs)
+{
+    sort(jobs.begin(), jobs.end(), greater&lt;pair&lt;int, int&gt;&gt;());
+    vector&lt;bool&gt; busy(jobs.size() + 1, false);
+    long long total = 0;
+    for (int i = 0; i &lt; (int)jobs.size(); i++) {
+        int pay = jobs[i].first;
+        int deadline = jobs[i].second;
+        for (int day = 1; day &lt;= deadline; day++) {
+            if (!busy[day]) {
+                busy[day] = true;
+                total += pay;
+                break;
+            }
+        }
+    }
+    return total;
+}
+
+vector&lt;pair&lt;int, int&gt;&gt; all_jobs;
+vector&lt;bool&gt; used_day;
+long long best;
+
+void try_jobs(int k, long long total)
+{
+    if (k == (int)all_jobs.size()) {
+        best = max(best, total);
+        return;
+    }
+    try_jobs(k + 1, total);
+    for (int day = 1; day &lt;= all_jobs[k].second; day++) {
+        if (!used_day[day]) {
+            used_day[day] = true;
+            try_jobs(k + 1, total + all_jobs[k].first);
+            used_day[day] = false;
+        }
+    }
+}
+
+long long brute(const vector&lt;pair&lt;int, int&gt;&gt; &amp;jobs)
+{
+    all_jobs = jobs;
+    used_day.assign(jobs.size() + 1, false);
+    best = 0;
+    try_jobs(0, 0);
+    return best;
+}
+
+int main()
+{
+    mt19937 rng(2569); // (1)!
+    for (int test = 1; test &lt;= 10000; test++) {
+        int n = 1 + rng() % 5; // (2)!
+        vector&lt;pair&lt;int, int&gt;&gt; jobs(n);
+        for (int i = 0; i &lt; n; i++) {
+            jobs[i].first = 1 + rng() % 9;
+            jobs[i].second = 1 + rng() % n;
+        }
+        long long fast = greedy(jobs);
+        long long slow = brute(jobs);
+        if (fast != slow) {
+            cout &lt;&lt; "test " &lt;&lt; test &lt;&lt; " failed\n";
+            cout &lt;&lt; n &lt;&lt; '\n'; // (3)!
+            for (int i = 0; i &lt; n; i++) {
+                cout &lt;&lt; jobs[i].second &lt;&lt; ' ' &lt;&lt; jobs[i].first &lt;&lt; '\n';
+            }
+            cout &lt;&lt; "greedy = " &lt;&lt; fast &lt;&lt; ", brute = " &lt;&lt; slow &lt;&lt; '\n';
+            return 0; // (4)!
+        }
+    }
+    cout &lt;&lt; "all 10000 tests passed\n";
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตัวสุ่มจากหน้า 20.2 ใส่เลขเริ่มตายตัว รันกี่ครั้งก็ได้ข้อมูลชุดเดิม เจอข้อผิดแล้วแก้โค้ด รันใหม่จะได้ชุดเดิมมาตรวจซ้ำ</li>
+        <li>งานไม่เกิน 5 งาน ค่าจ้าง 1 ถึง 9 เส้นตายไม่เกินจำนวนงาน ข้อมูลเล็กทำให้ brute force เร็ว และถ้าเจอข้อผิด ก็คิดตามด้วยมือได้</li>
+        <li>พิมพ์ในรูปแบบข้อมูลเข้าของโจทย์ คือจำนวนงาน แล้วเส้นตายกับค่าจ้างทีละบรรทัด คัดลอกไปป้อนโปรแกรมจริงได้ทันที</li>
+        <li>หยุดที่ชุดแรกที่ผิด ชุดเดียวก็พอให้รู้ว่าผิด และพิมพ์ทุกชุดจะยาวจนอ่านไม่ไหว</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="stress" data-title="C:\code\stress.exe"><pre><code>test 1 failed
+3
+3 5
+2 1
+3 4
+greedy = 9, brute = 10
+</code></pre></div>
+
+      <p>ผิดตั้งแต่ชุดแรก สามงาน ค่าจ้าง 5 บาทเส้นตายวันที่ 3 ค่าจ้าง 1 บาทเส้นตายวันที่ 2 และค่าจ้าง 4 บาทเส้นตายวันที่ 3 greedy ลงงาน 5 บาทวันที่ 1 งาน 4 บาทวันที่ 2 พองาน 1 บาทซึ่งต้องเสร็จภายในวันที่ 2 วันที่ 1 กับ 2 ก็เต็มแล้ว ได้ 9 บาท ทั้งที่ย้ายงาน 5 บาทกับ 4 บาทไปวันที่ 3 กับ 2 แล้วให้งาน 1 บาทใช้วันที่ 1 ได้ครบ 10 บาท งานที่เส้นตายช้ามาแย่งวันต้นๆ ซึ่งงานเส้นตายเร็วต้องใช้ นี่คือเหตุผลที่ต้องลงวันว่างวันสุดท้าย</p>
+
+      <p>แก้บรรทัดลูปหาวันในฟังก์ชัน <code>greedy</code> ให้ไล่จากเส้นตายถอยลงมาแบบหน้า 23.4</p>
+
+      <div class="code" data-lang="cpp"><pre><code>for (int day = deadline; day &gt;= 1; day--) {
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\stress.exe"><pre><code>all 10000 tests passed
+</code></pre></div>
+
+      <p>ผ่านครบหนึ่งหมื่นชุด วัดบนเครื่องเดียวกับหน้า 23.1 รัน 5 รอบได้ค่ากลาง 0.12 วินาทีแบบ Code::Blocks และ 0.04 วินาทีแบบ <code>-O2</code> ถ้าจะตรวจวิธี heap ในหน้า 23.4 ก็แค่เปลี่ยนฟังก์ชัน <code>greedy</code> เป็นวิธีนั้น ส่วนที่เหลือใช้ได้เลย</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">ผ่านหมื่นชุดก็ยังไม่ใช่การพิสูจน์</p>
+        <p>stress test บอกได้แน่ว่า greedy <strong>ผิด</strong> เมื่อเจอชุดที่ไม่ตรง แต่ถ้าไม่เจอ แปลว่ามั่นใจขึ้นมากเท่านั้น ข้อผิดบางแบบเกิดเฉพาะกับข้อมูลที่ใหญ่กว่าที่สุ่ม หรือมีรูปแบบเฉพาะที่สุ่มได้ยาก ใช้คู่กับการหาเหตุผลแบบแลกเปลี่ยนเสมอ</p>
+      </div>
+
+      <h2 id="tips">เคล็ดลับให้ stress test ได้ผล</h2>
+
+      <ul>
+        <li><strong>เล็กไว้ก่อน</strong> N 1 ถึง 5 และค่าไม่เกิน 10 ข้อผิดของ greedy ส่วนใหญ่โผล่ตั้งแต่ข้อมูลสามสี่ตัว และข้อมูลเล็กอ่านแล้วเข้าใจได้ว่าผิดเพราะอะไร</li>
+        <li><strong>สุ่มให้มีค่าซ้ำ</strong> ช่วงค่าแคบทำให้เกิดค่าเท่ากัน เวลาชนกันพอดี เส้นตายเดียวกัน ซึ่งเป็นจุดที่โค้ดชอบพลาด ตัวอย่างข้างบนจึงให้เส้นตายไม่เกินจำนวนงาน</li>
+        <li><strong>ตรวจขอบเขตด้วย</strong> stress test ไม่ได้ตรวจว่าเร็วพอหรือใช้ <code>long long</code> หรือยัง สองเรื่องนี้ต้องลองกับข้อมูลใหญ่สุดตามโจทย์แยกต่างหาก</li>
+        <li><strong>เจอแล้วเก็บไว้</strong> ข้อมูลที่ทำให้ผิดคือชุดทดสอบชั้นดี บันทึกเป็นไฟล์ไว้ทดสอบซ้ำทุกครั้งที่แก้โค้ด</li>
+        <li><strong>เทียบกับวิธีช้าที่ถูกได้ด้วย</strong> ถ้ามีวิธี O(N<sup>2</sup>) ที่แน่ใจว่าถูกอยู่แล้ว เช่นวันว่างวันสุดท้าย ใช้เป็นตัวเทียบกับวิธีเร็วได้เหมือนกัน และสุ่ม N ใหญ่ขึ้นได้</li>
+      </ul>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="same-idea">แบบที่ 1 brute force ที่แอบใช้ greedy</h3>
+
+      <p>เขียน brute force ด้วยการลองทุกเซตของงาน แต่ตอนตรวจว่าเซตไหนทำทันทุกงาน กลับเรียกฟังก์ชัน <code>greedy</code> ตัวเดิม (แบบวันว่างวันแรก) แล้วดูว่ามันรับได้ครบทุกงานในเซตไหม เพราะคิดว่าแค่ตรวจว่าใส่ได้ครบก็คงไม่ผิด</p>
+
+      <div class="code" data-lang="cpp"><pre><code>long long brute(const vector&lt;pair&lt;int, int&gt;&gt; &amp;jobs)
+{
+    int n = jobs.size();
+    long long best = 0;
+    for (int mask = 0; mask &lt; (1 &lt;&lt; n); mask++) {
+        vector&lt;pair&lt;int, int&gt;&gt; chosen;
+        long long sum = 0;
+        for (int i = 0; i &lt; n; i++) {
+            if (mask &amp; (1 &lt;&lt; i)) {
+                chosen.push_back(jobs[i]);
+                sum += jobs[i].first;
+            }
+        }
+        if (greedy(chosen) == sum) {
+            best = max(best, sum);
+        }
+    }
+    return best;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\stress.exe"><pre><code>all 10000 tests passed
+</code></pre></div>
+
+      <p>ผ่านครบหนึ่งหมื่นชุดทั้งที่ greedy ผิดตั้งแต่ชุดแรก เซตที่ดีที่สุด {5, 1, 4} ถูกตัดสินว่าทำไม่ทัน เพราะตัวตรวจลงวันว่างวันแรกแบบเดียวกัน brute force จึงผิดเหมือน greedy ทุกครั้ง แล้วตอบตรงกันเสมอ stress test ที่ไม่เคยเจออะไรเลยควรทำให้สงสัย ลองใส่ greedy ที่ผิดแน่ๆ เข้าไปดูว่ามันจับได้จริงไหม และ brute force ต้องไม่เรียกโค้ดของวิธีที่กำลังตรวจ</p>
+
+      <h3 id="too-big">แบบที่ 2 สุ่มข้อมูลใหญ่เกิน</h3>
+
+      <p>เปลี่ยนเป็น <code>int n = 1 + rng() % 10;</code> เพราะคิดว่าข้อมูลใหญ่ขึ้นน่าจะจับข้อผิดได้มากขึ้น แล้วรันกับ greedy ที่แก้แล้ว วัดบนเครื่องเดียวกัน แบบ <code>-O2</code> รัน 5 รอบได้ค่ากลาง 12 วินาที แบบ Code::Blocks รอเกิน 120 วินาทีก็ยังไม่จบ จากเดิมที่ใช้ไม่ถึงวินาที brute force ลองทุกวันให้ทุกงาน งานเพิ่มหนึ่งงาน ทางที่ต้องลองก็คูณเพิ่มอีกหลายเท่า ระหว่างรอ หน้าต่างดำว่างเปล่าเหมือนโปรแกรมค้าง ถ้าเจอข้อผิดกับข้อมูลสิบงาน ก็คิดตามด้วยมือยากอีก เริ่มจากเล็กเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>stress test มีสี่ส่วน วิธีที่จะตรวจ brute force ตัวสุ่ม และลูปเทียบ เขียนในไฟล์เดียวรันใน Code::Blocks ได้เลย</li>
+        <li>brute force ต้องทำตามนิยามของโจทย์ตรงๆ และห้ามใช้ความคิดหรือโค้ดเดียวกับวิธีที่ตรวจ</li>
+        <li>สุ่มข้อมูลเล็ก ช่วงค่าแคบให้มีค่าซ้ำ ใช้ <code>mt19937</code> เลขเริ่มตายตัว พิมพ์ชุดที่ผิดในรูปแบบข้อมูลเข้าแล้วหยุด</li>
+        <li>เจอชุดที่ไม่ตรงแปลว่าผิดแน่ ไม่เจอแปลว่ามั่นใจขึ้น ไม่ใช่พิสูจน์แล้ว</li>
+        <li>งานวันละงานก่อนเส้นตาย ต้องลงวันว่างวันสุดท้าย วันแรกผิดตั้งแต่ข้อมูลสามงาน</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

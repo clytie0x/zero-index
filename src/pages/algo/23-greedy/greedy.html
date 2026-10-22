@@ -1,0 +1,251 @@
+<article class="doc">
+      <h1>23.1 คิดแบบ greedy และทอนเหรียญ</h1>
+
+      <p>บทที่ 21 แก้โจทย์ด้วยการลองทุกทาง ถูกแน่แต่ช้ามากเมื่อข้อมูลเยอะ บทนี้ใช้วิธีตรงข้าม คือในแต่ละขั้นเลือกสิ่งที่ดูดีที่สุด <strong>ตอนนี้</strong> แล้วไม่ย้อนกลับไปเปลี่ยนใจอีกเลย วิธีคิดแบบนี้เรียกว่า <strong>greedy</strong> (แปลตรงตัวว่าตะกละ คือคว้าของที่ดีที่สุดตรงหน้าไว้ก่อน) โปรแกรมมักสั้นและเร็วมาก ปัญหาอยู่ที่บางโจทย์ greedy ได้คำตอบถูก บางโจทย์ได้คำตอบผิดแบบเนียนๆ หน้านี้ดูทั้งสองแบบด้วยโจทย์เดียวกัน คือการทอนเหรียญ แล้วเขียนโปรแกรมที่ตรวจว่า greedy ถูกหรือไม่ด้วย brute force</p>
+
+      <h2 id="coins">ทอนเงินให้ใช้เหรียญน้อยที่สุด</h2>
+
+      <p>ตู้ขายน้ำต้องทอนเงิน 38 บาท มีเหรียญ 10 5 2 และ 1 บาทไม่จำกัด อยากให้เหรียญที่หล่นออกมามีจำนวนน้อยที่สุด คนขายของส่วนใหญ่ทำแบบนี้โดยไม่ต้องคิด หยิบเหรียญใหญ่สุดที่ยังไม่เกินยอดที่เหลือก่อนเสมอ 38 หยิบ 10 ได้สามเหรียญ เหลือ 8 หยิบ 5 หนึ่งเหรียญ เหลือ 3 หยิบ 2 หนึ่งเหรียญ เหลือ 1 หยิบ 1 อีกหนึ่ง รวม 6 เหรียญ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="greedy-coins"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int k, amount;
+    cin &gt;&gt; k &gt;&gt; amount;
+    vector&lt;int&gt; coins(k);
+    for (int i = 0; i &lt; k; i++) {
+        cin &gt;&gt; coins[i];
+    }
+    int total = 0;
+    for (int i = 0; i &lt; k; i++) { // (1)!
+        int use = amount / coins[i]; // (2)!
+        amount -= use * coins[i]; // (3)!
+        total += use;
+        cout &lt;&lt; "coin " &lt;&lt; coins[i] &lt;&lt; " x " &lt;&lt; use &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "coins used = " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>รับเหรียญมาเรียงจากมากไปน้อยแล้ว ลูปจึงหยิบเหรียญใหญ่ก่อนเสมอ ถ้ามาไม่เรียงต้อง <code>sort</code> ก่อน ดูส่วนลองทำให้พัง</li>
+        <li>ใช้เหรียญนี้ได้กี่เหรียญโดยไม่เกินยอดที่เหลือ คือผลหารแบบปัดเศษทิ้งตามหน้า 1.2</li>
+        <li>ยอดที่เหลือหลังหยิบ ซึ่งก็คือ <code>amount % coins[i]</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="greedy-coins" data-title="ข้อมูลเข้า"><pre><code>4 38
+10 5 2 1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="greedy-coins" data-title="C:\code\greedy_coins.exe"><pre><code>coin 10 x 3
+coin 5 x 1
+coin 2 x 1
+coin 1 x 1
+coins used = 6
+</code></pre></div>
+      </div>
+
+      <p>แต่ละชนิดเหรียญทำงานครั้งเดียว ถ้ามีเหรียญ K ชนิด ทอนหนึ่งครั้งใช้เวลา O(K) ไม่ว่ายอดเงินจะมากแค่ไหน คำถามคือ 6 เหรียญน้อยที่สุดจริงไหม หรือแค่ดูเหมือนน้อย</p>
+
+      <h2 id="why-correct">ทำไมได้น้อยที่สุดจริง</h2>
+
+      <p>ลองนึกถึงวิธีทอนที่ใช้เหรียญน้อยที่สุดของยอดเงินใดๆ ก็ได้ แล้วดูว่ามันมีเหรียญเล็กได้มากแค่ไหน</p>
+
+      <ul>
+        <li>มีเหรียญ 1 ไม่เกินหนึ่งเหรียญ เพราะถ้ามีสองเหรียญ เปลี่ยนเป็นเหรียญ 2 หนึ่งเหรียญได้ จำนวนเหรียญลดลง</li>
+        <li>มีเหรียญ 2 ไม่เกินสองเหรียญ เพราะเหรียญ 2 สามเหรียญรวม 6 เปลี่ยนเป็น 5 กับ 1 ได้ เหลือสองเหรียญ</li>
+        <li>ถ้ามีเหรียญ 2 สองเหรียญแล้ว จะไม่มีเหรียญ 1 อีก เพราะ 2 + 2 + 1 เปลี่ยนเป็นเหรียญ 5 เหรียญเดียวได้</li>
+        <li>มีเหรียญ 5 ไม่เกินหนึ่งเหรียญ เพราะสองเหรียญเปลี่ยนเป็นเหรียญ 10 ได้</li>
+      </ul>
+
+      <p>รวมกันแล้ว เหรียญที่เล็กกว่า 10 ในวิธีที่ดีที่สุดรวมกันได้ไม่เกิน 5 + 2 + 2 = 9 บาท ส่วนที่เหลือทั้งหมดต้องเป็นเหรียญ 10 จำนวนเหรียญ 10 จึงต้องเป็น <code>amount / 10</code> พอดี ซึ่งตรงกับที่ greedy หยิบ ยอดที่เหลือไม่ถึง 10 ใช้เหตุผลเดียวกันต่อ เหรียญ 1 กับ 2 รวมกันได้ไม่เกิน 4 จำนวนเหรียญ 5 จึงต้องเป็นยอดที่เหลือหาร 5 และไล่ลงไปจนครบ วิธีที่ดีที่สุดจึงหยิบเหมือน greedy ทุกขั้น</p>
+
+      <p>เหตุผลแบบนี้มีรูปแบบที่จะใช้ทั้งบท คือ <strong>ถ้าคำตอบไหนไม่ได้ทำแบบ greedy ก็แลกบางส่วนให้เป็นแบบ greedy ได้โดยไม่แย่ลง</strong> เรียกว่าการพิสูจน์แบบแลกเปลี่ยน (exchange argument)</p>
+
+      <h2 id="greedy-fails">เหรียญ 1 3 4 ทำให้ greedy ผิด</h2>
+
+      <p>สมมติประเทศหนึ่งมีเหรียญ 4 3 และ 1 บาท ทอน 6 บาทด้วยโปรแกรมเดิม</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>3 6
+4 3 1
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\greedy_coins.exe"><pre><code>coin 4 x 1
+coin 3 x 0
+coin 1 x 2
+coins used = 3
+</code></pre></div>
+      </div>
+
+      <p>greedy หยิบ 4 ก่อนเพราะใหญ่สุด เหลือ 2 ซึ่งต้องใช้เหรียญ 1 สองเหรียญ รวม 3 เหรียญ แต่ 3 + 3 ใช้แค่ 2 เหรียญ การหยิบ 4 ซึ่งดูดีที่สุดตอนนั้น ทำให้ขั้นต่อไปแย่ลงจนรวมแล้วแพ้ เหตุผลในหัวข้อก่อนใช้ไม่ได้กับชุดนี้ เพราะเหรียญ 3 สองเหรียญรวม 6 ไม่มีทางเปลี่ยนเป็นเหรียญที่น้อยกว่าสองเหรียญได้ จึงจำกัดจำนวนเหรียญ 3 ไม่ได้</p>
+
+      <div class="adm adm-warning" role="note">
+        <p class="adm-title">greedy ไม่ได้ถูกเสมอ</p>
+        <p>โปรแกรมเดียวกันเป๊ะ ถูกกับเหรียญชุดหนึ่ง แต่ผิดกับอีกชุด ความถูกต้องของ greedy ขึ้นกับโครงสร้างของโจทย์ ไม่ได้ขึ้นกับโค้ด จึงต้องมีเหตุผลรองรับทุกครั้ง หรืออย่างน้อยต้องตรวจด้วยวิธีที่ถูกแน่ๆ</p>
+      </div>
+
+      <h2 id="brute-check">ตรวจด้วย brute force</h2>
+
+      <p>ถ้ายังพิสูจน์ไม่ได้ว่า greedy ถูก ให้เขียนวิธีที่ช้าแต่ถูกแน่ๆ แล้วเทียบคำตอบกันหลายๆ ยอด วิธีที่ถูกแน่คือลองจำนวนเหรียญทุกแบบ แบบเดียวกับบทที่ 21 ฟังก์ชัน <code>try_coins</code> เลือกว่าจะใช้เหรียญชนิดที่ <code>index</code> กี่เหรียญ ตั้งแต่ 0 จนเกินยอด แล้วเรียกตัวเองไปเลือกชนิดถัดไป ครบทุกชนิดแล้วยอดเหลือ 0 พอดี ก็เป็นวิธีทอนหนึ่งแบบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="coin-check"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int greedy(const vector&lt;int&gt; &amp;coins, int amount)
+{
+    int total = 0;
+    for (int i = 0; i &lt; (int)coins.size(); i++) {
+        total += amount / coins[i];
+        amount %= coins[i];
+    }
+    return total;
+}
+
+int best;
+
+void try_coins(const vector&lt;int&gt; &amp;coins, int index, int amount, int used)
+{
+    if (index == (int)coins.size()) {
+        if (amount == 0) {
+            best = min(best, used);
+        }
+        return;
+    }
+    for (int k = 0; k * coins[index] &lt;= amount; k++) {
+        try_coins(coins, index + 1, amount - k * coins[index], used + k);
+    }
+}
+
+int brute(const vector&lt;int&gt; &amp;coins, int amount)
+{
+    best = INT_MAX;
+    try_coins(coins, 0, amount, 0);
+    return best;
+}
+
+int main()
+{
+    int k, limit;
+    cin &gt;&gt; k &gt;&gt; limit;
+    vector&lt;int&gt; coins(k);
+    for (int i = 0; i &lt; k; i++) {
+        cin &gt;&gt; coins[i];
+    }
+    int wrong = 0;
+    for (int amount = 1; amount &lt;= limit; amount++) {
+        int g = greedy(coins, amount);
+        int b = brute(coins, amount);
+        if (g != b) {
+            cout &lt;&lt; "amount " &lt;&lt; amount &lt;&lt; ": greedy " &lt;&lt; g &lt;&lt; ", best " &lt;&lt; b &lt;&lt; '\n';
+            wrong++;
+        }
+    }
+    cout &lt;&lt; wrong &lt;&lt; " of " &lt;&lt; limit &lt;&lt; " amounts differ\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="coin-check" data-title="ข้อมูลเข้า"><pre><code>3 20
+4 3 1
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="coin-check" data-title="C:\code\coin_check.exe"><pre><code>amount 6: greedy 3, best 2
+amount 10: greedy 4, best 3
+amount 14: greedy 5, best 4
+amount 18: greedy 6, best 5
+4 of 20 amounts differ
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดแรกของข้อมูลเข้าคือจำนวนชนิดเหรียญกับยอดสูงสุดที่จะตรวจ โปรแกรมไล่ทุกยอดตั้งแต่ 1 ถึง 20 พบ 4 ยอดที่ greedy ใช้เหรียญเกิน ยอดแรกคือ 6 ที่เพิ่งเห็น ส่วนชุด 10 5 2 1 ตรวจถึง 100 บาท ผลคือ</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>4 100
+10 5 2 1
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\coin_check.exe"><pre><code>0 of 100 amounts differ
+</code></pre></div>
+      </div>
+
+      <p>ตรงกันทุกยอดตามที่พิสูจน์ไว้ ข้อควรจำคือ <strong>ตรวจแล้วไม่เจอ ไม่ได้แปลว่าถูก</strong> แค่แปลว่ายังหาตัวอย่างที่ผิดไม่เจอในช่วงที่ตรวจ แต่ในทางกลับกัน ถ้าเจอแม้แต่ยอดเดียว ก็รู้ทันทีว่า greedy ผิดแน่นอน วิธีสุ่มตรวจแบบนี้อย่างเป็นระบบอยู่ในหน้า 23.5</p>
+
+      <p>เหรียญชุดที่ greedy ผิดต้องใช้วิธีอื่นที่ทั้งเร็วและถูก คือ dynamic programming ซึ่งจำคำตอบของยอดที่เล็กกว่าไว้ใช้ต่อ โจทย์ทอนเหรียญด้วยเหรียญชุดใดก็ได้เป็นตัวอย่างแรกๆ ในบทที่ 24</p>
+
+      <h2 id="timing">greedy เร็วกว่าแค่ไหน</h2>
+
+      <p>วัดบนโน้ตบุ๊ก AMD Ryzen AI 9 HX 370 กับ Windows 11 และ GCC 14.2 ของ Code::Blocks ทอนยอดเดียวด้วยเหรียญ 10 5 2 1 วิธี brute force คือ <code>try_coins</code> ข้างบน ส่วน greedy คือลูปหารสี่รอบ วัดทั้งโปรแกรมตั้งแต่เริ่มจนจบ รันแต่ละแบบ 5 รอบ ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ยอดเงิน</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>500</td><td>brute force</td><td>0.19 วินาที</td><td>0.10 วินาที</td></tr>
+            <tr><td>1000</td><td>brute force</td><td>2.2 วินาที</td><td>0.80 วินาที</td></tr>
+            <tr><td>2000</td><td>brute force</td><td>44 วินาที (5 รอบอยู่ระหว่าง 35 ถึง 49)</td><td>18 วินาที</td></tr>
+            <tr><td>4000</td><td>brute force</td><td>เกิน 60 วินาที</td><td>เกิน 60 วินาที</td></tr>
+            <tr><td>4000</td><td>greedy</td><td>0.02 วินาที</td><td>0.02 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>brute force ช้าลงราว 20 เท่าทุกครั้งที่ยอดเพิ่มเป็นสองเท่า เพราะลูปซ้อนกันสี่ชั้นตามจำนวนชนิดเหรียญ ส่วน greedy ใช้ 0.02 วินาทีซึ่งเกือบทั้งหมดคือเวลาเปิดโปรแกรม โจทย์ greedy ส่วนใหญ่ในบทนี้ต้อง <code>sort</code> ข้อมูลก่อน แล้วไล่ครั้งเดียว เวลาทั้งหมดจึงเป็น O(N log N) จากการเรียง ซึ่ง N เป็นล้านก็ยังทันตามตารางในหน้า 18.2</p>
+
+      <h2 id="recipe">ขั้นตอนเมื่อเจอโจทย์ที่น่าจะเป็น greedy</h2>
+
+      <ol>
+        <li>ตั้งกฎการเลือกให้ชัด เช่น "หยิบเหรียญใหญ่สุดที่ไม่เกินยอด" หรือ "เลือกงานที่จบเร็วที่สุด" กฎที่ดีมักมาคู่กับการเรียงข้อมูลตามค่าบางอย่าง</li>
+        <li>หาเหตุผลว่าทำไมการเลือกตามกฎนี้ไม่ทำให้แย่ลง ด้วยการแลกเปลี่ยนแบบหัวข้อ "ทำไมได้น้อยที่สุดจริง"</li>
+        <li>ถ้าหาเหตุผลไม่ได้ หรือไม่แน่ใจ ให้เขียน brute force กับข้อมูลเล็กๆ แล้วเทียบกัน ก่อนส่ง</li>
+      </ol>
+
+      <p>สามหน้าถัดไปเป็นโจทย์ greedy คลาสสิกที่เจอบ่อยในค่าย 2 และ TOI แต่ละโจทย์มีกฎที่ฟังดูดีหลายกฎ แต่ถูกอยู่กฎเดียว</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="unsorted-coins">แบบที่ 1 ลืมเรียงเหรียญ</h3>
+
+      <p>ป้อนเหรียญชุดเดิมให้โปรแกรม greedy-coins แต่เรียงจากน้อยไปมาก</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>4 38
+1 2 5 10
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\greedy_coins.exe"><pre><code>coin 1 x 38
+coin 2 x 0
+coin 5 x 0
+coin 10 x 0
+coins used = 38
+</code></pre></div>
+      </div>
+
+      <p>ได้เหรียญ 1 บาท 38 เหรียญ โปรแกรมไม่ได้หยิบเหรียญใหญ่สุดก่อน แต่หยิบตามลำดับที่ป้อนมา greedy ทุกแบบพึ่งลำดับการเลือก ถ้าโจทย์ไม่ได้รับประกันว่าข้อมูลเรียงมาแล้ว ต้อง <code>sort(coins.rbegin(), coins.rend())</code> ก่อนเสมอ</p>
+
+      <h3 id="subtract-loop">แบบที่ 2 ลบทีละเหรียญเมื่อยอดใหญ่</h3>
+
+      <p>หลายคนเขียนการหยิบเหรียญเป็นลูปลบทีละเหรียญ ซึ่งตรงกับที่คนนับเหรียญจริง</p>
+
+      <div class="code" data-lang="cpp"><pre><code>long long total = 0;
+for (int i = 0; i &lt; k; i++) {
+    while (amount &gt;= coins[i]) {
+        amount -= coins[i];
+        total++;
+    }
+}
+</code></pre></div>
+
+      <p>ได้คำตอบเท่ากับแบบหาร แต่จำนวนรอบเท่ากับจำนวนเหรียญที่ทอน ถ้าโจทย์ให้ยอดถึง 10<sup>10</sup> บาทเก็บใน <code>long long</code> ต้องวนราว 10<sup>9</sup> รอบ วัดบนเครื่องเดียวกับตารางข้างบน ได้ 3.0 วินาทีแบบ Code::Blocks และ 0.35 วินาทีแบบ <code>-O2</code> ยอด 10<sup>12</sup> รอเกิน 30 วินาทีก็ยังไม่จบทั้งสองแบบ ส่วนแบบหารใช้สี่รอบเท่าเดิม greedy ที่ถูกแต่ทำทีละหน่วยก็ยังเกินเวลาได้ ให้ดูขอบเขตของค่าในโจทย์ทุกครั้ง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>greedy เลือกสิ่งที่ดีที่สุดตอนนี้ทีละขั้น แล้วไม่ย้อนกลับ โปรแกรมสั้นและเร็ว</li>
+        <li>เหรียญ 1 2 5 10 greedy ได้เหรียญน้อยสุดเสมอ พิสูจน์ได้ด้วยการแลกเหรียญเล็กหลายเหรียญเป็นเหรียญใหญ่</li>
+        <li>เหรียญ 1 3 4 greedy ผิด ทอน 6 บาทได้ 3 เหรียญ ทั้งที่ 3 + 3 ใช้แค่ 2 เหรียญ ต้องใช้ dynamic programming ในบทที่ 24</li>
+        <li>ไม่แน่ใจว่า greedy ถูก ให้เทียบกับ brute force บนข้อมูลเล็ก เจอยอดที่ต่างกันแม้ยอดเดียวแปลว่าผิด</li>
+        <li>greedy ส่วนใหญ่เรียงข้อมูลก่อน เวลาจึงเป็น O(N log N) และต้องคำนวณทีละก้อนด้วยการหาร ไม่ใช่ทีละหน่วย</li>
+      </ul>
+    </article>

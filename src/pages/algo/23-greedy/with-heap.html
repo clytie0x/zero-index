@@ -1,0 +1,296 @@
+<article class="doc">
+      <h1>23.4 greedy กับ priority_queue</h1>
+
+      <p>greedy ในหน้าก่อนๆ เรียงข้อมูลครั้งเดียวแล้วไล่ไปตามลำดับ แต่บางโจทย์ "ตัวที่ดีที่สุดตอนนี้" เปลี่ยนไปทุกครั้งที่เลือก เพราะการเลือกแต่ละครั้งสร้างของชิ้นใหม่ขึ้นมา หรือทำให้ต้องคืนของที่เคยเลือกไว้ การเรียงครั้งเดียวจึงไม่พอ ต้องใช้ <code>priority_queue</code> จากหน้า 20.5 ที่หยิบตัวน้อยสุดหรือมากสุดได้ใน O(log N) ทุกครั้ง หน้านี้มีสองโจทย์ คือรวมเชือกให้ต้นทุนน้อยที่สุด และเลือกงานให้ได้ค่าจ้างมากที่สุดก่อนเส้นตาย</p>
+
+      <h2 id="join-ropes">รวมเชือกให้ต้นทุนน้อยที่สุด</h2>
+
+      <p>ร้านอุปกรณ์เดินป่ามีเชือก N เส้น ยาวไม่เท่ากัน ต้องต่อทั้งหมดให้เป็นเส้นเดียว ต่อได้ทีละสองเส้น ค่าต่อแต่ละครั้งเท่ากับความยาวรวมของสองเส้นที่ต่อ (เส้นยาวใช้เวลาเตรียมนาน) เส้นที่ต่อแล้วเอาไปต่อกับเส้นอื่นได้อีก ต้องการให้ <strong>ค่าต่อรวมน้อยที่สุด</strong></p>
+
+      <p>เชือกเส้นที่ถูกต่อเร็ว จะถูกนับความยาวซ้ำในทุกการต่อหลังจากนั้น เหมือนคนหน้าคิวในหน้า 23.3 เส้นสั้นจึงควรถูกต่อก่อน กฎ greedy คือ <strong>ต่อสองเส้นที่สั้นที่สุดที่มีอยู่ตอนนี้</strong> เส้นใหม่ที่ได้กลับเข้ากอง แล้วทำซ้ำ เส้นใหม่อาจไม่ใช่เส้นที่สั้นที่สุดในรอบถัดไป ต้องหาสองเส้นที่สั้นที่สุดใหม่ทุกรอบ ซึ่งเป็นงานของ <code>priority_queue</code> แบบน้อยสุดก่อน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="join-ropes"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;long long&gt;&gt; ropes; // (1)!
+    for (int i = 0; i &lt; n; i++) {
+        long long length;
+        cin &gt;&gt; length;
+        ropes.push(length);
+    }
+    long long cost = 0;
+    while (ropes.size() &gt; 1) {
+        long long a = ropes.top();
+        ropes.pop();
+        long long b = ropes.top();
+        ropes.pop();
+        cout &lt;&lt; "join " &lt;&lt; a &lt;&lt; " + " &lt;&lt; b &lt;&lt; " = " &lt;&lt; a + b &lt;&lt; '\n';
+        cost += a + b;
+        ropes.push(a + b); // (2)!
+    }
+    cout &lt;&lt; "total cost = " &lt;&lt; cost &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>heap แบบน้อยสุดก่อนด้วย <code>greater</code> ตามหน้า 20.5 ความยาวรวมโตได้ถึงผลรวมของทุกเส้น และค่าต่อรวมยังมากกว่านั้นอีกหลายเท่า จึงใช้ <code>long long</code> ทั้งหมด</li>
+        <li>เส้นที่ต่อแล้วกลับเข้ากอง จะถูกหยิบมาต่ออีกเมื่อมันอยู่ในสองเส้นที่สั้นที่สุด</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="join-ropes" data-title="ข้อมูลเข้า"><pre><code>5
+30 20 50 40 60
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="join-ropes" data-title="C:\code\join_ropes.exe"><pre><code>join 20 + 30 = 50
+join 40 + 50 = 90
+join 50 + 60 = 110
+join 90 + 110 = 200
+total cost = 450
+</code></pre></div>
+      </div>
+
+      <p>รอบที่สอง เส้น 50 ที่เพิ่งต่อได้ยาวเท่ากับเส้น 50 เดิม heap หยิบเส้นไหนก่อนก็ได้ค่าเท่ากัน รอบที่สามไม่ได้ต่อเส้น 90 ที่เพิ่งได้ เพราะ 50 กับ 60 สั้นกว่า มี N - 1 รอบ รอบละ push pop ไม่กี่ครั้ง รวมเป็น O(N log N)</p>
+
+      <h3 id="why-shortest">ทำไมต้องสองเส้นที่สั้นที่สุด</h3>
+
+      <p>ดูว่าเชือกแต่ละเส้นเดิมถูกนับกี่ครั้ง เส้นหนึ่งถูกนับในค่าต่อทุกครั้งที่เส้นที่มีมันอยู่ข้างในถูกต่อ เทียบสองวิธี วิธีแรกคือ greedy วิธีที่สองเรียงแล้วต่อเรียงเป็นแถว เอาเส้นที่ต่อไว้แล้วต่อกับเส้นถัดไปเรื่อยๆ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เชือก</th><th>20</th><th>30</th><th>40</th><th>50</th><th>60</th><th>ค่าต่อรวม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>greedy นับกี่ครั้ง</td><td>3</td><td>3</td><td>2</td><td>2</td><td>2</td><td>60 + 90 + 80 + 100 + 120 = 450</td></tr>
+            <tr><td>ต่อเรียงแถว นับกี่ครั้ง</td><td>4</td><td>4</td><td>3</td><td>2</td><td>1</td><td>80 + 120 + 120 + 100 + 60 = 480</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ค่าต่อรวมคือผลรวมของความยาวคูณจำนวนครั้งที่ถูกนับ ถ้ามีวิธีไหนที่เส้นยาวถูกนับมากครั้งกว่าเส้นสั้น สลับตำแหน่งสองเส้นนั้นในแผนการต่อ ค่ารวมจะไม่เพิ่ม ในวิธีที่ดีที่สุดจึงมีแบบหนึ่งที่สองเส้นที่สั้นที่สุดถูกนับมากครั้งที่สุด และถูกต่อเข้าด้วยกันเป็นครั้งแรก ซึ่งก็คือสิ่งที่ greedy ทำ หลังจากนั้นเส้นที่ต่อแล้วก็เป็นเชือกเส้นหนึ่งในโจทย์ที่เล็กลง ใช้เหตุผลเดิมซ้ำ ความคิดเดียวกันนี้ใช้สร้าง Huffman code ซึ่งให้ตัวอักษรที่เจอบ่อยมีรหัสสั้น เป็นหลักการของการบีบอัดไฟล์</p>
+
+      <h2 id="pay-before-deadline">เลือกงานให้ได้ค่าจ้างมากที่สุดก่อนเส้นตาย</h2>
+
+      <p>ร้านซ่อมคอมพิวเตอร์มีช่างคนเดียว มีงานเสนอเข้ามา N งาน ทุกงานใช้เวลาหนึ่งวันเต็ม งานที่ i ต้องเสร็จภายในวันที่ d<sub>i</sub> และได้ค่าจ้าง p<sub>i</sub> บาท งานที่ทำไม่ทันไม่ต้องรับ อยากเลือกงานให้ได้ <strong>ค่าจ้างรวมมากที่สุด</strong></p>
+
+      <p>วิธีแรกที่คนส่วนใหญ่คิด คือรับงานค่าจ้างสูงก่อน แต่ละงานให้ไปลงวันว่าง <strong>วันสุดท้าย</strong> ที่ยังไม่เกินเส้นตาย เพื่อเก็บวันต้นๆ ไว้ให้งานที่เส้นตายเร็วกว่า ถ้าไม่มีวันว่างเหลือก็ไม่รับงานนั้น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="latest-free-day"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; jobs(n);
+    int last_day = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int deadline, pay;
+        cin &gt;&gt; deadline &gt;&gt; pay;
+        jobs[i] = {pay, deadline};
+        last_day = max(last_day, deadline);
+    }
+    sort(jobs.rbegin(), jobs.rend()); // (1)!
+    vector&lt;bool&gt; busy(last_day + 1, false);
+    long long total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int pay = jobs[i].first;
+        int deadline = jobs[i].second;
+        for (int day = deadline; day &gt;= 1; day--) { // (2)!
+            if (!busy[day]) {
+                busy[day] = true;
+                total += pay;
+                cout &lt;&lt; "pay " &lt;&lt; pay &lt;&lt; " on day " &lt;&lt; day &lt;&lt; '\n';
+                break;
+            }
+        }
+    }
+    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บเป็น <code>{pay, deadline}</code> แล้วเรียงจากท้ายไปหน้าตามหน้า 16.3 ได้ค่าจ้างจากมากไปน้อย</li>
+        <li>ไล่จากวันเส้นตายถอยลงมาหาวันว่างวันแรกที่เจอ ซึ่งก็คือวันว่างวันสุดท้ายที่ยังทันเส้นตาย</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="latest-free-day" data-title="ข้อมูลเข้า"><pre><code>6
+1 30
+1 20
+2 40
+2 35
+3 25
+3 50
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="latest-free-day" data-title="C:\code\repair_jobs.exe"><pre><code>pay 50 on day 3
+pay 40 on day 2
+pay 35 on day 1
+total = 125
+</code></pre></div>
+      </div>
+
+      <p>ข้อมูลเข้าแต่ละบรรทัดคือเส้นตายกับค่าจ้าง งาน 50 บาทลงวันที่ 3 งาน 40 บาทลงวันที่ 2 งาน 35 บาทเส้นตายวันที่ 2 แต่วันที่ 2 ไม่ว่างแล้ว จึงถอยไปวันที่ 1 ที่เหลือไม่มีวันว่างให้ลง ได้ 125 บาท ถูกต้อง แต่ช้า ถ้ามีหลายงานที่เส้นตายเดียวกันมากๆ งานหลังๆ ต้องไล่ข้ามวันที่ไม่ว่างนับแสนวันก่อนจะเจอวันว่าง เป็น O(N × D) เมื่อ D คือเส้นตายที่มากที่สุด หน้า 23.5 จะแสดงว่าทำไมต้องเป็นวันว่างวันสุดท้าย ไม่ใช่วันแรก</p>
+
+      <h3 id="keep-best">เก็บงานที่ดีที่สุดไว้ใน heap</h3>
+
+      <p>มองอีกทาง ไล่งานตามเส้นตายจากเร็วไปช้า รับไว้ก่อนทุกงาน แล้วคอยตรวจว่ารับเกินจำนวนวันหรือยัง ตอนที่ไล่ถึงงานที่เส้นตายวันที่ d งานทั้งหมดที่รับไว้มีเส้นตายไม่เกิน d จึงทำได้มากที่สุด d งาน ถ้ารับไว้เกิน ให้ <strong>คืนงานที่ค่าจ้างน้อยที่สุด</strong> ออกหนึ่งงาน งานค่าจ้างน้อยสุดหาได้ทันทีจาก heap แบบน้อยสุดก่อน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="keep-best"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; jobs(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; jobs[i].first &gt;&gt; jobs[i].second;
+    }
+    sort(jobs.begin(), jobs.end()); // (1)!
+    priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; kept;
+    long long total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int deadline = jobs[i].first;
+        int pay = jobs[i].second;
+        kept.push(pay);
+        total += pay;
+        if ((int)kept.size() &gt; deadline) { // (2)!
+            cout &lt;&lt; "deadline " &lt;&lt; deadline &lt;&lt; ": drop " &lt;&lt; kept.top() &lt;&lt; '\n';
+            total -= kept.top();
+            kept.pop();
+        }
+    }
+    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>pair เป็น <code>{deadline, pay}</code> จึงเรียงตามเส้นตายจากเร็วไปช้า</li>
+        <li>งานที่รับไว้มีมากกว่าจำนวนวันจนถึงเส้นตายนี้ ทำไม่ทันแน่ คืนงานที่ค่าจ้างน้อยที่สุดหนึ่งงาน เพิ่มทีละงานจึงเกินได้ทีละหนึ่ง คืนหนึ่งงานก็พอ</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="keep-best" data-title="ข้อมูลเข้า"><pre><code>6
+1 30
+1 20
+2 40
+2 35
+3 25
+3 50
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="keep-best" data-title="C:\code\repair_jobs.exe"><pre><code>deadline 1: drop 20
+deadline 2: drop 30
+deadline 3: drop 25
+total = 125
+</code></pre></div>
+      </div>
+
+      <p>ถึงเส้นตายวันที่ 1 รับงาน 20 กับ 30 ไว้ เกินหนึ่งวัน คืนงาน 20 ถึงวันที่ 2 รับ 35 กับ 40 เพิ่ม มีสามงานในสองวัน คืนงาน 30 ทั้งที่มันเคยถูกรับไว้แล้ว นี่คือจุดที่ greedy แบบเรียงครั้งเดียวทำไม่ได้ ถึงวันที่ 3 คืนงาน 25 เหลือ 35 40 50 รวม 125 บาท เท่ากับวิธีก่อน</p>
+
+      <p>งานที่เหลือในกองทำทันหมดแน่นอน เพราะถ้าเอามาเรียงตามเส้นตายแล้วทำวันละงาน งานลำดับที่ k ทำในวันที่ k และตอนที่มันถูกรับเข้ากอง กองมีงานไม่เกินเส้นตายของมัน จึงได้ k ไม่เกินเส้นตาย ส่วนงานที่ถูกคืน คืองานที่ถูกที่สุดในบรรดางานที่แย่งวันชุดเดียวกัน คืนงานอื่นแทนก็ได้เงินไม่มากกว่านี้ ทุกงานเข้าและออกจาก heap ไม่เกินอย่างละครั้ง รวมกับการเรียงเป็น O(N log N) และเส้นตายจะใหญ่ถึง 10<sup>9</sup> ก็ได้ เพราะไม่ต้องมีอาเรย์ของวัน</p>
+
+      <h2 id="timing">เร็วขึ้นแค่ไหน</h2>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 23.1 รันแต่ละแบบ 5 รอบ วัดทั้งโปรแกรมรวมการอ่านข้อมูล ทุกโปรแกรมตัดบรรทัดที่พิมพ์ระหว่างทางออกและเปิดการอ่านเขียนแบบเร็ว การรวมเชือกแบบตรงไปตรงมาคือเก็บเชือกใน vector แล้วไล่หาสองเส้นที่สั้นที่สุดใหม่ทุกรอบ เป็น O(N<sup>2</sup>) เชือกยาวสุ่ม 1 ถึง 10<sup>6</sup></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10000</td><td>ไล่หาสองเส้นที่สั้นที่สุด</td><td>0.50 วินาที</td><td>0.07 วินาที</td></tr>
+            <tr><td>100000</td><td>ไล่หาสองเส้นที่สั้นที่สุด</td><td>33 วินาที</td><td>3.3 วินาที</td></tr>
+            <tr><td>100000</td><td>priority_queue</td><td>0.14 วินาที</td><td>0.04 วินาที</td></tr>
+            <tr><td>1000000</td><td>priority_queue</td><td>1.2 วินาที</td><td>0.27 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>งานซ่อมคอมพิวเตอร์ เส้นตายสุ่มระหว่าง N/2 ถึง N งานจำนวนมากจึงแย่งวันท้ายๆ กัน ค่าจ้างสุ่ม 1 ถึง 10<sup>6</sup></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2">100000</td><td>วันว่างวันสุดท้าย</td><td>45 วินาที (5 รอบอยู่ระหว่าง 37 ถึง 49)</td><td>1.0 วินาที</td></tr>
+            <tr><td>priority_queue</td><td>0.08 วินาที</td><td>0.05 วินาที</td></tr>
+            <tr><td rowspan="2">200000</td><td>วันว่างวันสุดท้าย</td><td>เกิน 60 วินาที</td><td>4.3 วินาที</td></tr>
+            <tr><td>priority_queue</td><td>0.14 วินาที</td><td>0.07 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>วิธีวันว่างวันสุดท้ายแบบ Code::Blocks ช้ากว่าแบบ <code>-O2</code> ถึงราว 40 เท่า ส่วนใหญ่มาจาก <code>vector&lt;bool&gt;</code> ซึ่งเก็บข้อมูลเป็นบิต ทุกครั้งที่อ่านต้องแกะบิตออกมา ถ้าไม่มี <code>-O2</code> งานนี้ช้ามาก ลองเปลี่ยนเป็น <code>vector&lt;char&gt;</code> แล้ววัดแบบ Code::Blocks ที่ N หนึ่งแสน 3 รอบ เหลือ 3.2 วินาที แต่ไม่ว่าจะแก้แบบไหน ที่ N สองแสนก็ยังเกินหนึ่งวินาที ส่วน heap เร็วเท่าการอ่านข้อมูลทั้งสองโจทย์</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="sort-once">แบบที่ 1 เรียงครั้งเดียวแล้วต่อเรียงแถว</h3>
+
+      <p>คิดว่าเส้นสั้นต้องต่อก่อน จึงเรียงครั้งเดียวแล้วต่อจากสั้นไปยาว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="join-in-line"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;long long&gt; ropes(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; ropes[i];
+    }
+    sort(ropes.begin(), ropes.end());
+    long long current = ropes[0], cost = 0;
+    for (int i = 1; i &lt; n; i++) {
+        cout &lt;&lt; "join " &lt;&lt; current &lt;&lt; " + " &lt;&lt; ropes[i] &lt;&lt; " = " &lt;&lt; current + ropes[i] &lt;&lt; '\n';
+        current += ropes[i];
+        cost += current;
+    }
+    cout &lt;&lt; "total cost = " &lt;&lt; cost &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="join-in-line" data-title="ข้อมูลเข้า"><pre><code>5
+30 20 50 40 60
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="join-in-line" data-title="C:\code\join_ropes.exe"><pre><code>join 20 + 30 = 50
+join 50 + 40 = 90
+join 90 + 50 = 140
+join 140 + 60 = 200
+total cost = 480
+</code></pre></div>
+      </div>
+
+      <p>ได้ 480 แทน 450 บรรทัดที่สามต่อเส้น 90 เข้ากับ 50 ทั้งที่ตอนนั้นมีเส้น 50 กับ 60 ซึ่งต่อกันได้ถูกกว่า เส้นที่ต่อแล้วยาวขึ้นเรื่อยๆ และถูกนับซ้ำทุกครั้ง ตัวอย่างที่มีเชือกแค่สามเส้นจะได้คำตอบเท่ากันทั้งสองวิธี เพราะแบบไหนก็ต้องต่อสองเส้นที่สั้นที่สุดก่อน ข้อผิดนี้จึงหลุดตัวอย่างในโจทย์ได้ง่าย</p>
+
+      <h3 id="max-heap">แบบที่ 2 ลืม greater</h3>
+
+      <p>ในโปรแกรม keep-best ประกาศ heap เป็น <code>priority_queue&lt;int&gt; kept;</code> เฉยๆ</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\repair_jobs.exe"><pre><code>deadline 1: drop 30
+deadline 2: drop 40
+deadline 3: drop 50
+total = 80
+</code></pre></div>
+
+      <p>heap ปกติให้ค่ามากสุดก่อน ทุกครั้งที่รับงานเกิน จึงคืนงานที่ค่าจ้าง <strong>มากที่สุด</strong> ได้ 80 แทน 125 ข้อนี้คอมไพล์ผ่านและรันได้ปกติ ทางเดียวที่จะจับได้คือทดสอบกับตัวอย่างที่คำนวณด้วยมือไว้แล้ว ทุกครั้งที่ประกาศ <code>priority_queue</code> ให้ถามตัวเองว่าต้องการหยิบตัวมากหรือตัวน้อยออกก่อน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ใช้ <code>priority_queue</code> เมื่อตัวที่ดีที่สุดเปลี่ยนไปหลังการเลือกแต่ละครั้ง เช่นมีของใหม่เกิดขึ้น หรือต้องคืนของที่เคยเลือก</li>
+        <li>รวมเชือกให้ต้นทุนน้อยสุด ต่อสองเส้นที่สั้นที่สุดทุกรอบ แล้วใส่เส้นใหม่กลับเข้า heap ได้ O(N log N)</li>
+        <li>เลือกงานวันละงานก่อนเส้นตาย ไล่ตามเส้นตาย รับทุกงานเข้า heap แบบน้อยสุดก่อน รับเกินจำนวนวันเมื่อไรให้คืนงานค่าจ้างน้อยสุด</li>
+        <li>เรียงครั้งเดียวแล้วต่อเรียงแถวผิด และ heap ผิดทิศก็ผิดโดยไม่มีอะไรเตือน</li>
+      </ul>
+    </article>

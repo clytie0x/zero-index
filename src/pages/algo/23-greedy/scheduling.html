@@ -1,0 +1,354 @@
+<article class="doc">
+      <h1>23.3 เรียงงาน เส้นตาย และ knapsack แบบแบ่งได้</h1>
+
+      <p>หน้านี้มีโจทย์ greedy สามแบบที่ใช้เครื่องมือเดียวกัน คือเรียงข้อมูลตามค่าที่ถูกตัว แล้วทำตามลำดับนั้น แบบแรกจัดคิวให้เวลารอรวมน้อยที่สุด แบบที่สองจัดงานที่มีเส้นตายให้สายน้อยที่สุด แบบที่สามบรรจุของที่แบ่งได้ให้มีมูลค่ามากที่สุด ทั้งสามพิสูจน์ด้วยการแลกเปลี่ยนแบบหน้า 23.2 โดยแลกของที่ <strong>อยู่ติดกัน</strong> ปิดท้ายด้วยโจทย์ที่หน้าตาเหมือนแบบที่สามทุกอย่าง แต่ greedy ใช้ไม่ได้</p>
+
+      <h2 id="waiting">จัดคิวให้เวลารอรวมน้อยที่สุด</h2>
+
+      <p>ครูตรวจงานนักเรียนทีละคน คนที่ i ใช้เวลาตรวจ t<sub>i</sub> นาที ทุกคนมายืนรอพร้อมกันตั้งแต่นาทีที่ 0 คนหนึ่งต้องรอจนกว่าทุกคนที่อยู่ก่อนหน้าตรวจเสร็จ ครูจะเรียกคนไหนก่อนก็ได้ อยากให้ <strong>ผลรวมของเวลารอของทุกคน</strong> น้อยที่สุด ถ้ามีสี่คนใช้เวลา 7 3 1 5 นาที แล้วเรียกตามลำดับที่มา คนแรกรอ 0 คนที่สองรอ 7 คนที่สามรอ 7 + 3 = 10 คนที่สี่รอ 11 รวม 28 นาที</p>
+
+      <p>เวลาตรวจของคนแรกในคิวถูกนับซ้ำในเวลารอของทุกคนที่อยู่หลังเขา คนที่อยู่หน้าคิวจึงควรเป็นคนที่ใช้เวลาน้อย กฎ greedy คือ <strong>เรียกคนที่ใช้เวลาน้อยที่สุดก่อน</strong> (shortest job first)</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="shortest-first"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; jobs(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; jobs[i].first;
+        jobs[i].second = i + 1; // (1)!
+    }
+    sort(jobs.begin(), jobs.end());
+    long long clock_now = 0, total_wait = 0;
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; "student " &lt;&lt; jobs[i].second &lt;&lt; " waits " &lt;&lt; clock_now &lt;&lt; '\n';
+        total_wait += clock_now; // (2)!
+        clock_now += jobs[i].first;
+    }
+    cout &lt;&lt; "total wait = " &lt;&lt; total_wait &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บหมายเลขนักเรียนคู่กับเวลา เพราะเรียงแล้วลำดับเปลี่ยน แต่ยังอยากพิมพ์ว่าใครได้ก่อน</li>
+        <li>คนนี้รอจนถึงเวลาปัจจุบัน แล้วเวลาปัจจุบันจึงเดินต่อไปอีกเท่ากับเวลาตรวจของเขา ผลรวมโตได้ถึงราว N<sup>2</sup> คูณเวลาตรวจ ใช้ <code>long long</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="shortest-first" data-title="ข้อมูลเข้า"><pre><code>4
+7 3 1 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="shortest-first" data-title="C:\code\shortest_first.exe"><pre><code>student 3 waits 0
+student 2 waits 1
+student 4 waits 4
+student 1 waits 9
+total wait = 14
+</code></pre></div>
+      </div>
+
+      <p>ลดจาก 28 เหลือ 14 นาที เหตุผลว่าทำไมน้อยที่สุดใช้การแลกคนที่อยู่ติดกัน สมมติในคิวไหนก็ตามมีคน A ที่ใช้เวลา a อยู่ก่อนคน B ที่ใช้เวลา b ติดกัน และ a มากกว่า b ถ้าสลับให้ B ขึ้นก่อน</p>
+
+      <ul>
+        <li>B รอน้อยลง a นาที เพราะไม่ต้องรอ A แล้ว</li>
+        <li>A รอนานขึ้น b นาที เพราะต้องรอ B</li>
+        <li>คนอื่นรอเท่าเดิม คนที่อยู่ก่อนสองคนนี้ไม่เกี่ยว คนที่อยู่หลังก็รอทั้ง a และ b เหมือนเดิม</li>
+      </ul>
+
+      <p>ผลรวมเปลี่ยนไป b - a ซึ่งติดลบ แปลว่าคิวไหนที่มีคนใช้เวลามากอยู่ติดหน้าคนใช้เวลาน้อย ยังทำให้ดีขึ้นได้ คิวที่ดีที่สุดจึงต้องไม่มีคู่แบบนั้นเลย ซึ่งก็คือคิวที่เรียงจากน้อยไปมาก ตรงกับ greedy</p>
+
+      <p>เทียบกับการลองทุกลำดับด้วย <code>next_permutation</code> ในหน้า 16.5 ซึ่งมี N! ลำดับ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="all-orders"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; minutes(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; minutes[i];
+    }
+    vector&lt;int&gt; order(n);
+    for (int i = 0; i &lt; n; i++) {
+        order[i] = i;
+    }
+    long long best = LLONG_MAX;
+    long long tried = 0;
+    do {
+        long long clock_now = 0, total_wait = 0;
+        for (int i = 0; i &lt; n; i++) {
+            total_wait += clock_now;
+            clock_now += minutes[order[i]];
+        }
+        best = min(best, total_wait);
+        tried++;
+    } while (next_permutation(order.begin(), order.end()));
+    cout &lt;&lt; "orders tried = " &lt;&lt; tried &lt;&lt; '\n';
+    cout &lt;&lt; "best total wait = " &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="all-orders" data-title="ข้อมูลเข้า"><pre><code>4
+7 3 1 5
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="all-orders" data-title="C:\code\all_orders.exe"><pre><code>orders tried = 24
+best total wait = 14
+</code></pre></div>
+      </div>
+
+      <p>ลองครบ 24 ลำดับ ได้ 14 เท่ากับ greedy วัดบนเครื่องเดียวกับหน้า 23.1 เวลาตรวจสุ่ม 1 ถึง 60 นาที รันแต่ละแบบ 5 รอบ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N</th><th>วิธี</th><th>Code::Blocks (<code>-Wall</code>)</th><th><code>-O2</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10</td><td>ลองทุกลำดับ</td><td>0.47 วินาที</td><td>0.05 วินาที</td></tr>
+            <tr><td>11</td><td>ลองทุกลำดับ</td><td>6.8 วินาที</td><td>0.49 วินาที</td></tr>
+            <tr><td>12</td><td>ลองทุกลำดับ</td><td>60 วินาที (5 รอบอยู่ระหว่าง 47 ถึง 77)</td><td>3.0 วินาที</td></tr>
+            <tr><td>1000000</td><td>เรียงแล้วไล่</td><td>0.25 วินาที</td><td>0.09 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เพิ่มคนทีละคน การลองทุกลำดับช้าลงราวสิบเท่า เพราะ N! โตเร็วกว่า 2<sup>N</sup> อีก ส่วนการเรียงรับคนเป็นล้านได้ในเสี้ยววินาที</p>
+
+      <h2 id="deadlines">งานที่มีเส้นตาย</h2>
+
+      <p>น้องมีการบ้าน N ชิ้น ชิ้นที่ i ใช้เวลาทำ t<sub>i</sub> วันเต็ม และต้องส่งภายในสิ้นวันที่ d<sub>i</sub> ทำได้ทีละชิ้น เริ่มวันที่ 1 ถ้าชิ้นไหนเสร็จหลังเส้นตาย จะสายเท่ากับวันที่เสร็จลบ d<sub>i</sub> ชิ้นที่เสร็จทันถือว่าสาย 0 วัน อยากจัดลำดับให้ <strong>ชิ้นที่สายที่สุดสายน้อยที่สุด</strong> คำตอบ 0 แปลว่าส่งทันทุกชิ้น</p>
+
+      <p>กฎ greedy คือ <strong>ทำชิ้นที่เส้นตายเร็วที่สุดก่อน</strong> (earliest deadline first) โดยไม่สนเลยว่าแต่ละชิ้นใช้เวลานานแค่ไหน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="deadline-first"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; tasks(n);
+    for (int i = 0; i &lt; n; i++) {
+        int days, due;
+        cin &gt;&gt; days &gt;&gt; due;
+        tasks[i] = {due, days};
+    }
+    sort(tasks.begin(), tasks.end());
+    int today = 0, worst = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int due = tasks[i].first;
+        int days = tasks[i].second;
+        today += days;
+        int late = max(0, today - due);
+        cout &lt;&lt; "due " &lt;&lt; due &lt;&lt; " done " &lt;&lt; today &lt;&lt; " late " &lt;&lt; late &lt;&lt; '\n';
+        worst = max(worst, late);
+    }
+    cout &lt;&lt; "max late = " &lt;&lt; worst &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="deadline-first" data-title="ข้อมูลเข้า"><pre><code>4
+3 4
+2 2
+1 7
+4 9
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="deadline-first" data-title="C:\code\deadline_first.exe"><pre><code>due 2 done 2 late 0
+due 4 done 5 late 1
+due 7 done 6 late 0
+due 9 done 10 late 1
+max late = 1
+</code></pre></div>
+      </div>
+
+      <p>ข้อมูลเข้าแต่ละบรรทัดคือจำนวนวันที่ใช้กับเส้นตาย ถ้าใช้กฎจากหัวข้อที่แล้ว ทำชิ้นที่ใช้เวลาน้อยก่อน ลำดับจะเป็นชิ้น 1 วัน 2 วัน 3 วัน 4 วัน เสร็จวันที่ 1 3 6 10 ชิ้น 3 วันที่ต้องส่งวันที่ 4 เสร็จวันที่ 6 สาย 2 วัน แย่กว่า greedy ที่สายไม่เกิน 1 วัน กฎที่ถูกกับโจทย์หนึ่งจึงอาจผิดกับโจทย์ที่ดูคล้ายกัน</p>
+
+      <p>เหตุผลใช้การแลกคู่ที่ติดกันอีกครั้ง สมมติชิ้น X อยู่ติดหน้าชิ้น Y แต่เส้นตายของ X ช้ากว่าของ Y ให้ T เป็นวันที่ Y เสร็จ ซึ่งก็คือวันที่ทั้งคู่ทำเสร็จ</p>
+
+      <ul>
+        <li>ก่อนสลับ Y เสร็จวันที่ T สาย T - d<sub>Y</sub></li>
+        <li>หลังสลับ Y เสร็จเร็วขึ้น สายไม่มากกว่าเดิม ส่วน X เสร็จวันที่ T สาย T - d<sub>X</sub> ซึ่งน้อยกว่า T - d<sub>Y</sub> เพราะ d<sub>X</sub> มากกว่า</li>
+        <li>ชิ้นอื่นเสร็จวันเดิมทั้งหมด</li>
+      </ul>
+
+      <p>ค่าสายมากสุดหลังสลับจึงไม่เพิ่มขึ้น สลับไปเรื่อยๆ จนเรียงตามเส้นตาย ก็ยังดีไม่น้อยกว่าเดิม ลำดับตามเส้นตายจึงดีที่สุด ทั้งหมดเป็น O(N log N) จากการเรียง ถ้าโจทย์ถามแค่ว่าส่งทันทุกชิ้นได้ไหม ก็ใช้โปรแกรมเดียวกันแล้วดูว่าคำตอบเป็น 0 หรือไม่</p>
+
+      <h2 id="fractional-knapsack">knapsack แบบแบ่งได้</h2>
+
+      <p>รถเข็นผลไม้รับน้ำหนักได้ W กิโลกรัม สวนมีผลไม้ N ชนิด ชนิดที่ i มีอยู่ w<sub>i</sub> กิโลกรัม ขายได้ทั้งหมด v<sub>i</sub> บาท ผลไม้ชั่งขายจึงตักไปแค่บางส่วนได้ ได้เงินตามสัดส่วน อยากขนไปให้ได้มูลค่ามากที่สุด โจทย์แบบนี้เรียกว่า fractional knapsack (knapsack แปลว่าเป้สะพายหลัง)</p>
+
+      <p>เมื่อแบ่งได้ สิ่งที่สำคัญคือ <strong>ราคาต่อกิโลกรัม</strong> v<sub>i</sub> / w<sub>i</sub> ทุกกิโลกรัมของที่ว่างในรถควรได้ของที่ราคาต่อกิโลสูงที่สุดที่ยังเหลือ เรียงจากราคาต่อกิโลมากไปน้อย ใส่ทั้งชนิดจนกว่าจะเต็ม ชนิดสุดท้ายที่ใส่ไม่หมดก็ตักเท่าที่เหลือที่ว่าง ถ้ามีคำตอบไหนที่ใส่ของราคาต่อกิโลต่ำไว้ ทั้งที่ของราคาสูงยังเหลืออยู่ แลกของราคาต่ำออกหนึ่งกิโล ใส่ของราคาสูงแทน มูลค่าเพิ่มขึ้นเสมอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="fractional"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Item {
+    long long weight, value;
+};
+
+int main()
+{
+    int n;
+    long long capacity;
+    cin &gt;&gt; n &gt;&gt; capacity;
+    vector&lt;Item&gt; items(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; items[i].weight &gt;&gt; items[i].value;
+    }
+    sort(items.begin(), items.end(), [](const Item &amp;a, const Item &amp;b) {
+        return a.value * b.weight &gt; b.value * a.weight; // (1)!
+    });
+    double total = 0;
+    long long room = capacity;
+    for (int i = 0; i &lt; n &amp;&amp; room &gt; 0; i++) {
+        if (items[i].weight &lt;= room) {
+            total += items[i].value;
+            room -= items[i].weight;
+            cout &lt;&lt; "take all " &lt;&lt; items[i].weight &lt;&lt; " kg\n";
+        } else {
+            total += (double)items[i].value * room / items[i].weight; // (2)!
+            cout &lt;&lt; "take " &lt;&lt; room &lt;&lt; " of " &lt;&lt; items[i].weight &lt;&lt; " kg\n";
+            room = 0;
+        }
+    }
+    cout &lt;&lt; fixed &lt;&lt; setprecision(2) &lt;&lt; "value = " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อยากเทียบ v<sub>a</sub> / w<sub>a</sub> &gt; v<sub>b</sub> / w<sub>b</sub> แต่คูณ w<sub>a</sub> w<sub>b</sub> ทั้งสองข้างก่อน ได้การเทียบจำนวนเต็มล้วน ไม่มีเศษหายและไม่มีความคลาดของ <code>double</code> ผลคูณถึง 10<sup>18</sup> ได้จึงเก็บเป็น <code>long long</code></li>
+        <li>ตักแค่ <code>room</code> กิโลจาก <code>weight</code> กิโล ได้เงิน value × room / weight บาท แปลงเป็น <code>double</code> ก่อนคูณตามหน้า 1.4 ทศนิยมใช้แค่ตอนคำนวณคำตอบ ไม่ได้ใช้ตอนเรียง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="fractional" data-title="ข้อมูลเข้า"><pre><code>4 20
+8 200
+9 100
+5 150
+6 96
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="fractional" data-title="C:\code\fractional.exe"><pre><code>take all 5 kg
+take all 8 kg
+take all 6 kg
+take 1 of 9 kg
+value = 457.11
+</code></pre></div>
+      </div>
+
+      <p>ราคาต่อกิโลของสี่ชนิดคือ 25 11.11 30 และ 16 บาท ใส่ชนิด 30 บาทกับ 25 บาทครบ แล้วชนิด 16 บาท รวม 19 กิโล เหลือที่ว่าง 1 กิโล ตักชนิด 11.11 บาทมาหนึ่งกิโล ได้ 446 + 100/9 = 457.11 บาท เรียงเป็น O(N log N) ใส่อีก O(N)</p>
+
+      <h2 id="zero-one-knapsack">ถ้าแบ่งไม่ได้ greedy ผิด</h2>
+
+      <p>เปลี่ยนจากผลไม้ชั่งกิโลเป็นของที่แบ่งไม่ได้ เช่น ทุเรียนทั้งลูก ตู้เย็น หรือกล่องพัสดุ แต่ละชิ้นต้องเอาไปทั้งชิ้นหรือไม่เอาเลย เรียกว่า 0/1 knapsack ลองใช้ greedy เดิม เรียงตามราคาต่อกิโล หยิบชิ้นที่ยังใส่ได้ แล้วเทียบกับการลองทุกเซตแบบบทที่ 21</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="knapsack-01"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+long long capacity;
+vector&lt;long long&gt; weight, value;
+long long best = 0;
+
+void try_items(int k, long long used, long long total)
+{
+    if (k == n) {
+        best = max(best, total);
+        return;
+    }
+    try_items(k + 1, used, total);
+    if (used + weight[k] &lt;= capacity) {
+        try_items(k + 1, used + weight[k], total + value[k]);
+    }
+}
+
+int main()
+{
+    cin &gt;&gt; n &gt;&gt; capacity;
+    weight.resize(n);
+    value.resize(n);
+    vector&lt;int&gt; order(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; weight[i] &gt;&gt; value[i];
+        order[i] = i;
+    }
+    sort(order.begin(), order.end(), [](int a, int b) {
+        return value[a] * weight[b] &gt; value[b] * weight[a];
+    });
+    long long room = capacity, greedy = 0;
+    for (int i : order) {
+        if (weight[i] &lt;= room) {
+            greedy += value[i];
+            room -= weight[i];
+        }
+    }
+    try_items(0, 0, 0);
+    cout &lt;&lt; "greedy = " &lt;&lt; greedy &lt;&lt; '\n';
+    cout &lt;&lt; "best = " &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="knapsack-01" data-title="ข้อมูลเข้า"><pre><code>3 10
+6 30
+5 20
+5 20
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="knapsack-01" data-title="C:\code\knapsack_01.exe"><pre><code>greedy = 30
+best = 40
+</code></pre></div>
+      </div>
+
+      <p>รถรับได้ 10 กิโล ชิ้นแรกหนัก 6 กิโล 30 บาท คุ้มสุดที่กิโลละ 5 บาท greedy หยิบมาก่อน เหลือที่ 4 กิโล อีกสองชิ้นหนักชิ้นละ 5 กิโลใส่ไม่ได้ ได้ 30 บาท แต่เอาสองชิ้นหลังไปแทนได้ 40 บาท ที่ว่าง 4 กิโลที่เหลือทิ้งไว้ไม่ได้เงินเลย ราคาต่อกิโลที่ดีจึงไม่ได้แปลว่าคุ้มเมื่อแบ่งไม่ได้ เหตุผลแบบแลกหนึ่งกิโลใช้ไม่ได้อีกต่อไป เพราะแลกได้ทีละทั้งชิ้นเท่านั้น</p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">0/1 knapsack ต้องใช้ dynamic programming</p>
+        <p>การลองทุกเซตถูกแต่เป็น O(2<sup>N</sup>) วิธีที่ทั้งถูกและเร็วคือ dynamic programming ซึ่งเริ่มในบทที่ 24 ด้วยโจทย์ทอนเหรียญที่ greedy ผิดในหน้า 23.1 แล้ว knapsack แบบเต็มอยู่ในบทที่ 25 เจอโจทย์ "เลือกของให้มูลค่ามากสุดภายใต้น้ำหนักจำกัด" ให้ถามก่อนเสมอว่าแบ่งของได้ไหม แบ่งได้ใช้ greedy แบ่งไม่ได้ใช้ DP</p>
+      </div>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="integer-ratio">แบบที่ 1 หารจำนวนเต็มในฟังก์ชันเปรียบเทียบ</h3>
+
+      <p>ในโปรแกรม fractional เขียนการเทียบตรงๆ ตามความหมาย เป็น</p>
+
+      <div class="code" data-lang="cpp"><pre><code>return a.value / a.weight &gt; b.value / b.weight;
+</code></pre></div>
+
+      <p>แล้วป้อนผลไม้สองชนิด ชนิดละ 10 กิโล ราคา 71 บาทกับ 79 บาท รถรับได้ 10 กิโล</p>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>2 10
+10 71
+10 79
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\fractional.exe"><pre><code>take all 10 kg
+value = 71.00
+</code></pre></div>
+      </div>
+
+      <p>คำตอบที่ถูกคือ 79.00 ราคาต่อกิโลจริงคือ 7.1 กับ 7.9 แต่ <code>long long</code> หาร <code>long long</code> ตัดเศษทิ้งเหลือ 7 ทั้งคู่ ฟังก์ชันเปรียบเทียบจึงบอกว่าเท่ากัน และ <code>sort</code> ปล่อยให้ชนิดที่ถูกกว่ามาก่อน ไม่มีคำเตือน ตัวอย่างที่ราคาต่อกิโลเป็นจำนวนเต็มทุกตัวผ่านหมด ใช้การคูณไขว้แบบโปรแกรมต้นฉบับเสมอ ส่วน <code>double</code> ใช้ได้ถ้าเลขไม่ใหญ่ แต่สองชนิดที่ราคาต่อกิโลเท่ากันจริงอาจได้ทศนิยมคลาดกันเล็กน้อย</p>
+
+      <h3 id="greedy-on-01">แบบที่ 2 ใช้ greedy กับของที่แบ่งไม่ได้</h3>
+
+      <p>เป็นความผิดที่เจอบ่อยที่สุดของหน้านี้ และไม่มีอะไรเตือนเลย ตัวอย่างในโจทย์มักมีของไม่กี่ชิ้นที่ greedy บังเอิญได้คำตอบถูก โปรแกรม knapsack-01 ข้างบนแสดงแล้วว่าแค่สามชิ้นก็ผิดได้ ถ้าไม่แน่ใจว่าโจทย์เป็นแบบไหน ให้เทียบกับการลองทุกเซตบนข้อมูลเล็กๆ ตามวิธีในหน้า 23.5</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>เวลารอรวมน้อยสุด ทำงานที่สั้นที่สุดก่อน เพราะเวลาของคนหน้าคิวถูกนับซ้ำในทุกคนข้างหลัง</li>
+        <li>ค่าสายมากสุดน้อยสุด ทำงานที่เส้นตายเร็วที่สุดก่อน โดยไม่สนเวลาที่ใช้</li>
+        <li>พิสูจน์ทั้งสองแบบด้วยการสลับคู่ที่ติดกันที่ผิดลำดับ แล้วแสดงว่าไม่แย่ลง</li>
+        <li>knapsack แบบแบ่งได้ เรียงตามราคาต่อหน่วยด้วยการคูณไขว้ ใส่จนเต็ม ชิ้นสุดท้ายตักบางส่วน</li>
+        <li>knapsack แบบแบ่งไม่ได้ greedy ผิด ต้องใช้ dynamic programming ในบทที่ 24 และ 25</li>
+        <li>ทุกแบบเป็น O(N log N) จากการเรียง</li>
+      </ul>
+    </article>
