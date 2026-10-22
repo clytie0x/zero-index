@@ -75,10 +75,12 @@
     });
   }
 
-  /* ---------- สีไวยากรณ์ภาษา C ---------- */
+  /* ---------- สีไวยากรณ์ภาษา C และ C++ ---------- */
 
   var C_TYPES = /^(int|char|void|float|double|long|short|unsigned|signed|bool|size_t|FILE)$/;
   var C_KEYWORDS = /^(auto|break|case|const|continue|default|do|else|enum|extern|for|goto|if|inline|register|return|sizeof|static|struct|switch|typedef|union|volatile|while)$/;
+  var CPP_TYPES = /^(string|vector|pair|tuple|map|set|multiset|multimap|unordered_map|unordered_set|queue|stack|deque|priority_queue|list|array|bitset|greater|less|mt19937|mt19937_64|clock_t)$/;
+  var CPP_KEYWORDS = /^(namespace|using|class|public|private|protected|template|typename|new|delete|true|false|nullptr|this|operator|try|catch|throw|constexpr|noexcept|mutable)$/;
 
   function tk(cls, text) { return '<span class="tk-' + cls + '">' + esc(text) + "</span>"; }
 
@@ -92,7 +94,7 @@
   }
 
   /* คืนค่า { html, anno } โดย anno คือเลขคำอธิบาย ถ้าบรรทัดนี้มี // (n)! */
-  function hlCodeC(s) {
+  function hlCodeC(s, cpp) {
     var re = /(\/\/.*$)|("(?:\\.|[^"\\])*")|('(?:\\.|[^'\\])*')|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)|(\s+)|([\s\S])/g;
     var out = "", m, anno = null;
     while ((m = re.exec(s))) {
@@ -105,8 +107,8 @@
       else if (m[4]) out += tk("num", m[4]);
       else if (m[5]) {
         var w = m[5];
-        if (C_TYPES.test(w)) out += tk("type", w);
-        else if (C_KEYWORDS.test(w)) out += tk("kw", w);
+        if (C_TYPES.test(w) || (cpp && CPP_TYPES.test(w))) out += tk("type", w);
+        else if (C_KEYWORDS.test(w) || (cpp && CPP_KEYWORDS.test(w))) out += tk("kw", w);
         else if (/^\s*\(/.test(s.slice(re.lastIndex))) out += tk("fn", w);
         else out += esc(w);
       } else out += esc(m[0]);
@@ -114,14 +116,14 @@
     return { html: out, anno: anno };
   }
 
-  function hlLineC(line) {
+  function hlLineC(line, cpp) {
     var pre = line.match(/^(\s*)(#\s*\w+)(.*)$/);
-    if (!pre) return hlCodeC(line);
+    if (!pre) return hlCodeC(line, cpp);
     var head = esc(pre[1]) + tk("pre", pre[2]);
     var rest = pre[3];
     var hdr = rest.match(/^(\s*)(<[^>]*>)(.*)$/);
     if (hdr) { head += esc(hdr[1]) + tk("hdr", hdr[2]); rest = hdr[3]; }
-    var r = hlCodeC(rest);
+    var r = hlCodeC(rest, cpp);
     return { html: head + r.html, anno: r.anno };
   }
 
@@ -177,8 +179,8 @@
         if (lang === "gcc") {
           inner = hlGcc(line);
           cleanLines.push(line);
-        } else if (lang === "c") {
-          var r = hlLineC(line);
+        } else if (lang === "c" || lang === "cpp") {
+          var r = hlLineC(line, lang === "cpp");
           inner = r.html;
           if (r.anno) {
             annoLines[r.anno] = true;
