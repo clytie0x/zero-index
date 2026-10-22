@@ -1,0 +1,346 @@
+<article class="doc">
+      <h1>17.4 งานที่ใช้ queue และ deque</h1>
+
+      <p>queue ใช้เมื่องานต้องทำตามลำดับที่มาถึง ใครมาก่อนได้ก่อน หน้านี้มีสองงาน งานแรกคือจำลองคิวที่แต่ละคนได้ใช้ของทีละนิดแล้ววนกลับไปต่อท้าย เรียกว่า <strong>round robin</strong> งานที่สองใช้ deque หาค่ามากสุดของทุกช่วงยาว k ติดกัน ซึ่งเป็นเทคนิคคู่แฝดของ monotonic stack ในหน้าที่แล้ว และเปลี่ยนลูปซ้อนที่ไม่ทันเวลาให้เหลือรอบเดียวเหมือนกัน</p>
+
+      <h2 id="round-robin">ผลัดกันเล่นทีละรอบ</h2>
+
+      <p>ร้านเกมมีเครื่องเล่นเครื่องเดียว เพื่อน N คนมาต่อแถวตามลำดับ คนที่ i อยากเล่นรวม t<sub>i</sub> นาที แต่ร้านให้เล่นได้ครั้งละไม่เกิน Q นาที ใครเล่นไม่ครบต้องกลับไปต่อท้ายแถว เครื่องว่างเมื่อไรคนหัวแถวได้เล่นต่อทันที ให้บอกว่าใครเล่นครบตอนนาทีที่เท่าไร เรียงตามลำดับที่เล่นครบ</p>
+
+      <p>การแบ่งเวลาให้ทุกคนได้ใช้ทีละช่วงสั้นๆ วนไปเรื่อยๆ แบบนี้ชื่อว่า round robin ระบบปฏิบัติการใช้วิธีนี้แบ่งเวลาของซีพียูให้โปรแกรมหลายตัวที่เปิดพร้อมกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="game-turns"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, quantum;
+    cin &gt;&gt; n &gt;&gt; quantum;
+    queue&lt;pair&lt;string, int&gt;&gt; line;
+    for (int i = 0; i &lt; n; i++) {
+        string name;
+        int need;
+        cin &gt;&gt; name &gt;&gt; need;
+        line.push({name, need});
+    }
+    long long minute = 0;
+    while (!line.empty()) {
+        auto player = line.front();
+        line.pop();
+        int play = min(player.second, quantum); // (1)!
+        minute += play;
+        player.second -= play;
+        if (player.second &gt; 0) {
+            line.push(player); // (2)!
+        } else {
+            cout &lt;&lt; player.first &lt;&lt; " finishes at minute " &lt;&lt; minute &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เล่นเต็มรอบ Q นาที หรือเท่าที่เหลือถ้าเหลือน้อยกว่า</li>
+        <li>ยังไม่ครบ กลับไปต่อท้ายพร้อมเวลาที่เหลือ งานแบบนี้คือเหตุผลที่ต้องมี queue ลูปธรรมดาที่อ่านไปทีละคนทำไม่ได้</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="game-turns" data-title="ข้อมูลเข้า"><pre><code>4 3
+Ploy 5
+Krit 2
+Mint 7
+Tan 3
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="game-turns" data-title="C:\code\game_turns.exe"><pre><code>Krit finishes at minute 5
+Tan finishes at minute 11
+Ploy finishes at minute 13
+Mint finishes at minute 17
+</code></pre></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คนที่ได้เล่น</th><th>เล่น</th><th>นาทีที่จบรอบ</th><th>แถวหลังรอบนี้ (ตัวเลขคือนาทีที่ยังเหลือ)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ploy</td><td>3</td><td>3</td><td>Krit 2, Mint 7, Tan 3, Ploy 2</td></tr>
+            <tr><td>Krit</td><td>2</td><td>5</td><td>Mint 7, Tan 3, Ploy 2</td></tr>
+            <tr><td>Mint</td><td>3</td><td>8</td><td>Tan 3, Ploy 2, Mint 4</td></tr>
+            <tr><td>Tan</td><td>3</td><td>11</td><td>Ploy 2, Mint 4</td></tr>
+            <tr><td>Ploy</td><td>2</td><td>13</td><td>Mint 4</td></tr>
+            <tr><td>Mint</td><td>3</td><td>16</td><td>Mint 1</td></tr>
+            <tr><td>Mint</td><td>1</td><td>17</td><td>ว่าง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทุกรอบของ while ทำงานกับ queue ไม่กี่คำสั่ง ซึ่งเป็น O(1) ทั้งหมด เวลารวมจึงขึ้นกับจำนวนรอบที่มีคนได้เล่น ถ้า Q เป็น 1 และทุกคนอยากเล่นพันล้านนาที จำนวนรอบจะมากเกินไป ก่อนเขียนให้คำนวณจากขอบเขตโจทย์ว่าจะวนกี่รอบเสมอ ตัวแปร <code>minute</code> เป็น <code>long long</code> ด้วยเหตุผลเดียวกัน เวลารวมของทุกคนอาจเกิน <code>int</code></p>
+
+      <div class="adm adm-info" role="note">
+        <p class="adm-title">queue กับ BFS ในบทที่ 27</p>
+        <p>งานที่สำคัญที่สุดของ queue ในการแข่งขันคือ BFS (breadth-first search) ซึ่งใช้หาทางที่สั้นที่สุดในเขาวงกตหรือในตาราง BFS เดินออกจากจุดเริ่มทีละชั้น สำรวจทุกช่องที่ห่าง 1 ก้าวก่อน แล้วค่อยช่องที่ห่าง 2 ก้าว ช่องที่ค้นพบแล้วจะถูกต่อท้าย queue ไว้ ช่องที่พบก่อนจึงได้สำรวจก่อนเสมอ เรื่องนี้จะเรียนเต็มๆ ในบทที่ 27 ตอนนั้นจะใช้ <code>queue</code> ของหน้านี้ได้เลย</p>
+      </div>
+
+      <h2 id="sliding-window">ค่ามากสุดในทุกช่วงยาว k</h2>
+
+      <p>เครื่องวัดฝุ่น PM2.5 บันทึกค่าทุกชั่วโมง รวม N ชั่วโมง ป้ายเตือนแสดงค่าสูงสุดของ k ชั่วโมงล่าสุด ให้หาค่าสูงสุดของทุกช่วง k ชั่วโมงติดกัน ตั้งแต่ช่วงชั่วโมงที่ 0 ถึง k - 1 ไปจนถึงช่วงที่จบที่ชั่วโมงสุดท้าย ได้ทั้งหมด N - k + 1 ค่า ช่วงที่เลื่อนไปทีละช่องแบบนี้เรียกว่า <strong>sliding window</strong> (หน้าต่างเลื่อน)</p>
+
+      <p>วิธีตรงไปตรงมาคือ ทุกช่วงไล่หาค่ามากสุดใหม่</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="window-naive"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; pm(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; pm[i];
+    }
+    for (int start = 0; start + k &lt;= n; start++) {
+        int best = pm[start];
+        for (int j = start + 1; j &lt; start + k; j++) {
+            best = max(best, pm[j]);
+        }
+        cout &lt;&lt; best &lt;&lt; (start + k &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="window-naive" data-title="ข้อมูลเข้า"><pre><code>10 3
+35 42 38 51 47 40 33 36 58 44
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="window-naive" data-title="C:\code\pm_window.exe"><pre><code>42 51 51 51 47 40 58 58
+</code></pre></div>
+      </div>
+
+      <p>มี N - k + 1 ช่วง แต่ละช่วงดู k ตัว ถ้า N เป็นแสนและ k เป็นห้าหมื่น ก็ราว 2.5 × 10<sup>9</sup> ครั้ง ไม่ทัน</p>
+
+      <h3 id="deque-idea">เก็บเฉพาะตัวที่ยังมีโอกาสเป็นค่ามากสุด</h3>
+
+      <p>สังเกตว่าถ้าชั่วโมงที่ j มาก่อนชั่วโมงที่ i และค่าของ j ไม่มากกว่าค่าของ i ชั่วโมง j จะ<strong>ไม่มีวันเป็นค่ามากสุด</strong>ของช่วงไหนอีกเลย เพราะทุกช่วงต่อจากนี้ที่มี j ก็มี i อยู่ด้วย และ i ยังอยู่ในหน้าต่างได้นานกว่าเพราะมาทีหลัง ทิ้ง j ได้ทันที</p>
+
+      <p>ถ้าทิ้งแบบนี้ไปเรื่อยๆ ของที่เหลือเก็บไว้จะมีค่าลดลงจากเก่าไปใหม่เสมอ ตัวเก่าสุดจึงเป็นค่ามากสุดของหน้าต่าง เก็บ <strong>เลขชั่วโมง</strong> ไว้ใน deque แล้วทำสามอย่างทุกชั่วโมงใหม่ i</p>
+
+      <ol>
+        <li>ท้าย deque ทิ้งทุกตัวที่ค่าไม่มากกว่า <code>pm[i]</code> แล้ว push_back i</li>
+        <li>หัว deque ถ้าเป็นชั่วโมงที่หลุดออกจากหน้าต่างแล้ว คือไม่เกิน i - k ให้ pop_front</li>
+        <li>ถ้า i ถึง k - 1 แล้ว หน้าต่างครบ k ชั่วโมง คำตอบคือค่าของหัว deque</li>
+      </ol>
+
+      <p>งานนี้ต้องใช้ทั้งสองหัว ท้ายใช้ทิ้งตัวที่หมดโอกาส หัวใช้ทิ้งตัวที่หมดเวลา stack หรือ queue อย่างเดียวจึงไม่พอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="window-deque"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; pm(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; pm[i];
+    }
+    deque&lt;int&gt; window; // (1)!
+    for (int i = 0; i &lt; n; i++) {
+        while (!window.empty() &amp;&amp; pm[window.back()] &lt;= pm[i]) { // (2)!
+            window.pop_back();
+        }
+        window.push_back(i);
+        if (window.front() &lt;= i - k) { // (3)!
+            window.pop_front();
+        }
+        if (i &gt;= k - 1) {
+            cout &lt;&lt; pm[window.front()] &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บเลขชั่วโมง เพราะต้องรู้ว่าตัวหัวหลุดออกจากหน้าต่างหรือยัง ถ้าเก็บแต่ค่า PM2.5 จะไม่รู้เลยว่ามันมาจากชั่วโมงไหน</li>
+        <li>ตัวที่ค่าเท่ากันก็ทิ้งได้ เพราะตัวใหม่อยู่ได้นานกว่าและค่าเท่ากัน ใช้ <code>&lt;</code> ก็ได้คำตอบถูกเหมือนกัน แต่ deque จะยาวกว่า</li>
+        <li>หน้าต่างที่จบที่ i คือชั่วโมง i - k + 1 ถึง i ชั่วโมงที่ไม่เกิน i - k จึงหลุดแล้ว แต่ละรอบหลุดได้อย่างมากหนึ่งตัว เพราะหน้าต่างเลื่อนไปทีละช่อง <code>if</code> จึงพอ ไม่ต้องใช้ <code>while</code></li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="window-deque" data-title="ข้อมูลเข้า"><pre><code>10 3
+35 42 38 51 47 40 33 36 58 44
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="window-deque" data-title="C:\code\pm_window.exe"><pre><code>42 51 51 51 47 40 58 58
+</code></pre></div>
+      </div>
+
+      <p>ไล่ดูทีละชั่วโมง ตารางเขียนค่า PM2.5 ใน deque ให้อ่านง่าย ซ้ายคือหัว ของจริงคือเลขชั่วโมง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>i</th><th>pm[i]</th><th>ทิ้งท้าย</th><th>ทิ้งหัว</th><th>deque หลังทำ</th><th>ตอบ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>35</td><td></td><td></td><td>35</td><td></td></tr>
+            <tr><td>1</td><td>42</td><td>35</td><td></td><td>42</td><td></td></tr>
+            <tr><td>2</td><td>38</td><td></td><td></td><td>42 38</td><td>42</td></tr>
+            <tr><td>3</td><td>51</td><td>38 42</td><td></td><td>51</td><td>51</td></tr>
+            <tr><td>4</td><td>47</td><td></td><td></td><td>51 47</td><td>51</td></tr>
+            <tr><td>5</td><td>40</td><td></td><td></td><td>51 47 40</td><td>51</td></tr>
+            <tr><td>6</td><td>33</td><td></td><td>51 (ชั่วโมง 3)</td><td>47 40 33</td><td>47</td></tr>
+            <tr><td>7</td><td>36</td><td>33</td><td>47 (ชั่วโมง 4)</td><td>40 36</td><td>40</td></tr>
+            <tr><td>8</td><td>58</td><td>36 40</td><td></td><td>58</td><td>58</td></tr>
+            <tr><td>9</td><td>44</td><td></td><td></td><td>58 44</td><td>58</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ทุกชั่วโมงถูก push_back ครั้งเดียว และออกไม่เกินครั้งเดียว จะออกทางท้ายหรือทางหัวก็ตาม งานรวมจึงไม่เกิน 2N ครั้ง เป็น O(N) ไม่ขึ้นกับ k เลย ส่วนวิธีแรกเป็น O(N × k) เหตุผลเดียวกับ monotonic stack ในหน้า 17.3 ทุกประการ deque แบบนี้จึงมีชื่อว่า <strong>monotonic deque</strong></p>
+
+      <h3 id="window-timing">เร็วขึ้นแค่ไหน</h3>
+
+      <p>โปรแกรมวัดสร้างค่าสุ่มด้วย <code>rand()</code> แล้วรันทั้งสองวิธี ตรวจว่าได้คำตอบตรงกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int pm[200000];
+int answer_slow[200000];
+int answer_fast[200000];
+
+int main()
+{
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    srand(2569);
+    for (int i = 0; i &lt; n; i++) {
+        pm[i] = rand() % 500;
+    }
+
+    clock_t start = clock();
+    for (int i = 0; i + k &lt;= n; i++) {
+        int best = pm[i];
+        for (int j = i + 1; j &lt; i + k; j++) {
+            best = max(best, pm[j]);
+        }
+        answer_slow[i] = best;
+    }
+    clock_t middle = clock();
+    deque&lt;int&gt; window;
+    for (int i = 0; i &lt; n; i++) {
+        while (!window.empty() &amp;&amp; pm[window.back()] &lt;= pm[i]) {
+            window.pop_back();
+        }
+        window.push_back(i);
+        if (window.front() &lt;= i - k) {
+            window.pop_front();
+        }
+        if (i &gt;= k - 1) {
+            answer_fast[i - k + 1] = pm[window.front()];
+        }
+    }
+    clock_t end = clock();
+
+    int same = 1;
+    for (int i = 0; i + k &lt;= n; i++) {
+        if (answer_slow[i] != answer_fast[i]) {
+            same = 0;
+        }
+    }
+    cout &lt;&lt; "same answers: " &lt;&lt; same &lt;&lt; '\n';
+    cout &lt;&lt; "nested loops: " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    cout &lt;&lt; "deque: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 17.1 ที่ N = 100,000 ทุกครั้งได้ <code>same answers: 1</code> รันแบบละ 5 ครั้ง ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>k</th><th>ลูปซ้อน แบบ Code::Blocks</th><th>ลูปซ้อน แบบ -O2</th><th>deque แบบ Code::Blocks</th><th>deque แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1,000</td><td>0.140 วินาที</td><td>0.061 วินาที</td><td>0.005 วินาที</td><td>0.001 วินาที</td></tr>
+            <tr><td>50,000</td><td>3.337 วินาที</td><td>1.652 วินาที</td><td>0.005 วินาที</td><td>0.001 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>k ใหญ่ขึ้น ลูปซ้อนช้าลงตาม แต่ deque ใช้เวลาเท่าเดิม เพราะงานของมันไม่ขึ้นกับ k โจทย์ที่ให้ k เล็กเสมอ วิธีแรกอาจผ่าน แต่ถ้าขอบเขตบอกว่า k ใหญ่ได้เท่า N ต้องใช้ deque</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-expire">แบบที่ 1 ลืมทิ้งตัวที่หมดเวลา</h3>
+
+      <p>ในโปรแกรม window-deque ตัด <code>if</code> ที่ pop_front ออก</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="window-no-expire"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+    vector&lt;int&gt; pm(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; pm[i];
+    }
+    deque&lt;int&gt; window;
+    for (int i = 0; i &lt; n; i++) {
+        while (!window.empty() &amp;&amp; pm[window.back()] &lt;= pm[i]) {
+            window.pop_back();
+        }
+        window.push_back(i);
+        if (i &gt;= k - 1) {
+            cout &lt;&lt; pm[window.front()] &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="window-no-expire" data-title="ข้อมูลเข้า"><pre><code>10 3
+35 42 38 51 47 40 33 36 58 44
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="window-no-expire" data-title="C:\code\pm_window.exe"><pre><code>42 51 51 51 51 51 58 58
+</code></pre></div>
+      </div>
+
+      <p>ช่วงที่ 5 กับ 6 ได้ 51 ซึ่งหลุดหน้าต่างไปแล้ว โปรแกรมนี้กลายเป็นหาค่ามากสุดตั้งแต่ต้นจนถึงตอนนี้ ไม่ใช่ใน k ชั่วโมงล่าสุด ข้อมูลที่ค่าเพิ่มขึ้นตลอดจะได้คำตอบถูกทุกช่วงเพราะท้ายดันหัวออกเองหมด ทดสอบด้วยข้อมูลที่ค่าลดลงด้วยเสมอ</p>
+
+      <h3 id="off-by-one">แบบที่ 2 ทิ้งหัวช้าไปหนึ่งชั่วโมง</h3>
+
+      <p>เขียนเงื่อนไขเป็น <code>window.front() &lt; i - k</code> ซึ่งดูเผินๆ ก็ถูก กับข้อมูลชุดเดิมได้</p>
+
+      <div class="code" data-lang="text"><pre><code>42 51 51 51 51 47 58 58
+</code></pre></div>
+
+      <p>ช่วงที่ 5 กับ 6 ได้ 51 กับ 47 ที่ถูกคือ 47 กับ 40 เพราะชั่วโมงที่หลุดไปแล้วยังค้างอยู่ในหัวอีกหนึ่งรอบ หน้าต่างจริงของโปรแกรมนี้ยาว k + 1 ชั่วโมง เขียนช่วงของหน้าต่างออกมาให้ชัดก่อนว่าคือ i - k + 1 ถึง i แล้วค่อยหาว่าตัวไหนหลุด อย่าเดาเครื่องหมาย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>queue ใช้จำลองงานที่ทำตามลำดับที่มาถึง งานที่ทำไม่เสร็จต่อท้ายใหม่ได้ เช่น round robin</li>
+        <li>คำนวณจำนวนรอบของการจำลองจากขอบเขตโจทย์ก่อนเขียน และใช้ <code>long long</code> กับเวลารวม</li>
+        <li>BFS ในบทที่ 27 ใช้ queue สำรวจทีละชั้น</li>
+        <li>ค่ามากสุดของทุกหน้าต่างยาว k ใช้ monotonic deque ท้ายทิ้งตัวที่หมดโอกาส หัวทิ้งตัวที่หมดเวลา เก็บ index</li>
+        <li>ทุกตัวเข้าครั้งเดียวออกไม่เกินครั้งเดียว งานรวม O(N) ไม่ขึ้นกับ k</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

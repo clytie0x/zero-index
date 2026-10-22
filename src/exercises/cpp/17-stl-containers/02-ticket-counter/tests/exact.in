@@ -1,0 +1,8 @@
+9 7
+JOIN Bank 2
+JOIN Gun 3
+JOIN Fern 4
+SELL
+SELL
+SELL
+COUNT

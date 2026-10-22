@@ -1,0 +1,395 @@
+<article class="doc">
+      <h1>16.2 vector สองมิติและความเร็ว</h1>
+
+      <p>ตารางในบทที่ 7 ต้องจองขนาดสูงสุดไว้ก่อน เช่น <code>int grid[1000][1000];</code> ถ้าโจทย์บอกแค่ว่าจำนวนช่องทั้งหมดไม่เกินล้าน ตารางอาจเป็น 1 × 1000000 หรือ 1000000 × 1 ก็ได้ อาเรย์สองมิติที่รับได้ทั้งสองแบบใหญ่เกินจะจองไหว หน้านี้สร้างตารางจาก vector ที่ขนาดมาจากข้อมูลเข้า ส่ง vector ให้ฟังก์ชันโดยไม่คัดลอกทิ้งเปล่าๆ แล้ววัดดูว่า <code>push_back</code> ช้ากว่าอาเรย์จริงไหม</p>
+
+      <h2 id="grid">ตารางที่ขนาดมาจากข้อมูลเข้า</h2>
+
+      <p>vector สองมิติคือ vector ที่แต่ละช่องเป็น vector อีกตัว ชนิดจึงเขียนซ้อนกันเป็น <code>vector&lt;vector&lt;int&gt;&gt;</code> ตัวอย่างนี้รับคะแนนของนักเรียน R คน คนละ C วิชา แล้วพิมพ์คะแนนรวมของแต่ละคน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="grid"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int students, subjects;
+    cin &gt;&gt; students &gt;&gt; subjects;
+    vector&lt;vector&lt;int&gt;&gt; score(students, vector&lt;int&gt;(subjects)); // (1)!
+    for (int i = 0; i &lt; students; i++) {
+        for (int j = 0; j &lt; subjects; j++) {
+            cin &gt;&gt; score[i][j]; // (2)!
+        }
+    }
+    for (int i = 0; i &lt; students; i++) {
+        int total = 0;
+        for (int x : score[i]) { // (3)!
+            total += x;
+        }
+        cout &lt;&lt; "student " &lt;&lt; i + 1 &lt;&lt; ": " &lt;&lt; total &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>สร้าง <code>students</code> แถว แต่ละแถวคือ <code>vector&lt;int&gt;(subjects)</code> ซึ่งมี <code>subjects</code> ช่องที่เป็น 0 อ่านแบบเดียวกับ <code>vector&lt;int&gt; a(n, x)</code> ในหน้า 16.1 คือ n ช่อง แต่ละช่องเป็น x เพียงแต่ x คือแถวทั้งแถว</li>
+        <li>ใช้ <code>[i][j]</code> แถวก่อนคอลัมน์ เหมือนอาเรย์สองมิติในบทที่ 7</li>
+        <li><code>score[i]</code> คือแถวที่ i ซึ่งเป็น <code>vector&lt;int&gt;</code> หนึ่งตัว จึงวนด้วย range-for ได้ ส่วนจำนวนแถวคือ <code>score.size()</code> และจำนวนช่องในแถวที่ i คือ <code>score[i].size()</code></li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="grid" data-title="ข้อมูลเข้า"><pre><code>3 4
+72 85 64 90
+58 77 81 69
+95 88 92 99
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="grid" data-title="C:\code\grid.exe"><pre><code>student 1: 311
+student 2: 285
+student 3: 374
+</code></pre></div>
+      </div>
+
+      <h2 id="jagged">แต่ละแถวยาวไม่เท่ากัน</h2>
+
+      <p>แต่ละแถวเป็น vector ของตัวเอง จึงยาวไม่เท่ากันได้ และยืดทีละแถวด้วย <code>push_back</code> ได้ ซึ่งอาเรย์สองมิติทำไม่ได้ โรงเรียนมีชุมนุม K ชุมนุม นักเรียน N คน แต่ละคนเลือกหนึ่งชุมนุม ให้พิมพ์รายชื่อเลขที่ของสมาชิกแต่ละชุมนุม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="clubs"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int k, n;
+    cin &gt;&gt; k &gt;&gt; n;
+    vector&lt;vector&lt;int&gt;&gt; members(k + 1);
+    for (int student = 1; student &lt;= n; student++) {
+        int club;
+        cin &gt;&gt; club;
+        members[club].push_back(student);
+    }
+    for (int c = 1; c &lt;= k; c++) {
+        cout &lt;&lt; "club " &lt;&lt; c &lt;&lt; " (" &lt;&lt; members[c].size() &lt;&lt; "):";
+        for (int student : members[c]) {
+            cout &lt;&lt; ' ' &lt;&lt; student;
+        }
+        cout &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="clubs" data-title="ข้อมูลเข้า"><pre><code>3 7
+2 1 2 2 1 2 2
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="clubs" data-title="C:\code\clubs.exe"><pre><code>club 1 (2): 2 5
+club 2 (5): 1 3 4 6 7
+club 3 (0):
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 8 สร้าง K + 1 แถวที่ยังว่างทุกแถว บรรทัดที่ 12 ต่อท้ายเฉพาะแถวของชุมนุมที่นักเรียนเลือก ถ้าใช้อาเรย์สองมิติ ต้องจองทุกแถวยาวเท่ากับ N เผื่อทุกคนเลือกชุมนุมเดียวกัน ทั้งที่รวมแล้วมีสมาชิกแค่ N คน รูปแบบนี้จะได้ใช้อีกมากในบทที่ 27 ตอนเก็บว่าจุดไหนในกราฟเชื่อมกับจุดไหนบ้าง</p>
+
+      <figure>
+        <svg viewBox="0 0 470 170" width="470" style="max-width:100%;height:auto" role="img" aria-label="members มี 4 แถว แถวที่ 0 ว่าง แถวที่ 1 มี 2 กับ 5 แถวที่ 2 มี 1 3 4 6 7 แถวที่ 3 ว่าง แต่ละแถวยาวไม่เท่ากัน">
+          <g style="font-family:var(--font-code)">
+            <text x="10" y="31" style="fill:var(--muted);font-size:14px">members[0]</text>
+            <text x="10" y="71" style="fill:var(--muted);font-size:14px">members[1]</text>
+            <text x="10" y="111" style="fill:var(--muted);font-size:14px">members[2]</text>
+            <text x="10" y="151" style="fill:var(--muted);font-size:14px">members[3]</text>
+            <rect x="120" y="12" width="50" height="30" rx="5" style="fill:none;stroke:var(--line-strong);stroke-width:1.5;stroke-dasharray:4 4"/>
+            <rect x="120" y="52" width="50" height="30" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="170" y="52" width="50" height="30" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="145" y="72" text-anchor="middle" style="fill:var(--ink);font-size:16px">2</text>
+            <text x="195" y="72" text-anchor="middle" style="fill:var(--ink);font-size:16px">5</text>
+            <rect x="120" y="92" width="50" height="30" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="170" y="92" width="50" height="30" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="220" y="92" width="50" height="30" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="270" y="92" width="50" height="30" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="320" y="92" width="50" height="30" rx="5" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="145" y="112" text-anchor="middle" style="fill:var(--ink);font-size:16px">1</text>
+            <text x="195" y="112" text-anchor="middle" style="fill:var(--ink);font-size:16px">3</text>
+            <text x="245" y="112" text-anchor="middle" style="fill:var(--ink);font-size:16px">4</text>
+            <text x="295" y="112" text-anchor="middle" style="fill:var(--ink);font-size:16px">6</text>
+            <text x="345" y="112" text-anchor="middle" style="fill:var(--ink);font-size:16px">7</text>
+            <rect x="120" y="132" width="50" height="30" rx="5" style="fill:none;stroke:var(--line-strong);stroke-width:1.5;stroke-dasharray:4 4"/>
+            <text x="185" y="32" style="fill:var(--muted);font-size:13px">size 0</text>
+            <text x="235" y="72" style="fill:var(--muted);font-size:13px">size 2</text>
+            <text x="385" y="112" style="fill:var(--muted);font-size:13px">size 5</text>
+            <text x="185" y="152" style="fill:var(--muted);font-size:13px">size 0</text>
+          </g>
+        </svg>
+      </figure>
+
+      <h2 id="functions">ส่ง vector ให้ฟังก์ชัน</h2>
+
+      <p>ในหน้า 8.3 อาเรย์ที่ส่งให้ฟังก์ชันไม่รู้ขนาดของตัวเอง ต้องส่งจำนวนช่องไปด้วยเสมอ vector พกขนาดไปด้วย และฟังก์ชันคืน vector กลับมาได้ด้วย สิ่งที่ต้องเลือกคือจะส่งแบบไหน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หัวฟังก์ชัน</th><th>ความหมาย</th><th>ใช้เมื่อ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>f(vector&lt;int&gt; v)</code></td><td>คัดลอกทั้งก้อนมาใหม่ทุกครั้งที่เรียก</td><td>ต้องการสำเนาไปแก้เล่นโดยไม่กระทบตัวจริง ซึ่งน้อยครั้งมาก</td></tr>
+            <tr><td><code>f(const vector&lt;int&gt; &amp;v)</code></td><td>reference ไปยังตัวจริง และสัญญาว่าจะไม่แก้</td><td>แค่อ่าน ใช้แบบนี้เป็นค่าเริ่มต้น</td></tr>
+            <tr><td><code>f(vector&lt;int&gt; &amp;v)</code></td><td>reference ไปยังตัวจริง แก้ได้</td><td>ฟังก์ชันต้องเปลี่ยนค่าใน vector ของผู้เรียก</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="functions"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long total(const vector&lt;int&gt; &amp;score)
+{
+    long long sum = 0;
+    for (int s : score) {
+        sum += s;
+    }
+    return sum;
+}
+
+void add_bonus(vector&lt;int&gt; &amp;score, int bonus)
+{
+    for (int &amp;s : score) {
+        s = min(100, s + bonus);
+    }
+}
+
+vector&lt;int&gt; passed(const vector&lt;int&gt; &amp;score, int limit)
+{
+    vector&lt;int&gt; result;
+    for (int s : score) {
+        if (s &gt;= limit) {
+            result.push_back(s);
+        }
+    }
+    return result;
+}
+
+int main()
+{
+    vector&lt;int&gt; score = {72, 45, 98, 49, 60};
+    cout &lt;&lt; "total = " &lt;&lt; total(score) &lt;&lt; '\n';
+    add_bonus(score, 5);
+    cout &lt;&lt; "total = " &lt;&lt; total(score) &lt;&lt; '\n';
+    vector&lt;int&gt; ok = passed(score, 60);
+    cout &lt;&lt; "passed = " &lt;&lt; ok.size() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="functions" data-title="C:\code\functions.exe"><pre><code>total = 324
+total = 346
+passed = 3
+</code></pre></div>
+
+      <p><code>add_bonus</code> รับแบบ reference ที่แก้ได้ จึงบวกคะแนนเข้าไปใน <code>score</code> ของ <code>main</code> จริงๆ ส่วน <code>min</code> คืนค่าที่น้อยกว่าของสองค่า มีให้ใช้ใน C++ เลย ใช้กันคะแนนไม่ให้เกิน 100 คะแนน 98 จึงกลายเป็น 100 ไม่ใช่ 103 ผลรวมเลยเพิ่มขึ้น 22 ไม่ใช่ 25 ส่วน <code>passed</code> สร้าง vector ใหม่เก็บคะแนนที่ถึง 60 แล้วคืนกลับไปทั้งก้อน ภาษา C ทำแบบนี้กับอาเรย์ไม่ได้</p>
+
+      <h2 id="vector-or-array">เลือกใช้ vector หรืออาเรย์</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เรื่อง</th><th>อาเรย์</th><th>vector</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ขนาด</td><td>ตายตัว กำหนดตอนเขียนโค้ด</td><td>กำหนดตอนรัน และยืดได้</td></tr>
+            <tr><td>จำนวนที่ใช้จริง</td><td>เก็บในตัวแปรแยกเอง</td><td><code>size()</code></td></tr>
+            <tr><td>ขนาดใหญ่ใน <code>main</code></td><td>พังเกินราว 2 MB ต้องย้ายไปนอก <code>main</code></td><td>ได้</td></tr>
+            <tr><td>คัดลอก เทียบ คืนจากฟังก์ชัน</td><td>วนลูปเอง คืนจากฟังก์ชันไม่ได้</td><td><code>=</code> <code>==</code> และ <code>return</code> ได้</td></tr>
+            <tr><td>ตารางที่แถวยาวไม่เท่ากัน</td><td>ต้องจองทุกแถวเท่าแถวที่ยาวที่สุด</td><td>แต่ละแถวยาวเท่าที่ใช้</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>อาเรย์ไม่ได้ผิด ถ้าขอบเขตชัดและไม่ใหญ่ เช่น ตารางไม่เกิน 100 × 100 หรืออาเรย์นับคะแนน 0 ถึง 100 อาเรย์ global แบบบทที่ 5 ยังใช้ได้ดี และคนแข่งจำนวนมากก็ยังเขียนแบบนั้น เอกสารนี้ตั้งแต่บทนี้ไปใช้ vector เป็นหลัก</p>
+
+      <h2 id="push-back-speed">push_back เร็วแค่ไหน</h2>
+
+      <p>vector ต้องคอยยืดตัวเอง จึงน่าสงสัยว่าช้ากว่าอาเรย์ไหม วัดด้วย <code>clock()</code> แบบหน้า 4.5 เติมเลข 0 ถึง n - 1 ลงไปทีละตัว แล้วพิมพ์เวลาเป็นมิลลิวินาที (ms) ที่ต้องพิมพ์ช่องสุดท้ายด้วยก็เพื่อยืนยันว่าเติมครบจริง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    clock_t start = clock();
+    vector&lt;int&gt; v; // (1)!
+    for (int i = 0; i &lt; n; i++) {
+        v.push_back(i); // (2)!
+    }
+    clock_t end = clock();
+    cout &lt;&lt; "n = " &lt;&lt; n &lt;&lt; ", last = " &lt;&lt; v[n - 1] &lt;&lt; ", time = " &lt;&lt; (end - start) * 1000 / CLOCKS_PER_SEC &lt;&lt; " ms\n"; // (3)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>แบบ <code>vector(n)</code> เปลี่ยนเป็น <code>vector&lt;int&gt; v(n);</code> แบบ <code>reserve</code> เพิ่มบรรทัด <code>v.reserve(n);</code> ต่อจากบรรทัดนี้ ส่วนแบบอาเรย์ลบบรรทัดนี้ แล้วประกาศ <code>int a[10000000];</code> ไว้นอก <code>main</code></li>
+        <li>แบบ <code>vector(n)</code> เปลี่ยนเป็น <code>v[i] = i;</code> แบบอาเรย์เปลี่ยนเป็น <code>a[i] = i;</code> และบรรทัดที่ 14 พิมพ์ <code>a[n - 1]</code> แทน</li>
+        <li><code>clock()</code> นับเป็นหน่วยย่อย <code>CLOCKS_PER_SEC</code> หน่วยต่อวินาที คูณ 1000 ก่อนหารจึงได้มิลลิวินาทีเป็นจำนวนเต็ม</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>10000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\fill.exe"><pre><code>n = 10000000, last = 9999999, time = 54 ms
+</code></pre></div>
+      </div>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 13.3 คือโน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 Windows 11 เสียบสายชาร์จ โหมดพลังงาน Balanced คอมไพล์ด้วย g++ 14.2 ของ Code::Blocks ทั้งแบบ Code::Blocks (<code>-Wall</code> อย่างเดียว) และแบบ <code>-O2</code> รันแต่ละช่อง 5 ครั้ง ตารางเป็นค่ากลาง หน่วยเป็นมิลลิวินาที</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธีเติม</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>อาเรย์ global</td><td>1,000,000</td><td>1</td><td>1</td></tr>
+            <tr><td>อาเรย์ global</td><td>10,000,000</td><td>15</td><td>11</td></tr>
+            <tr><td><code>vector(n)</code> แล้วใช้ <code>[]</code></td><td>1,000,000</td><td>2</td><td>0</td></tr>
+            <tr><td><code>vector(n)</code> แล้วใช้ <code>[]</code></td><td>10,000,000</td><td>19</td><td>4</td></tr>
+            <tr><td><code>push_back</code></td><td>1,000,000</td><td>5</td><td>1</td></tr>
+            <tr><td><code>push_back</code></td><td>10,000,000</td><td>54</td><td>13</td></tr>
+            <tr><td><code>reserve</code> แล้ว <code>push_back</code></td><td>1,000,000</td><td>4</td><td>0</td></tr>
+            <tr><td><code>reserve</code> แล้ว <code>push_back</code></td><td>10,000,000</td><td>48</td><td>5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>0 แปลว่าน้อยกว่าที่ <code>clock()</code> วัดได้ อ่านตารางได้สามเรื่อง</p>
+
+      <ol>
+        <li><strong>ทุกวิธีเร็วพอ</strong> สิบล้านตัว ช้าที่สุดก็ไม่ถึงหนึ่งในสิบวินาที โจทย์ส่วนใหญ่มีข้อมูลไม่เกินล้านตัว <code>push_back</code> ไม่ใช่ตัวที่ทำให้เกินเวลา</li>
+        <li><strong>แบบ Code::Blocks <code>push_back</code> ช้ากว่าอาเรย์ราว 3.6 เท่า</strong> (54 กับ 15 มิลลิวินาทีที่สิบล้านตัว) เพราะไม่ได้เปิด <code>-O2</code> ทุก <code>push_back</code> จึงเป็นการเรียกฟังก์ชันจริงๆ พอเปิด <code>-O2</code> ซึ่ง grader ใช้ ส่วนต่างเหลือแค่ไม่กี่มิลลิวินาที</li>
+        <li><strong><code>reserve</code> ช่วยได้นิดหน่อย</strong> แบบ <code>-O2</code> จาก 13 เหลือ 5 มิลลิวินาที ใช้เมื่อรู้จำนวนล่วงหน้าแต่อยากใช้ <code>push_back</code></li>
+      </ol>
+
+      <h3 id="capacity">ทำไม push_back ไม่ช้า</h3>
+
+      <p>เบื้องหลัง vector จองที่ไว้เกินจำนวนที่ใช้เสมอ จำนวนที่จองไว้ดูได้จาก <code>capacity()</code> ถ้า <code>push_back</code> แล้วที่เต็ม vector จะจองที่ใหม่ที่ใหญ่ขึ้น ย้ายข้อมูลเดิมไปทั้งหมด แล้วคืนที่เก่า ลองพิมพ์ดูทุกครั้งที่ <code>capacity()</code> เปลี่ยน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="capacity"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; v;
+    int last_capacity = 0;
+    for (int i = 0; i &lt; 100; i++) {
+        v.push_back(i);
+        if ((int)v.capacity() != last_capacity) {
+            last_capacity = v.capacity();
+            cout &lt;&lt; "size " &lt;&lt; v.size() &lt;&lt; ", capacity " &lt;&lt; v.capacity() &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="capacity" data-title="C:\code\capacity.exe"><pre><code>size 1, capacity 1
+size 2, capacity 2
+size 3, capacity 4
+size 5, capacity 8
+size 9, capacity 16
+size 17, capacity 32
+size 33, capacity 64
+size 65, capacity 128
+</code></pre></div>
+
+      <p>g++ ขยายทีละเท่าตัว การย้ายข้อมูลจึงเกิดนานๆ ครั้ง และยิ่งนานขึ้นเรื่อยๆ เติม 100 ตัวย้ายแค่ 7 ครั้ง ถ้านับจำนวนค่าที่ถูกย้ายทั้งหมด จะได้ 1 + 2 + 4 + ... + 64 = 127 ค่า ไม่ถึงสองเท่าของจำนวนที่เติม ไม่ว่าจะเติมกี่ตัว ผลรวมแบบนี้จะน้อยกว่าสองเท่าของจำนวนที่เติมเสมอ โดยเฉลี่ย <code>push_back</code> หนึ่งครั้งจึงทำงานเพิ่มแค่ไม่กี่ขั้น compiler อื่นอาจขยายด้วยอัตราอื่น แต่ใช้หลักเดียวกัน</p>
+
+      <p><code>v.reserve(n)</code> คือสั่งให้จองที่ n ช่องไว้ก่อนเลย <code>size()</code> ยังเป็น 0 เหมือนเดิม แต่ <code>push_back</code> n ครั้งต่อจากนั้นไม่ต้องย้ายข้อมูลอีก ต่างจาก <code>vector&lt;int&gt; v(n)</code> ที่สร้าง n ช่องจริงๆ ซึ่งถ้าตามด้วย <code>push_back</code> จะได้ 2n ช่องแบบในหน้า 16.1</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-inner-size">แบบที่ 1 สร้างแถวแต่ลืมขนาดของแถว</h3>
+
+      <p>ในโปรแกรม grid ถ้าเขียนบรรทัดที่ 8 สั้นลงเป็น</p>
+
+      <div class="code" data-lang="cpp"><pre><code>vector&lt;vector&lt;int&gt;&gt; score(students);
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านไม่มีคำเตือน แต่พอป้อนข้อมูลชุดเดิม โปรแกรมปิดตัวทันที</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p>มี <code>students</code> แถวจริง แต่ทุกแถวเป็น vector ว่าง <code>score[i][j]</code> จึงเป็นการใช้ <code>[]</code> กับ vector ว่างแบบในหน้า 16.1 ตารางที่ทุกแถวยาวเท่ากันต้องบอกขนาดทั้งสองชั้น <code>score(students, vector&lt;int&gt;(subjects))</code> ส่วนตารางที่แถวยาวไม่เท่ากันแบบ clubs ต้องเติมแต่ละแถวด้วย <code>push_back</code> เท่านั้น</p>
+
+      <h3 id="pass-by-value">แบบที่ 2 ส่ง vector ให้ฟังก์ชันโดยไม่ใส่ &amp;</h3>
+
+      <p>โปรแกรมนี้รวมค่าของช่องข้างเคียงทั้งสี่ทิศของทุกช่องในตาราง n × n แบบหน้า 7.4 โดยมีฟังก์ชัน <code>cell</code> คืนค่าในช่อง หรือคืน 0 ถ้าช่องนั้นอยู่นอกตาราง ทุกช่องในตารางเป็น 1</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int cell(vector&lt;vector&lt;int&gt;&gt; grid, int r, int c)
+{
+    if (r &lt; 0 || r &gt;= (int)grid.size() || c &lt; 0 || c &gt;= (int)grid[0].size()) {
+        return 0;
+    }
+    return grid[r][c];
+}
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;vector&lt;int&gt;&gt; grid(n, vector&lt;int&gt;(n, 1));
+    clock_t start = clock();
+    long long total = 0;
+    for (int r = 0; r &lt; n; r++) {
+        for (int c = 0; c &lt; n; c++) {
+            total += cell(grid, r - 1, c) + cell(grid, r + 1, c) + cell(grid, r, c - 1) + cell(grid, r, c + 1);
+        }
+    }
+    clock_t end = clock();
+    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; ", time = " &lt;&lt; (end - start) * 1000 / CLOCKS_PER_SEC &lt;&lt; " ms\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>200
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\neighbors.exe"><pre><code>total = 159200, time = 5338 ms
+</code></pre></div>
+      </div>
+
+      <p>ตารางแค่ 200 × 200 ใช้เวลาห้าวินาที ทั้งที่งานจริงคือเรียก <code>cell</code> 160,000 ครั้ง ซึ่งแต่ละครั้งทำแค่ <code>if</code> เดียว เพราะหัวฟังก์ชันรับ <code>grid</code> แบบสำเนา ทุกครั้งที่เรียก <code>cell</code> โปรแกรมจึงสร้างตารางใหม่ 200 แถว แล้วคัดลอก 40,000 ค่ามาใส่ เพื่อหยิบไปใช้แค่ค่าเดียว รวมแล้วคัดลอกถึง 6.4 พันล้านค่า แก้แค่หัวฟังก์ชันให้เป็น reference</p>
+
+      <div class="code" data-lang="cpp"><pre><code>int cell(const vector&lt;vector&lt;int&gt;&gt; &amp;grid, int r, int c)
+</code></pre></div>
+
+      <p>วัดบนเครื่องและวิธีเดียวกับตารางข้างบน ค่ากลางของ 5 ครั้ง หน่วยเป็นมิลลิวินาที</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หัวฟังก์ชัน</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>vector&lt;vector&lt;int&gt;&gt; grid</code></td><td>100</td><td>551</td><td>307</td></tr>
+            <tr><td><code>vector&lt;vector&lt;int&gt;&gt; grid</code></td><td>200</td><td>5338</td><td>2138</td></tr>
+            <tr><td><code>const vector&lt;vector&lt;int&gt;&gt; &amp;grid</code></td><td>100</td><td>0</td><td>0</td></tr>
+            <tr><td><code>const vector&lt;vector&lt;int&gt;&gt; &amp;grid</code></td><td>200</td><td>1</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ต่างกันหลายพันเท่าจากตัวอักษรตัวเดียว และ <code>-O2</code> ช่วยไม่ได้ เพราะ compiler ต้องคัดลอกตามที่เราสั่ง ยิ่งตารางใหญ่ยิ่งแย่ n เพิ่มสองเท่า เวลาแบบสำเนาเพิ่มราว 7 ถึง 10 เท่า compiler ไม่เตือนเรื่องนี้เลย หน้า 15.5 เห็นแล้วว่า string แบบสำเนาช้ากว่าราวสิบเท่า กับตารางสองมิติผลแย่กว่านั้นมาก ให้ตั้งเป็นนิสัยว่า <strong>vector string และ struct ที่ส่งให้ฟังก์ชันต้องมี <code>&amp;</code> เสมอ</strong> ถ้าไม่แก้ใส่ <code>const</code> ด้วย</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ตารางขนาด R × C สร้างด้วย <code>vector&lt;vector&lt;int&gt;&gt; g(R, vector&lt;int&gt;(C));</code> ต้องบอกขนาดทั้งสองชั้น</li>
+        <li>ตารางที่แถวยาวไม่เท่ากัน สร้างแค่จำนวนแถว แล้ว <code>push_back</code> ลงแต่ละแถว</li>
+        <li>ส่ง vector ให้ฟังก์ชันด้วย <code>const vector&lt;int&gt; &amp;</code> ถ้าแค่อ่าน <code>vector&lt;int&gt; &amp;</code> ถ้าต้องแก้ ลืม <code>&amp;</code> แล้วอาจช้าเป็นพันเท่า</li>
+        <li>ฟังก์ชันคืน vector ทั้งก้อนได้</li>
+        <li><code>push_back</code> สิบล้านครั้งใช้ไม่ถึงหนึ่งในสิบวินาที เพราะ vector ขยายทีละเท่าตัว <code>reserve(n)</code> จองที่ไว้ก่อนได้</li>
+      </ul>
+    </article>

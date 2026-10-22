@@ -1,0 +1,455 @@
+<article class="doc">
+      <h1>17.3 งานที่ใช้ stack</h1>
+
+      <p>หน้า 14.4 สรุปไว้ว่า stack ใช้เมื่อต้องจับคู่กับ "ตัวล่าสุดที่ยังค้างอยู่" หรือเมื่อต้องย้อนลำดับ หน้านี้เขียนงานเดิมสองงานใหม่ด้วย <code>stack</code> ของ STL คือตรวจวงเล็บกับคำนวณ postfix เพิ่มงานย้อนกลับแบบปุ่ม back ของเว็บเบราว์เซอร์ และปิดท้ายด้วยเทคนิคที่ใช้บ่อยมากในโจทย์แข่งขัน คือ <strong>monotonic stack</strong> ที่เปลี่ยนวิธีลูปซ้อนซึ่งไม่ทันเวลา ให้เหลือการเดินรอบเดียว</p>
+
+      <h2 id="brackets">ตรวจวงเล็บ</h2>
+
+      <p>กฎเดิมจากหน้า 14.4 เจอวงเล็บเปิด push เจอวงเล็บปิดต้องคู่กับตัวบนสุด และจบแล้ว stack ต้องว่าง</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="brackets"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+char opening_of(char c)
+{
+    if (c == ')') {
+        return '(';
+    } else if (c == ']') {
+        return '[';
+    }
+    return '{';
+}
+
+bool is_balanced(string s)
+{
+    stack&lt;char&gt; open; // (1)!
+    for (char c : s) {
+        if (c == '(' || c == '[' || c == '{') {
+            open.push(c);
+        } else {
+            if (open.empty() || open.top() != opening_of(c)) { // (2)!
+                return false;
+            }
+            open.pop();
+        }
+    }
+    return open.empty();
+}
+
+int main()
+{
+    string s;
+    while (cin &gt;&gt; s) {
+        if (is_balanced(s)) {
+            cout &lt;&lt; "YES\n";
+        } else {
+            cout &lt;&lt; "NO\n";
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>stack ประกาศในฟังก์ชัน จึงเกิดใหม่ว่างๆ ทุกครั้งที่เรียก บั๊ก "ลืมเริ่ม stack ว่างใหม่" ในหน้า 14.4 จึงเกิดไม่ได้อีก</li>
+        <li><code>||</code> หยุดตรวจทันทีที่ด้านซ้ายเป็นจริงตามหน้า 3.3 ถ้า stack ว่างจะไม่ไปเรียก <code>open.top()</code> เลย ลำดับนี้สลับไม่ได้</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="brackets" data-title="ข้อมูลเข้า"><pre><code>{[()()]}
+([)]
+(()
+())
+)(
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="brackets" data-title="C:\code\brackets.exe"><pre><code>YES
+NO
+NO
+NO
+NO
+</code></pre></div>
+      </div>
+
+      <p>ผลเหมือนหน้า 14.4 ทั้งห้าบรรทัด โปรแกรมบทที่ 14 ยาว 48 บรรทัด อันนี้ 41 บรรทัด สั้นลงไม่มาก เพราะส่วนที่ยาวคือกฎของวงเล็บซึ่งต้องเขียนเองอยู่ดี สิ่งที่ได้จริงคือไม่ต้องคิดว่าอาเรย์ต้องมีกี่ช่อง และ stack ว่างเองทุกครั้งที่เริ่มสูตรใหม่</p>
+
+      <h2 id="history">ย้อนกลับด้วยปุ่ม back</h2>
+
+      <p>เว็บเบราว์เซอร์จำหน้าที่เคยเปิด กด back แล้วกลับไปหน้าล่าสุดก่อนหน้านี้ กด back อีกครั้งก็ถอยไปอีกหน้า หน้าที่ต้องกลับไปคือหน้าที่เข้ามา<strong>ล่าสุด</strong> จึงเป็นงานของ stack ทุกครั้งที่เปิดหน้าใหม่ ให้ push หน้าปัจจุบันเก็บไว้ก่อนย้าย พอกด back ก็ pop ออกมาเป็นหน้าปัจจุบัน</p>
+
+      <p>โปรแกรมเริ่มที่หน้า <code>home</code> คำสั่ง <code>VISIT x</code> คือเปิดหน้า x และ <code>BACK</code> คือกดปุ่ม back หลังทุกคำสั่งให้พิมพ์ว่าอยู่หน้าไหน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="browser"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int q;
+    cin &gt;&gt; q;
+    stack&lt;string&gt; history;
+    string current = "home";
+    for (int i = 0; i &lt; q; i++) {
+        string command;
+        cin &gt;&gt; command;
+        if (command == "VISIT") {
+            string page;
+            cin &gt;&gt; page;
+            history.push(current); // (1)!
+            current = page;
+            cout &lt;&lt; "at " &lt;&lt; current &lt;&lt; '\n';
+        } else if (history.empty()) {
+            cout &lt;&lt; "no page to go back\n";
+        } else {
+            current = history.top(); // (2)!
+            history.pop();
+            cout &lt;&lt; "at " &lt;&lt; current &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บหน้าที่กำลังจะจากไป ไม่ใช่หน้าที่จะไป</li>
+        <li>หน้าที่จากมาล่าสุดอยู่บนสุดพอดี</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="browser" data-title="ข้อมูลเข้า"><pre><code>9
+VISIT news
+VISIT sport
+VISIT football
+BACK
+BACK
+VISIT weather
+BACK
+BACK
+BACK
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="browser" data-title="C:\code\browser.exe"><pre><code>at news
+at sport
+at football
+at sport
+at news
+at weather
+at news
+at home
+no page to go back
+</code></pre></div>
+      </div>
+
+      <p>ดูบรรทัดที่ 6 ถึง 7 ของผลลัพธ์ ตอนเปิด weather หน้าปัจจุบันคือ news จึงถูก push ไว้ back จาก weather จึงกลับไป news ไม่ใช่ sport ซึ่งตรงกับเบราว์เซอร์จริง</p>
+
+      <p>ปุ่ม <strong>undo</strong> ของโปรแกรมพิมพ์งานหรือโปรแกรมวาดรูปใช้หลักเดียวกัน ทุกครั้งที่ผู้ใช้แก้อะไร ให้ push สิ่งที่ต้องรู้เพื่อย้อนการแก้นั้น กด undo คือ pop ตัวบนสุดแล้วย้อนมัน ส่วนปุ่ม forward หรือ redo ต้องใช้ stack ตัวที่สองเก็บสิ่งที่เพิ่งย้อนไป สองงานนี้อยู่ในแบบฝึกหัด</p>
+
+      <h2 id="postfix">คำนวณ postfix</h2>
+
+      <p>กฎเดิมจากหน้า 14.4 เจอตัวเลข push เจอเครื่องหมาย pop สองครั้ง ตัวแรกที่ออกมาคือตัวขวา คำนวณแล้ว push ผลกลับ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="postfix"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    stack&lt;long long&gt; values;
+    string token;
+    while (cin &gt;&gt; token) {
+        if (isdigit(token[0])) {
+            long long number = 0;
+            for (char c : token) {
+                number = number * 10 + (c - '0');
+            }
+            values.push(number);
+        } else {
+            long long right = values.top(); // (1)!
+            values.pop();
+            long long left = values.top();
+            values.pop();
+            if (token == "+") { // (2)!
+                values.push(left + right);
+            } else if (token == "-") {
+                values.push(left - right);
+            } else if (token == "*") {
+                values.push(left * right);
+            } else {
+                values.push(left / right);
+            }
+        }
+    }
+    cout &lt;&lt; values.top() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เพราะ <code>pop()</code> ไม่คืนค่า หนึ่งครั้งของ <code>pop()</code> ในหน้า 14.4 จึงกลายเป็นสองบรรทัด ดูก่อนแล้วค่อยทิ้ง</li>
+        <li><code>string</code> เทียบกับข้อความด้วย <code>==</code> ได้ตรงๆ ไม่ต้องดูแค่ตัวแรกแบบภาษา C</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="postfix" data-title="ข้อมูลเข้า"><pre><code>8 2 5 * + 1 3 2 * + 4 - /
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="postfix" data-title="C:\code\postfix.exe"><pre><code>6
+</code></pre></div>
+      </div>
+
+      <p>โปรแกรมบทที่ 14 ยาว 44 บรรทัด อันนี้ 33 บรรทัด และไม่มีอาเรย์พันช่องที่จะล้นเมื่อนิพจน์ยาว กฎเรื่องตัวซ้ายตัวขวาและการเช็กว่างก่อน pop ยังเหมือนเดิมทุกอย่าง</p>
+
+      <h2 id="next-greater">วันแรกที่ร้อนกว่า</h2>
+
+      <p>สถานีอากาศบันทึกอุณหภูมิสูงสุดของ N วันติดกัน สำหรับแต่ละวัน อยากรู้ว่าวันแรกหลังจากนั้นที่ร้อนกว่าวันนี้อย่างเคร่งครัดร้อนกี่องศา ถ้าไม่มีวันไหนร้อนกว่าเลยให้ตอบ -1 โจทย์แบบนี้มีชื่อเรียกว่า <strong>next greater element</strong> (ตัวถัดไปที่มากกว่า) และมีอีกหลายแบบ เช่น ตัวก่อนหน้าที่มากกว่า หรือตัวถัดไปที่น้อยกว่า</p>
+
+      <p>วิธีตรงไปตรงมาคือ ทุกวันเดินไปทางขวาจนเจอวันที่ร้อนกว่า</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="warmer-naive"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; temp(n), answer(n, -1);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; temp[i];
+    }
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = i + 1; j &lt; n; j++) {
+            if (temp[j] &gt; temp[i]) {
+                answer[i] = temp[j];
+                break;
+            }
+        }
+    }
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; answer[i] &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="warmer-naive" data-title="ข้อมูลเข้า"><pre><code>8
+31 29 30 34 33 33 35 32
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="warmer-naive" data-title="C:\code\warmer.exe"><pre><code>34 30 34 35 35 35 -1 -1
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดสุดท้ายพิมพ์ช่องว่างหลังทุกตัวยกเว้นตัวสุดท้าย ซึ่งพิมพ์ขึ้นบรรทัดใหม่แทน จะได้ไม่มีช่องว่างเกินท้ายบรรทัด</p>
+
+      <p>ถ้าอุณหภูมิลดลงทุกวัน ไม่มีวันไหนเจอคำตอบเลย วันแรกต้องเดินดูอีก n - 1 วัน วันที่สองอีก n - 2 วัน รวมราว n<sup>2</sup> / 2 ครั้ง เมื่อ n เป็นแสน ก็คือ 5 × 10<sup>9</sup> ครั้ง ไม่ทันแน่นอนตามหลักในหน้า 4.5</p>
+
+      <h3 id="monotonic-idea">กลับมุมมอง ให้วันที่ยังไม่มีคำตอบรอ</h3>
+
+      <p>แทนที่แต่ละวันจะเดินไปหาคำตอบเอง ให้เดินจากซ้ายไปขวารอบเดียว แล้วเก็บวันที่<strong>ยังรอคำตอบอยู่</strong>ไว้ใน stack พอเจอวันใหม่ วันที่รออยู่ซึ่งเย็นกว่าวันใหม่ ได้คำตอบเป็นวันใหม่นี้ทั้งหมด</p>
+
+      <p>สิ่งที่ทำให้วิธีนี้เร็วคือข้อสังเกตนี้ <strong>อุณหภูมิของวันที่รออยู่ ไล่จากก้น stack ขึ้นมา ไม่เคยเพิ่มขึ้น</strong> เพราะถ้ามีวันที่ร้อนกว่ามาทีหลัง วันที่เย็นกว่าที่รออยู่ก่อนก็ได้คำตอบแล้วถูก pop ออกไปตั้งแต่ตอนนั้น ตัวบนสุดจึงเป็นวันที่เย็นที่สุดในบรรดาวันที่รอเสมอ ถ้าตัวบนสุดไม่เย็นกว่าวันใหม่ ตัวที่อยู่ข้างล่างก็ไม่เย็นกว่าแน่นอน หยุดดูได้ทันที stack ที่ของข้างในเรียงทางเดียวตลอดแบบนี้เรียกว่า <strong>monotonic stack</strong> (monotonic แปลว่าเปลี่ยนไปทางเดียว)</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="warmer-stack"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; temp(n), answer(n, -1);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; temp[i];
+    }
+    stack&lt;int&gt; waiting; // (1)!
+    for (int i = 0; i &lt; n; i++) {
+        while (!waiting.empty() &amp;&amp; temp[waiting.top()] &lt; temp[i]) { // (2)!
+            answer[waiting.top()] = temp[i];
+            waiting.pop();
+        }
+        waiting.push(i);
+    }
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; answer[i] &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เก็บ<strong>เลขวัน</strong> ไม่ใช่อุณหภูมิ เพราะตอนได้คำตอบต้องรู้ว่าจะเขียนลง <code>answer</code> ช่องไหน อุณหภูมิหาได้จาก <code>temp[เลขวัน]</code> อยู่แล้ว</li>
+        <li>pop ไปเรื่อยๆ ตราบใดที่ตัวบนสุดเย็นกว่าวันใหม่ วันที่เหลือใน stack ตอนจบไม่มีวันที่ร้อนกว่า คำตอบจึงเป็น -1 ตามค่าเริ่มต้น</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="warmer-stack" data-title="ข้อมูลเข้า"><pre><code>8
+31 29 30 34 33 33 35 32
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="warmer-stack" data-title="C:\code\warmer.exe"><pre><code>34 30 34 35 35 35 -1 -1
+</code></pre></div>
+      </div>
+
+      <p>ไล่ดูทีละวัน ตาราง stack เขียนเป็นอุณหภูมิของวันที่รออยู่ให้อ่านง่าย ซ้ายคือก้น ของจริงใน stack คือเลขวัน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วัน</th><th>อุณหภูมิ</th><th>pop และได้คำตอบ</th><th>stack หลัง push</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>31</td><td>ไม่มี stack ว่าง</td><td>31</td></tr>
+            <tr><td>1</td><td>29</td><td>ไม่มี 31 ไม่เย็นกว่า</td><td>31 29</td></tr>
+            <tr><td>2</td><td>30</td><td>วัน 1 ได้ 30</td><td>31 30</td></tr>
+            <tr><td>3</td><td>34</td><td>วัน 2 ได้ 34 วัน 0 ได้ 34</td><td>34</td></tr>
+            <tr><td>4</td><td>33</td><td>ไม่มี</td><td>34 33</td></tr>
+            <tr><td>5</td><td>33</td><td>ไม่มี 33 ไม่เย็นกว่า 33</td><td>34 33 33</td></tr>
+            <tr><td>6</td><td>35</td><td>วัน 5 วัน 4 และวัน 3 ได้ 35</td><td>35</td></tr>
+            <tr><td>7</td><td>32</td><td>ไม่มี</td><td>35 32</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>คอลัมน์สุดท้ายไม่เคยมีตัวเลขที่เพิ่มขึ้นจากซ้ายไปขวาเลย ตรงกับข้อสังเกตข้างบน</p>
+
+      <h3 id="why-fast">ลูป while ข้างในไม่ทำให้ช้า</h3>
+
+      <p>ดูเผินๆ โปรแกรมมีลูปซ้อนเหมือนวิธีแรก แต่ให้นับจากอีกมุมหนึ่ง ทุกวันถูก push <strong>ครั้งเดียว</strong> และถูก pop <strong>ไม่เกินครั้งเดียว</strong> เพราะ pop แล้วไม่เคยกลับเข้าไปอีก ทั้งโปรแกรมจึงมี push n ครั้ง และ pop ไม่เกิน n ครั้ง รวมไม่เกิน 2n ครั้ง ถึงบางรอบของ for จะ pop หลายตัว อย่างวันที่ 6 ที่ pop สามตัว รอบอื่นก็ pop น้อยลงชดเชยกัน งานรวมจึงโตตาม n ตรงๆ เรียกว่า O(n) ส่วนวิธีแรกเป็น O(n<sup>2</sup>)</p>
+
+      <p>วัดด้วยโปรแกรมที่สร้างข้อมูลเอง มีสองแบบ แบบ <code>random</code> ใช้ <code>rand()</code> แบบหน้า 13.3 และแบบ <code>falling</code> ที่อุณหภูมิลดลงทุกวัน ซึ่งเป็นกรณีที่แย่ที่สุดของวิธีแรก ทั้งสองวิธีอยู่ในโปรแกรมเดียวกัน และตรวจว่าได้คำตอบตรงกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int temp[200000];
+int answer_slow[200000];
+int answer_fast[200000];
+
+int main()
+{
+    int n;
+    string pattern;
+    cin &gt;&gt; n &gt;&gt; pattern;
+    srand(2569);
+    for (int i = 0; i &lt; n; i++) {
+        if (pattern == "falling") {
+            temp[i] = n - i;
+        } else {
+            temp[i] = rand() % 1000;
+        }
+    }
+
+    clock_t start = clock();
+    for (int i = 0; i &lt; n; i++) {
+        answer_slow[i] = -1;
+        for (int j = i + 1; j &lt; n; j++) {
+            if (temp[j] &gt; temp[i]) {
+                answer_slow[i] = temp[j];
+                break;
+            }
+        }
+    }
+    clock_t middle = clock();
+    stack&lt;int&gt; waiting;
+    for (int i = 0; i &lt; n; i++) {
+        answer_fast[i] = -1;
+        while (!waiting.empty() &amp;&amp; temp[waiting.top()] &lt; temp[i]) {
+            answer_fast[waiting.top()] = temp[i];
+            waiting.pop();
+        }
+        waiting.push(i);
+    }
+    clock_t end = clock();
+
+    int same = 1;
+    for (int i = 0; i &lt; n; i++) {
+        if (answer_slow[i] != answer_fast[i]) {
+            same = 0;
+        }
+    }
+    cout &lt;&lt; "same answers: " &lt;&lt; same &lt;&lt; '\n';
+    cout &lt;&lt; "nested loops: " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    cout &lt;&lt; "stack: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 17.1 ทุกครั้งได้ <code>same answers: 1</code> รันแบบละ 5 ครั้ง ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ข้อมูล</th><th>n</th><th>ลูปซ้อน แบบ Code::Blocks</th><th>ลูปซ้อน แบบ -O2</th><th>stack แบบ Code::Blocks</th><th>stack แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>random</td><td>100,000</td><td>0.004 วินาที</td><td>0.002 วินาที</td><td>0.005 วินาที</td><td>0.001 วินาที</td></tr>
+            <tr><td>falling</td><td>10,000</td><td>0.028 วินาที</td><td>0.012 วินาที</td><td>0.000 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>falling</td><td>100,000</td><td>3.438 วินาที</td><td>1.173 วินาที</td><td>0.003 วินาที</td><td>0.001 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แถวแรกน่าสนใจที่สุด ข้อมูลสุ่มทำให้ลูปซ้อนเร็วพอๆ กับ stack เพราะส่วนใหญ่เดินไม่กี่วันก็เจอวันที่ร้อนกว่า ถ้าน้องทดสอบด้วยข้อมูลสุ่มอย่างเดียว จะคิดว่าวิธีแรกผ่าน แต่ชุดทดสอบจริงมีกรณีแบบ falling เสมอ ลูปซ้อนโตตาม n กำลังสอง n เพิ่ม 10 เท่าใช้เวลาเพิ่มราว 100 เท่า เกิน 1 วินาทีแม้เปิด <code>-O2</code> ส่วน stack ยังไม่ถึงหนึ่งในร้อยวินาที</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="equal-pop">แบบที่ 1 ใช้ &lt;= แทน &lt;</h3>
+
+      <p>ในโปรแกรม warmer-stack เปลี่ยนเงื่อนไขเป็น <code>temp[waiting.top()] &lt;= temp[i]</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="warmer-equal"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; temp(n), answer(n, -1);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; temp[i];
+    }
+    stack&lt;int&gt; waiting;
+    for (int i = 0; i &lt; n; i++) {
+        while (!waiting.empty() &amp;&amp; temp[waiting.top()] &lt;= temp[i]) {
+            answer[waiting.top()] = temp[i];
+            waiting.pop();
+        }
+        waiting.push(i);
+    }
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; answer[i] &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="warmer-equal" data-title="ข้อมูลเข้า"><pre><code>8
+31 29 30 34 33 33 35 32
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="warmer-equal" data-title="C:\code\warmer.exe"><pre><code>34 30 34 35 33 35 -1 -1
+</code></pre></div>
+      </div>
+
+      <p>วันที่ 4 ได้ 33 ซึ่งไม่ได้ร้อนกว่าตัวเอง เพราะพอเจอวันที่ 5 ที่ร้อนเท่ากัน เงื่อนไข <code>&lt;=</code> ก็ pop วันที่ 4 ออกไปพร้อมคำตอบผิด ถ้าตัวอย่างในโจทย์ไม่มีค่าซ้ำ บั๊กนี้จะผ่านตัวอย่างแล้วไปตกชุดทดสอบที่ซ่อนไว้ ก่อนเขียนให้ถามตัวเองว่าโจทย์ต้องการ "มากกว่า" หรือ "มากกว่าหรือเท่ากับ" แล้วทดสอบด้วยค่าซ้ำเสมอ</p>
+
+      <h3 id="no-empty-check">แบบที่ 2 ลืมเช็กว่าง</h3>
+
+      <p>ตัด <code>!waiting.empty() &amp;&amp;</code> ออก เหลือ <code>while (temp[waiting.top()] &lt; temp[i])</code> คอมไพล์ผ่านโดยไม่มีคำเตือน แต่รันกับข้อมูลตัวอย่างแล้วไม่พิมพ์อะไรเลย Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p>วันแรก stack ยังว่าง <code>waiting.top()</code> จึงพังทันทีเหมือนแบบที่ 2 ของหน้า 17.1 ถ้าสลับเป็น <code>temp[waiting.top()] &lt; temp[i] &amp;&amp; !waiting.empty()</code> ก็พังเหมือนกัน เพราะ <code>&amp;&amp;</code> ทำด้านซ้ายก่อน การเช็กว่างต้องอยู่ซ้ายสุดเสมอ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>stack ใช้กับงานที่ต้องจับคู่กับตัวล่าสุดที่ค้างอยู่ เช่น วงเล็บ และงานย้อนกลับ เช่น ปุ่ม back กับ undo</li>
+        <li>ประกาศ stack ในฟังก์ชันหรือในลูป จะได้ stack ว่างใหม่ทุกครั้งโดยไม่ต้องเริ่มเอง</li>
+        <li>monotonic stack หาตัวถัดไปที่มากกว่าของทุกตัวได้ในรอบเดียว เก็บ index ไม่ใช่ค่า</li>
+        <li>ทุกตัว push ครั้งเดียว pop ไม่เกินครั้งเดียว งานรวม O(n) ส่วนลูปซ้อนเป็น O(n<sup>2</sup>) และช้าจริงเฉพาะข้อมูลแบบที่แย่ที่สุด</li>
+        <li>ระวัง <code>&lt;</code> กับ <code>&lt;=</code> เมื่อมีค่าซ้ำ และเช็ก <code>empty()</code> ไว้ซ้ายสุดของเงื่อนไข</li>
+      </ul>
+    </article>

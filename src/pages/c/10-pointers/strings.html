@@ -1,0 +1,443 @@
+<article class="doc">
+      <h1>10.4 สตริงกับ char *</h1>
+
+      <p>สตริงในบทที่ 6 คืออาเรย์ของ <code>char</code> ที่ปิดท้ายด้วย <code>'\0'</code> พอรู้ว่าชื่ออาเรย์คือที่อยู่ของช่องแรก ก็จะเห็นว่าฟังก์ชันสตริงทุกตัว ตั้งแต่ <code>printf("%s")</code> จนถึง <code>strlen</code> ทำงานกับ <code>char *</code> คือที่อยู่ของตัวอักษรตัวหนึ่ง แล้วเดินไปเรื่อยๆ จนเจอ <code>'\0'</code> หน้านี้ใช้ความรู้นี้ตัดสตริงเป็นท่อน ลบตัวอักษรออกจากสตริงโดยไม่ใช้อาเรย์ที่สอง และอธิบายคำเตือนกับผลแปลกๆ ของสตริงที่ค้างไว้ตั้งแต่บทที่ 2 และบทที่ 6</p>
+
+      <h2 id="char-pointer">%s รับที่อยู่ แล้วพิมพ์จนเจอ \0</h2>
+
+      <p><code>printf("%s", word)</code> ไม่ได้รับทั้งอาเรย์ มันได้แค่ที่อยู่ของ <code>word[0]</code> ซึ่งมีชนิด <code>char *</code> แล้วพิมพ์ทีละตัวไปจนเจอ <code>'\0'</code> ถ้าส่งที่อยู่ของช่องอื่นไป มันก็เริ่มพิมพ์จากช่องนั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="suffix"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char word[] = "programming";
+    printf("%s\n", word);
+    printf("%s\n", word + 3);
+    printf("%c\n", *(word + 3));
+    for (char *p = word + 7; *p != '\0'; p++) {
+        printf("%s\n", p);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="suffix" data-title="C:\code\suffix.exe"><pre><code>programming
+gramming
+g
+ming
+ing
+ng
+g
+</code></pre></div>
+
+      <ul>
+        <li>บรรทัดที่ 7 <code>word + 3</code> คือที่อยู่ของ <code>word[3]</code> ซึ่งเก็บ <code>g</code> <code>%s</code> จึงพิมพ์ตั้งแต่ตัวนั้นไปจนจบ</li>
+        <li>บรรทัดที่ 8 <code>*(word + 3)</code> คือตัวอักษรในช่องนั้นหนึ่งตัว ชนิด <code>char</code> จึงพิมพ์ด้วย <code>%c</code> ความต่างระหว่าง <code>char *</code> กับ <code>char</code> คือความต่างระหว่าง "ข้อความที่เริ่มตรงนี้" กับ "ตัวอักษรตัวนี้"</li>
+        <li>ลูปบรรทัดที่ 9 เลื่อน <code>p</code> ทีละตัว ทุกครั้งที่พิมพ์ <code>%s</code> จึงได้ส่วนท้ายที่สั้นลงทีละตัว ลูปหยุดเมื่อ <code>*p</code> เป็น <code>'\0'</code> แบบเดียวกับที่ <code>printf</code> ทำข้างใน</li>
+      </ul>
+
+      <p><code>scanf("%s", word)</code> ก็เหมือนกัน มันต้องการที่อยู่ของช่องแรกที่จะเริ่มเขียน ชื่อ <code>word</code> ให้ที่อยู่นั้นอยู่แล้ว จึงไม่ต้องมี <code>&amp;</code> ตามที่<a href="../02-input-output/scanf.html#words">หน้า 2.3</a> บอกไว้</p>
+
+      <h2 id="whole-array">&amp;word คือที่อยู่ของทั้งอาเรย์</h2>
+
+      <p><a href="../02-input-output/scanf.html#ampersand-string">หน้า 2.3</a> และ<a href="../06-strings/strings.html#ampersand">หน้า 6.2</a> ลองใส่ <code>&amp;</code> หน้าชื่ออาเรย์ใน <code>scanf</code> แล้วได้คำเตือนว่า <code>'%s' expects argument of type 'char *', but argument 2 has type 'char (*)[105]'</code> ทั้งที่โปรแกรมยังทำงานถูก ลองพิมพ์ที่อยู่ดู</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char word[105] = "pointer";
+    printf("word      = %p\n", word);
+    printf("&amp;word     = %p\n", &amp;word);
+    printf("word + 1  = %p\n", word + 1);
+    printf("&amp;word + 1 = %p\n", &amp;word + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\whole.exe"><pre><code>word      = 00000081D6DFFBC0
+&amp;word     = 00000081D6DFFBC0
+word + 1  = 00000081D6DFFBC1
+&amp;word + 1 = 00000081D6DFFC29
+</code></pre></div>
+
+      <p><code>word</code> กับ <code>&amp;word</code> เป็นเลขเดียวกัน เพราะอาเรย์เริ่มที่ช่องแรก แต่ชนิดต่างกัน <code>word</code> คือที่อยู่ของ <code>char</code> หนึ่งตัว (<code>char *</code>) ส่วน <code>&amp;word</code> คือที่อยู่ของทั้งอาเรย์ 105 ช่อง ชนิดของมันเขียนว่า <code>char (*)[105]</code> อ่านว่า pointer ไปยังอาเรย์ของ <code>char</code> 105 ช่อง ความต่างโผล่ตอนบวก 1 <code>word + 1</code> ขยับ 1 byte ไปตัวอักษรถัดไป แต่ <code>&amp;word + 1</code> ขยับไปทั้งก้อน จาก BC0 เป็น C29 ซึ่งห่างกัน 69 ในฐานสิบหก คือ 105 พอดี</p>
+
+      <p><code>scanf</code> เขียนตัวอักษรทีละตัวเริ่มจากที่อยู่ที่ได้ เลขที่อยู่ตรงกันจึงบังเอิญทำงานถูก แต่ชนิดผิด compiler จึงเตือน และถ้าเอาไปบวกเลขแบบในตัวอย่างข้างบน ความต่างของชนิดจะได้ที่อยู่ผิดไปทันที เขียนชื่ออาเรย์เปล่าๆ ทุกครั้ง</p>
+
+      <h2 id="walk-string">เดินบนสตริงด้วย pointer</h2>
+
+      <p>ฟังก์ชันที่รับสตริงจึงรับเป็น <code>char *</code> ได้ แล้วเดินด้วย pointer จนเจอ <code>'\0'</code> ไม่ต้องรับความยาวเพราะสตริงบอกจุดจบเอง ตัวอย่างนี้เขียน <code>strlen</code> เอง และนับตัวพิมพ์ใหญ่</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="length"><pre><code>#include &lt;stdio.h&gt;
+
+int length(char *s)
+{
+    char *p = s;
+    while (*p != '\0') {
+        p++;
+    }
+    return (int)(p - s); // (1)!
+}
+
+int count_upper(char *s)
+{
+    int count = 0;
+    for (char *p = s; *p != '\0'; p++) {
+        if (*p &gt;= 'A' &amp;&amp; *p &lt;= 'Z') {
+            count++;
+        }
+    }
+    return count;
+}
+
+int main()
+{
+    char name[105];
+    scanf("%s", name);
+    printf("length %d, upper %d\n", length(name), count_upper(name));
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>p</code> หยุดที่ช่องของ <code>'\0'</code> ระยะห่างจากช่องแรกคือจำนวนตัวอักษรก่อน <code>'\0'</code> พอดี ใช้การลบ pointer จากหน้า 10.3</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="length" data-title="ข้อมูลเข้า"><pre><code>SongkhlaNakarin
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="length" data-title="C:\code\length.exe"><pre><code>length 15, upper 2
+</code></pre></div>
+      </div>
+
+      <p>เทียบกับ<a href="../08-functions/arrays.html#strings">หน้า 8.3</a> ที่เขียน <code>char text[]</code> แล้วใช้ <code>text[i]</code> สองแบบทำงานเหมือนกัน แบบ index อ่านง่ายเมื่อต้องรู้ตำแหน่ง แบบ pointer สะดวกเมื่อต้องจำ "ตรงนี้" ไว้ใช้ต่อ อย่างในหัวข้อถัดไป</p>
+
+      <h2 id="return-pointer">ฟังก์ชันที่คืนที่อยู่ในสตริง</h2>
+
+      <p>อีเมลแบ่งเป็นชื่อผู้ใช้กับโดเมน คั่นด้วย <code>@</code> ฟังก์ชัน <code>find_char</code> คืนที่อยู่ของตัวที่หาเจอตัวแรก หรือคืน <code>NULL</code> ถ้าไม่มี เมื่อได้ที่อยู่ของ <code>@</code> แล้ว เขียน <code>'\0'</code> ทับตรงนั้น สตริงเดียวก็กลายเป็นสองท่อนทันที</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="email"><pre><code>#include &lt;stdio.h&gt;
+
+char *find_char(char *s, char c) // (1)!
+{
+    for (char *p = s; *p != '\0'; p++) {
+        if (*p == c) {
+            return p;
+        }
+    }
+    return NULL; // (2)!
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        char email[105];
+        scanf("%s", email);
+        char *at = find_char(email, '@');
+        if (at == NULL) {
+            printf("%s is not an email\n", email);
+        } else {
+            *at = '\0'; // (3)!
+            printf("user %s, domain %s\n", email, at + 1); // (4)!
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ชนิดที่คืนคือ <code>char *</code> ที่อยู่ที่คืนเป็นของช่องในอาเรย์ <code>email</code> ของ <code>main</code> ซึ่งยังอยู่หลังฟังก์ชันจบ จึงคืนได้ ต่างจากแบบที่ 4 ของหน้า 10.2</li>
+        <li>เดินจนจบแล้วไม่เจอ คืน <code>NULL</code> ตามความหมายในหน้า 10.1</li>
+        <li>แก้ช่องที่ <code>at</code> ชี้ จาก <code>'@'</code> เป็น <code>'\0'</code> สตริงที่เริ่มจาก <code>email</code> จึงจบตรงนี้</li>
+        <li>โดเมนเริ่มที่ตัวถัดจาก <code>@</code> และจบที่ <code>'\0'</code> เดิมท้ายอีเมล</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="email" data-title="ข้อมูลเข้า"><pre><code>3
+ploy@psu.ac.th
+somchai.k@posn.or.th
+hello
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="email" data-title="C:\code\email.exe"><pre><code>user ploy, domain psu.ac.th
+user somchai.k, domain posn.or.th
+hello is not an email
+</code></pre></div>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 570 150" width="570" style="max-width:100%;height:auto" role="img" aria-label="อาเรย์ email หลังเขียน ตัวที่ 4 ซึ่งเดิมเป็น at ถูกเปลี่ยนเป็น ศูนย์ email ชี้ช่องแรก at ชี้ช่องที่ 4 และ at บวก 1 ชี้ช่องที่ 5">
+          <defs>
+            <marker id="string-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="47" y="16" text-anchor="middle" style="fill:var(--brand);font-size:15px">email</text>
+            <text x="217" y="16" text-anchor="middle" style="fill:var(--brand);font-size:15px">at + 1</text>
+            <text x="183" y="142" text-anchor="middle" style="fill:var(--brand);font-size:15px">at</text>
+            <rect x="30" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="64" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="98" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="132" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="166" y="48" width="34" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <rect x="200" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="234" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="268" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="302" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="336" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="370" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="404" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="438" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="472" y="48" width="34" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="506" y="48" width="34" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5"/>
+            <text x="47" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">p</text>
+            <text x="81" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">l</text>
+            <text x="115" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">o</text>
+            <text x="149" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">y</text>
+            <text x="183" y="74" text-anchor="middle" style="fill:var(--muted);font-size:15px">\0</text>
+            <text x="217" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">p</text>
+            <text x="251" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">s</text>
+            <text x="285" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">u</text>
+            <text x="319" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">.</text>
+            <text x="353" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">a</text>
+            <text x="387" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">c</text>
+            <text x="421" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">.</text>
+            <text x="455" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">t</text>
+            <text x="489" y="74" text-anchor="middle" style="fill:var(--ink);font-size:17px">h</text>
+            <text x="523" y="74" text-anchor="middle" style="fill:var(--muted);font-size:15px">\0</text>
+            <text x="183" y="106" text-anchor="middle" style="fill:var(--muted);font-size:12px">was @</text>
+          </g>
+          <path d="M47 22 V44" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#string-arrow)"/>
+          <path d="M217 22 V44" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#string-arrow)"/>
+          <path d="M183 126 V112" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#string-arrow)"/>
+        </svg>
+      </figure>
+
+      <p>ไม่มีการคัดลอกตัวอักษรเลยสักตัว สองท่อนยังอยู่ในอาเรย์เดิม แค่มี pointer สองตัวชี้จุดเริ่มของแต่ละท่อน และมี <code>'\0'</code> ปิดท้ายแต่ละท่อน วิธีนี้ตัดสตริงยาวเป็นท่อนได้เร็วมาก แต่สตริงเดิมจะเสียไป ถ้ายังต้องใช้ทั้งอีเมลอีก ให้พิมพ์หรือคัดลอกไว้ก่อนตัด</p>
+
+      <h2 id="read-write">pointer อ่านกับเขียนบนสตริงเดียวกัน</h2>
+
+      <p>เบอร์โทร <code>081-234-5678</code> ต้องการเอาขีดออกให้เหลือแต่ตัวเลข วิธีหนึ่งคือคัดลอกตัวที่ไม่ใช่ขีดไปอีกอาเรย์ แต่ทำในอาเรย์เดิมได้ด้วย pointer สองตัว <code>read</code> เดินอ่านทุกตัว <code>write</code> ชี้ช่องถัดไปที่จะเขียน ตัวที่จะเก็บไว้ถูกคัดลอกจาก <code>read</code> ไป <code>write</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="phone"><pre><code>#include &lt;stdio.h&gt;
+
+void remove_char(char *s, char c)
+{
+    char *write = s;
+    for (char *read = s; *read != '\0'; read++) {
+        if (*read != c) {
+            *write = *read; // (1)!
+            write++;
+        }
+    }
+    *write = '\0'; // (2)!
+}
+
+int main()
+{
+    char phone[105];
+    scanf("%s", phone);
+    remove_char(phone, '-');
+    printf("%s\n", phone);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>write</code> ไม่มีทางแซง <code>read</code> เพราะขยับได้อย่างมากเท่ากับ <code>read</code> ตัวที่เขียนทับจึงเป็นตัวที่อ่านไปแล้วเสมอ ไม่ทำให้ข้อมูลที่ยังไม่ได้อ่านเสีย</li>
+        <li>สตริงใหม่สั้นกว่าเดิม ต้องปิดท้ายตรงที่ <code>write</code> หยุด ไม่งั้น <code>'\0'</code> ยังอยู่ที่เดิมท้ายสตริงยาว ดูแบบที่ 2 ในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="phone" data-title="ข้อมูลเข้า"><pre><code>081-234-5678
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="phone" data-title="C:\code\phone.exe"><pre><code>0812345678
+</code></pre></div>
+      </div>
+
+      <p>เดินรอบเดียว ไม่ต้องเลื่อนตัวอักษรทั้งแถวทุกครั้งที่ลบแบบ<a href="../05-arrays/insert-delete.html">หน้า 5.5</a> ถ้าลบด้วยการเลื่อนทั้งแถว สตริงยาว n ที่ต้องลบเกือบทุกตัวจะเลื่อนรวมราว n<sup>2</sup> / 2 ครั้ง แบบสองตัวชี้ใช้แค่ n ครั้ง เปลี่ยนเงื่อนไขในบรรทัดที่ 7 ก็ได้งานอื่น เช่น ลบสระ เก็บเฉพาะตัวเลข หรือยุบช่องว่างที่ติดกัน</p>
+
+      <h2 id="literal">ข้อความในเครื่องหมายคำพูด</h2>
+
+      <p>ข้อความอย่าง <code>"Monday"</code> ในโค้ดก็เป็นอาเรย์ของ <code>char</code> ที่ compiler เตรียมไว้ให้ในหน่วยความจำส่วนที่<strong>อ่านได้อย่างเดียว</strong> เมื่อใช้เป็นค่าจะได้ที่อยู่ของตัวแรก เก็บที่อยู่นี้ไว้ใน <code>const char *</code> ได้ คำว่า <code>const</code> หน้าชนิดคือสัญญาว่าจะไม่แก้ตัวอักษรผ่าน pointer นี้ ถ้าเผลอแก้ compiler จะฟ้อง อาเรย์ของ <code>const char *</code> จึงเป็นตารางข้อความที่สะดวกมาก</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="days"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    const char *days[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}; // (1)!
+    int today, after;
+    scanf("%d %d", &amp;today, &amp;after);
+    printf("%s\n", days[(today + after) % 7]);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อาเรย์เจ็ดช่อง แต่ละช่องเก็บ <strong>ที่อยู่</strong> ของข้อความหนึ่งข้อความ ไม่ได้เก็บตัวอักษรเอง ข้อความจึงยาวไม่เท่ากันได้ ต่างจากอาเรย์สองมิติของ <code>char</code> ในบทที่ 7 ที่ทุกแถวยาวเท่ากัน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="days" data-title="ข้อมูลเข้า"><pre><code>1 10
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="days" data-title="C:\code\days.exe"><pre><code>Thursday
+</code></pre></div>
+      </div>
+
+      <p>วันนี้วันจันทร์ (วันที่ 1 เมื่อนับวันอาทิตย์เป็น 0) อีก 10 วันสอบ (1 + 10) % 7 = 4 คือวันพฤหัสบดี</p>
+
+      <p>ต้องแยกให้ออกระหว่างสองบรรทัดนี้ ซึ่งหน้าตาเกือบเหมือนกัน</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เขียน</th><th>ได้อะไร</th><th>แก้ตัวอักษรได้ไหม</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>char name[] = "Mali";</code></td><td>อาเรย์ 5 ช่องของเราเอง ข้อความถูก<strong>คัดลอก</strong>มาใส่</td><td>ได้ <code>name[0] = 'B';</code> ได้ <code>Bali</code></td></tr>
+            <tr><td><code>const char *name = "Mali";</code></td><td>pointer ตัวเดียว เก็บที่อยู่ของข้อความในส่วนที่อ่านได้อย่างเดียว</td><td>ไม่ได้ ดูแบบที่ 1 ในส่วนลองทำให้พัง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>เรื่องนี้อธิบายผลแปลกของ <code>answer == "yes"</code> ใน<a href="../06-strings/string-h.html#compare-equals">หน้า 6.4</a> ได้ด้วย ทั้งสองข้างของ <code>==</code> ถูกแปลงเป็นที่อยู่ <code>==</code> จึงเทียบที่อยู่ ไม่ได้เทียบตัวอักษร ลองพิมพ์ที่อยู่ของทั้งสองดู</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char answer[10] = "yes";
+    printf("answer is at %p\n", answer);
+    printf("\"yes\" is at %p\n", "yes");
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\answer.exe"><pre><code>answer is at 000000C98C3FF796
+"yes" is at 00007FF7F8755061
+</code></pre></div>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ อาเรย์ <code>answer</code> อยู่ย่านเดียวกับตัวแปรอื่นใน <code>main</code> ส่วน <code>"yes"</code> อยู่ห่างออกไปมากในส่วนที่อ่านได้อย่างเดียว ตัวอักษรในสองที่นั้นเหมือนกันทุกตัว แต่ที่อยู่ไม่มีทางเท่ากัน <code>==</code> จึงได้เท็จเสมอ เทียบสตริงต้องใช้ <code>strcmp</code> ซึ่งเดินเทียบทีละตัวอักษรด้วย pointer แบบในหน้านี้</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="modify-literal">แบบที่ 1 แก้ข้อความในเครื่องหมายคำพูด</h3>
+
+      <p>ลืมใส่ <code>const</code> แล้วแก้ตัวอักษรผ่าน pointer</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char *name = "Mali";
+    name[0] = 'B';
+    printf("%s\n", name);
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ด้วย <code>-Wall</code> ไม่มีคำเตือน เพราะไม่มี <code>const</code> ให้ compiler ตรวจ แต่รันแล้วไม่พิมพ์อะไร บนเครื่องที่เขียนเอกสารนี้ได้</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p><code>name[0] = 'B'</code> พยายามเขียนลงหน่วยความจำส่วนที่อ่านได้อย่างเดียว Windows จึงปิดโปรแกรม ถ้าเขียน <code>const char *name = "Mali";</code> ตั้งแต่แรก บรรทัดที่ 6 จะกลายเป็น error <code>assignment of read-only location '*name'</code> ตอนคอมไพล์ ซึ่งดีกว่าพังตอนรันมาก ถ้าต้องการข้อความที่แก้ได้ ให้ใช้อาเรย์ <code>char name[] = "Mali";</code></p>
+
+      <h3 id="forget-terminator">แบบที่ 2 ลืมปิดท้ายด้วย \0</h3>
+
+      <p>ในโปรแกรม phone ลบบรรทัด <code>*write = '\0';</code> ออก</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="phone-bug"><pre><code>#include &lt;stdio.h&gt;
+
+void remove_char(char *s, char c)
+{
+    char *write = s;
+    for (char *read = s; *read != '\0'; read++) {
+        if (*read != c) {
+            *write = *read;
+            write++;
+        }
+    }
+}
+
+int main()
+{
+    char phone[105];
+    scanf("%s", phone);
+    remove_char(phone, '-');
+    printf("%s\n", phone);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="phone-bug" data-title="ข้อมูลเข้า"><pre><code>081-234-5678
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="phone-bug" data-title="C:\code\phone.exe"><pre><code>081234567878
+</code></pre></div>
+      </div>
+
+      <p>สิบตัวแรกถูกแล้ว แต่มี <code>78</code> เกินมาท้าย สองช่องนั้นคือตัวอักษรเดิมของสตริงยาว ที่ <code>write</code> ไปไม่ถึง และ <code>'\0'</code> ยังอยู่ที่ตำแหน่งเดิมคือช่องที่ 12 <code>printf</code> จึงพิมพ์ไปถึงตรงนั้น เขียนผ่าน pointer เมื่อไร ต้องถามตัวเองว่าสตริงจบที่ไหน</p>
+
+      <h3 id="null-result">แบบที่ 3 ใช้ผลที่เป็น NULL</h3>
+
+      <p>ในโปรแกรม email ตัด <code>if (at == NULL)</code> ออก แล้วตัดอีเมลทันที</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+char *find_char(char *s, char c)
+{
+    for (char *p = s; *p != '\0'; p++) {
+        if (*p == c) {
+            return p;
+        }
+    }
+    return NULL;
+}
+
+int main()
+{
+    char email[105];
+    scanf("%s", email);
+    char *at = find_char(email, '@');
+    *at = '\0';
+    printf("user %s, domain %s\n", email, at + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <p>ป้อน <code>ploy@psu.ac.th</code> ทำงานถูก แต่ป้อน <code>somchai.school.ac.th</code> ที่พิมพ์ <code>@</code> ผิดเป็นจุด โปรแกรมไม่พิมพ์อะไรเลย บนเครื่องที่เขียนเอกสารนี้ได้ <code>Process returned -1073741819 (0xC0000005)</code> เพราะ <code>at</code> เป็น <code>NULL</code> แล้วบรรทัดที่ 18 เขียนผ่านมัน แบบเดียวกับแบบที่ 5 ของหน้า 10.1 ฟังก์ชันที่อาจคืน <code>NULL</code> ต้องตรวจค่าที่คืนก่อนใช้ทุกครั้ง ชุดทดสอบของโจทย์มักมีกรณี "ไม่เจอ" ซ่อนอยู่เสมอ</p>
+
+      <h3 id="char-as-string">แบบที่ 4 ส่งตัวอักษรตัวเดียวให้ %s</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    char word[105] = "pointer";
+    printf("%s\n", word[0]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>first.c:6:14: warning: format '%s' expects argument of type 'char *', but argument 2 has type 'int' [-Wformat=]
+    6 |     printf("%s\n", word[0]);
+      |             ~^     ~~~~~~~
+      |              |         |
+      |              char *    int
+      |             %d
+</code></pre></div>
+
+      <p><code>word[0]</code> คือตัว <code>p</code> ซึ่งมีรหัส 112 ไม่ใช่ที่อยู่ (compiler บอกว่าเป็น <code>int</code> เพราะ <code>char</code> ถูกแปลงเป็น <code>int</code> ตอนส่งให้ <code>printf</code>) แต่ <code>%s</code> จะเอา 112 ไปใช้เป็นที่อยู่แล้วตามไปอ่าน บนเครื่องที่เขียนเอกสารนี้โปรแกรมพังด้วย <code>0xC0000005</code> ทุกครั้ง อยากพิมพ์ตัวอักษรตัวเดียวใช้ <code>%c</code> อยากพิมพ์ข้อความตั้งแต่ตัวนั้นใช้ <code>%s</code> กับ <code>word + 0</code> หรือ <code>&amp;word[0]</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ชื่ออาเรย์ <code>char</code> ที่ใช้เป็นค่าคือ <code>char *</code> ที่อยู่ของตัวแรก <code>%s</code> รับที่อยู่แล้วพิมพ์ไปจนเจอ <code>'\0'</code> ส่ง <code>word + k</code> ก็ได้ข้อความตั้งแต่ตัวที่ <code>k</code></li>
+        <li><code>&amp;word</code> มีเลขที่อยู่เท่ากับ <code>word</code> แต่ชนิดเป็น <code>char (*)[105]</code> ใน <code>scanf("%s")</code> ใช้ชื่ออาเรย์เปล่าๆ</li>
+        <li>เดินสตริงด้วย <code>for (char *p = s; *p != '\0'; p++)</code> และความยาวคือ <code>p - s</code> ตอนเจอ <code>'\0'</code></li>
+        <li>ฟังก์ชันคืน <code>char *</code> ชี้เข้าไปในสตริงได้ และคืน <code>NULL</code> เมื่อไม่เจอ คนเรียกต้องตรวจ <code>NULL</code> ก่อนใช้</li>
+        <li>เขียน <code>'\0'</code> ทับตรงไหน สตริงก็จบตรงนั้น ใช้ตัดสตริงเป็นท่อน และต้องปิดท้ายทุกครั้งที่เขียนสตริงใหม่ด้วย pointer</li>
+        <li>ข้อความในเครื่องหมายคำพูดแก้ไม่ได้ เก็บด้วย <code>const char *</code> และ <code>==</code> กับสตริงเทียบที่อยู่ ไม่ได้เทียบตัวอักษร</li>
+      </ul>
+    </article>

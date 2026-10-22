@@ -1,0 +1,4 @@
+title = "ปุ่ม undo"
+level = 2
+time_limit = 1
+hint = '''<p>ข้อความเปลี่ยนแค่ที่ท้าย เก็บเป็น <code>vector&lt;string&gt;</code> แล้วใช้ <code>push_back</code> <code>pop_back</code> <code>back</code> ส่วนประวัติการแก้ไขเก็บใน stack ตามที่หน้า 17.3 เล่าไว้ ทุกครั้งที่แก้ ให้ push สิ่งที่ต้องรู้เพื่อย้อนการแก้นั้น ใช้ <code>pair&lt;char, string&gt;</code> ตัวแรกบอกว่าเป็น <code>TYPE</code> หรือ <code>DELETE</code> ตัวที่สองคือคำ สำหรับ <code>DELETE</code> ต้องจำคำที่ถูกลบไว้<strong>ก่อน</strong> pop_back ไม่งั้นจะเอากลับมาไม่ได้ อย่าบันทึก <code>DELETE</code> ที่ไม่มีผล และอย่าเก็บสำเนาข้อความทั้งก้อนทุกครั้งที่แก้ เพราะข้อความยาวได้เป็นแสนคำ</p>'''

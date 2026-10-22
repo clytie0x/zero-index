@@ -164,8 +164,16 @@ pages = [
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
 num = "10"
 title = "บทที่ 10 pointer"
-summary = "ที่อยู่ในหน่วยความจำ ส่งตัวแปรให้ฟังก์ชันแก้ และ pointer กับอาเรย์"
-# dir = "c/10-pointers"
+summary = "ที่อยู่ในหน่วยความจำ ส่งตัวแปรให้ฟังก์ชันแก้ pointer กับอาเรย์ และ malloc"
+path = "c/10-pointers/index.html"
+pages = [
+  { num = "10.1", title = "ที่อยู่และ pointer", path = "c/10-pointers/address.html" },
+  { num = "10.2", title = "ส่งที่อยู่ให้ฟังก์ชัน", path = "c/10-pointers/functions.html" },
+  { num = "10.3", title = "pointer กับอาเรย์", path = "c/10-pointers/arrays.html" },
+  { num = "10.4", title = "สตริงกับ char *", path = "c/10-pointers/strings.html" },
+  { num = "10.5", title = "จองหน่วยความจำด้วย malloc", path = "c/10-pointers/malloc.html" },
+  { num = "10.6", title = "แบบฝึกหัด", path = "c/10-pointers/exercises.html", exercises = "c/10-pointers" },
+]
 
 [[chapters]]
 track = "ภาษา C  ระดับ TOI Zero ถึงค่าย 1"
@@ -246,14 +254,29 @@ track = "ภาษา C++ และ STL  ปลายค่าย 1"
 num = "16"
 title = "บทที่ 16 vector pair และ sort"
 summary = "อาเรย์ที่ยืดได้ คู่ข้อมูล และเรียงข้อมูลในบรรทัดเดียว"
-# dir = "cpp/16-vector-sort"
+path = "cpp/16-vector-sort/index.html"
+pages = [
+  { num = "16.1", title = "vector อาเรย์ที่ยืดได้", path = "cpp/16-vector-sort/vector.html" },
+  { num = "16.2", title = "vector สองมิติและความเร็ว", path = "cpp/16-vector-sort/grid-speed.html" },
+  { num = "16.3", title = "sort และ lambda", path = "cpp/16-vector-sort/sort.html" },
+  { num = "16.4", title = "pair tuple และเรียงหลายเงื่อนไข", path = "cpp/16-vector-sort/pair-struct.html" },
+  { num = "16.5", title = "ฟังก์ชันใน algorithm ที่ใช้บ่อย", path = "cpp/16-vector-sort/algorithm.html" },
+  { num = "16.6", title = "แบบฝึกหัด", path = "cpp/16-vector-sort/exercises.html", exercises = "cpp/16-vector-sort" },
+]
 
 [[chapters]]
 track = "ภาษา C++ และ STL  ปลายค่าย 1"
 num = "17"
 title = "บทที่ 17 stack queue deque ใน STL"
 summary = "ใช้โครงสร้างข้อมูลสำเร็จรูป แทนที่เขียนเองในบทที่ 14"
-# dir = "cpp/17-stl-containers"
+path = "cpp/17-stl-containers/index.html"
+pages = [
+  { num = "17.1", title = "stack และ queue สำเร็จรูป", path = "cpp/17-stl-containers/stack-queue.html" },
+  { num = "17.2", title = "deque และ list", path = "cpp/17-stl-containers/deque-list.html" },
+  { num = "17.3", title = "งานที่ใช้ stack", path = "cpp/17-stl-containers/stack-uses.html" },
+  { num = "17.4", title = "งานที่ใช้ queue และ deque", path = "cpp/17-stl-containers/queue-uses.html" },
+  { num = "17.5", title = "แบบฝึกหัด", path = "cpp/17-stl-containers/exercises.html", exercises = "cpp/17-stl-containers" },
+]
 
 [[chapters]]
 track = "อัลกอริทึม  ระดับค่าย 2 และ TOI"

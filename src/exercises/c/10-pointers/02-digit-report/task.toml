@@ -1,0 +1,3 @@
+title = "รายงานเลขโดด"
+level = 1
+hint = '''<p>แยกหลักด้วย <code>% 10</code> กับ <code>/ 10</code> แบบหน้า 4.5 ฟังก์ชันต้องเขียนผลสี่ค่ากลับไปให้ <code>main</code> จึงรับเป็น pointer สี่ตัว แล้วเขียนผ่าน <code>*count</code> <code>*sum</code> <code>*low</code> <code>*high</code> ตามหน้า 10.2 ระวัง X เป็น 0 ซึ่งมีหนึ่งหลัก และ X ใหญ่ถึง 10<sup>18</sup> ต้องเก็บใน <code>long long</code></p>'''

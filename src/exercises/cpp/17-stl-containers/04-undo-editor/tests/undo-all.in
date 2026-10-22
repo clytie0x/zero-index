@@ -1,0 +1,11 @@
+10
+TYPE red
+TYPE green
+DELETE
+TYPE blue
+UNDO
+UNDO
+UNDO
+UNDO
+UNDO
+LAST

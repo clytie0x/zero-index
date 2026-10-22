@@ -1,0 +1,4 @@
+title = "ปุ่ม back และ forward"
+level = 2
+time_limit = 1
+hint = '''<p>เริ่มจากโปรแกรม browser ในหน้า 17.3 แล้วเพิ่ม stack ตัวที่สองสำหรับ forward การกด back ย้ายหน้าปัจจุบันไปไว้บน stack forward ก่อน แล้วค่อยหยิบหน้าจาก stack back มาเป็นหน้าปัจจุบัน การกด forward ทำกลับกันทุกอย่าง จุดที่พลาดบ่อยที่สุดคือ <code>VISIT</code> ต้องล้าง stack forward ให้ว่าง <code>stack</code> ไม่มีคำสั่งล้างทีเดียว ให้ pop จนว่าง หรือกำหนดค่าใหม่เป็น <code>stack&lt;string&gt;()</code> การ pop ทีละตัวไม่ทำให้ช้า เพราะทุกหน้าถูก push เข้า stack forward ได้ก็ต่อเมื่อมีการกด back ซึ่งมีไม่เกิน Q ครั้ง</p>'''

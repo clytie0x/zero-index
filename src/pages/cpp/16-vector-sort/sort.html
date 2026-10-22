@@ -1,0 +1,345 @@
+<article class="doc">
+      <h1>16.3 sort และ lambda</h1>
+
+      <p>ในหน้า 13.4 การเรียงด้วย <code>qsort</code> ต้องเขียนฟังก์ชันเปรียบเทียบที่รับ <code>const void *</code> แปลงชนิดเอง คืน -1 0 1 เอง และบอกขนาดของหนึ่งช่องเป็น byte ให้ถูก <code>sort</code> ของ C++ ทำงานเดียวกันในบรรทัดเดียว รู้ชนิดของข้อมูลเอง เรียงจากมากไปน้อยหรือตามเงื่อนไขอะไรก็ได้ด้วยฟังก์ชันสั้นๆ ที่เขียนไว้ตรงที่เรียกเลย และเมื่อคอมไพล์แบบเดียวกับ grader ก็เร็วกว่า <code>qsort</code> ด้วย หน้านี้ใช้ <code>sort</code> กับ vector อาเรย์ และข้อความ แล้วปิดท้ายด้วยกติกาของฟังก์ชันเปรียบเทียบที่ถ้าทำผิด โปรแกรมพังแบบหาสาเหตุยาก</p>
+
+      <h2 id="sort-vector">เรียง vector</h2>
+
+      <p>ใช้ข้อมูลชุดเดียวกับโปรแกรม scores ในหน้า 13.4</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sort-basic"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; score(n);
+    for (int &amp;s : score) {
+        cin &gt;&gt; s;
+    }
+    sort(score.begin(), score.end());
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; score[i];
+        if (i + 1 &lt; n) {
+            cout &lt;&lt; ' ';
+        }
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="sort-basic" data-title="ข้อมูลเข้า"><pre><code>8
+72 85 64 85 90 58 100 64
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sort-basic" data-title="C:\code\scores.exe"><pre><code>58 64 64 72 85 85 90 100
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 14 แทนฟังก์ชันเปรียบเทียบสิบบรรทัดกับการเรียก <code>qsort</code> ในหน้า 13.4 ทั้งหมด <code>sort</code> ไม่ต้องรู้ขนาดของหนึ่งช่อง เพราะรู้จากชนิดของ vector อยู่แล้ว และเรียงจากน้อยไปมากด้วย <code>&lt;</code> ของชนิดนั้นเป็นค่าเริ่มต้น</p>
+
+      <p><code>sort</code> รับสองค่า คือตำแหน่งเริ่มต้นและตำแหน่งสิ้นสุดของช่วงที่จะเรียง <code>score.begin()</code> คือตำแหน่งของช่องแรก ส่วน <code>score.end()</code> คือตำแหน่ง<strong>ถัดจาก</strong>ช่องสุดท้าย ไม่ใช่ช่องสุดท้าย ตำแหน่งแบบนี้เรียกว่า <strong>iterator</strong> ทำตัวคล้าย pointer ในบทที่ 10 ฟังก์ชันใน <code>&lt;algorithm&gt;</code> ทุกตัวในบทนี้รับช่วงแบบนี้ คือรวมตัวแรก ไม่รวมตัวสุดท้าย</p>
+
+      <div class="code" data-lang="text"><pre><code>index      0    1    2    3    4    5    6    7
+score     72   85   64   85   90   58  100   64
+           ^                                       ^
+     score.begin()                            score.end()
+</code></pre></div>
+
+      <p>ข้อดีของการไม่รวมตัวสุดท้ายคือ จำนวนช่องในช่วงเท่ากับ <code>end() - begin()</code> พอดี และช่วงว่างคือช่วงที่ต้นกับปลายเป็นตำแหน่งเดียวกัน ซึ่งจะได้ใช้ในหน้า 16.5</p>
+
+      <h2 id="sort-array">เรียงอาเรย์และบางส่วน</h2>
+
+      <p>อาเรย์ธรรมดาก็ใช้ <code>sort</code> ได้ ชื่ออาเรย์ <code>a</code> คือตำแหน่งของช่องแรก ส่วน <code>a + n</code> คือตำแหน่งถัดจากช่องที่ n - 1 โค้ดค่ายหลายที่เก็บข้อมูลเริ่มจากช่องที่ 1 ก็เลื่อนช่วงไปหนึ่งช่องเป็น <code>a + 1</code> ถึง <code>a + n + 1</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sort-array"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int a[100001];
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    sort(a + 1, a + n + 1);
+    for (int i = 1; i &lt;= n; i++) {
+        cout &lt;&lt; a[i] &lt;&lt; (i &lt; n ? ' ' : '\n');
+    }
+    vector&lt;int&gt; first_three = {90, 58, 100, 64, 72};
+    sort(first_three.begin(), first_three.begin() + 3);
+    for (int x : first_three) {
+        cout &lt;&lt; x &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="sort-array" data-title="ข้อมูลเข้า"><pre><code>5
+160 148 171 155 149
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sort-array" data-title="C:\code\array.exe"><pre><code>148 149 155 160 171
+58
+90
+100
+64
+72
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>บรรทัดที่ 15 ใช้ <code>? :</code> จากหน้า 3.4 พิมพ์ช่องว่างหลังทุกตัวยกเว้นตัวสุดท้ายที่พิมพ์ขึ้นบรรทัดใหม่แทน</li>
+        <li>บรรทัดที่ 18 เรียงแค่สามช่องแรก <code>begin() + 3</code> คือตำแหน่งของช่องที่ 3 ซึ่งไม่รวมในช่วง สองช่องท้ายจึงอยู่ที่เดิม</li>
+      </ul>
+
+      <h2 id="descending">เรียงจากมากไปน้อย</h2>
+
+      <p>มีสองวิธีที่ใช้บ่อย ส่งตัวเปรียบเทียบ <code>greater&lt;int&gt;()</code> ที่แปลว่า "ตัวที่มากกว่ามาก่อน" เป็นค่าที่สาม หรือเรียงแบบปกติแต่จากท้ายมาหน้าด้วย <code>rbegin()</code> กับ <code>rend()</code> ซึ่งเป็นตำแหน่งที่เดินถอยหลัง (r มาจาก reverse)</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sort-desc"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; a = {72, 85, 64, 85, 90, 58, 100, 64};
+    vector&lt;int&gt; b = a;
+    sort(a.begin(), a.end(), greater&lt;int&gt;());
+    sort(b.rbegin(), b.rend());
+    for (int x : a) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+    cout &lt;&lt; '\n';
+    cout &lt;&lt; (a == b) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sort-desc" data-title="C:\code\desc.exe"><pre><code>100 90 85 85 72 64 64 58
+1
+</code></pre></div>
+
+      <p>สองวิธีได้ผลเหมือนกันทุกช่อง เลือกแบบไหนก็ได้ ตัวอย่างนี้พิมพ์ช่องว่างตามหลังทุกตัวเพื่อให้โค้ดสั้น ตัวสุดท้ายจึงมีช่องว่างเกินหนึ่งตัว กล่องผลลัพธ์มองไม่เห็น แต่ grader บางระบบนับ ในงานส่งจริงให้ใช้แบบตัวอย่างก่อนหน้า</p>
+
+      <h2 id="strings">เรียงข้อความ</h2>
+
+      <p><code>string</code> เทียบกันด้วย <code>&lt;</code> ได้ตามลำดับพจนานุกรมอยู่แล้วตามหน้า 15.4 ผลเหมือน <code>strcmp</code> ในหน้า 6.4 vector ของ string จึงเรียงได้ทันที เทียบกับโปรแกรม names ในหน้า 13.4 ที่ต้องจองอาเรย์ <code>char name[1000][21]</code> และระวัง <code>sizeof(name[0])</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="sort-names"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;string&gt; name(n);
+    for (string &amp;s : name) {
+        cin &gt;&gt; s;
+    }
+    sort(name.begin(), name.end());
+    for (const string &amp;s : name) {
+        cout &lt;&lt; s &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="sort-names" data-title="ข้อมูลเข้า"><pre><code>6
+songkhla
+nan
+phuket
+chiangmai
+nakhonpathom
+nakhonnayok
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sort-names" data-title="C:\code\names.exe"><pre><code>chiangmai
+nakhonnayok
+nakhonpathom
+nan
+phuket
+songkhla
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 13 ใช้ <code>const string &amp;</code> เพื่อไม่ให้คัดลอกข้อความทุกรอบ เหตุผลเดียวกับการส่ง vector ให้ฟังก์ชันในหน้า 16.2 ตัวพิมพ์ใหญ่ยังมาก่อนตัวพิมพ์เล็กทุกตัวเหมือน <code>strcmp</code></p>
+
+      <h2 id="lambda">เรียงตามเงื่อนไขของเราเองด้วย lambda</h2>
+
+      <p>ห้องเรียนแต่ละห้องวัดอุณหภูมิได้ไม่เท่ากัน ครูอยากเรียงห้องจากที่อุณหภูมิใกล้ค่าที่สบายที่สุด T มากที่สุด ถ้าห่างจาก T เท่ากัน ห้องที่เย็นกว่ามาก่อน <code>&lt;</code> หรือ <code>greater</code> ทำแบบนี้ไม่ได้ ต้องบอก <code>sort</code> เองว่าสองค่าไหนอะไรมาก่อน ด้วยฟังก์ชันเปรียบเทียบที่ส่งเป็นค่าที่สาม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="sort-lambda"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int target, n;
+    cin &gt;&gt; target &gt;&gt; n;
+    vector&lt;int&gt; temp(n);
+    for (int &amp;t : temp) {
+        cin &gt;&gt; t;
+    }
+    sort(temp.begin(), temp.end(), [&amp;](int a, int b) { // (1)!
+        int gap_a = abs(a - target);
+        int gap_b = abs(b - target);
+        if (gap_a != gap_b) {
+            return gap_a &lt; gap_b; // (2)!
+        }
+        return a &lt; b; // (3)!
+    });
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; temp[i] &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><strong>lambda</strong> คือฟังก์ชันไม่มีชื่อที่เขียนไว้ตรงที่ใช้ <code>[&amp;]</code> บอกว่าข้างในใช้ตัวแปรของ <code>main</code> ได้ ในที่นี้คือ <code>target</code> ถ้าไม่ใช้ตัวแปรข้างนอกเลยเขียน <code>[]</code> เฉยๆ ได้ ต่อด้วยพารามิเตอร์ในวงเล็บ แล้วตัวฟังก์ชันในปีกกา ปิดท้ายด้วย <code>)</code> ของ <code>sort</code> และ <code>;</code></li>
+        <li>คืน <code>true</code> เมื่อ <code>a</code> ต้องมาก่อน <code>b</code> คืน <code>false</code> ในกรณีอื่นทั้งหมด ต่างจาก <code>qsort</code> ที่คืน -1 0 1</li>
+        <li>ระยะห่างเท่ากัน ตัวที่น้อยกว่ามาก่อน และถ้า <code>a</code> เท่ากับ <code>b</code> บรรทัดนี้คืน <code>false</code> ตามกติกาท้ายหน้า</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="sort-lambda" data-title="ข้อมูลเข้า"><pre><code>25 7
+29 21 25 31 23 27 18
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sort-lambda" data-title="C:\code\rooms.exe"><pre><code>25 23 27 21 29 31 18
+</code></pre></div>
+      </div>
+
+      <p>23 กับ 27 ห่างจาก 25 เท่ากันคือ 2 องศา 23 จึงมาก่อนตามเงื่อนไขที่สอง เช่นเดียวกับ 21 กับ 29 ส่วน 31 ห่าง 6 และ 18 ห่าง 7 จะเขียนฟังก์ชันเปรียบเทียบเป็นฟังก์ชันธรรมดาที่มีชื่อ แล้วส่งชื่อไปแบบ <code>qsort</code> ก็ได้ แต่ lambda อ่านง่ายกว่าเพราะเงื่อนไขอยู่ตรงที่เรียงพอดี</p>
+
+      <h2 id="speed">เร็วกว่า qsort จริงไหม</h2>
+
+      <p>ใช้วิธีจับเวลาแบบหน้า 13.3 ข้อมูลชุดเดียวกันที่สร้างจาก <code>srand(2569)</code> จับเฉพาะช่วงที่เรียง</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    srand(2569);
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        a[i] = rand();
+    }
+    clock_t start = clock();
+    sort(a.begin(), a.end());
+    clock_t end = clock();
+    cout &lt;&lt; "n = " &lt;&lt; n &lt;&lt; ", time = " &lt;&lt; (end - start) * 1000 / CLOCKS_PER_SEC &lt;&lt; " ms\n";
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>1000000
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\sort_time.exe"><pre><code>n = 1000000, time = 244 ms
+</code></pre></div>
+      </div>
+
+      <p>ฝั่ง <code>qsort</code> ใช้โปรแกรม qsort_time ในหน้า 13.4 ที่ขยายอาเรย์เป็นหนึ่งล้านช่อง วัดใหม่ทั้งสองฝั่งบนเครื่องเดียวกับหน้า 16.2 ค่ากลางของ 5 ครั้ง หน่วยเป็นมิลลิวินาที</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>n</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>qsort</code></td><td>100,000</td><td>13</td><td>9</td></tr>
+            <tr><td><code>sort</code></td><td>100,000</td><td>19</td><td>6</td></tr>
+            <tr><td><code>qsort</code></td><td>1,000,000</td><td>121</td><td>81</td></tr>
+            <tr><td><code>sort</code></td><td>1,000,000</td><td>244</td><td>53</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ผลไม่ได้ออกมาทางเดียว</p>
+
+      <ul>
+        <li><strong>แบบ Code::Blocks <code>sort</code> ช้ากว่า <code>qsort</code> ราว 1.5 ถึง 2 เท่า</strong> <code>sort</code> เขียนเป็นฟังก์ชันเล็กๆ ซ้อนกันหลายชั้น ซึ่งออกแบบมาให้ compiler รวมเป็นโค้ดก้อนเดียวตอนเปิด <code>-O2</code> พอไม่เปิด ทุกชั้นจึงเป็นการเรียกฟังก์ชันจริง ส่วนตัว <code>qsort</code> คอมไพล์มาเสร็จแล้วในไลบรารีของระบบ แฟล็กของเรามีผลแค่กับฟังก์ชันเปรียบเทียบ</li>
+        <li><strong>แบบ <code>-O2</code> <code>sort</code> เร็วกว่า <code>qsort</code> ราว 1.5 เท่า</strong> เพราะการเทียบถูกรวมเข้าไปในโค้ดเรียงเลย ขณะที่ <code>qsort</code> ต้องเรียกฟังก์ชันเปรียบเทียบของเราผ่าน pointer ทุกครั้งที่เทียบ</li>
+      </ul>
+
+      <p>grader คอมไพล์ด้วย <code>-O2</code> จึงดูคอลัมน์ขวาเป็นหลัก และทั้งสองวิธีเรียงล้านตัวได้ในเวลาไม่ถึงหนึ่งในสี่วินาทีแม้ไม่เปิด <code>-O2</code> เหตุผลที่ควรใช้ <code>sort</code> จึงไม่ใช่ความเร็วอย่างเดียว แต่คือเขียนสั้น และไม่มีที่ให้ผิดแบบ <code>sizeof</code> ผิดหรือ <code>return x - y</code> ล้น ตัวเลข <code>qsort</code> ที่ n = 100,000 แบบ Code::Blocks ได้ 13 มิลลิวินาที ต่างจาก 9 มิลลิวินาทีในหน้า 13.4 ซึ่งวัดคนละวัน เวลาที่วัดได้แกว่งตามสภาพเครื่องแบบนี้เสมอ ให้ดูที่อัตราส่วนมากกว่าตัวเลขแต่ละตัว</p>
+
+      <h2 id="strict">กติกาของฟังก์ชันเปรียบเทียบ</h2>
+
+      <p><code>sort</code> เชื่อฟังก์ชันเปรียบเทียบของเราทุกคำ และใช้ความเชื่อนั้นทำให้ตัวเองเร็ว เช่น ตอนเลื่อนค่าไปทางซ้าย มันไม่เช็กว่าเลยช่องแรกของ vector หรือยัง เพราะเชื่อว่าฟังก์ชันจะตอบว่า "ไม่ต้องมาก่อน" เมื่อเจอค่าที่ไม่มากกว่า ฟังก์ชันเปรียบเทียบ <code>comp(a, b)</code> จึงต้องทำตัวเหมือน <code>&lt;</code> ตามกติกานี้ ซึ่งเรียกว่า <strong>strict weak ordering</strong></p>
+
+      <ol>
+        <li><code>comp(a, a)</code> ต้องเป็น <code>false</code> เสมอ ค่าหนึ่งไม่มาก่อนตัวเอง</li>
+        <li>ถ้า <code>comp(a, b)</code> เป็น <code>true</code> แล้ว <code>comp(b, a)</code> ต้องเป็น <code>false</code></li>
+        <li>ถ้า a มาก่อน b และ b มาก่อน c แล้ว a ต้องมาก่อน c</li>
+      </ol>
+
+      <p>ในทางปฏิบัติจำแค่ว่า <strong>ใช้ <code>&lt;</code> หรือ <code>&gt;</code> เท่านั้น ห้ามใช้ <code>&lt;=</code> หรือ <code>&gt;=</code></strong> และเมื่อสองค่าเท่ากันทุกเงื่อนไข ต้องคืน <code>false</code> แบบบรรทัดสุดท้ายของ lambda ในตัวอย่าง rooms</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="less-equal">แบบที่ 1 ใช้ &lt;= ในฟังก์ชันเปรียบเทียบ</h3>
+
+      <p>ในโปรแกรม scores ถ้าเขียนบรรทัดที่ 14 ใหม่ให้เรียงด้วย lambda ที่ใช้ <code>&lt;=</code></p>
+
+      <div class="code" data-lang="cpp"><pre><code>sort(score.begin(), score.end(), [](int a, int b) {
+    return a &lt;= b;
+});
+</code></pre></div>
+
+      <p>ป้อนข้อมูลชุดเดิมแปดตัว ได้ <code>58 64 64 72 85 85 90 100</code> ถูกต้อง ป้อนเลข 50 สิบหกตัวก็ยังถูก แต่พอป้อน 50 สิบเจ็ดตัว ซึ่งคำตอบที่ถูกคือ 50 สิบเจ็ดตัวเหมือนเดิม บนเครื่องที่เขียนเอกสารนี้ รันในหน้าต่าง cmd สามครั้ง โปรแกรมพังทั้งสามครั้งโดยไม่พิมพ์อะไรเลย</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073740940 (0xC0000374)
+</code></pre></div>
+
+      <p>พอเพิ่มเป็น 50 ยี่สิบตัว รันหกครั้งพังทั้งหกครั้ง ห้าครั้งด้วยรหัสนี้ อีกครั้งด้วย <code>0xC0000005</code> และถ้ารันโปรแกรมเดียวกันกับ 50 สิบเจ็ดตัวผ่าน Git Bash กลับไม่พัง แต่ได้ <code>-1 50 50 ...</code> คือเลข 50 หายไปหนึ่งตัว มี -1 ที่ไม่เคยป้อนโผล่มาแทน ผลเปลี่ยนไปตามวิธีรันแบบนี้คือสัญญาณว่าโปรแกรมกำลังอ่านเขียนหน่วยความจำที่ไม่ใช่ของตัวเอง</p>
+
+      <p>เมื่อทุกค่าเท่ากัน <code>a &lt;= b</code> ตอบ <code>true</code> ทุกครั้ง <code>sort</code> จึงเลื่อนค่าไปทางซ้ายไม่หยุด จนเลยช่องแรกของ vector ไปหยิบของที่อยู่ก่อนหน้าในหน่วยความจำมาใส่ และเขียนทับที่ที่ไม่ใช่ของเรา <code>0xC0000374</code> คือรหัสที่ Windows บอกว่าหน่วยความจำส่วน heap ถูกเขียนทับจนเสีย ส่วนข้อมูลไม่เกิน 16 ตัวไม่พัง เพราะ <code>sort</code> ของ g++ ใช้วิธีเรียงอีกแบบกับช่วงสั้นๆ ซึ่งบังเอิญรอด ชุดทดสอบเล็กที่เราลองเองจึงผ่านหมด แล้วไปพังบน grader กับชุดใหญ่ที่มีค่าซ้ำ</p>
+
+      <h3 id="minus-habit">แบบที่ 2 ติดนิสัย return a - b จาก qsort</h3>
+
+      <div class="code" data-lang="cpp"><pre><code>sort(score.begin(), score.end(), [](int a, int b) {
+    return a - b;
+});
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านด้วย <code>-Wall</code> โดยไม่มีคำเตือน lambda นี้คืน <code>bool</code> ตัวเลข <code>a - b</code> จึงถูกแปลงเป็น <code>true</code> ทุกครั้งที่ไม่เป็น 0 แปลว่าทุกคู่ที่ไม่เท่ากันตอบว่า "a มาก่อน b" ทั้งสองทิศ ผิดกติกาข้อ 2 บนเครื่องที่เขียนเอกสารนี้ ข้อมูลชุดเดิมแปดตัวได้</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\scores.exe"><pre><code>64 100 58 90 85 64 85 72
+</code></pre></div>
+
+      <p>ซึ่งคือข้อมูลเข้ากลับหลัง ไม่ได้เรียงเลย ส่วนข้อมูลสามสิบตัวที่มีค่าซ้ำ รันสามครั้งพังด้วย <code>0xC0000005</code> ทั้งสามครั้ง ฟังก์ชันเปรียบเทียบของ <code>sort</code> ตอบคำถามว่า "a มาก่อน b ไหม" ด้วยจริงหรือเท็จ ไม่ใช่ลบ ไม่ใช่ -1 0 1</p>
+
+      <h3 id="greater-parens">แบบที่ 3 ลืมวงเล็บหลัง greater&lt;int&gt;</h3>
+
+      <p>ในโปรแกรม desc ถ้าลบ <code>()</code> หลัง <code>greater&lt;int&gt;</code> ในบรรทัดที่ 8</p>
+
+      <div class="code" data-lang="gcc"><pre><code>desc.cpp:8:42: error: expected primary-expression before ')' token
+    8 |     sort(a.begin(), a.end(), greater&lt;int&gt;);
+      |                                          ^
+</code></pre></div>
+
+      <p><code>greater&lt;int&gt;</code> เป็นชื่อชนิด ไม่ใช่ค่า ต้องมี <code>()</code> ต่อท้ายเพื่อสร้างตัวเปรียบเทียบขึ้นมาหนึ่งตัวก่อนส่งให้ <code>sort</code> ข้อความ <code>expected primary-expression</code> แปลว่า compiler รอค่าอยู่แต่เจอเครื่องหมาย <code>)</code> แทน</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>sort(v.begin(), v.end())</code> เรียง vector จากน้อยไปมาก อาเรย์ใช้ <code>sort(a, a + n)</code> หรือ <code>sort(a + 1, a + n + 1)</code> ถ้าเริ่มที่ช่อง 1</li>
+        <li>ช่วงในฟังก์ชันของ <code>&lt;algorithm&gt;</code> รวมตัวแรก ไม่รวมตัวสุดท้าย <code>end()</code> คือตำแหน่งถัดจากช่องสุดท้าย</li>
+        <li>มากไปน้อยใช้ <code>greater&lt;int&gt;()</code> มีวงเล็บ หรือ <code>sort(v.rbegin(), v.rend())</code></li>
+        <li>เงื่อนไขอื่นใช้ lambda <code>[](int a, int b) { return ...; }</code> คืน <code>true</code> เมื่อ a ต้องมาก่อน b <code>[&amp;]</code> ให้ใช้ตัวแปรข้างนอกได้</li>
+        <li>แบบ <code>-O2</code> <code>sort</code> เร็วกว่า <code>qsort</code> แบบ Code::Blocks ช้ากว่า แต่ทั้งคู่เรียงล้านตัวได้ไม่ถึงวินาที</li>
+        <li>ฟังก์ชันเปรียบเทียบใช้ <code>&lt;</code> หรือ <code>&gt;</code> ห้าม <code>&lt;=</code> <code>&gt;=</code> และห้าม <code>return a - b</code> ค่าเท่ากันต้องได้ <code>false</code></li>
+      </ul>
+    </article>

@@ -1,0 +1,463 @@
+<article class="doc">
+      <h1>16.1 vector อาเรย์ที่ยืดได้</h1>
+
+      <p>อาเรย์ในบทที่ 5 ต้องบอกขนาดตั้งแต่ตอนเขียนโค้ด โจทย์บอกว่า N ไม่เกินแสน เราก็จองแสนช่องไว้นอก <code>main</code> ทั้งที่ชุดทดสอบส่วนใหญ่ใช้ไม่กี่สิบช่อง ถ้าโจทย์ไม่บอกจำนวนมาก่อน ก็ต้องเดาเอาเอง และต้องเก็บจำนวนที่ใช้จริงไว้ในตัวแปรอีกตัวเสมอ <code>vector</code> ของ C++ แก้ทุกเรื่องนี้ มันคืออาเรย์ที่จองขนาดตอนรันได้ ยืดออกได้ทีละช่องเมื่อมีข้อมูลเพิ่ม และรู้ขนาดของตัวเอง โค้ดแข่งขันที่เขียนด้วย C++ แทบทั้งหมดใช้ <code>vector</code> แทนอาเรย์ธรรมดา</p>
+
+      <h2 id="first-vector">vector ตัวแรก</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="first"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; score; // (1)!
+    score.push_back(72); // (2)!
+    score.push_back(85);
+    score.push_back(64);
+    cout &lt;&lt; "size = " &lt;&lt; score.size() &lt;&lt; '\n'; // (3)!
+    cout &lt;&lt; score[0] &lt;&lt; ' ' &lt;&lt; score[1] &lt;&lt; ' ' &lt;&lt; score[2] &lt;&lt; '\n'; // (4)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ประกาศ vector ที่เก็บ <code>int</code> ชนิดของสมาชิกเขียนในวงเล็บแหลม <code>&lt;int&gt;</code> ถ้าจะเก็บ <code>long long</code> ก็เขียน <code>vector&lt;long long&gt;</code> vector ที่ประกาศแบบนี้เริ่มต้นว่าง มี 0 ช่อง</li>
+        <li><code>push_back</code> เพิ่มค่าต่อท้าย vector ยืดออกหนึ่งช่อง</li>
+        <li><code>size()</code> บอกว่าตอนนี้มีกี่ช่อง ไม่ต้องเก็บจำนวนไว้ในตัวแปรแยกเหมือนอาเรย์</li>
+        <li>ใช้ <code>[]</code> เหมือนอาเรย์ทุกอย่าง ช่องแรกคือช่องที่ 0</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="first" data-title="C:\code\first.exe"><pre><code>size = 3
+72 85 64
+</code></pre></div>
+
+      <figure>
+        <svg viewBox="0 0 520 150" width="520" style="max-width:100%;height:auto" role="img" aria-label="vector score มีสามช่องคือ 72 85 64 ที่ index 0 1 2 เมื่อ push_back 90 จะได้ช่องที่ 3 ต่อท้าย และ size เปลี่ยนจาก 3 เป็น 4">
+          <g style="font-family:var(--font-code)">
+            <text x="20" y="30" style="fill:var(--muted);font-size:14px">size() = 3</text>
+            <rect x="20" y="42" width="70" height="44" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="90" y="42" width="70" height="44" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="160" y="42" width="70" height="44" rx="6" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="55" y="71" text-anchor="middle" style="fill:var(--ink);font-size:18px">72</text>
+            <text x="125" y="71" text-anchor="middle" style="fill:var(--ink);font-size:18px">85</text>
+            <text x="195" y="71" text-anchor="middle" style="fill:var(--ink);font-size:18px">64</text>
+            <text x="55" y="106" text-anchor="middle" style="fill:var(--muted);font-size:13px">[0]</text>
+            <text x="125" y="106" text-anchor="middle" style="fill:var(--muted);font-size:13px">[1]</text>
+            <text x="195" y="106" text-anchor="middle" style="fill:var(--muted);font-size:13px">[2]</text>
+            <rect x="230" y="42" width="70" height="44" rx="6" style="fill:var(--surface);stroke:var(--accent);stroke-width:2;stroke-dasharray:6 4"/>
+            <text x="265" y="71" text-anchor="middle" style="fill:var(--accent-ink);font-size:18px">90</text>
+            <text x="265" y="106" text-anchor="middle" style="fill:var(--muted);font-size:13px">[3]</text>
+            <text x="320" y="69" style="fill:var(--ink);font-size:14px">&#8592; push_back(90)</text>
+            <text x="20" y="138" style="fill:var(--muted);font-size:14px">size() = 4</text>
+          </g>
+        </svg>
+      </figure>
+
+      <h2 id="range-for">วนทุกช่องด้วย range-for</h2>
+
+      <p>วนทุกช่องได้สองแบบ แบบ index เหมือนอาเรย์ หรือแบบ range-for จากบทที่ 15 ซึ่งไม่ต้องยุ่งกับ index เลย ถ้าจะแก้ค่าในช่อง ต้องใส่ <code>&amp;</code> ให้ตัวแปรในลูปเป็น reference ของช่องนั้น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bonus"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; score = {72, 85, 64};
+    for (int &amp;s : score) {
+        s += 5;
+    }
+    int total = 0;
+    for (int s : score) {
+        total += s;
+    }
+    for (int i = 0; i &lt; (int)score.size(); i++) {
+        cout &lt;&lt; "score[" &lt;&lt; i &lt;&lt; "] = " &lt;&lt; score[i] &lt;&lt; '\n';
+    }
+    cout &lt;&lt; "total = " &lt;&lt; total &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bonus" data-title="C:\code\bonus.exe"><pre><code>score[0] = 77
+score[1] = 90
+score[2] = 69
+total = 236
+</code></pre></div>
+
+      <ul>
+        <li>บรรทัดที่ 6 สร้าง vector พร้อมค่าเริ่มต้นสามค่าในปีกกา เหมือนกำหนดค่าเริ่มต้นของอาเรย์</li>
+        <li>บรรทัดที่ 7 <code>int &amp;s</code> คือ <code>s</code> เป็นชื่อเล่นของช่องนั้นจริงๆ บวก 5 ให้ <code>s</code> จึงเปลี่ยนค่าในช่อง</li>
+        <li>บรรทัดที่ 11 ใช้แค่อ่าน ไม่ต้องมี <code>&amp;</code> <code>s</code> เป็นสำเนาของค่าในช่อง</li>
+        <li>บรรทัดที่ 14 วนแบบ index ต้องเขียน <code>(int)score.size()</code> เหตุผลอยู่ในส่วนลองทำให้พังท้ายหน้า</li>
+      </ul>
+
+      <h2 id="read-unknown">อ่านข้อมูลที่ไม่รู้จำนวน</h2>
+
+      <p>น้องจดระยะทางที่วิ่งในแต่ละวันเป็นเมตร แล้วปิดท้ายด้วย 0 โปรแกรมต้องพิมพ์จำนวนวัน และระยะของทุกวันย้อนจากวันล่าสุด ก่อนอ่านไม่รู้ว่ามีกี่วัน ถ้าเป็นอาเรย์ต้องจองเผื่อไว้ แต่ vector แค่ <code>push_back</code> ไปเรื่อยๆ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="running"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; run;
+    int meters;
+    while (cin &gt;&gt; meters &amp;&amp; meters != 0) {
+        run.push_back(meters);
+    }
+    cout &lt;&lt; "days = " &lt;&lt; run.size() &lt;&lt; '\n';
+    for (int i = (int)run.size() - 1; i &gt;= 0; i--) {
+        cout &lt;&lt; run[i];
+        if (i &gt; 0) {
+            cout &lt;&lt; ' ';
+        }
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="running" data-title="ข้อมูลเข้า"><pre><code>2400 3100 1800
+5000 2600 0
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="running" data-title="C:\code\running.exe"><pre><code>days = 5
+2600 5000 1800 3100 2400
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 8 ใช้ <code>cin &gt;&gt; meters</code> เป็นเงื่อนไขแบบหน้า 15.2 เป็นจริงเมื่ออ่านตัวเลขได้ และเป็นเท็จเมื่อข้อมูลหมด ลูปจึงหยุดทั้งตอนเจอ 0 และตอนข้อมูลหมดโดยไม่มี 0 ปิดท้าย</p>
+
+      <h2 id="sized">สร้างพร้อมขนาดและค่าเริ่มต้น</h2>
+
+      <p>ถ้ารู้จำนวนก่อน สร้าง vector ให้มีขนาดตามนั้นไปเลย แล้วอ่านใส่ทีละช่องแบบอาเรย์ แบบที่ใช้บ่อยมีสามแบบ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="forms"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; a(4);
+    vector&lt;int&gt; b(4, -1);
+    vector&lt;int&gt; c = {90, 75, 82};
+    cout &lt;&lt; a.size() &lt;&lt; ": " &lt;&lt; a[0] &lt;&lt; ' ' &lt;&lt; a[3] &lt;&lt; '\n';
+    cout &lt;&lt; b.size() &lt;&lt; ": " &lt;&lt; b[0] &lt;&lt; ' ' &lt;&lt; b[3] &lt;&lt; '\n';
+    cout &lt;&lt; c.size() &lt;&lt; ": " &lt;&lt; c[0] &lt;&lt; ' ' &lt;&lt; c[2] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="forms" data-title="C:\code\forms.exe"><pre><code>4: 0 0
+4: -1 -1
+3: 90 82
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เขียน</th><th>ได้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>vector&lt;int&gt; a;</code></td><td>vector ว่าง 0 ช่อง</td></tr>
+            <tr><td><code>vector&lt;int&gt; a(n);</code></td><td>n ช่อง ทุกช่องเป็น 0 ไม่ใช่ค่าขยะ ต่างจากอาเรย์ใน <code>main</code></td></tr>
+            <tr><td><code>vector&lt;int&gt; a(n, x);</code></td><td>n ช่อง ทุกช่องเป็น x</td></tr>
+            <tr><td><code>vector&lt;int&gt; a = {7, 3, 9};</code></td><td>3 ช่องตามค่าในปีกกา</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ขนาดมาจากข้อมูลเข้าได้ ตัวอย่างนี้คือการนับคะแนนโหวตแบบหน้า 5.3 มีผู้สมัคร K คน หมายเลข 1 ถึง K และบัตรลงคะแนน N ใบ จำนวนผู้สมัครรู้ตอนรันเท่านั้น จึงสร้างอาเรย์นับเป็น vector ขนาด K + 1 ช่อง ทิ้งช่องที่ 0 ไว้ ให้หมายเลขผู้สมัครตรงกับ index</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="votes"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int k, n;
+    cin &gt;&gt; k &gt;&gt; n;
+    vector&lt;int&gt; votes(k + 1, 0);
+    for (int i = 0; i &lt; n; i++) {
+        int choice;
+        cin &gt;&gt; choice;
+        votes[choice]++;
+    }
+    for (int c = 1; c &lt;= k; c++) {
+        cout &lt;&lt; c &lt;&lt; ": " &lt;&lt; votes[c] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="votes" data-title="ข้อมูลเข้า"><pre><code>4 10
+2 1 2 4 2 1 4 2 1 2
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="votes" data-title="C:\code\votes.exe"><pre><code>1: 3
+2: 5
+3: 0
+4: 2
+</code></pre></div>
+      </div>
+
+      <h2 id="at">[] ไม่ตรวจขอบ at() ตรวจ</h2>
+
+      <p><code>[]</code> ของ vector ไม่ตรวจว่า index อยู่ในขอบเขตหรือเปล่า เหมือนอาเรย์ในหน้า 5.5 ใช้ช่องที่ไม่มีอยู่จริงแล้วอาจได้ค่าแปลกๆ เงียบๆ ส่วน <code>at()</code> ทำงานเหมือน <code>[]</code> แต่ตรวจทุกครั้ง ถ้าเกินขอบจะหยุดโปรแกรมทันทีพร้อมบอกสาเหตุ</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; score = {72, 85, 64, 90, 58};
+    cout &lt;&lt; score[2] &lt;&lt; '\n';
+    cout &lt;&lt; score.at(2) &lt;&lt; '\n';
+    cout &lt;&lt; score.at(5) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\at.exe"><pre><code>64
+64
+terminate called after throwing an instance of 'std::out_of_range'
+  what():  vector::_M_range_check: __n (which is 5) &gt;= this-&gt;size() (which is 5)
+</code></pre></div>
+
+      <div class="code" data-lang="text"><pre><code>Process returned 3 (0x3)
+</code></pre></div>
+
+      <p>รหัส 3 คือผลที่ได้บนเครื่องที่เขียนเอกสารนี้เมื่อรันในหน้าต่าง cmd ข้อความบอกตรงๆ ว่าขอช่อง <code>__n</code> ที่ 5 แต่ <code>size()</code> มีแค่ 5 ช่อง คือ 0 ถึง 4 โปรแกรมหยุดที่บรรทัดนั้น ไม่ไปต่อ ส่วนถ้าเขียน <code>score[5]</code> แทน บนเครื่องที่เขียนเอกสารนี้ได้ <code>0</code> ออกมาเฉยๆ ไม่มีอะไรเตือน คำว่า exception กับ throw ในข้อความคือกลไกแจ้งข้อผิดพลาดของ C++ ซึ่งไม่อยู่ในเนื้อหาของเอกสารนี้ จำแค่ว่าเห็นข้อความนี้แปลว่าใช้ index เกินขอบ</p>
+
+      <div class="adm adm-tip" role="note">
+        <p class="adm-title">หาบั๊ก index ด้วย at()</p>
+        <p>ถ้าโปรแกรมให้คำตอบแปลกๆ แล้วสงสัยว่า index เกิน ลองเปลี่ยน <code>v[i]</code> ตรงที่สงสัยเป็น <code>v.at(i)</code> แล้วรันใหม่ ถ้าเกินจริง โปรแกรมจะหยุดพร้อมบอกว่าขอช่องที่เท่าไรจากทั้งหมดกี่ช่อง หาเจอเร็วกว่าไล่พิมพ์ค่าเองมาก</p>
+      </div>
+
+      <h2 id="more">ทำอะไรกับ vector ได้อีก</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เขียน</th><th>ทำอะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>v.front()</code> <code>v.back()</code></td><td>ค่าในช่องแรก และช่องสุดท้าย</td></tr>
+            <tr><td><code>v.pop_back()</code></td><td>ลบช่องสุดท้ายทิ้ง vector สั้นลงหนึ่งช่อง</td></tr>
+            <tr><td><code>v.empty()</code></td><td>เป็นจริงถ้าไม่มีสักช่อง</td></tr>
+            <tr><td><code>v.clear()</code></td><td>ลบทุกช่อง เหลือ 0 ช่อง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="more"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; score = {72, 85, 64};
+    cout &lt;&lt; score.front() &lt;&lt; ' ' &lt;&lt; score.back() &lt;&lt; '\n';
+    score.pop_back();
+    cout &lt;&lt; score.size() &lt;&lt; ' ' &lt;&lt; score.back() &lt;&lt; '\n';
+    score.clear();
+    cout &lt;&lt; score.size() &lt;&lt; ' ' &lt;&lt; score.empty() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="more" data-title="C:\code\more.exe"><pre><code>72 64
+2 85
+0 1
+</code></pre></div>
+
+      <p><code>empty()</code> คืน <code>bool</code> <code>cout</code> พิมพ์จริงเป็น 1 และเท็จเป็น 0 ระวัง <code>front()</code> <code>back()</code> และ <code>pop_back()</code> กับ vector ที่ว่าง ไม่มีช่องให้หยิบ ผลเหมือนใช้ index เกินขอบ ให้เช็ก <code>empty()</code> ก่อนเสมอ</p>
+
+      <h2 id="copy-compare">คัดลอกและเทียบได้ทั้งก้อน</h2>
+
+      <p>อาเรย์ของภาษา C คัดลอกด้วย <code>=</code> ไม่ได้ และ <code>a == b</code> ไม่ได้เทียบค่าในช่อง ต้องวนลูปเองทั้งสองเรื่อง vector ทำได้ในคำสั่งเดียว</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="copy"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; before = {72, 85, 64};
+    vector&lt;int&gt; after = before;
+    after[1] = 90;
+    cout &lt;&lt; before[1] &lt;&lt; ' ' &lt;&lt; after[1] &lt;&lt; '\n';
+    cout &lt;&lt; (before == after) &lt;&lt; '\n';
+    after[1] = 85;
+    cout &lt;&lt; (before == after) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="copy" data-title="C:\code\copy.exe"><pre><code>85 90
+0
+1
+</code></pre></div>
+
+      <p>บรรทัดที่ 7 คัดลอกทุกช่องไปเป็น vector ใหม่อีกตัว แก้ <code>after</code> แล้ว <code>before</code> ไม่เปลี่ยน ส่วน <code>==</code> เป็นจริงเมื่อขนาดเท่ากันและทุกช่องเท่ากัน ต้องมีวงเล็บรอบ <code>before == after</code> เพราะ <code>&lt;&lt;</code> ทำก่อน <code>==</code></p>
+
+      <p>การคัดลอกทั้งก้อนสะดวก แต่ใช้เวลาตามจำนวนช่อง vector ล้านช่องก็คัดลอกล้านค่า หน้า 16.2 จะเห็นว่าการคัดลอกโดยไม่ตั้งใจทำให้โปรแกรมช้าลงได้เป็นพันเท่า</p>
+
+      <h2 id="big-in-main">vector ใหญ่ประกาศใน main ได้</h2>
+
+      <p>หน้า 5.5 เห็นแล้วว่า <code>int a[10000000];</code> ใน <code>main</code> พังด้วย stack overflow เพราะ stack มีแค่ราว 2 MB vector ขนาดเท่ากันใน <code>main</code> รันผ่านสบาย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="big"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; a(10000000);
+    a[9999999] = 7;
+    cout &lt;&lt; a.size() &lt;&lt; ' ' &lt;&lt; a[9999999] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="big" data-title="C:\code\big.exe"><pre><code>10000000 7
+</code></pre></div>
+
+      <p>ตัวแปร <code>a</code> ที่อยู่ใน stack เป็นแค่กล่องเล็กๆ ที่จำว่าข้อมูลอยู่ที่ไหนและมีกี่ช่อง ส่วนช่องข้อมูลจริง 40 ล้าน byte อยู่ในหน่วยความจำอีกส่วนหนึ่งที่เรียกว่า <strong>heap</strong> ซึ่งใหญ่กว่า stack มาก จึงไม่ต้องย้ายไปไว้นอก <code>main</code> อีกแล้ว แต่ขีดจำกัดหน่วยความจำของ grader ยังมีอยู่ เช่น ถ้าโจทย์ให้ 256 MB ก็เก็บ <code>int</code> ได้ไม่ถึง 70 ล้านช่อง และยังต้องเหลือที่ให้ตัวแปรอื่นด้วย</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="sized-then-push">แบบที่ 1 สร้างพร้อมขนาดแล้วยัง push_back</h3>
+
+      <p>สองวิธีอ่านข้อมูลเข้าในหน้านี้ คือสร้างขนาด n แล้วอ่านใส่ <code>score[i]</code> หรือสร้างว่างแล้ว <code>push_back</code> ถ้าเอาสองวิธีมาปนกัน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="double-size"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; score(n);
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        cin &gt;&gt; x;
+        score.push_back(x);
+    }
+    cout &lt;&lt; "size = " &lt;&lt; score.size() &lt;&lt; '\n';
+    for (int i = 0; i &lt; (int)score.size(); i++) {
+        cout &lt;&lt; score[i];
+        if (i + 1 &lt; (int)score.size()) {
+            cout &lt;&lt; ' ';
+        }
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="double-size" data-title="ข้อมูลเข้า"><pre><code>3
+72 85 64
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="double-size" data-title="C:\code\double_size.exe"><pre><code>size = 6
+0 0 0 72 85 64
+</code></pre></div>
+      </div>
+
+      <p>บรรทัดที่ 8 สร้างไว้แล้ว 3 ช่องที่เป็น 0 <code>push_back</code> ต่อท้ายอีก 3 ช่อง ได้ 6 ช่อง ถ้าเอาไปหาค่าน้อยสุดหรือค่าเฉลี่ย จะผิดเพราะมี 0 ปนมาสามตัว เลือกอย่างใดอย่างหนึ่ง สร้าง <code>score(n)</code> คู่กับ <code>cin &gt;&gt; score[i]</code> หรือสร้างว่างคู่กับ <code>push_back</code></p>
+
+      <h3 id="empty-index">แบบที่ 2 vector ว่างแล้วใช้ []</h3>
+
+      <p>กลับกันกับแบบที่ 1 ถ้าสร้างว่างแต่อ่านใส่ <code>score[i]</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; score;
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; score[i];
+    }
+    cout &lt;&lt; score[0] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านไม่มีคำเตือน พอป้อน <code>3</code> แล้วตามด้วย <code>72 85 64</code> โปรแกรมปิดตัวทันทีโดยไม่พิมพ์อะไร</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p>รหัสเดียวกับการใช้ช่องที่ไม่มีอยู่จริงในหน้า 5.5 vector ว่างยังไม่ได้จองช่องข้อมูลไว้เลย <code>score[0]</code> จึงชี้ไปที่ที่ไม่มีสิทธิ์เขียน <code>[]</code> ไม่ได้ทำให้ vector ยืด มีแค่ <code>push_back</code> ที่ยืด</p>
+
+      <h3 id="sign-compare">แบบที่ 3 เทียบ int กับ size()</h3>
+
+      <div class="code" data-lang="cpp" data-linenums data-allow-warnings data-test="sign-compare"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; score = {72, 85, 64};
+    for (int i = 0; i &lt; score.size(); i++) {
+        cout &lt;&lt; score[i] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sign-compare" data-title="C:\code\scores.exe"><pre><code>72
+85
+64
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>scores.cpp:7:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::vector&lt;int&gt;::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+    7 |     for (int i = 0; i &lt; score.size(); i++) {
+      |                     ~~^~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p>โปรแกรมทำงานถูก แต่มีคำเตือนแบบเดียวกับ <code>name.size()</code> ของ string ในหน้า 15.4 <code>size()</code> ของ vector ก็คืนจำนวนเต็มชนิด <strong>unsigned</strong> คือไม่มีค่าติดลบ (<code>long long unsigned int</code> เก็บได้ 0 ถึงราว 1.8 × 10<sup>19</sup>) ในภาษา C++ แค่เปิด <code>-Wall</code> ก็เตือนทุกครั้งที่เทียบ <code>int</code> กับ unsigned (ภาษา C ต้องเปิด <code>-Wextra</code> ด้วยถึงจะเตือน) เพราะถ้าฝั่ง <code>int</code> ติดลบ ผลการเทียบจะผิด แก้ได้สองแบบ เขียน <code>i &lt; (int)score.size()</code> แบบในหน้านี้ หรือใช้ range-for ไปเลยเมื่อไม่ต้องใช้ index</p>
+
+      <h3 id="size-minus-one">แบบที่ 4 size() - 1 ตอน vector ว่าง</h3>
+
+      <p>ทำไมการเป็น unsigned ถึงอันตราย ลองดูตัวเลขนี้</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="minus-one"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; score;
+    cout &lt;&lt; score.size() - 1 &lt;&lt; '\n';
+    cout &lt;&lt; (int)score.size() - 1 &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="minus-one" data-title="C:\code\minus_one.exe"><pre><code>18446744073709551615
+-1
+</code></pre></div>
+
+      <p>0 ลบ 1 ในชนิด unsigned ไม่ได้ -1 แต่วนไปเป็นค่ามากสุดของชนิดนั้น แบบเดียวกับเลขไมล์ในหน้า 1.3 และแบบเดียวกับ <code>word.size() - 3</code> ที่ทำให้ <code>substr</code> พังในหน้า 15.4 ลูปที่ตั้งใจเทียบช่องที่ติดกันทุกคู่แบบนี้จึงอันตราย</p>
+
+      <div class="code" data-lang="cpp"><pre><code>for (int i = 0; i &lt; score.size() - 1; i++) {
+    if (score[i] &gt; score[i + 1]) {
+        count++;
+    }
+}
+</code></pre></div>
+
+      <p>ถ้า <code>score</code> มีข้อมูล ลูปทำงานถูก แต่ถ้า <code>score</code> ว่าง ขอบบนกลายเป็นเลขยี่สิบหลัก ลูปจึงเข้าไปอ่าน <code>score[0]</code> ทั้งที่ไม่มีช่องนั้น บนเครื่องที่เขียนเอกสารนี้โปรแกรมพังทันทีด้วย <code>0xC0000005</code> แบบเดียวกับแบบที่ 2 ทางแก้คือ cast เป็น <code>int</code> ก่อนลบ แบบบรรทัดที่ 8 ของโปรแกรมข้างบน ซึ่งได้ -1 ตามที่คิด และนี่คือเหตุผลที่ตัวอย่าง running เขียน <code>(int)run.size() - 1</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>vector&lt;int&gt; v;</code> เริ่มว่าง <code>push_back</code> เพิ่มต่อท้าย <code>size()</code> บอกจำนวนช่อง</li>
+        <li><code>vector&lt;int&gt; v(n);</code> ได้ n ช่องที่เป็น 0 <code>v(n, x)</code> ได้ n ช่องที่เป็น x ขนาดมาจากข้อมูลเข้าได้</li>
+        <li><code>[]</code> ไม่ตรวจขอบ <code>at()</code> ตรวจและหยุดโปรแกรมพร้อมบอกสาเหตุ ใช้ <code>at()</code> ช่วยหาบั๊ก</li>
+        <li>วนอ่านด้วย <code>for (int x : v)</code> วนแก้ด้วย <code>for (int &amp;x : v)</code></li>
+        <li>คัดลอกด้วย <code>=</code> เทียบด้วย <code>==</code> ได้ทั้งก้อน และ vector ใหญ่ประกาศใน <code>main</code> ได้</li>
+        <li><code>size()</code> เป็น unsigned เทียบกับ <code>int</code> ให้ cast เป็น <code>(int)</code> และอย่าลบ <code>size() - 1</code> โดยไม่ cast</li>
+        <li>สร้างพร้อมขนาดคู่กับ <code>[]</code> สร้างว่างคู่กับ <code>push_back</code> อย่าปนกัน</li>
+      </ul>
+    </article>

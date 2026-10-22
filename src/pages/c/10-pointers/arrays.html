@@ -1,0 +1,396 @@
+<article class="doc">
+      <h1>10.3 pointer กับอาเรย์</h1>
+
+      <p>ตั้งแต่บทที่ 5 มีหลายจุดที่บอกว่า "ชื่ออาเรย์คือที่อยู่" แต่ยังไม่ได้อธิบาย เช่น <code>%s</code> ไม่ต้องมี <code>&amp;</code> ฟังก์ชันแก้อาเรย์ของคนเรียกได้ และ <code>sizeof</code> ในฟังก์ชันได้ 8 หน้านี้เฉลยทั้งหมดด้วยกฎข้อเดียว แล้วต่อด้วยการบวกลบ pointer ซึ่งทำให้เดินบนอาเรย์ ส่งแค่บางช่วงของอาเรย์ให้ฟังก์ชัน และใช้ pointer สองตัวเดินเข้าหากันได้ เทคนิคสุดท้ายนี้ใช้บ่อยในโจทย์กลับลำดับและโจทย์ที่ต้องดูข้อมูลจากสองฝั่ง</p>
+
+      <h2 id="array-name">ชื่ออาเรย์คือที่อยู่ของช่องแรก</h2>
+
+      <p>ช่องของอาเรย์วางติดกันในหน่วยความจำเสมอ ลองพิมพ์ที่อยู่ของทุกช่องดู</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int scores[5] = {70, 85, 90, 60, 75};
+    printf("scores = %p\n", scores);
+    for (int i = 0; i &lt; 5; i++) {
+        printf("scores + %d = %p, &amp;scores[%d] = %p\n", i, scores + i, i, &amp;scores[i]);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\array.exe"><pre><code>scores = 00000026271FFE20
+scores + 0 = 00000026271FFE20, &amp;scores[0] = 00000026271FFE20
+scores + 1 = 00000026271FFE24, &amp;scores[1] = 00000026271FFE24
+scores + 2 = 00000026271FFE28, &amp;scores[2] = 00000026271FFE28
+scores + 3 = 00000026271FFE2C, &amp;scores[3] = 00000026271FFE2C
+scores + 4 = 00000026271FFE30, &amp;scores[4] = 00000026271FFE30
+</code></pre></div>
+
+      <p>ที่อยู่เปลี่ยนทุกครั้งที่รันเหมือนในหน้า 10.1 แต่สังเกตสามเรื่องที่เหมือนเดิมเสมอ</p>
+
+      <ul>
+        <li>ใช้ชื่อ <code>scores</code> เฉยๆ ในที่ที่ต้องการค่า จะได้ที่อยู่ของ <code>scores[0]</code> ภาษา C แปลงชื่ออาเรย์เป็น <code>&amp;scores[0]</code> ให้เอง ชนิดจึงเป็น <code>int *</code> (ยกเว้นตอนอยู่หลัง <code>sizeof</code> ซึ่งยังได้ขนาดของทั้งอาเรย์ และตอนอยู่หลัง <code>&amp;</code> ซึ่งจะเห็นในหน้า 10.4) ตรงกับคำเตือนใน<a href="../05-arrays/basics.html#print-whole">หน้า 5.1</a> ที่ลองพิมพ์ทั้งอาเรย์ด้วย <code>%d</code></li>
+        <li>แต่ละช่องห่างกัน 4 เท่ากับขนาดของ <code>int</code> (ฐานสิบหก 20 24 28 2C 30 คือห่างกันทีละ 4)</li>
+        <li><code>scores + i</code> ได้ที่อยู่เดียวกับ <code>&amp;scores[i]</code> ทุกช่อง ทั้งที่บวกไปแค่ <code>i</code> ไม่ใช่ <code>4 × i</code></li>
+      </ul>
+
+      <figure>
+        <svg viewBox="0 0 580 160" width="580" style="max-width:100%;height:auto" role="img" aria-label="อาเรย์ scores ห้าช่องเก็บ 70 85 90 60 75 อยู่ที่ที่อยู่ FE20 FE24 FE28 FE2C FE30 ชื่อ scores ชี้ช่องแรก และ scores บวก 2 ชี้ช่องที่สาม">
+          <defs>
+            <marker id="array-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="78" y="16" text-anchor="middle" style="fill:var(--brand);font-size:15px">scores</text>
+            <text x="286" y="16" text-anchor="middle" style="fill:var(--brand);font-size:15px">scores + 2</text>
+            <rect x="30" y="50" width="96" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="134" y="50" width="96" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="238" y="50" width="96" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="342" y="50" width="96" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="446" y="50" width="96" height="50" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="78" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">70</text>
+            <text x="182" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">85</text>
+            <text x="286" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">90</text>
+            <text x="390" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">60</text>
+            <text x="494" y="83" text-anchor="middle" style="fill:var(--ink);font-size:22px">75</text>
+            <text x="78" y="122" text-anchor="middle" style="fill:var(--ink);font-size:14px">[0]</text>
+            <text x="182" y="122" text-anchor="middle" style="fill:var(--ink);font-size:14px">[1]</text>
+            <text x="286" y="122" text-anchor="middle" style="fill:var(--ink);font-size:14px">[2]</text>
+            <text x="390" y="122" text-anchor="middle" style="fill:var(--ink);font-size:14px">[3]</text>
+            <text x="494" y="122" text-anchor="middle" style="fill:var(--ink);font-size:14px">[4]</text>
+            <text x="78" y="146" text-anchor="middle" style="fill:var(--muted);font-size:13px">…FE20</text>
+            <text x="182" y="146" text-anchor="middle" style="fill:var(--muted);font-size:13px">…FE24</text>
+            <text x="286" y="146" text-anchor="middle" style="fill:var(--muted);font-size:13px">…FE28</text>
+            <text x="390" y="146" text-anchor="middle" style="fill:var(--muted);font-size:13px">…FE2C</text>
+            <text x="494" y="146" text-anchor="middle" style="fill:var(--muted);font-size:13px">…FE30</text>
+          </g>
+          <path d="M78 22 V46" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#array-arrow)"/>
+          <path d="M286 22 V46" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#array-arrow)"/>
+        </svg>
+      </figure>
+
+      <p>นี่คือเหตุผลของสิ่งที่ค้างไว้หลายบท <code>scanf("%s", name)</code> ไม่ต้องมี <code>&amp;</code> เพราะ <code>name</code> กลายเป็นที่อยู่ของช่องแรกอยู่แล้ว และฟังก์ชันที่รับอาเรย์ใน<a href="../08-functions/arrays.html#modify">หน้า 8.3</a> แก้อาเรย์ของคนเรียกได้ เพราะสิ่งที่ถูกคัดลอกเข้าไปคือที่อยู่ ไม่ใช่ตัวอาเรย์ เหมือน <code>swap</code> ในหน้า 10.2 ทุกอย่าง</p>
+
+      <h2 id="arithmetic">บวกเลขกับ pointer</h2>
+
+      <p>pointer บวกเลขจำนวนเต็มได้ แต่หน่วยไม่ใช่ byte <strong><code>p + 1</code> คือกล่องถัดไป</strong> ซึ่งอยู่ห่างไปเท่ากับขนาดของชนิดที่ <code>p</code> ชี้ compiler รู้ขนาดนี้จากชนิดของ pointer นี่เป็นอีกเหตุผลที่ pointer ต้องมีชนิดตามหน้า 10.1</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int counts[3] = {0};
+    double heights[3] = {0};
+    char letters[3] = {0};
+    printf("int    %p %p\n", counts, counts + 1);
+    printf("double %p %p\n", heights, heights + 1);
+    printf("char   %p %p\n", letters, letters + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\steps.exe"><pre><code>int    0000001B62FFFC14 0000001B62FFFC18
+double 0000001B62FFFBF0 0000001B62FFFBF8
+char   0000001B62FFFBED 0000001B62FFFBEE
+</code></pre></div>
+
+      <p>บวก 1 เหมือนกันทั้งสามบรรทัด แต่ที่อยู่ขยับไป 4 8 และ 1 ตามขนาดของ <code>int</code> <code>double</code> และ <code>char</code> เราจึงไม่ต้องคูณขนาดเองเลย</p>
+
+      <p>ภาษา C นิยาม <code>a[i]</code> ไว้ว่าคือ <code>*(a + i)</code> แปลว่า "เลื่อนจากช่องแรกไป <code>i</code> กล่อง แล้วตามไปที่กล่องนั้น" สองแบบนี้จึงเป็นสิ่งเดียวกันทุกประการ</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="same-thing"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int scores[5] = {70, 85, 90, 60, 75};
+    for (int i = 0; i &lt; 5; i++) {
+        printf("%d %d\n", scores[i], *(scores + i));
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="same-thing" data-title="C:\code\same.exe"><pre><code>70 70
+85 85
+90 90
+60 60
+75 75
+</code></pre></div>
+
+      <p>อาเรย์จึงเริ่มที่ช่อง 0 เพราะเลขในวงเล็บเหลี่ยมคือ<strong>ระยะห่างจากช่องแรก</strong> ช่องแรกห่างจากตัวเอง 0 กล่อง และวงเล็บเหลี่ยมใช้กับ pointer ได้เหมือนกับอาเรย์ทุกอย่าง ถ้า <code>p</code> ชี้ช่องไหน <code>p[1]</code> ก็คือกล่องถัดจากช่องนั้น ในโค้ดจริงเขียน <code>scores[i]</code> อ่านง่ายกว่า แบบ <code>*(scores + i)</code> มีไว้ให้เข้าใจว่าข้างในทำอะไร</p>
+
+      <h2 id="walk">เดินบนอาเรย์ด้วย pointer</h2>
+
+      <p>เพราะ <code>p + 1</code> คือช่องถัดไป <code>p++</code> จึงเป็นการเลื่อนไปช่องถัดไป และ pointer ลบกันได้ <code>q - p</code> คือ<strong>จำนวนช่อง</strong>ระหว่างสองที่อยู่ ไม่ใช่จำนวน byte ตัวอย่างนี้หาผลรวมและคะแนนสูงสุดโดยไม่มี index เลย แล้วค่อยแปลงตำแหน่งกลับเป็น index ตอนท้าย</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="walk"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int scores[6] = {70, 85, 90, 60, 95, 75};
+    int n = 6;
+    int sum = 0;
+    int *best = scores;
+    for (int *p = scores; p &lt; scores + n; p++) { // (1)!
+        sum += *p;
+        if (*p &gt; *best) {
+            best = p; // (2)!
+        }
+    }
+    printf("sum = %d\n", sum);
+    printf("best = %d at index %d\n", *best, (int)(best - scores)); // (3)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เริ่มที่ช่องแรก วนตราบที่ยังไม่ถึง <code>scores + n</code> ซึ่งคือที่อยู่<strong>ถัดจากช่องสุดท้าย</strong> เทียบ pointer ด้วย <code>&lt;</code> ได้ เพราะช่องที่อยู่หลังมีที่อยู่มากกว่า</li>
+        <li>จำว่าค่าที่ดีที่สุดอยู่ที่ไหน ไม่ได้จำค่า</li>
+        <li><code>best - scores</code> คือ best อยู่ห่างจากช่องแรกกี่ช่อง ก็คือ index นั่นเอง ผลลบของ pointer ไม่ใช่ <code>int</code> จึงแปลงเป็น <code>int</code> ก่อนพิมพ์ แบบเดียวกับ <code>sizeof</code> ในหน้า 10.1</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="walk" data-title="C:\code\walk.exe"><pre><code>sum = 475
+best = 95 at index 4
+</code></pre></div>
+
+      <p><code>scores + n</code> ชี้เลยช่องสุดท้ายไปหนึ่งช่อง ภาษา C อนุญาตให้สร้างที่อยู่นี้ไว้เทียบได้ แต่ห้ามใช้ <code>*</code> กับมัน เพราะไม่มีกล่องของเราอยู่ตรงนั้น ดูแบบที่ 1 ในส่วนลองทำให้พัง การลบ pointer แบบนี้ใช้อีกครั้งกับ <code>strstr</code> ในบทที่ 13 ซึ่งคืนที่อยู่ของคำที่หาเจอ แล้วลบกับชื่ออาเรย์เพื่อได้ตำแหน่ง</p>
+
+      <h2 id="functions">อาเรย์ที่ส่งเข้าฟังก์ชันคือ pointer</h2>
+
+      <p>ในหัวฟังก์ชัน <code>int values[]</code> กับ <code>int *values</code> เป็นชนิดเดียวกันทุกประการ คือ pointer ไปยัง <code>int</code> ภาษา C ยอมให้เขียนแบบวงเล็บเหลี่ยมเพื่อบอกคนอ่านว่าตั้งใจส่งอาเรย์มา เมื่อพารามิเตอร์เป็นแค่ที่อยู่ จะส่งที่อยู่ของช่องไหนเข้าไปก็ได้ ฟังก์ชันก็จะเห็นอาเรย์ที่เริ่มจากช่องนั้น</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="rain"><pre><code>#include &lt;stdio.h&gt;
+
+int sum_of(int *values, int n)
+{
+    int sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        sum += values[i]; // (1)!
+    }
+    return sum;
+}
+
+int main()
+{
+    int rain[7] = {12, 0, 5, 30, 8, 0, 21};
+    printf("week = %d\n", sum_of(rain, 7));
+    printf("day 3 to 5 = %d\n", sum_of(rain + 2, 3)); // (2)!
+    printf("weekend = %d\n", sum_of(&amp;rain[5], 2)); // (3)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ใช้วงเล็บเหลี่ยมกับ pointer ได้ตามหัวข้อที่แล้ว <code>values[i]</code> คือ <code>*(values + i)</code></li>
+        <li>ส่งที่อยู่ของ <code>rain[2]</code> ในฟังก์ชัน <code>values[0]</code> จึงเป็น <code>rain[2]</code> และรวมสามช่องคือวันที่ 3 ถึง 5</li>
+        <li><code>&amp;rain[5]</code> กับ <code>rain + 5</code> คือที่อยู่เดียวกัน เลือกเขียนแบบที่อ่านง่ายกว่าในจุดนั้น</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="rain" data-title="C:\code\rain.exe"><pre><code>week = 76
+day 3 to 5 = 43
+weekend = 21
+</code></pre></div>
+
+      <p>ปริมาณฝนวันที่ 3 ถึง 5 คือ 5 + 30 + 8 = 43 และวันเสาร์อาทิตย์คือ 0 + 21 = 21 ฟังก์ชันตัวเดียวทำงานกับทั้งอาเรย์หรือช่วงไหนก็ได้ โดยไม่ต้องรับตำแหน่งเริ่มเพิ่ม</p>
+
+      <p>เรื่องนี้อธิบายคำเตือนใน<a href="../08-functions/arrays.html#sizeof-parameter">หน้า 8.3</a> ที่บอกว่า <code>'sizeof' on array function parameter 'scores' will return size of 'int *'</code> ด้วย ในฟังก์ชัน <code>scores</code> เป็น pointer ตัวหนึ่ง <code>sizeof</code> จึงได้ขนาดของ pointer คือ 8 byte ไม่ใช่ขนาดของอาเรย์ ฟังก์ชันไม่มีทางรู้ว่าอาเรย์ยาวเท่าไร จึงต้องส่งความยาวเข้าไปเองเสมอ</p>
+
+      <h2 id="two-pointers">pointer สองตัวเดินเข้าหากัน</h2>
+
+      <p>การกลับลำดับอาเรย์คือสลับช่องแรกกับช่องสุดท้าย แล้วขยับเข้ามาข้างในทีละช่องจากทั้งสองฝั่ง จนสองฝั่งมาเจอกัน เขียนด้วย pointer สองตัวได้ตรงกับความคิดนี้ที่สุด</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="reverse"><pre><code>#include &lt;stdio.h&gt;
+
+void reverse(int *first, int *last) // (1)!
+{
+    while (first &lt; last) { // (2)!
+        int temp = *first;
+        *first = *last;
+        *last = temp;
+        first++;
+        last--;
+    }
+}
+
+void print_all(int *values, int n)
+{
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", values[i]);
+    }
+    printf("\n");
+}
+
+int main()
+{
+    int line[7] = {11, 12, 13, 14, 15, 16, 17};
+    reverse(line, line + 6); // (3)!
+    print_all(line, 7);
+    reverse(&amp;line[1], &amp;line[3]);
+    print_all(line, 7);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>รับที่อยู่ของช่องแรกและ<strong>ช่องสุดท้ายของช่วง</strong> ทั้งสองช่องรวมอยู่ในช่วงที่จะกลับ</li>
+        <li>หยุดเมื่อสองตัวมาเจอกันพอดี (ความยาวคี่ ช่องกลางไม่ต้องย้าย) หรือสวนกันไปแล้ว (ความยาวคู่)</li>
+        <li>ช่องสุดท้ายของอาเรย์ 7 ช่องคือ <code>line + 6</code> ไม่ใช่ <code>line + 7</code></li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="reverse" data-title="C:\code\reverse.exe"><pre><code>17 16 15 14 13 12 11
+17 14 15 16 13 12 11
+</code></pre></div>
+
+      <p>ครั้งที่สองกลับเฉพาะช่อง 1 ถึง 3 ซึ่งตอนนั้นคือ <code>16 15 14</code> กลายเป็น <code>14 15 16</code> ส่วนช่องอื่นอยู่ที่เดิม เพราะฟังก์ชันเห็นแค่ช่วงที่ได้รับ ช่วงยาว n ช่องสลับแค่ n / 2 ครั้ง</p>
+
+      <p>เขียนด้วย index ก็ได้ แต่ต้องรับอาเรย์ ตำแหน่งเริ่ม และตำแหน่งจบ สามตัว แบบ pointer ใช้แค่สองตัวและไม่ต้องคิดว่าช่วงนี้อยู่ตรงไหนของอาเรย์ใหญ่ เทคนิค pointer สองตัวจากสองฝั่งยังใช้ได้กับอีกหลายงาน เช่น ตรวจว่าลำดับอ่านจากหน้าไปหลังกับหลังไปหน้าเหมือนกันไหม</p>
+
+      <h2 id="increment">*p++ กับ (*p)++</h2>
+
+      <p>เวลาอ่านโค้ดคนอื่นจะเจอ <code>++</code> ปนกับ <code>*</code> บ่อย สองแบบนี้ต่างกันมาก</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เขียน</th><th>ความหมาย</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>(*p)++</code></td><td>เพิ่มค่าในกล่องที่ <code>p</code> ชี้ <code>p</code> ไม่ขยับ</td></tr>
+            <tr><td><code>p++</code></td><td>ขยับ <code>p</code> ไปกล่องถัดไป ค่าในกล่องไม่เปลี่ยน</td></tr>
+            <tr><td><code>*p++ = x</code></td><td>เขียน <code>x</code> ลงกล่องที่ <code>p</code> ชี้อยู่ตอนนี้ แล้วขยับ <code>p</code> ไปกล่องถัดไป</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code" data-lang="c" data-linenums data-test="increment"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int counts[3] = {5, 10, 15};
+    int *p = counts;
+    (*p)++;
+    p++;
+    *p++ = 20;
+    printf("%d %d %d\n", counts[0], counts[1], counts[2]);
+    printf("%d\n", *p);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="increment" data-title="C:\code\increment.exe"><pre><code>6 20 15
+15
+</code></pre></div>
+
+      <p>บรรทัดที่ 7 เพิ่ม <code>counts[0]</code> เป็น 6 บรรทัดที่ 8 ขยับไป <code>counts[1]</code> บรรทัดที่ 9 เขียน 20 ลง <code>counts[1]</code> แล้วขยับไป <code>counts[2]</code> <code>p</code> จึงชี้ 15 ตอนจบ <code>*p++</code> ทำงานแบบนี้เพราะ <code>++</code> ที่อยู่หลังชื่อจับกับ <code>p</code> ก่อน <code>*</code> ถ้าไม่แน่ใจให้แยกเป็นสองคำสั่งแบบบรรทัดที่ 7 และ 8 อ่านง่ายกว่าเสมอ</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="past-end">แบบที่ 1 เดินเลยช่องสุดท้าย</h3>
+
+      <p>ในลูปเดินด้วย pointer เผลอใช้ <code>&lt;=</code> แทน <code>&lt;</code></p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int scores[5] = {70, 85, 90, 60, 75};
+    int n = 5;
+    int sum = 0;
+    for (int *p = scores; p &lt;= scores + n; p++) {
+        sum += *p;
+    }
+    printf("sum = %d\n", sum);
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ด้วย <code>-Wall</code> ไม่มีคำเตือน ผลรวมที่ถูกคือ 380 แต่บนเครื่องที่เขียนเอกสารนี้ รันสามครั้งได้ <code>sum = 764</code> <code>sum = 717</code> และ <code>sum = 963</code> ไม่ซ้ำกันเลย รอบสุดท้ายของลูป <code>p</code> เท่ากับ <code>scores + 5</code> ซึ่งชี้เลยอาเรย์ไปแล้ว <code>*p</code> จึงหยิบของที่บังเอิญวางอยู่ถัดจากอาเรย์มาบวก เป็นความผิดเดียวกับใช้ <code>scores[5]</code> ใน<a href="../05-arrays/insert-delete.html#crash">หน้า 5.5</a> เพราะ <code>scores[5]</code> ก็คือ <code>*(scores + 5)</code> pointer ไม่ได้ช่วยกันขอบอาเรย์ให้เลย</p>
+
+      <h3 id="assign-array">แบบที่ 2 คิดว่าชื่ออาเรย์เป็นตัวแปร pointer</h3>
+
+      <p>ชื่ออาเรย์ให้ที่อยู่ได้ก็จริง แต่ไม่ใช่กล่อง pointer ที่เปลี่ยนค่าได้ ลองคัดลอกอาเรย์ด้วย <code>=</code> และเลื่อนชื่ออาเรย์ด้วย <code>++</code></p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int scores[5] = {70, 85, 90, 60, 75};
+    int backup[5];
+    backup = scores;
+    scores++;
+    printf("%d\n", backup[0]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>copy.c:7:12: error: assignment to expression with array type
+    7 |     backup = scores;
+      |            ^
+copy.c:8:11: error: lvalue required as increment operand
+    8 |     scores++;
+      |           ^~
+</code></pre></div>
+
+      <p>ข้อความแรกบอกว่าเอาค่าใส่สิ่งที่เป็นอาเรย์ไม่ได้ ข้อความที่สองบอกว่า <code>++</code> ต้องใช้กับกล่องที่เปลี่ยนค่าได้ (<code>lvalue</code> คือสิ่งที่อยู่ทางซ้ายของ <code>=</code> ได้) อาเรย์จองที่ไว้ตายตัวตั้งแต่ประกาศ ย้ายไม่ได้ คัดลอกอาเรย์ต้องวนลูปทีละช่องแบบบทที่ 5 ถ้าอยากได้ตัวที่เลื่อนได้ ให้ประกาศ <code>int *p = scores;</code> แล้วเลื่อน <code>p</code> แทน</p>
+
+      <h3 id="add-pointers">แบบที่ 3 บวก pointer สองตัวเพื่อหาตรงกลาง</h3>
+
+      <p>หาช่องตรงกลางระหว่าง <code>first</code> กับ <code>last</code> แบบที่ทำกับ index</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int scores[5] = {60, 70, 75, 85, 90};
+    int *first = scores;
+    int *last = scores + 4;
+    int *mid = (first + last) / 2;
+    printf("%d\n", *mid);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>middle.c:8:23: error: invalid operands to binary + (have 'int *' and 'int *')
+    8 |     int *mid = (first + last) / 2;
+      |                       ^
+</code></pre></div>
+
+      <p>ที่อยู่บวกที่อยู่ไม่มีความหมาย เหมือนเอาบ้านเลขที่สองหลังมาบวกกันแล้วไม่ได้บ้านหลังไหน สิ่งที่ทำได้มีแค่ pointer บวกหรือลบจำนวนเต็ม และ pointer ลบ pointer ช่องกลางจึงเขียนเป็น <code>first + (last - first) / 2</code> คือเริ่มที่ <code>first</code> แล้วเดินไปครึ่งหนึ่งของระยะห่าง ได้ช่องที่เก็บ 75</p>
+
+      <h3 id="print-difference">แบบที่ 4 พิมพ์ผลลบของ pointer ด้วย %d</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int scores[5] = {70, 85, 90, 60, 75};
+    int *p = &amp;scores[3];
+    printf("index %d\n", p - scores);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>diff.c:7:20: warning: format '%d' expects argument of type 'int', but argument 2 has type 'long long int' [-Wformat=]
+    7 |     printf("index %d\n", p - scores);
+      |                   ~^     ~~~~~~~~~~
+      |                    |       |
+      |                    int     long long int
+      |                   %lld
+</code></pre></div>
+
+      <p>ผลลบของ pointer บนเครื่อง 64 bit มีขนาด 8 byte เท่า <code>long long</code> เพราะต้องรองรับระยะห่างของอาเรย์ที่ใหญ่มาก บนเครื่องที่เขียนเอกสารนี้ยังพิมพ์ <code>index 3</code> ได้ถูก แต่เป็นความผิดแบบเดียวกับพิมพ์ <code>long long</code> ด้วย <code>%d</code> ในหน้า 1.3 แก้แบบเดียวกับ <code>sizeof</code> คือ <code>(int)(p - scores)</code> ระยะห่างในอาเรย์ของโจทย์ไม่เกิน <code>int</code> อยู่แล้ว</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ชื่ออาเรย์ที่ใช้เป็นค่า คือที่อยู่ของช่องแรก <code>scores</code> เท่ากับ <code>&amp;scores[0]</code> ชนิด <code>int *</code></li>
+        <li><code>p + i</code> คือกล่องที่ห่างจาก <code>p</code> ไป <code>i</code> กล่อง และ <code>a[i]</code> คือ <code>*(a + i)</code></li>
+        <li><code>q - p</code> คือจำนวนช่องระหว่างสองที่อยู่ พิมพ์ด้วย <code>(int)(q - p)</code></li>
+        <li>พารามิเตอร์ <code>int values[]</code> คือ <code>int *values</code> ส่ง <code>a + k</code> เพื่อให้ฟังก์ชันทำงานกับช่วงที่เริ่มจากช่อง <code>k</code> ได้</li>
+        <li>pointer สองตัวจากหัวและท้ายเดินเข้าหากันด้วย <code>while (first &lt; last)</code> ใช้กลับลำดับช่วงไหนก็ได้</li>
+        <li>pointer ไม่กันขอบอาเรย์ <code>*(a + n)</code> ผิดเท่ากับ <code>a[n]</code> และชื่ออาเรย์ใช้ <code>=</code> หรือ <code>++</code> ไม่ได้</li>
+      </ul>
+    </article>

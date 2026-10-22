@@ -1,0 +1,374 @@
+<article class="doc">
+      <h1>16.5 ฟังก์ชันใน algorithm ที่ใช้บ่อย</h1>
+
+      <p>งานเล็กๆ ที่เขียนลูปเองมาตลอดตั้งแต่บทที่ 5 เช่น หาค่ามากสุดพร้อมตำแหน่ง รวมทุกช่อง นับว่าค่านี้มีกี่ตัว กลับลำดับ ตัดค่าซ้ำ C++ มีฟังก์ชันสำเร็จรูปให้ใน <code>&lt;algorithm&gt;</code> และ <code>&lt;numeric&gt;</code> ซึ่ง <code>bits/stdc++.h</code> รวมไว้ให้แล้ว ทุกตัวรับช่วงแบบเดียวกับ <code>sort</code> คือตำแหน่งเริ่มต้นกับตำแหน่งถัดจากตัวสุดท้าย ใช้ได้ทั้งกับ vector อาเรย์ และ string ข้อดีไม่ได้อยู่ที่เร็วกว่าลูปที่เขียนเอง แต่อยู่ที่สั้นและไม่มีที่ให้ผิดเรื่องขอบของลูป หน้านี้รวมตัวที่ใช้บ่อยที่สุด และปิดท้ายด้วย <code>lower_bound</code> กับ <code>upper_bound</code> ซึ่งตอบคำถามกับข้อมูลที่เรียงแล้วได้เร็วมาก</p>
+
+      <h2 id="reverse">reverse กลับลำดับ</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="reverse"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; queue_number = {1, 2, 3, 4, 5};
+    reverse(queue_number.begin(), queue_number.end());
+    for (int i = 0; i &lt; (int)queue_number.size(); i++) {
+        cout &lt;&lt; queue_number[i] &lt;&lt; (i + 1 &lt; (int)queue_number.size() ? ' ' : '\n');
+    }
+    string word;
+    while (cin &gt;&gt; word) {
+        string backward = word;
+        reverse(backward.begin(), backward.end());
+        cout &lt;&lt; word &lt;&lt; (word == backward ? " yes" : " no") &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="reverse" data-title="ข้อมูลเข้า"><pre><code>level racecar songkhla noon
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="reverse" data-title="C:\code\reverse.exe"><pre><code>5 4 3 2 1
+level yes
+racecar yes
+songkhla no
+noon yes
+</code></pre></div>
+      </div>
+
+      <p><code>reverse</code> แก้ลำดับในตัวเองเลย ไม่ได้สร้างอันใหม่ ถ้ายังอยากเก็บของเดิมไว้ ต้องคัดลอกก่อนแบบบรรทัดที่ 13 คำที่อ่านกลับหลังแล้วเหมือนเดิมเรียกว่า palindrome เทียบกับหน้า 6.5 ที่ต้องเขียนลูปสองตัวชี้เข้าหากันเอง</p>
+
+      <h2 id="min-max-element">max_element และ min_element</h2>
+
+      <p><code>max(a, b)</code> หาค่าที่มากกว่าของสองค่า ส่วน <code>max_element</code> หาค่ามากสุดของทั้งช่วง และคืน<strong>ตำแหน่ง</strong>ของมัน ไม่ใช่ค่า ใส่ <code>*</code> ข้างหน้าเพื่อหยิบค่า และลบด้วย <code>begin()</code> เพื่อแปลงเป็น index ถ้ามีหลายช่องที่มากสุดเท่ากัน ได้ช่องแรก</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="rain"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; rain(n);
+    for (int &amp;r : rain) {
+        cin &gt;&gt; r;
+    }
+    auto most = max_element(rain.begin(), rain.end());
+    auto least = min_element(rain.begin(), rain.end());
+    cout &lt;&lt; "max " &lt;&lt; *most &lt;&lt; " on day " &lt;&lt; most - rain.begin() + 1 &lt;&lt; '\n';
+    cout &lt;&lt; "min " &lt;&lt; *least &lt;&lt; " on day " &lt;&lt; least - rain.begin() + 1 &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="rain" data-title="ข้อมูลเข้า"><pre><code>7
+12 0 35 8 35 0 20
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="rain" data-title="C:\code\rain.exe"><pre><code>max 35 on day 3
+min 0 on day 2
+</code></pre></div>
+      </div>
+
+      <p>ปริมาณฝนมากสุด 35 มิลลิเมตรมีสองวัน คือวันที่ 3 กับ 5 ได้วันที่ 3 ซึ่งมาก่อน บวก 1 เพราะ index เริ่มที่ 0 แต่วันเริ่มที่ 1 ถ้า vector ว่าง ทั้งสองฟังก์ชันคืน <code>end()</code> ซึ่งไม่ใช่ช่องจริง ห้ามใส่ <code>*</code> ให้เช็ก <code>empty()</code> ก่อน</p>
+
+      <h2 id="accumulate">accumulate รวมทุกช่อง</h2>
+
+      <p><code>accumulate(ต้น, ปลาย, ค่าเริ่มต้น)</code> อยู่ใน <code>&lt;numeric&gt;</code> บวกทุกช่องเข้ากับค่าเริ่มต้น ค่าเริ่มต้นไม่ได้บอกแค่ว่าเริ่มนับจากเท่าไร แต่บอก<strong>ชนิดของผลรวม</strong>ด้วย ใส่ <code>0</code> ได้ผลรวมเป็น <code>int</code> ใส่ <code>0LL</code> ได้ <code>long long</code> (LL ต่อท้ายตัวเลขแปลว่าเป็น <code>long long</code>)</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="accumulate"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; score = {72, 85, 64, 90, 58};
+    int total = accumulate(score.begin(), score.end(), 0);
+    cout &lt;&lt; total &lt;&lt; ' ' &lt;&lt; (double)total / score.size() &lt;&lt; '\n';
+    vector&lt;int&gt; price = {1000000000, 1000000000, 1000000000};
+    cout &lt;&lt; accumulate(price.begin(), price.end(), 0LL) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="accumulate" data-title="C:\code\accumulate.exe"><pre><code>369 73.8
+3000000000
+</code></pre></div>
+
+      <p>ผลรวมของ <code>price</code> เกิน <code>int</code> จึงต้องใช้ <code>0LL</code> ถ้าใส่ <code>0</code> ผลจะล้นแบบหน้า 1.3 ดูในส่วนลองทำให้พัง</p>
+
+      <h2 id="count">count นับว่ามีกี่ตัว</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="count"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; vote = {2, 1, 2, 4, 2, 1, 4, 2, 1, 2};
+    cout &lt;&lt; count(vote.begin(), vote.end(), 2) &lt;&lt; '\n';
+    cout &lt;&lt; count(vote.begin(), vote.end(), 3) &lt;&lt; '\n';
+    string dna = "AGCTTAGCAA";
+    cout &lt;&lt; count(dna.begin(), dna.end(), 'A') &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="count" data-title="C:\code\count.exe"><pre><code>5
+0
+4
+</code></pre></div>
+
+      <p><code>count</code> ไล่ดูทุกช่องทุกครั้งที่เรียก ถ้าต้องถามซ้ำเป็นพันๆ ครั้งกับข้อมูลชุดใหญ่ ใช้อาเรย์นับแบบหน้า 5.3 หรือเรียงแล้วใช้ <code>lower_bound</code> กับ <code>upper_bound</code> ท้ายหน้านี้</p>
+
+      <h2 id="unique">unique กับ erase ตัดค่าซ้ำ</h2>
+
+      <p>โจทย์ถามบ่อยว่า "มีค่าที่ไม่ซ้ำกันกี่ค่า" หรือให้พิมพ์ค่าที่ไม่ซ้ำเรียงจากน้อยไปมาก หน้า 13.1 เห็นแล้วว่าเรียงแล้วค่าซ้ำจะอยู่ติดกัน <code>unique</code> ทำงานต่อจากนั้น คือเลื่อนค่าที่ไม่ซ้ำกับตัวก่อนหน้ามาไว้ต้นช่วง แล้วคืนตำแหน่งถัดจากค่าที่ไม่ซ้ำตัวสุดท้าย ส่วนท้ายที่เหลือเป็นของที่ไม่ใช้แล้ว ต้องลบทิ้งเองด้วย <code>erase</code> สามขั้นนี้มาด้วยกันเสมอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="unique"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; plate = {427, 105, 427, 980, 105, 427, 311};
+    sort(plate.begin(), plate.end()); // (1)!
+    auto new_end = unique(plate.begin(), plate.end()); // (2)!
+    cout &lt;&lt; new_end - plate.begin() &lt;&lt; ' ' &lt;&lt; plate.size() &lt;&lt; '\n';
+    plate.erase(new_end, plate.end()); // (3)!
+    cout &lt;&lt; plate.size() &lt;&lt; ':';
+    for (int p : plate) {
+        cout &lt;&lt; ' ' &lt;&lt; p;
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เรียงก่อน ได้ <code>105 105 311 427 427 427 980</code> ค่าซ้ำมาอยู่ติดกัน</li>
+        <li><code>unique</code> ย้ายค่าที่ไม่ซ้ำสี่ค่ามาไว้สี่ช่องแรก คืนตำแหน่งของช่องที่ 4 แต่ vector ยังยาว 7 ช่องเท่าเดิม</li>
+        <li><code>erase(ต้น, ปลาย)</code> ลบช่วงนั้นออกจาก vector จริงๆ ทำให้เหลือ 4 ช่อง</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="unique" data-title="C:\code\unique.exe"><pre><code>4 7
+4: 105 311 427 980
+</code></pre></div>
+
+      <p>ปกติเขียนสองบรรทัดหลังรวมเป็นบรรทัดเดียวจนจำได้ขึ้นใจ</p>
+
+      <div class="code" data-lang="cpp"><pre><code>sort(plate.begin(), plate.end());
+plate.erase(unique(plate.begin(), plate.end()), plate.end());
+</code></pre></div>
+
+      <h2 id="next-permutation">next_permutation ไล่ทุกลำดับ</h2>
+
+      <p>เพื่อนสามคน A B C จะนั่งเรียงกันได้กี่แบบ ในหน้า 9.5 เราเขียน recursion พิมพ์ทุกแบบเอง <code>next_permutation</code> เปลี่ยนช่วงให้เป็นลำดับถัดไปตามพจนานุกรม และคืน <code>false</code> เมื่อลำดับปัจจุบันเป็นลำดับสุดท้ายแล้ว ถ้าเริ่มจากลำดับที่เรียงจากน้อยไปมาก แล้ววนจนได้ <code>false</code> ก็จะผ่านครบทุกลำดับพอดี</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="permutation"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    string seat;
+    cin &gt;&gt; seat;
+    sort(seat.begin(), seat.end());
+    int ways = 0;
+    do {
+        cout &lt;&lt; seat &lt;&lt; '\n';
+        ways++;
+    } while (next_permutation(seat.begin(), seat.end()));
+    cout &lt;&lt; "ways = " &lt;&lt; ways &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="permutation" data-title="ข้อมูลเข้า"><pre><code>CAB
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="permutation" data-title="C:\code\seat.exe"><pre><code>ABC
+ACB
+BAC
+BCA
+CAB
+CBA
+ways = 6
+</code></pre></div>
+      </div>
+
+      <ul>
+        <li>ใช้ <code>do ... while</code> เพราะต้องพิมพ์ลำดับแรกก่อนแล้วค่อยเลื่อน ถ้าใช้ <code>while</code> ธรรมดา ลำดับแรก ABC จะหายไป</li>
+        <li>ถ้ามีตัวซ้ำ เช่น <code>AAB</code> จะได้แค่ <code>AAB</code> <code>ABA</code> <code>BAA</code> สามแบบ ไม่ใช่หก เพราะ <code>next_permutation</code> ข้ามลำดับที่หน้าตาซ้ำกันให้เอง</li>
+        <li>n ตัวมี n! ลำดับ 8 ตัวคือ 40,320 ลำดับ 10 ตัวคือ 3,628,800 ลำดับ 12 ตัวคือ 479,001,600 ลำดับ ซึ่งเกินราว 10<sup>8</sup> รอบต่อวินาทีตามหลักในหน้า 4.5 ไปมากแล้ว การลองทุกแบบอย่างเป็นระบบจะเรียนต่อในบทที่ 21</li>
+      </ul>
+
+      <h2 id="bounds">lower_bound และ upper_bound</h2>
+
+      <p>สองฟังก์ชันนี้ใช้กับช่วงที่<strong>เรียงจากน้อยไปมากแล้ว</strong>เท่านั้น ให้ค่า x หนึ่งค่า แล้วตอบเป็นตำแหน่ง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ฟังก์ชัน</th><th>คืนตำแหน่งของ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>lower_bound(ต้น, ปลาย, x)</code></td><td>ช่องแรกที่ค่า <strong>ไม่น้อยกว่า</strong> x (≥ x)</td></tr>
+            <tr><td><code>upper_bound(ต้น, ปลาย, x)</code></td><td>ช่องแรกที่ค่า <strong>มากกว่า</strong> x (&gt; x)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ถ้าไม่มีช่องแบบนั้นเลย ทั้งสองคืน <code>end()</code> ลบด้วย <code>begin()</code> เพื่อแปลงเป็น index แล้วได้คำตอบหลายอย่างโดยไม่ต้องวนลูป</p>
+
+      <ul>
+        <li>จำนวนค่าที่น้อยกว่า x คือ index ของ <code>lower_bound</code></li>
+        <li>จำนวนค่าที่เท่ากับ x คือ <code>upper_bound</code> ลบ <code>lower_bound</code></li>
+        <li>มี x อยู่หรือเปล่า ดูว่า <code>lower_bound</code> ไม่ใช่ <code>end()</code> และค่าที่ชี้อยู่เท่ากับ x</li>
+      </ul>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="bounds"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; score = {75, 60, 90, 50, 60, 60};
+    sort(score.begin(), score.end());
+    int q;
+    cin &gt;&gt; q;
+    for (int i = 0; i &lt; q; i++) {
+        int x;
+        cin &gt;&gt; x;
+        int low = lower_bound(score.begin(), score.end(), x) - score.begin();
+        int high = upper_bound(score.begin(), score.end(), x) - score.begin();
+        bool found = low &lt; (int)score.size() &amp;&amp; score[low] == x;
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ": lower " &lt;&lt; low &lt;&lt; ", upper " &lt;&lt; high &lt;&lt; ", equal " &lt;&lt; high - low &lt;&lt; ", found " &lt;&lt; found &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="bounds" data-title="ข้อมูลเข้า"><pre><code>4
+60 65 100 10
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="bounds" data-title="C:\code\bounds.exe"><pre><code>x = 60: lower 1, upper 4, equal 3, found 1
+x = 65: lower 4, upper 4, equal 0, found 0
+x = 100: lower 6, upper 6, equal 0, found 0
+x = 10: lower 0, upper 0, equal 0, found 0
+</code></pre></div>
+      </div>
+
+      <p>หลังเรียง <code>score</code> คือ <code>50 60 60 60 75 90</code> ในแผนภาพ L คือช่องที่ <code>lower_bound</code> ชี้ U คือช่องที่ <code>upper_bound</code> ชี้</p>
+
+      <div class="code" data-lang="text"><pre><code>index     0   1   2   3   4   5   6
+score    50  60  60  60  75  90
+x = 60        L           U             มี 60 อยู่ 4 - 1 = 3 ตัว
+x = 65                    LU            ไม่มี 65 ทั้งสองชี้ช่องที่ 4
+x = 100                           LU    ทั้งสองเป็น end() index 6 เท่ากับ size()
+</code></pre></div>
+
+      <p>บรรทัดที่ 15 ต้องเช็ก <code>low &lt; (int)score.size()</code> ก่อนอ่าน <code>score[low]</code> เสมอ เพราะถ้า x มากกว่าทุกค่า <code>low</code> จะเป็น 6 ซึ่งเลยช่องสุดท้าย ต้องใช้ <code>&amp;&amp;</code> ที่หยุดทันทีเมื่อเงื่อนไขซ้ายเป็นเท็จ แบบหน้า 3.3</p>
+
+      <p>ส่วน <code>found</code> ใช้ <code>binary_search(ต้น, ปลาย, x)</code> แทนได้ ซึ่งคืนจริงเท็จว่ามี x หรือไม่ ทั้งสามฟังก์ชันไม่ได้ไล่ดูทีละช่องแบบ <code>count</code> แต่ใช้การค้นแบบแบ่งครึ่งที่หน้า 13.5 กล่าวถึง จึงตอบได้เร็วมากแม้ข้อมูลเป็นล้าน บทที่ 19 จะอธิบายว่าข้างในทำงานอย่างไร เร็วแค่ไหน และเขียนเองอย่างไร ตอนนี้ให้ใช้เป็นก่อน</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="accumulate-int">แบบที่ 1 accumulate ด้วยค่าเริ่มต้น 0</h3>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="accumulate-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;long long&gt; distance = {1500000000, 1500000000, 1500000000};
+    cout &lt;&lt; accumulate(distance.begin(), distance.end(), 0) &lt;&lt; '\n';
+    cout &lt;&lt; accumulate(distance.begin(), distance.end(), 0LL) &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="accumulate-bug" data-title="C:\code\distance.exe"><pre><code>205032704
+4500000000
+</code></pre></div>
+
+      <p>vector เป็น <code>long long</code> แล้วก็ยังผิด เพราะผลรวมระหว่างทางถูกเก็บในชนิดของค่าเริ่มต้น คือ <code>int</code> พอรวมได้ 3 × 10<sup>9</sup> ก็ล้นไปแล้ว ไม่มีคำเตือนจาก <code>-Wall</code> เลย ให้ติดเป็นนิสัยว่าผลรวมที่อาจเกินสองพันล้าน ใส่ <code>0LL</code> เสมอ</p>
+
+      <h3 id="unique-unsorted">แบบที่ 2 unique โดยไม่เรียงก่อน</h3>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="unique-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; plate = {427, 105, 427, 980, 105, 427, 311};
+    plate.erase(unique(plate.begin(), plate.end()), plate.end());
+    cout &lt;&lt; plate.size() &lt;&lt; '\n';
+    vector&lt;int&gt; again = {105, 105, 311, 427, 427, 427, 980};
+    unique(again.begin(), again.end());
+    cout &lt;&lt; again.size() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="unique-bug" data-title="C:\code\unique.exe"><pre><code>7
+7
+</code></pre></div>
+
+      <p>ผิดสองแบบ บรรทัดที่ 7 ไม่ได้เรียงก่อน <code>unique</code> ตัดเฉพาะค่าซ้ำที่<strong>อยู่ติดกัน</strong> ซึ่งในข้อมูลนี้ไม่มีเลย ได้ 7 ทั้งที่ทะเบียนต่างกันมีแค่ 4 คัน บรรทัดที่ 10 เรียงแล้วแต่ลืม <code>erase</code> ค่าที่ไม่ซ้ำถูกย้ายไปต้น vector แล้วจริง แต่ <code>size()</code> ยังเป็น 7 ถ้าเอาไปวนลูปต่อจะเจอค่าที่ไม่ใช้แล้วปนอยู่ท้าย vector</p>
+
+      <h3 id="permutation-unsorted">แบบที่ 3 next_permutation โดยไม่เรียงก่อน</h3>
+
+      <p>ในโปรแกรม seat ถ้าลบบรรทัดที่ 8 ซึ่งเรียง <code>seat</code> ออก แล้วป้อน <code>CAB</code> เหมือนเดิม</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="permutation-bug"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    string seat;
+    cin &gt;&gt; seat;
+    int ways = 0;
+    do {
+        cout &lt;&lt; seat &lt;&lt; '\n';
+        ways++;
+    } while (next_permutation(seat.begin(), seat.end()));
+    cout &lt;&lt; "ways = " &lt;&lt; ways &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="permutation-bug" data-title="ข้อมูลเข้า"><pre><code>CAB
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="permutation-bug" data-title="C:\code\seat.exe"><pre><code>CAB
+CBA
+ways = 2
+</code></pre></div>
+      </div>
+
+      <p><code>next_permutation</code> เดินไปข้างหน้าตามพจนานุกรมอย่างเดียว เริ่มจาก CAB จึงได้แค่ลำดับที่มาหลัง CAB คือ CBA แล้วก็หมด ลำดับ ABC ACB BAC BCA ที่มาก่อนหายไปทั้งหมด ทดสอบกับข้อมูลที่บังเอิญเรียงมาแล้วอย่าง <code>ABC</code> จะไม่เห็นบั๊กนี้</p>
+
+      <h3 id="bound-unsorted">แบบที่ 4 lower_bound กับข้อมูลที่ยังไม่เรียง</h3>
+
+      <p>ในโปรแกรม bounds ถ้าลบบรรทัดที่ 7 ซึ่งเรียง <code>score</code> ออก คอมไพล์ผ่านและรันได้ไม่มีอะไรเตือน แต่บนเครื่องที่เขียนเอกสารนี้ คำถาม x = 60 ได้</p>
+
+      <div class="code" data-lang="output" data-title="C:\code\bounds.exe"><pre><code>x = 60: lower 4, upper 6, equal 2, found 1
+</code></pre></div>
+
+      <p>บอกว่ามี 60 สองตัว ทั้งที่มีสามตัว <code>lower_bound</code> กับ <code>upper_bound</code> ไม่ตรวจว่าข้อมูลเรียงหรือยัง มันแค่ทำงานแบบที่สมมติว่าเรียงแล้ว กับข้อมูลที่ไม่เรียง คำตอบอาจถูกบ้างผิดบ้างโดยไม่มีอะไรบอก</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>reverse(v.begin(), v.end())</code> กลับลำดับในตัวเอง ใช้กับ string ได้ด้วย</li>
+        <li><code>max_element</code> <code>min_element</code> คืนตำแหน่งของช่องแรกที่มากสุดหรือน้อยสุด ใส่ <code>*</code> ได้ค่า ลบ <code>begin()</code> ได้ index</li>
+        <li><code>accumulate(v.begin(), v.end(), 0LL)</code> รวมทุกช่อง ค่าเริ่มต้นกำหนดชนิดของผลรวม ใส่ <code>0</code> แล้วล้นได้</li>
+        <li><code>count(v.begin(), v.end(), x)</code> นับช่องที่เท่ากับ x โดยไล่ทุกช่อง</li>
+        <li>ตัดค่าซ้ำด้วย <code>sort</code> แล้ว <code>v.erase(unique(v.begin(), v.end()), v.end())</code> ขาดขั้นไหนก็ผิด</li>
+        <li>ไล่ทุกลำดับด้วย <code>sort</code> แล้ว <code>do { ... } while (next_permutation(...));</code></li>
+        <li>กับข้อมูลที่เรียงแล้ว <code>lower_bound</code> ชี้ช่องแรกที่ ≥ x <code>upper_bound</code> ชี้ช่องแรกที่ &gt; x ผลต่างคือจำนวนที่เท่ากับ x ไม่เจอได้ <code>end()</code> บทที่ 19 จะอธิบายข้างใน</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

@@ -1,0 +1,433 @@
+<article class="doc">
+      <h1>10.2 ส่งที่อยู่ให้ฟังก์ชัน</h1>
+
+      <p>ใน<a href="../08-functions/pass-by-value.html#swap">หน้า 8.2</a> ฟังก์ชัน <code>swap</code> สลับค่าได้แค่ในตัวเอง เพราะได้รับแค่สำเนา และ <code>return</code> ส่งผลกลับได้ทีละค่า หน้านี้แก้ทั้งสองเรื่องด้วยสิ่งที่เรียนในหน้า 10.1 คือส่ง <strong>ที่อยู่</strong> ของตัวแปรเข้าไปแทนค่า ฟังก์ชันจะตามที่อยู่นั้นไปแก้กล่องของคนเรียกได้ เทคนิคนี้ใช้ทุกครั้งที่ฟังก์ชันต้องแก้ตัวแปรข้างนอก หรือต้องส่งผลกลับหลายค่า และเป็นเหตุผลจริงที่ <code>scanf</code> ต้องมี <code>&amp;</code> มาตั้งแต่บทที่ 1</p>
+
+      <h2 id="swap">swap ที่สลับได้จริง</h2>
+
+      <p>เปลี่ยนพารามิเตอร์จาก <code>int</code> เป็น <code>int *</code> แล้วสลับค่าในกล่องที่ชี้ แทนการสลับตัวพารามิเตอร์เอง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="swap"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y) // (1)!
+{
+    int temp = *x; // (2)!
+    *x = *y;
+    *y = temp;
+}
+
+int main()
+{
+    int first = 3, second = 8;
+    swap(&amp;first, &amp;second); // (3)!
+    printf("first = %d, second = %d\n", first, second);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>รับที่อยู่ของ <code>int</code> สองตัว ไม่ใช่ค่า <code>int</code> สองตัว</li>
+        <li><code>*x</code> คือกล่องที่ <code>x</code> ชี้ ตอนนี้คือ <code>first</code> ของ <code>main</code> สามบรรทัดนี้คือการสลับแบบใช้ตัวพักเหมือนหน้า 8.2 ทุกอย่าง แค่ทุกชื่อมี <code>*</code> นำหน้า</li>
+        <li>ส่งที่อยู่ของ <code>first</code> กับ <code>second</code> เข้าไป ตัวที่ถูกคัดลอกเข้าฟังก์ชันคือที่อยู่ ไม่ใช่ 3 กับ 8</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="swap" data-title="C:\code\swap.exe"><pre><code>first = 8, second = 3
+</code></pre></div>
+
+      <p>ภาษา C ยังส่งแบบสำเนาเหมือนเดิมทุกอย่าง ไม่มีกฎใหม่ แต่ของที่ถูกคัดลอกคือที่อยู่ สำเนาของที่อยู่ก็ยังชี้กล่องเดิม เหมือนถ่ายเอกสารแผนที่บ้านให้เพื่อน แผนที่มีสองใบ แต่บ้านมีหลังเดียว เพื่อนเดินตามแผนที่ของตัวเองไปทาสีบ้าน บ้านเราก็เปลี่ยนสี</p>
+
+      <h2 id="inside-swap">ดูที่อยู่ตอนเรียก swap</h2>
+
+      <p>เพิ่ม <code>printf</code> ที่พิมพ์ที่อยู่ลงไปในโปรแกรมเดิม จะเห็นว่าในฟังก์ชันมีอะไรอยู่จริงๆ</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y)
+{
+    printf("x = %p, y = %p\n", x, y);
+    printf("&amp;x = %p, &amp;y = %p\n", &amp;x, &amp;y);
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+int main()
+{
+    int first = 3, second = 8;
+    printf("&amp;first = %p, &amp;second = %p\n", &amp;first, &amp;second);
+    swap(&amp;first, &amp;second);
+    printf("first = %d, second = %d\n", first, second);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\swap.exe"><pre><code>&amp;first = 000000EF7FFFFB0C, &amp;second = 000000EF7FFFFB08
+x = 000000EF7FFFFB0C, y = 000000EF7FFFFB08
+&amp;x = 000000EF7FFFFAE0, &amp;y = 000000EF7FFFFAE8
+first = 8, second = 3
+</code></pre></div>
+
+      <p>ผลนี้มาจากเครื่องที่เขียนเอกสารนี้ ที่อยู่จะเปลี่ยนทุกครั้งที่รันตามที่เห็นในหน้า 10.1 แต่ความสัมพันธ์เหมือนเดิมเสมอ ค่าใน <code>x</code> ตรงกับที่อยู่ของ <code>first</code> ค่าใน <code>y</code> ตรงกับที่อยู่ของ <code>second</code> ส่วนกล่อง <code>x</code> กับ <code>y</code> เองอยู่คนละที่กับ <code>first</code> และ <code>second</code> เพราะเป็นพารามิเตอร์ของ <code>swap</code> ที่เกิดใหม่ตอนเรียก</p>
+
+      <figure>
+        <svg viewBox="0 0 560 255" width="560" style="max-width:100%;height:auto" role="img" aria-label="ฝั่ง main มีกล่อง first ที่อยู่ FB0C ค่าเปลี่ยนจาก 3 เป็น 8 และกล่อง second ที่อยู่ FB08 ค่าเปลี่ยนจาก 8 เป็น 3 ฝั่ง swap มีกล่อง x เก็บ FB0C ชี้ไปที่ first และกล่อง y เก็บ FB08 ชี้ไปที่ second">
+          <defs>
+            <marker id="swap-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="120" y="18" text-anchor="middle" style="fill:var(--muted);font-size:14px">main</text>
+            <text x="440" y="18" text-anchor="middle" style="fill:var(--muted);font-size:14px">swap</text>
+            <text x="120" y="46" text-anchor="middle" style="fill:var(--ink);font-size:16px">first</text>
+            <rect x="50" y="56" width="140" height="52" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="120" y="89" text-anchor="middle" style="fill:var(--ink);font-size:20px">3 → 8</text>
+            <text x="120" y="128" text-anchor="middle" style="fill:var(--muted);font-size:14px">…FB0C</text>
+            <text x="120" y="160" text-anchor="middle" style="fill:var(--ink);font-size:16px">second</text>
+            <rect x="50" y="170" width="140" height="52" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="120" y="203" text-anchor="middle" style="fill:var(--ink);font-size:20px">8 → 3</text>
+            <text x="120" y="242" text-anchor="middle" style="fill:var(--muted);font-size:14px">…FB08</text>
+            <text x="440" y="46" text-anchor="middle" style="fill:var(--ink);font-size:16px">x</text>
+            <rect x="370" y="56" width="140" height="52" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="440" y="88" text-anchor="middle" style="fill:var(--ink);font-size:18px">…FB0C</text>
+            <text x="440" y="128" text-anchor="middle" style="fill:var(--muted);font-size:14px">…FAE0</text>
+            <text x="440" y="160" text-anchor="middle" style="fill:var(--ink);font-size:16px">y</text>
+            <rect x="370" y="170" width="140" height="52" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="440" y="202" text-anchor="middle" style="fill:var(--ink);font-size:18px">…FB08</text>
+            <text x="440" y="242" text-anchor="middle" style="fill:var(--muted);font-size:14px">…FAE8</text>
+          </g>
+          <path d="M368 82 H196" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#swap-arrow)"/>
+          <path d="M368 196 H196" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#swap-arrow)"/>
+        </svg>
+      </figure>
+
+      <p>เทียบกับรูปในหน้า 8.2 ที่ <code>swap</code> มีกล่อง <code>a</code> กับ <code>b</code> ที่เก็บ 3 กับ 8 เป็นของตัวเอง ตอนนี้กล่องของ <code>swap</code> เก็บแค่ทาง ส่วนตัวเลขที่ถูกสลับคือของ <code>main</code> พอ <code>swap</code> จบ กล่อง <code>x</code> กับ <code>y</code> หายไปเหมือนเดิม แต่การแก้ที่ทำผ่านลูกศรยังอยู่</p>
+
+      <h2 id="pass-along">ส่ง pointer ต่อให้ฟังก์ชันอื่น</h2>
+
+      <p>ที่อยู่ของช่องในอาเรย์ เช่น <code>&amp;heights[0]</code> ก็เป็นที่อยู่ของกล่อง <code>int</code> หนึ่งกล่อง ส่งให้ <code>swap</code> ได้เหมือนตัวแปรธรรมดา ตัวอย่างนี้เรียงความสูงสามคนจากน้อยไปมาก</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="sort3"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y)
+{
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+void sort3(int *a, int *b, int *c)
+{
+    if (*a &gt; *b) {
+        swap(a, b); // (1)!
+    }
+    if (*b &gt; *c) {
+        swap(b, c);
+    }
+    if (*a &gt; *b) {
+        swap(a, b);
+    }
+}
+
+int main()
+{
+    int heights[3];
+    scanf("%d %d %d", &amp;heights[0], &amp;heights[1], &amp;heights[2]);
+    sort3(&amp;heights[0], &amp;heights[1], &amp;heights[2]); // (2)!
+    printf("%d %d %d\n", heights[0], heights[1], heights[2]);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>a</code> เป็นที่อยู่อยู่แล้ว ส่งต่อให้ <code>swap</code> ได้เลย <strong>ไม่ต้องมี <code>&amp;</code></strong> ถ้าเขียน <code>&amp;a</code> จะได้ที่อยู่ของกล่อง <code>a</code> เอง ซึ่งมีชนิดเป็น <code>int **</code> ไม่ใช่ที่อยู่ของความสูง</li>
+        <li><code>&amp;heights[0]</code> ใช้แบบเดียวกับใน <code>scanf</code> บรรทัดบน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="sort3" data-title="ข้อมูลเข้า"><pre><code>172 158 165
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="sort3" data-title="C:\code\sort3.exe"><pre><code>158 165 172
+</code></pre></div>
+      </div>
+
+      <p>หลังเทียบคู่แรกกับคู่ที่สอง ค่ามากสุดไปอยู่ท้ายแน่นอนแล้ว เทียบคู่แรกอีกครั้งก็เรียงครบ วิธีคิดนี้คือ bubble sort แบบย่อส่วน ซึ่งจะได้เรียนเต็มๆ ในบทที่ 13</p>
+
+      <p>กฎจำง่ายคือ <strong>ดูชนิดของสิ่งที่มีอยู่ในมือ</strong> ถ้ามีกล่อง <code>int</code> และฟังก์ชันอยากได้ <code>int *</code> ให้ใส่ <code>&amp;</code> ถ้ามี <code>int *</code> อยู่แล้ว ส่งไปตรงๆ</p>
+
+      <h2 id="many-results">ส่งผลกลับหลายค่า</h2>
+
+      <p><a href="../08-functions/pass-by-value.html#one-value">หน้า 8.2</a> ต้องแยกฟังก์ชันแปลงนาทีเป็นสองตัว <code>hours_of</code> กับ <code>minutes_of</code> เพราะ <code>return</code> ได้ค่าเดียว ตอนนี้ให้คนเรียกส่งที่อยู่ของกล่องรับผลมา แล้วฟังก์ชันเขียนผลลงไปเองได้ทั้งสองค่า</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="to-hours"><pre><code>#include &lt;stdio.h&gt;
+
+void to_hours(int total_minutes, int *hours, int *minutes) // (1)!
+{
+    *hours = total_minutes / 60;
+    *minutes = total_minutes % 60;
+}
+
+int main()
+{
+    int movie, trip;
+    scanf("%d %d", &amp;movie, &amp;trip);
+    int h, m;
+    to_hours(movie, &amp;h, &amp;m); // (2)!
+    printf("movie %d:%02d\n", h, m);
+    to_hours(trip, &amp;h, &amp;m);
+    printf("trip %d:%02d\n", h, m);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>พารามิเตอร์ตัวแรกเป็นข้อมูลเข้า รับเป็นค่าธรรมดา สองตัวหลังเป็นที่สำหรับเขียนผล รับเป็น pointer ตั้งชื่อให้บอกว่าจะได้อะไรกลับไป</li>
+        <li>ค่าเดิมใน <code>h</code> กับ <code>m</code> ไม่สำคัญ เพราะฟังก์ชันจะเขียนทับทั้งคู่</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="to-hours" data-title="ข้อมูลเข้า"><pre><code>135 425
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="to-hours" data-title="C:\code\hours.exe"><pre><code>movie 2:15
+trip 7:05
+</code></pre></div>
+      </div>
+
+      <p>ได้ผลเท่ากับในหน้า 8.2 แต่คิดในฟังก์ชันเดียว ถ้าการคำนวณสองค่าใช้ขั้นตอนร่วมกัน เช่น แยกหลักของตัวเลขแล้วได้ทั้งจำนวนหลักและผลรวมของหลัก วิธีนี้ทำให้ไม่ต้องวนแยกหลักซ้ำสองรอบ</p>
+
+      <h3 id="found-flag">return บอกว่าสำเร็จไหม pointer ส่งคำตอบ</h3>
+
+      <p>รูปแบบที่เจอบ่อยมากคือใช้ <code>return</code> บอกว่าทำสำเร็จหรือไม่ แล้วส่งคำตอบจริงกลับทาง pointer ตัวอย่างนี้หาว่านักเรียนเลขประจำตัวที่ถามนั่งที่นั่งไหน ถ้าไม่มาสอบก็ไม่มีที่นั่งให้ตอบ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="find-seat"><pre><code>#include &lt;stdio.h&gt;
+
+int find_seat(int ids[], int n, int target, int *seat)
+{
+    for (int i = 0; i &lt; n; i++) {
+        if (ids[i] == target) {
+            *seat = i + 1;
+            return 1; // (1)!
+        }
+    }
+    return 0; // (2)!
+}
+
+int main()
+{
+    int ids[100];
+    int n, q;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;ids[i]);
+    }
+    scanf("%d", &amp;q);
+    for (int k = 0; k &lt; q; k++) {
+        int target, seat;
+        scanf("%d", &amp;target);
+        if (find_seat(ids, n, target, &amp;seat)) {
+            printf("%d sits at seat %d\n", target, seat);
+        } else {
+            printf("%d is absent\n", target);
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เจอแล้ว เขียนที่นั่งลงกล่องของคนเรียก แล้วคืน 1 ว่าสำเร็จ</li>
+        <li>ไม่เจอ คืน 0 และไม่แตะ <code>*seat</code> เลย คนเรียกจึงต้องดูค่าที่คืนก่อนทุกครั้ง ห้ามใช้ <code>seat</code> ตอนได้ 0</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="find-seat" data-title="ข้อมูลเข้า"><pre><code>5
+6701 6705 6712 6703 6720
+3
+6712
+6704
+6701
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="find-seat" data-title="C:\code\seat.exe"><pre><code>6712 sits at seat 3
+6704 is absent
+6701 sits at seat 1
+</code></pre></div>
+      </div>
+
+      <p>คำตอบ "ไม่เจอ" แยกจากคำตอบปกติชัดเจน ไม่ต้องตกลงกันว่าที่นั่ง 0 หรือ -1 แปลว่าไม่มา ซึ่งใช้ไม่ได้ถ้าค่าเหล่านั้นเป็นคำตอบจริงได้</p>
+
+      <h2 id="scanf">ทำไม scanf ต้องมี &amp;</h2>
+
+      <p>ถึงตรงนี้ก็ตอบคำถามที่ค้างมาตั้งแต่<a href="../01-variables/variables.html#scanf">หน้า 1.1</a> ได้ครบ <code>scanf</code> ก็เป็นฟังก์ชันแบบที่เราเขียนเอง มันได้รับสำเนาของทุกอย่างที่ส่งเข้าไป ถ้าส่งค่าของ <code>age</code> ไป มันได้แค่ตัวเลขในกล่อง ไม่รู้ว่ากล่องอยู่ไหน จึงเขียนค่าที่อ่านได้กลับมาไม่ได้ ต้องส่งที่อยู่ <code>&amp;age</code> ไป <code>scanf</code> ถึงตามไปเขียนได้ เหมือน <code>to_hours</code> ที่ต้องได้ <code>&amp;h</code> ส่วน <code>printf</code> แค่เอาค่าไปพิมพ์ ไม่ต้องแก้อะไร จึงรับค่าธรรมดา</p>
+
+      <p>ค่าที่ <code>scanf</code> คืนคือจำนวนช่องที่อ่านสำเร็จ ซึ่งใช้มาแล้วใน <code>while (scanf("%d", &amp;x) == 1)</code> ของบทที่ 4 ก็คือรูปแบบเดียวกับ <code>find_seat</code> ข้างบนเป๊ะ คืนค่าบอกว่าสำเร็จแค่ไหน แล้วเขียนผลจริงผ่าน pointer</p>
+
+      <p>ฟังก์ชันอ่านค่าที่พังในส่วนลองทำให้พังของ<a href="../08-functions/pass-by-value.html#read-in-function">หน้า 8.2</a> ก็แก้ได้ด้วยวิธีเดียวกัน คือรับที่อยู่ แล้วส่งที่อยู่นั้นต่อให้ <code>scanf</code> ตรงๆ</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="read-score"><pre><code>#include &lt;stdio.h&gt;
+
+void read_score(int *score)
+{
+    scanf("%d", score); // (1)!
+}
+
+int main()
+{
+    int math, science;
+    read_score(&amp;math);
+    read_score(&amp;science);
+    printf("total = %d\n", math + science);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>score</code> เป็นที่อยู่อยู่แล้ว จึงไม่มี <code>&amp;</code> ตามกฎในหัวข้อที่แล้ว</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="read-score" data-title="ข้อมูลเข้า"><pre><code>78 91
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="read-score" data-title="C:\code\reader.exe"><pre><code>total = 169
+</code></pre></div>
+      </div>
+
+      <h3 id="missing-ampersand">ลืม &amp; แล้วเกิดอะไรจริงๆ</h3>
+
+      <p><a href="../01-variables/variables.html#missing-ampersand">หน้า 1.1</a> ลอง <code>scanf("%d", age);</code> แล้วได้ <code>next year you will be 1</code> ตอนนี้อธิบายได้แล้ว <code>scanf</code> ได้ค่าใน <code>age</code> ไปและ<strong>ถือว่าเป็นที่อยู่</strong> บนเครื่องที่เขียนเอกสารนี้ค่าขยะใน <code>age</code> คือ 0 ซึ่งก็คือ <code>NULL</code> ที่อยู่ที่ไม่ชี้อะไร ลองเก็บค่าที่ <code>scanf</code> คืนมาพิมพ์ดู บนเครื่องนี้ได้ 0 คือ <code>scanf</code> ไม่ได้เขียนอะไรลงไปเลย <code>age</code> จึงยังเป็น 0 แล้วบวก 1 ได้ 1</p>
+
+      <p>ถ้าค่าขยะเป็นเลขอื่นจะร้ายกว่านั้น ลองให้ <code>age</code> มีค่าก่อนอ่าน</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int age = 12345;
+    int got = scanf("%d", age);
+    printf("scanf returned %d, age = %d\n", got, age);
+    return 0;
+}
+</code></pre></div>
+
+      <p>ได้คำเตือน <code>format '%d' expects argument of type 'int *'</code> เหมือนในหน้า 1.1 พอรันแล้วพิมพ์ <code>20</code> โปรแกรมปิดตัวทันทีโดยไม่พิมพ์อะไร บนเครื่องที่เขียนเอกสารนี้ได้</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p><code>scanf</code> พยายามเขียน 20 ลงที่อยู่หมายเลข 12345 ซึ่งไม่ใช่หน่วยความจำของโปรแกรมเรา Windows จึงปิดโปรแกรม ค่าขยะจริงเป็นเลขอะไรก็ได้ บางเครื่องอาจบังเอิญเป็นที่อยู่ของตัวแปรอื่น แล้วตัวแปรนั้นเปลี่ยนค่าเงียบๆ คำเตือนเรื่อง format ใน <code>scanf</code> จึงต้องแก้ทุกครั้ง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="forget-ampersand">แบบที่ 1 ลืม &amp; ตอนเรียก</h3>
+
+      <p>ในโปรแกรม swap แก้บรรทัดที่ 13 เป็น <code>swap(first, second);</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>swap.c:13:10: error: passing argument 1 of 'swap' makes pointer from integer without a cast [-Wint-conversion]
+   13 |     swap(first, second);
+      |          ^~~~~
+      |          |
+      |          int
+swap.c:3:16: note: expected 'int *' but argument is of type 'int'
+    3 | void swap(int *x, int *y)
+      |           ~~~~~^
+</code></pre></div>
+
+      <p>อาร์กิวเมนต์ตัวที่สองได้ error แบบเดียวกันซ้ำอีกชุด ข้อความบอกตรงตัวว่าฟังก์ชันรอ <code>int *</code> แต่ได้ <code>int</code> และ <code>note</code> ชี้กลับไปที่หัวฟังก์ชันให้ดูว่าประกาศไว้ว่าอะไร GCC 14 ถือเป็น error ทันที จึงลืม <code>&amp;</code> ตอนเรียกฟังก์ชันของเราเองไม่ได้ ต่างจาก <code>scanf</code> ที่ได้แค่ warning เพราะหัวฟังก์ชันของ <code>scanf</code> ไม่ได้บอกชนิดของอาร์กิวเมนต์ไว้ compiler ตรวจได้แค่จากรูปแบบอย่าง <code>%d</code> ในข้อความ</p>
+
+      <h3 id="swap-addresses">แบบที่ 2 สลับที่อยู่แทนสลับค่า</h3>
+
+      <p>ลืมดอกจันในฟังก์ชัน แล้วแก้ชนิดของ <code>temp</code> จนคอมไพล์ผ่าน</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="swap-addresses"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y)
+{
+    int *temp = x;
+    x = y;
+    y = temp;
+}
+
+int main()
+{
+    int first = 3, second = 8;
+    swap(&amp;first, &amp;second);
+    printf("first = %d, second = %d\n", first, second);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="swap-addresses" data-title="C:\code\swap.exe"><pre><code>first = 3, second = 8
+</code></pre></div>
+
+      <p>ไม่มีคำเตือนเลย และไม่สลับ ฟังก์ชันนี้สลับค่าใน <code>x</code> กับ <code>y</code> ซึ่งเป็นสำเนาของที่อยู่ ให้ลูกศรสองเส้นของ <code>swap</code> ไขว้กัน แต่ไม่เคยตามลูกศรไปแตะกล่องของ <code>main</code> เลย พอฟังก์ชันจบลูกศรก็หายไป ถ้าตั้งใจแก้ค่าในกล่องของคนเรียก ทุกบรรทัดที่เขียนต้องมี <code>*</code> หน้าชื่อ pointer</p>
+
+      <h3 id="same-box">แบบที่ 3 สลับด้วยบวกลบ แล้วชี้กล่องเดียวกัน</h3>
+
+      <p>มีเทคนิคสลับค่าโดยไม่ใช้ตัวพัก ด้วยการบวกลบสามบรรทัด ดูฉลาดดี แต่ถ้า <code>x</code> กับ <code>y</code> ชี้กล่องเดียวกัน ซึ่งเกิดเมื่อสั่งสลับช่องกับตัวเอง ค่าในกล่องจะหายไป</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="same-box"><pre><code>#include &lt;stdio.h&gt;
+
+void swap(int *x, int *y)
+{
+    *x = *x + *y;
+    *y = *x - *y;
+    *x = *x - *y;
+}
+
+int main()
+{
+    int seats[3] = {31, 27, 45};
+    swap(&amp;seats[0], &amp;seats[2]);
+    printf("%d %d %d\n", seats[0], seats[1], seats[2]);
+    swap(&amp;seats[1], &amp;seats[1]);
+    printf("%d %d %d\n", seats[0], seats[1], seats[2]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="same-box" data-title="C:\code\seats.exe"><pre><code>45 27 31
+45 0 31
+</code></pre></div>
+
+      <p>สลับคนละช่องถูก แต่สลับช่องที่ 1 กับตัวเอง 27 กลายเป็น 0 ไล่ทีละบรรทัดเมื่อ <code>*x</code> กับ <code>*y</code> เป็นกล่องเดียวกัน บรรทัดที่ 5 ได้ 27 + 27 = 54 บรรทัดที่ 6 ได้ 54 - 54 = 0 ซึ่งเขียนทับกล่องเดียวกันนั้น บรรทัดที่ 7 ได้ 0 - 0 = 0 โจทย์ที่ให้สลับตามคำสั่ง มักมีคำสั่งที่ให้สลับกับตัวเองซ่อนอยู่ในชุดทดสอบ ใช้ตัวพักแบบตัวอย่างแรกของหน้านี้ ซึ่งถูกเสมอและอ่านง่ายกว่า</p>
+
+      <h3 id="return-local">แบบที่ 4 คืนที่อยู่ของตัวแปรในฟังก์ชัน</h3>
+
+      <p>ถ้าคืนผลทาง pointer ได้ บางคนจะลองคืนที่อยู่ของตัวแปรในฟังก์ชันแทนการคืนค่า</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int *bigger(int a, int b)
+{
+    int result = a;
+    if (b &gt; a) {
+        result = b;
+    }
+    return &amp;result;
+}
+
+int main()
+{
+    int *p = bigger(70, 85);
+    printf("bigger = %d\n", *p);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>bigger.c:9:12: warning: function returns address of local variable [-Wreturn-local-addr]
+    9 |     return &amp;result;
+      |            ^~~~~~~
+</code></pre></div>
+
+      <p>เป็นแค่ warning จึงรันได้ แต่ไม่พิมพ์อะไรเลย และ Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p><code>result</code> เป็นตัวแปรของ <code>bigger</code> พอฟังก์ชันจบกล่องก็หายไปตามที่เห็นใน<a href="../08-functions/scope.html#lifetime">หน้า 8.4</a> ที่อยู่ของกล่องที่ไม่มีแล้วจึงใช้ไม่ได้ GCC รู้ว่าเป็นบั๊กแน่ๆ จึงคืน <code>NULL</code> แทนที่อยู่นั้นให้เลย ลองพิมพ์ <code>p == NULL</code> บนเครื่องที่เขียนเอกสารนี้ได้ 1 โปรแกรมจึงพังทันทีที่ใช้ <code>*p</code> แบบที่ 5 ของหน้า 10.1 ฟังก์ชันแบบนี้ให้คืนค่า <code>int</code> ธรรมดา หรือให้คนเรียกส่งที่อยู่ของกล่องตัวเองมาให้เขียนแบบ <code>to_hours</code> ส่วนการสร้างกล่องที่อยู่ได้นานกว่าฟังก์ชันจะเรียนในหน้า 10.5</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ฟังก์ชันที่ต้องแก้ตัวแปรของคนเรียก ให้รับ pointer เช่น <code>void swap(int *x, int *y)</code> แล้วเรียกด้วย <code>swap(&amp;a, &amp;b)</code></li>
+        <li>ในฟังก์ชัน แก้ผ่าน <code>*x</code> เสมอ ถ้าเขียนแค่ <code>x</code> คือแก้สำเนาของที่อยู่ ไม่ถึงกล่องจริง</li>
+        <li>มี <code>int</code> แต่ต้องส่ง <code>int *</code> ใส่ <code>&amp;</code> มี <code>int *</code> อยู่แล้ว ส่งตรงๆ</li>
+        <li>ส่งผลกลับหลายค่าด้วยพารามิเตอร์ pointer หลายตัว และใช้ <code>return</code> บอกว่าสำเร็จไหมได้แบบเดียวกับ <code>scanf</code></li>
+        <li><code>scanf</code> ต้องมี <code>&amp;</code> เพราะเป็นฟังก์ชันที่ต้องเขียนลงตัวแปรของเรา ลืมแล้วมันจะเอาค่าขยะไปใช้เป็นที่อยู่</li>
+        <li>ห้ามคืนที่อยู่ของตัวแปรในฟังก์ชัน กล่องนั้นหายไปตอนฟังก์ชันจบ</li>
+      </ul>
+    </article>

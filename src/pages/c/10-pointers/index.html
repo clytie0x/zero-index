@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 10 pointer</h1>
+
+      <p>จบบทนี้ น้องจะรู้ว่าตัวแปรทุกตัวมีที่อยู่ในหน่วยความจำ และใช้ที่อยู่นั้นทำสิ่งที่บทก่อนๆ ทำไม่ได้ คือเขียนฟังก์ชันที่แก้ตัวแปรของคนเรียกได้ เช่น <code>swap</code> ที่สลับได้จริง ส่งผลกลับจากฟังก์ชันได้หลายค่า เดินบนอาเรย์และสตริงด้วย pointer ตัดสตริงหรือลบตัวอักษรในอาเรย์เดิมโดยไม่ต้องคัดลอก และจองอาเรย์ตามขนาดที่ข้อมูลเข้าบอกระหว่างรัน รวมถึงตารางที่แต่ละแถวยาวไม่เท่ากัน ใช้กับโจทย์ที่สั่งสลับข้อมูลตามคำสั่ง แยกข้อความเป็นท่อน และโจทย์ที่มีข้อมูลหลายชุดขนาดต่างกัน บทนี้ยังเฉลยเรื่องที่ค้างมาตั้งแต่บทที่ 1 ว่าทำไม <code>scanf</code> ต้องมี <code>&amp;</code> และเป็นฐานของ struct ในบทที่ 11 กับ linked list ในบทที่ 14</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="address.html">10.1 ที่อยู่และ pointer</a></td><td>ที่อยู่ในหน่วยความจำ <code>&amp;</code> กับ <code>*</code> พิมพ์ที่อยู่ด้วย <code>%p</code> ชนิดของ pointer <code>NULL</code> และ pointer ที่ยังไม่ได้ชี้</td></tr>
+            <tr><td><a href="functions.html">10.2 ส่งที่อยู่ให้ฟังก์ชัน</a></td><td><code>swap</code> ที่สลับได้จริง ส่งผลกลับหลายค่า ทำไม <code>scanf</code> ต้องมี <code>&amp;</code> และห้ามคืนที่อยู่ของตัวแปรในฟังก์ชัน</td></tr>
+            <tr><td><a href="arrays.html">10.3 pointer กับอาเรย์</a></td><td>ชื่ออาเรย์คือที่อยู่ <code>a[i]</code> กับ <code>*(a + i)</code> บวกลบ pointer ส่งบางช่วงของอาเรย์ให้ฟังก์ชัน และ pointer สองตัวเดินเข้าหากัน</td></tr>
+            <tr><td><a href="strings.html">10.4 สตริงกับ char *</a></td><td><code>%s</code> กับที่อยู่ ฟังก์ชันที่คืน <code>char *</code> ตัดสตริงด้วย <code>'\0'</code> ลบตัวอักษรในอาเรย์เดิม และข้อความที่แก้ไม่ได้</td></tr>
+            <tr><td><a href="malloc.html">10.5 จองหน่วยความจำด้วย malloc</a></td><td><code>malloc</code> <code>calloc</code> <code>free</code> ตารางที่แต่ละแถวยาวไม่เท่ากัน pointer ชี้ pointer และหน่วยความจำรั่ว</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>พิมพ์ที่อยู่ของตัวแปรด้วย <code>%p</code> รันสองครั้งแล้วเห็นว่าได้เลขต่างกัน และแก้ค่าตัวแปรผ่าน <code>*p = 90;</code> โดยไม่เขียนชื่อตัวแปรนั้นได้</span></label></li>
+        <li><label><input type="checkbox"><span>เขียน <code>swap(int *x, int *y)</code> ที่ทำให้ <code>first = 3, second = 8</code> กลายเป็น <code>first = 8, second = 3</code> แล้วลบดอกจันออกจากในฟังก์ชันจนเห็นว่าไม่สลับ</span></label></li>
+        <li><label><input type="checkbox"><span>เขียนฟังก์ชันเดียวที่รับนาทีแล้วส่งชั่วโมงกับนาทีกลับทาง pointer ป้อน <code>135</code> แล้วได้ <code>2:15</code></span></label></li>
+        <li><label><input type="checkbox"><span>กลับลำดับ <code>11 12 13 14 15 16 17</code> ด้วย pointer สองตัวจนได้ <code>17 16 15 14 13 12 11</code> และพิมพ์ <code>gramming</code> จาก <code>"programming"</code> ด้วย <code>%s</code> คำสั่งเดียว</span></label></li>
+        <li><label><input type="checkbox"><span>จองอาเรย์ตาม n ที่รับเข้ามาด้วย <code>malloc</code> แล้ว <code>free</code> และสร้างสามเหลี่ยมปาสกาล 6 แถวด้วย <code>int **</code> ที่แถวสุดท้ายเป็น <code>1 5 10 10 5 1</code></span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 6 ข้อจาก 8 ข้อ</span></label></li>
+      </ul>
+    </article>

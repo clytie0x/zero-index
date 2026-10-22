@@ -1,0 +1,396 @@
+<article class="doc">
+      <h1>16.4 pair tuple และเรียงหลายเงื่อนไข</h1>
+
+      <p>ข้อมูลในโจทย์มักมาเป็นคู่หรือเป็นชุด เช่น ชื่อกับคะแนน เวลาเริ่มกับเวลาจบ ตำแหน่งกับหมายเลข ในบทที่ 11 เราสร้าง struct ทุกครั้ง C++ มี <code>pair</code> สำหรับเก็บสองค่าคู่กัน และ <code>tuple</code> สำหรับสามค่าขึ้นไป ที่สำคัญคือทั้งสองเทียบกันเองได้ตามลำดับช่อง <code>sort</code> จึงเรียงได้หลายเงื่อนไขโดยไม่ต้องเขียนฟังก์ชันเปรียบเทียบเลย หน้านี้ปิดด้วยการเรียง struct หลายเงื่อนไขด้วย lambda เทียบกับ <code>qsort</code> ในหน้า 13.4 และ <code>stable_sort</code> สำหรับโจทย์ที่ค่าเท่ากันต้องอยู่ตามลำดับเดิม</p>
+
+      <h2 id="pair">pair เก็บสองค่าคู่กัน</h2>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="pair-basic"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    pair&lt;string, int&gt; best = {"ploy", 92}; // (1)!
+    cout &lt;&lt; best.first &lt;&lt; ' ' &lt;&lt; best.second &lt;&lt; '\n'; // (2)!
+    best.second += 3;
+    pair&lt;int, int&gt; start = make_pair(7, 30); // (3)!
+    cout &lt;&lt; best.second &lt;&lt; ' ' &lt;&lt; start.first &lt;&lt; ':' &lt;&lt; start.second &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ชนิดของสองช่องเขียนในวงเล็บแหลม คั่นด้วยจุลภาค สองช่องเป็นคนละชนิดได้ กำหนดค่าด้วยปีกกาเรียงตามช่อง</li>
+        <li>ช่องแรกชื่อ <code>first</code> ช่องที่สองชื่อ <code>second</code> ใช้เหมือนตัวแปรธรรมดา อ่าน แก้ บวกได้หมด</li>
+        <li><code>make_pair(7, 30)</code> สร้าง pair จากสองค่าโดยเดาชนิดให้ ได้ผลเหมือน <code>{7, 30}</code> โค้ดเก่าๆ ใช้แบบนี้บ่อย</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="pair-basic" data-title="C:\code\pair.exe"><pre><code>ploy 92
+95 7:30
+</code></pre></div>
+
+      <p>pair ก็คือ struct ที่มีสองช่องชื่อ <code>first</code> กับ <code>second</code> ที่ C++ เตรียมไว้ให้ ไม่ต้องประกาศเอง ข้อเสียคือชื่อช่องไม่บอกความหมาย อ่านโค้ดยาวๆ แล้วต้องจำว่า <code>first</code> คืออะไร</p>
+
+      <h2 id="compare">pair เทียบกันอย่างไร</h2>
+
+      <p>pair เทียบด้วย <code>&lt;</code> <code>&gt;</code> <code>==</code> ได้ โดยเทียบ <code>first</code> ก่อน ถ้า <code>first</code> เท่ากันจึงเทียบ <code>second</code> เหมือนเทียบคำในพจนานุกรมที่ดูตัวอักษรแรกก่อน</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="pair-compare"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    pair&lt;int, int&gt; a = {3, 9};
+    pair&lt;int, int&gt; b = {5, 1};
+    pair&lt;int, int&gt; c = {3, 4};
+    cout &lt;&lt; (a &lt; b) &lt;&lt; '\n';
+    cout &lt;&lt; (c &lt; a) &lt;&lt; '\n';
+    cout &lt;&lt; (a == c) &lt;&lt; '\n';
+    pair&lt;int, int&gt; smallest = min({a, b, c});
+    cout &lt;&lt; smallest.first &lt;&lt; ' ' &lt;&lt; smallest.second &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="pair-compare" data-title="C:\code\compare.exe"><pre><code>1
+1
+0
+3 4
+</code></pre></div>
+
+      <ul>
+        <li><code>a &lt; b</code> จริง เพราะ <code>first</code> 3 น้อยกว่า 5 ไม่ต้องดู <code>second</code> เลย แม้ 9 จะมากกว่า 1</li>
+        <li><code>c &lt; a</code> จริง เพราะ <code>first</code> เท่ากัน จึงตัดสินด้วย <code>second</code> 4 น้อยกว่า 9</li>
+        <li><code>min</code> ที่ใส่หลายค่าในปีกกาหาค่าน้อยสุดของทั้งหมด และใช้กับ pair ได้เพราะ pair เทียบกันได้</li>
+      </ul>
+
+      <h2 id="sort-pairs">เรียง vector ของ pair</h2>
+
+      <p>กติกาการเทียบนี้คือ "เรียงตาม first ถ้าเท่ากันเรียงตาม second" พอดี <code>sort</code> vector ของ pair จึงได้การเรียงสองเงื่อนไขทันที เคล็ดลับคือ<strong>เอาค่าที่ใช้เรียงเป็นอันดับแรกไว้ใน first</strong> งานวิ่งการกุศลบันทึกชื่อกับเวลาเป็นนาทีของนักวิ่ง ให้พิมพ์จากคนที่ใช้เวลาน้อยที่สุด ถ้าเวลาเท่ากันเรียงตามชื่อ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="runners"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, string&gt;&gt; runner(n);
+    for (auto &amp;r : runner) {
+        cin &gt;&gt; r.second &gt;&gt; r.first;
+    }
+    sort(runner.begin(), runner.end());
+    for (const auto &amp;r : runner) {
+        cout &lt;&lt; r.first &lt;&lt; ' ' &lt;&lt; r.second &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="runners" data-title="ข้อมูลเข้า"><pre><code>5
+mint 52
+beam 47
+ploy 52
+earth 61
+fah 47
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="runners" data-title="C:\code\runners.exe"><pre><code>47 beam
+47 fah
+52 mint
+52 ploy
+61 earth
+</code></pre></div>
+      </div>
+
+      <p>ข้อมูลเข้าให้ชื่อก่อนเวลา แต่บรรทัดที่ 10 อ่านชื่อใส่ <code>second</code> และเวลาใส่ <code>first</code> เพราะอยากให้เรียงตามเวลาก่อน <code>auto</code> จากบทที่ 15 ช่วยให้ไม่ต้องเขียน <code>pair&lt;int, string&gt;</code> ซ้ำ</p>
+
+      <h3 id="negative-trick">เงื่อนไขหนึ่งมากไปน้อย อีกเงื่อนไขน้อยไปมาก</h3>
+
+      <p>ถ้าโจทย์ให้เรียงคะแนนจากมากไปน้อย แต่คะแนนเท่ากันให้เรียงชื่อจากน้อยไปมาก จะใช้ <code>greater</code> ไม่ได้ เพราะชื่อจะกลับด้านไปด้วย เคล็ดลับคือเก็บ<strong>คะแนนติดลบ</strong>ไว้ใน <code>first</code> คะแนนมากกลายเป็นค่าน้อย จึงขึ้นก่อนเมื่อเรียงจากน้อยไปมาก ตอนพิมพ์ค่อยกลับเครื่องหมาย</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="negative"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, string&gt;&gt; list(n);
+    for (auto &amp;p : list) {
+        int score;
+        cin &gt;&gt; p.second &gt;&gt; score;
+        p.first = -score;
+    }
+    sort(list.begin(), list.end());
+    for (const auto &amp;p : list) {
+        cout &lt;&lt; p.second &lt;&lt; ' ' &lt;&lt; -p.first &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="negative" data-title="ข้อมูลเข้า"><pre><code>5
+somchai 85
+malee 92
+anan 85
+kanya 92
+preeda 70
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="negative" data-title="C:\code\negative.exe"><pre><code>kanya 92
+malee 92
+anan 85
+somchai 85
+preeda 70
+</code></pre></div>
+      </div>
+
+      <p>เคล็ดลับนี้ใช้ได้กับจำนวนเต็มที่ไม่ใกล้ค่าติดลบที่สุดของ <code>int</code> คะแนน เวลา ระยะทาง ใช้ได้หมด ถ้าค่าอาจเป็น -2147483648 ได้ การกลับเครื่องหมายจะล้นตามหน้า 1.3 ให้ใช้ lambda แทน</p>
+
+      <h2 id="tuple">tuple เมื่อมีสามค่าขึ้นไป</h2>
+
+      <p><code>tuple</code> คือ pair ที่มีกี่ช่องก็ได้ เทียบกันแบบเดียวกัน คือดูช่องแรกก่อน เท่ากันค่อยดูช่องถัดไป ช่องของ tuple ไม่มีชื่อ หยิบด้วย <code>get&lt;0&gt;(t)</code> <code>get&lt;1&gt;(t)</code> ตามเลขช่อง หรือแตกออกเป็นตัวแปรหลายตัวในบรรทัดเดียวด้วย <code>auto [a, b, c] = t;</code> ซึ่งเรียกว่า <strong>structured binding</strong> ใช้กับ pair ได้ด้วย</p>
+
+      <p>ตัวอย่างนี้คือการแข่งตอบคำถามในหน้า 13.4 คะแนนมากก่อน คะแนนเท่ากันเวลาน้อยก่อน เท่ากันอีกเรียงตามชื่อ สามเงื่อนไขพอดีกับสามช่องของ tuple</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="tuple"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;tuple&lt;int, int, string&gt;&gt; list;
+    for (int i = 0; i &lt; n; i++) {
+        string name;
+        int score, minutes;
+        cin &gt;&gt; name &gt;&gt; score &gt;&gt; minutes;
+        list.push_back({-score, minutes, name}); // (1)!
+    }
+    sort(list.begin(), list.end());
+    cout &lt;&lt; "top: " &lt;&lt; get&lt;2&gt;(list[0]) &lt;&lt; '\n'; // (2)!
+    int rank = 1;
+    for (auto [neg_score, minutes, name] : list) { // (3)!
+        cout &lt;&lt; rank &lt;&lt; ". " &lt;&lt; name &lt;&lt; ' ' &lt;&lt; -neg_score &lt;&lt; ' ' &lt;&lt; minutes &lt;&lt; '\n';
+        rank++;
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ช่องแรกคะแนนติดลบ ให้คะแนนมากขึ้นก่อน ช่องที่สองเวลา ช่องที่สามชื่อ ลำดับช่องคือลำดับความสำคัญของเงื่อนไข</li>
+        <li><code>get&lt;2&gt;</code> หยิบช่องที่ 2 นับจาก 0 คือชื่อ เลขในวงเล็บแหลมต้องเป็นค่าคงที่ จะใช้ตัวแปรแทนไม่ได้</li>
+        <li>แตก tuple แต่ละตัวเป็นตัวแปรสามตัวตามลำดับช่อง ตั้งชื่ออะไรก็ได้ อ่านง่ายกว่า <code>get</code> มาก</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="tuple" data-title="ข้อมูลเข้า"><pre><code>6
+somchai 85 40
+malee 92 55
+anan 85 35
+kanya 92 55
+preeda 70 20
+boonmee 85 40
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="tuple" data-title="C:\code\ranking.exe"><pre><code>top: kanya
+1. kanya 92 55
+2. malee 92 55
+3. anan 85 35
+4. boonmee 85 40
+5. somchai 85 40
+6. preeda 70 20
+</code></pre></div>
+      </div>
+
+      <p>ผลตรงกับโปรแกรม ranking ในหน้า 13.4 ทุกบรรทัด แต่ไม่มีฟังก์ชันเปรียบเทียบเลยสักบรรทัด</p>
+
+      <h2 id="struct-sort">เรียง struct ด้วย lambda</h2>
+
+      <p>pair และ tuple สะดวกเมื่อข้อมูลมีสองสามช่อง แต่ถ้ามีหลายช่อง หรือช่องที่ใช้เรียงไม่ได้เรียงตามลำดับในข้อมูล struct ที่มีชื่อช่องชัดเจนอ่านง่ายกว่า ใน C++ ประกาศ struct แล้วใช้ชื่อเป็นชนิดได้เลย ไม่ต้องเขียนคำว่า <code>struct</code> นำหน้าทุกครั้งแบบภาษา C</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="struct-sort"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Contestant {
+    string name;
+    int score;
+    int minutes;
+};
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;Contestant&gt; list(n);
+    for (Contestant &amp;c : list) {
+        cin &gt;&gt; c.name &gt;&gt; c.score &gt;&gt; c.minutes;
+    }
+    sort(list.begin(), list.end(), [](const Contestant &amp;a, const Contestant &amp;b) {
+        if (a.score != b.score) {
+            return a.score &gt; b.score;
+        }
+        if (a.minutes != b.minutes) {
+            return a.minutes &lt; b.minutes;
+        }
+        return a.name &lt; b.name;
+    });
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; i + 1 &lt;&lt; ". " &lt;&lt; list[i].name &lt;&lt; ' ' &lt;&lt; list[i].score &lt;&lt; ' ' &lt;&lt; list[i].minutes &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="struct-sort" data-title="ข้อมูลเข้า"><pre><code>6
+somchai 85 40
+malee 92 55
+anan 85 35
+kanya 92 55
+preeda 70 20
+boonmee 85 40
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="struct-sort" data-title="C:\code\ranking.exe"><pre><code>1. kanya 92 55
+2. malee 92 55
+3. anan 85 35
+4. boonmee 85 40
+5. somchai 85 40
+6. preeda 70 20
+</code></pre></div>
+      </div>
+
+      <p>โครงของ lambda เหมือนฟังก์ชัน <code>compare_rank</code> ในหน้า 13.4 ทุกอย่าง ไล่ดูทีละเงื่อนไข เงื่อนไขแรกที่ต่างกันเป็นตัวตัดสิน สิ่งที่หายไปคือ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>qsort ในหน้า 13.4</th><th>sort ในหน้านี้</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>รับ <code>const void *</code> แล้วแปลงเป็น <code>const struct contestant *</code> เอง</td><td>รับ <code>const Contestant &amp;</code> ใช้ได้ทันที</td></tr>
+            <tr><td><code>a-&gt;score</code></td><td><code>a.score</code></td></tr>
+            <tr><td>คืน -1 0 1 เช่น <code>a-&gt;score &gt; b-&gt;score ? -1 : 1</code></td><td>คืนจริงเท็จ <code>a.score &gt; b.score</code></td></tr>
+            <tr><td>ชื่อเทียบด้วย <code>strcmp</code></td><td>ชื่อเป็น <code>string</code> เทียบด้วย <code>&lt;</code></td></tr>
+            <tr><td>บอก <code>sizeof(list[0])</code> เอง</td><td>ไม่ต้องบอก</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>พารามิเตอร์ของ lambda เป็น <code>const Contestant &amp;</code> ด้วยเหตุผลเดียวกับหน้า 16.2 ถ้ารับแบบสำเนา ทุกครั้งที่ <code>sort</code> เทียบสองคน จะคัดลอกทั้ง struct รวมชื่อด้วย ซึ่งเกิดขึ้นหลายล้านครั้งเมื่อข้อมูลเป็นแสน</p>
+
+      <h2 id="stable-sort">stable_sort รักษาลำดับของค่าที่เท่ากัน</h2>
+
+      <p>หน้า 13.4 เห็นแล้วว่า <code>qsort</code> ไม่สัญญาว่าค่าที่เท่ากันจะอยู่ตามลำดับเดิม <code>sort</code> ก็ไม่สัญญาเช่นกัน ตัวอย่างนี้ให้นักเรียนเลขที่ 1 ถึง 20 ได้คะแนน 5 กับ 7 สลับกัน เรียงตามคะแนนจากมากไปน้อยอย่างเดียว แล้วพิมพ์เป็น <code>เลขที่:คะแนน</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; list(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; list[i].first;
+        list[i].second = i + 1;
+    }
+    sort(list.begin(), list.end(), [](const pair&lt;int, int&gt; &amp;a, const pair&lt;int, int&gt; &amp;b) {
+        return a.first &gt; b.first;
+    });
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; list[i].second &lt;&lt; ':' &lt;&lt; list[i].first &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-title="ข้อมูลเข้า"><pre><code>20
+5 7 5 7 5 7 5 7 5 7 5 7 5 7 5 7 5 7 5 7
+</code></pre></div>
+        <div class="code" data-lang="output" data-title="C:\code\stable.exe"><pre><code>2:7 20:7 18:7 16:7 14:7 12:7 10:7 8:7 6:7 4:7 9:5 7:5 11:5 13:5 5:5 15:5 17:5 3:5 19:5 1:5
+</code></pre></div>
+      </div>
+
+      <p>นี่คือผลบนเครื่องที่เขียนเอกสารนี้ ตัวอย่างนี้จึงไม่มีการตรวจผลอัตโนมัติ คะแนนเรียงถูก แต่เลขที่กระจัดกระจาย และที่น่ากลัวกว่านั้นคือ ถ้าลองกับนักเรียนแปดคนแบบในหน้า 13.4 จะได้ <code>2:7 4:7 6:7 8:7 1:5 3:5 5:5 7:5</code> ซึ่งดูเหมือนรักษาลำดับ เพราะ <code>sort</code> ของ g++ ใช้วิธีเรียงอีกแบบกับข้อมูลไม่เกิน 16 ตัว ลองกับตัวอย่างเล็กแล้วผ่าน ไม่ได้แปลว่าชุดใหญ่จะผ่าน</p>
+
+      <p>เปลี่ยน <code>sort</code> ในบรรทัดที่ 13 เป็น <code>stable_sort</code> ซึ่งรับค่าแบบเดียวกันทุกอย่าง แต่สัญญาว่าค่าที่ฟังก์ชันเปรียบเทียบบอกว่าเท่ากัน จะอยู่ตามลำดับเดิมเสมอ</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="stable"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; list(n);
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; list[i].first;
+        list[i].second = i + 1;
+    }
+    stable_sort(list.begin(), list.end(), [](const pair&lt;int, int&gt; &amp;a, const pair&lt;int, int&gt; &amp;b) {
+        return a.first &gt; b.first;
+    });
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; list[i].second &lt;&lt; ':' &lt;&lt; list[i].first &lt;&lt; (i + 1 &lt; n ? ' ' : '\n');
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="stable" data-title="ข้อมูลเข้า"><pre><code>20
+5 7 5 7 5 7 5 7 5 7 5 7 5 7 5 7 5 7 5 7
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="stable" data-title="C:\code\stable.exe"><pre><code>2:7 4:7 6:7 8:7 10:7 12:7 14:7 16:7 18:7 20:7 1:5 3:5 5:5 7:5 9:5 11:5 13:5 15:5 17:5 19:5
+</code></pre></div>
+      </div>
+
+      <p>ใช้ <code>stable_sort</code> เมื่อโจทย์บอกว่า "ถ้าเท่ากันให้เรียงตามลำดับที่รับเข้ามา" หรือเมื่อเรียงหลายรอบด้วยเงื่อนไขต่างกันแล้วต้องการให้รอบหลังไม่ทำลายผลของรอบก่อน อีกทางที่ได้ผลเท่ากันคือเก็บลำดับที่รับเข้ามาไว้เป็นเงื่อนไขสุดท้ายแบบหน้า 13.4 ซึ่งในตัวอย่างนี้ทำได้ง่ายๆ โดยไม่ใช้ lambda เลย คือเก็บ <code>(-คะแนน, เลขที่)</code> แล้ว <code>sort</code> ธรรมดา</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="print-pair">แบบที่ 1 พิมพ์ pair ทั้งก้อน</h3>
+
+      <p>ในโปรแกรม pair-basic ถ้าเพิ่มบรรทัด <code>cout &lt;&lt; start &lt;&lt; '\n';</code> ไว้ก่อน <code>return 0;</code> เพื่อพิมพ์ pair ทั้งตัว</p>
+
+      <div class="code" data-lang="gcc"><pre><code>pair.cpp:11:10: error: no match for 'operator&lt;&lt;' (operand types are 'std::ostream' {aka 'std::basic_ostream&lt;char&gt;'} and 'std::pair&lt;int, int&gt;')
+   11 |     cout &lt;&lt; start &lt;&lt; '\n';
+      |     ~~~~ ^~ ~~~~~
+      |     |       |
+      |     |       std::pair&lt;int, int&gt;
+      |     std::ostream {aka std::basic_ostream&lt;char&gt;}
+</code></pre></div>
+
+      <p>นี่คือหกบรรทัดแรก ข้อความจริงยาวทั้งหมด 581 บรรทัด ส่วนที่เหลือเกือบทั้งหมดเป็นรายการ <code>note: candidate</code> คือ <code>&lt;&lt;</code> ทุกแบบที่ compiler ลองจับคู่แล้วใช้ไม่ได้ ไม่ต้องอ่านต่อ บรรทัดแรกบอกครบแล้วว่า <code>cout</code> ไม่รู้วิธีพิมพ์ <code>pair&lt;int, int&gt;</code> ให้พิมพ์ <code>first</code> กับ <code>second</code> ทีละตัวเอง error ของ C++ ที่ยาวเป็นหน้าๆ ให้อ่านบรรทัดที่มีชื่อไฟล์ของเราและคำว่า <code>error</code> ก่อนเสมอ</p>
+
+      <h3 id="struct-no-compare">แบบที่ 2 sort struct โดยไม่บอกวิธีเทียบ</h3>
+
+      <p>ในโปรแกรม struct-sort ถ้าลบ lambda ออก เหลือแค่ <code>sort(list.begin(), list.end());</code> คิดว่า <code>sort</code> จะเรียงตามช่องแรกให้เอง ข้อความยาว 129 บรรทัด และ error เดียวกันขึ้นซ้ำสามจุดจากส่วนต่างๆ ข้างใน <code>sort</code> ข้างล่างตัดมาเฉพาะจุดแรก ส่วนที่ต้องหาคือบรรทัดที่มีชื่อไฟล์ของเรา กับ error บรรทัดแรก</p>
+
+      <div class="code" data-lang="gcc"><pre><code>ranking.cpp:18:9:   required from here
+   18 |     sort(list.begin(), list.end());
+      |     ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Program Files/CodeBlocks/MinGW/include/c++/14.2.0/bits/predefined_ops.h:45:23: error: no match for 'operator&lt;' (operand types are 'Contestant' and 'Contestant')
+   45 |       { return *__it1 &lt; *__it2; }
+      |                ~~~~~~~^~~~~~~~
+</code></pre></div>
+
+      <p><code>required from here</code> ชี้บรรทัดในโค้ดของเราที่เป็นต้นเหตุ ส่วน error บอกว่าข้างใน <code>sort</code> พยายามเทียบ <code>Contestant</code> สองตัวด้วย <code>&lt;</code> แต่ไม่มีใครบอกว่า struct นี้เทียบกันอย่างไร pair กับ tuple มี <code>&lt;</code> มาให้ แต่ struct ที่เราสร้างเองไม่มี ต้องส่ง lambda ให้ <code>sort</code> ทุกครั้ง</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>pair&lt;A, B&gt;</code> เก็บสองค่า ใช้ <code>.first</code> <code>.second</code> สร้างด้วย <code>{a, b}</code> หรือ <code>make_pair(a, b)</code></li>
+        <li>pair และ tuple เทียบช่องแรกก่อน เท่ากันค่อยดูช่องถัดไป <code>sort</code> vector ของ pair จึงเรียงหลายเงื่อนไขได้โดยไม่ต้องเขียน lambda</li>
+        <li>เงื่อนไขที่ต้องการมากไปน้อย เก็บค่าติดลบไว้ในช่องนั้น</li>
+        <li><code>tuple</code> มีกี่ช่องก็ได้ หยิบด้วย <code>get&lt;i&gt;(t)</code> หรือ <code>auto [a, b, c] = t;</code></li>
+        <li>struct เรียงด้วย lambda ที่รับ <code>const T &amp;</code> ไล่เงื่อนไขทีละข้อ เงื่อนไขแรกที่ต่างกันเป็นตัวตัดสิน</li>
+        <li><code>sort</code> ไม่รักษาลำดับของค่าที่เท่ากัน ใช้ <code>stable_sort</code> หรือใส่ลำดับที่รับเข้ามาเป็นเงื่อนไขสุดท้าย และอย่าเชื่อผลที่ทดลองกับข้อมูลไม่ถึง 17 ตัว</li>
+      </ul>
+    </article>

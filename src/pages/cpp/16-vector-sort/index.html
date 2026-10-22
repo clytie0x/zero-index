@@ -1,0 +1,33 @@
+<article class="doc">
+      <h1>บทที่ 16 vector pair และ sort</h1>
+
+      <p>จบบทนี้ น้องจะไม่ต้องเดาขนาดอาเรย์อีก เพราะ <code>vector</code> จองขนาดตามข้อมูลเข้าตอนรันและยืดได้เอง จะเก็บข้อมูลเป็นคู่หรือเป็นชุดด้วย <code>pair</code> และ <code>tuple</code> และจะเรียงข้อมูลได้ในบรรทัดเดียวด้วย <code>sort</code> ทั้งเรียงธรรมดา มากไปน้อย และหลายเงื่อนไข ซึ่งในบทที่ 13 ต้องเขียนฟังก์ชันเปรียบเทียบของ <code>qsort</code> ยาวเป็นสิบบรรทัด ท้ายบทมีฟังก์ชันสำเร็จรูปที่ใช้บ่อย เช่น ตัดค่าซ้ำ หาค่ามากสุด ไล่ทุกลำดับ และ <code>lower_bound</code> ที่ตอบคำถามกับข้อมูลที่เรียงแล้วได้ทันที โจทย์ค่าย 1 ช่วงท้ายและค่าย 2 ช่วงต้นจำนวนมากคือ "เรียงก่อน แล้วใช้ข้อมูลที่เรียงแล้วตอบ" เช่น นับคู่ที่ผลรวมไม่เกินงบ นับของในช่วง หรือหาจังหวะที่คนแน่นที่สุด ซึ่งวิธีเทียบทุกคู่ไม่ทันเมื่อข้อมูลเป็นแสน</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="vector.html">16.1 vector อาเรย์ที่ยืดได้</a></td><td>push_back size ขนาดและค่าเริ่มต้น [] กับ at() range-for คัดลอกและเทียบทั้งก้อน และกับดักของ size() ที่เป็น unsigned</td></tr>
+            <tr><td><a href="grid-speed.html">16.2 vector สองมิติและความเร็ว</a></td><td>ตารางที่ขนาดมาจากข้อมูลเข้า แถวยาวไม่เท่ากัน ส่ง vector ให้ฟังก์ชัน และวัดจริงว่า push_back กับการลืม &amp; ใช้เวลาเท่าไร</td></tr>
+            <tr><td><a href="sort.html">16.3 sort และ lambda</a></td><td>เรียง vector อาเรย์ ข้อความ มากไปน้อย เงื่อนไขของเราเองด้วย lambda เทียบเวลากับ qsort และกติกาที่ทำผิดแล้วโปรแกรมพัง</td></tr>
+            <tr><td><a href="pair-struct.html">16.4 pair tuple และเรียงหลายเงื่อนไข</a></td><td>pair tuple การเทียบตามลำดับช่อง เคล็ดลับค่าติดลบ เรียง struct ด้วย lambda และ stable_sort</td></tr>
+            <tr><td><a href="algorithm.html">16.5 ฟังก์ชันใน algorithm ที่ใช้บ่อย</a></td><td>reverse max_element accumulate count unique กับ erase next_permutation และ lower_bound upper_bound</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>อ่านตัวเลขที่ไม่รู้จำนวนจนข้อมูลหมดด้วย <code>push_back</code> แล้วพิมพ์ย้อนหลังได้ โดยคอมไพล์ด้วย <code>-Wall</code> แล้วไม่มีคำเตือน <code>-Wsign-compare</code></span></label></li>
+        <li><label><input type="checkbox"><span>สร้างตาราง R × C ที่ R กับ C มาจากข้อมูลเข้าด้วย <code>vector&lt;vector&lt;int&gt;&gt;</code> และเปลี่ยน <code>[]</code> เป็น <code>at()</code> จนเห็นข้อความ <code>out_of_range</code> เมื่อใช้ index เกินขอบ</span></label></li>
+        <li><label><input type="checkbox"><span>เรียง <code>72 85 64 85 90 58 100 64</code> จากมากไปน้อยได้สองวิธี ทั้ง <code>greater&lt;int&gt;()</code> และ <code>rbegin()</code> <code>rend()</code></span></label></li>
+        <li><label><input type="checkbox"><span>เรียงผู้แข่งขันหกคนในหน้า 16.4 ด้วย tuple และด้วย lambda ได้ผลตรงกับหน้า 13.4 ทุกบรรทัด และบอกได้ว่าทำไมใช้ <code>&lt;=</code> ในฟังก์ชันเปรียบเทียบไม่ได้</span></label></li>
+        <li><label><input type="checkbox"><span>นับค่าที่ไม่ซ้ำด้วย <code>sort</code> <code>unique</code> และ <code>erase</code> และนับว่า <code>50 60 60 60 75 90</code> มี 60 อยู่ 3 ตัวด้วย <code>upper_bound</code> ลบ <code>lower_bound</code></span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ รวมข้อที่ต้องเรียงก่อนถึงจะทันอย่างน้อยสองข้อ</span></label></li>
+      </ul>
+    </article>

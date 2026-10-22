@@ -1,0 +1,530 @@
+<article class="doc">
+      <h1>10.5 จองหน่วยความจำด้วย malloc</h1>
+
+      <p>อาเรย์ทุกตัวที่ผ่านมามีขนาดตายตัวตั้งแต่ตอนเขียนโค้ด ถ้าอยู่ใน <code>main</code> ก็ใหญ่ได้รวมราว 2 MB ตาม<a href="../05-arrays/insert-delete.html#big-arrays">หน้า 5.5</a> ถ้าอยู่นอก <code>main</code> ก็ต้องประกาศเผื่อขนาดมากสุดของโจทย์ไว้ก่อน หน้านี้สอนวิธีขอหน่วยความจำระหว่างโปรแกรมรัน ได้ขนาดตามข้อมูลเข้าพอดี ใช้เสร็จแล้วคืนได้ และสร้างตารางที่แต่ละแถวยาวไม่เท่ากัน ซึ่งช่วยในโจทย์ที่มีข้อมูลหลายชุดขนาดต่างกัน และเป็นฐานของ linked list ในบทที่ 14</p>
+
+      <h2 id="why">ทำไมต้องจองเอง</h2>
+
+      <p>ลองนึกถึงโจทย์ที่ให้ตารางคะแนน K ห้อง ห้องหนึ่งมีนักเรียนได้ถึง 10<sup>5</sup> คน แต่รวมทุกห้องไม่เกิน 10<sup>5</sup> คน ถ้าประกาศอาเรย์สองมิติตายตัวต้องเผื่อ K × 10<sup>5</sup> ช่อง เมื่อ K เป็น 10<sup>5</sup> ก็คือ 10<sup>10</sup> ช่อง หรือ 40 GB ไม่มีเครื่องไหนรับไหว ทั้งที่ข้อมูลจริงมีแค่ 10<sup>5</sup> ตัว ถ้าขอหน่วยความจำให้แต่ละห้องตอนรู้ขนาดแล้ว จะใช้รวมแค่ 10<sup>5</sup> ช่องพอดี</p>
+
+      <p>หน่วยความจำที่ขอระหว่างรันมาจากส่วนที่เรียกว่า <strong>heap</strong> ต่างจากตัวแปรใน <code>main</code> ที่อยู่ใน stack ซึ่งเล็ก heap ใช้ได้จนเกือบเต็มหน่วยความจำของเครื่อง</p>
+
+      <h2 id="malloc">malloc และ free</h2>
+
+      <p><code>malloc</code> (memory allocation) อยู่ใน <code>stdlib.h</code> รับจำนวน byte ที่ต้องการ แล้วคืนที่อยู่ของ byte แรก ได้มาแล้วใช้เหมือนอาเรย์ได้ทันที เพราะ <code>scores[i]</code> คือ <code>*(scores + i)</code> ตามหน้า 10.3 ใช้เสร็จแล้วคืนด้วย <code>free</code></p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="average"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int *scores = malloc(n * sizeof(int)); // (1)!
+    if (scores == NULL) { // (2)!
+        printf("not enough memory\n");
+        return 1;
+    }
+    long long total = 0;
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;scores[i]);
+        total += scores[i];
+    }
+    int above = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if ((long long)scores[i] * n &gt; total) { // (3)!
+            above++;
+        }
+    }
+    printf("%d of %d are above average\n", above, n);
+    free(scores); // (4)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ขอ <code>n</code> ช่อง ช่องละ <code>sizeof(int)</code> byte <code>malloc</code> คืนชนิด <code>void *</code> คือที่อยู่ที่ไม่บอกชนิด ภาษา C แปลงเป็น <code>int *</code> ให้เองตอนกำหนดค่า</li>
+        <li>ถ้าจองไม่สำเร็จ <code>malloc</code> คืน <code>NULL</code> ต้องตรวจก่อนใช้ ตามกฎในหน้า 10.1</li>
+        <li>เทียบกับค่าเฉลี่ยโดยไม่หาร คือ <code>scores[i] &gt; total / n</code> คูณ <code>n</code> ทั้งสองข้าง จะได้ไม่ต้องใช้ทศนิยม แปลงเป็น <code>long long</code> ก่อนคูณตามกับดักในหน้า 1.3</li>
+        <li>คืนหน่วยความจำ หลังบรรทัดนี้ห้ามใช้ <code>scores</code> อีก</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="average" data-title="ข้อมูลเข้า"><pre><code>6
+70 85 90 60 75 95
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="average" data-title="C:\code\average.exe"><pre><code>3 of 6 are above average
+</code></pre></div>
+      </div>
+
+      <p>ค่าเฉลี่ยคือ 475 / 6 ประมาณ 79.2 มีสามคนที่ได้มากกว่า คือ 85 90 95 สิ่งที่ต้องจำมีสามข้อ</p>
+
+      <ul>
+        <li>ขนาดที่ขอเป็น <strong>byte</strong> ต้องคูณ <code>sizeof</code> ของชนิดเสมอ ห้ามเขียน 4 เอง ดูแบบที่ 2 ในส่วนลองทำให้พัง</li>
+        <li><code>malloc</code> ทุกครั้งต้องมี <code>free</code> คู่กันหนึ่งครั้ง เมื่อไม่ใช้แล้ว</li>
+        <li>ค่าในช่องที่ได้จาก <code>malloc</code> ยังไม่ได้ตั้งต้น ต้องใส่ค่าเองก่อนอ่าน</li>
+      </ul>
+
+      <h2 id="calloc">calloc ได้ช่องที่เป็น 0</h2>
+
+      <p>อาเรย์นับแบบ<a href="../05-arrays/counting.html">หน้า 5.3</a> ต้องเริ่มที่ 0 ทุกช่อง <code>calloc(จำนวนช่อง, ขนาดของหนึ่งช่อง)</code> จองแล้วใส่ 0 ให้ทุก byte ตัวอย่างนี้นับคะแนนเลือกตั้งประธานนักเรียน ซึ่งจำนวนผู้สมัครรู้ตอนรัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="votes"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+    int k, n;
+    scanf("%d %d", &amp;k, &amp;n);
+    int *votes = calloc(k + 1, sizeof(int)); // (1)!
+    if (votes == NULL) {
+        return 1;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        int choice;
+        scanf("%d", &amp;choice);
+        votes[choice]++;
+    }
+    int winner = 1;
+    for (int c = 1; c &lt;= k; c++) {
+        printf("candidate %d: %d\n", c, votes[c]);
+        if (votes[c] &gt; votes[winner]) {
+            winner = c;
+        }
+    }
+    printf("winner %d\n", winner);
+    free(votes);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ผู้สมัครเบอร์ 1 ถึง <code>k</code> จึงขอ <code>k + 1</code> ช่องแล้วไม่ใช้ช่อง 0 แบบเดียวกับอาเรย์นับในบทที่ 5</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="votes" data-title="ข้อมูลเข้า"><pre><code>4 10
+2 3 2 1 4 2 3 2 1 3
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="votes" data-title="C:\code\votes.exe"><pre><code>candidate 1: 2
+candidate 2: 4
+candidate 3: 3
+candidate 4: 1
+winner 2
+</code></pre></div>
+      </div>
+
+      <p>ถ้าใช้ <code>malloc</code> แทน ค่าเริ่มต้นของแต่ละช่องคืออะไรก็ได้ บนเครื่องที่เขียนเอกสารนี้ลองจองด้วย <code>malloc</code> แล้วพิมพ์ทันทีได้ 0 ทุกช่อง แต่ GCC เตือน <code>may be used uninitialized</code> และมาตรฐานภาษา C ไม่ได้รับประกันว่าจะเป็น 0 ห้ามพึ่งผลนี้ ต้องการ 0 ให้ใช้ <code>calloc</code></p>
+
+      <h2 id="how-big">จองได้ใหญ่แค่ไหน</h2>
+
+      <p>ลองจอง <code>int</code> หนึ่งร้อยล้านช่อง ซึ่งคือ 400 MB ถ้าประกาศใน <code>main</code> จะพังทันทีเพราะเกิน 2 MB ไปสองร้อยเท่า แล้วลองขอ 10<sup>12</sup> byte หรือ 1000 GB ซึ่งไม่มีเครื่องไหนให้ได้</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+    int n = 100000000;
+    int *big = malloc(n * sizeof(int));
+    if (big == NULL) {
+        printf("100 million ints: NULL\n");
+    } else {
+        for (int i = 0; i &lt; n; i++) {
+            big[i] = i;
+        }
+        printf("100 million ints: OK, last = %d\n", big[n - 1]);
+        free(big);
+    }
+    long long bytes = 1000000000000;
+    char *too_big = malloc(bytes);
+    if (too_big == NULL) {
+        printf("10^12 bytes: NULL\n");
+    } else {
+        printf("10^12 bytes: OK\n");
+        free(too_big);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\big.exe"><pre><code>100 million ints: OK, last = 99999999
+10^12 bytes: NULL
+</code></pre></div>
+
+      <p>บนเครื่องที่เขียนเอกสารนี้ (โน้ตบุ๊ก ASUS Vivobook S 14 แรม 32 GB) จอง 400 MB แล้วเขียนครบร้อยล้านช่องได้ไม่มีปัญหา ส่วน 1000 GB ได้ <code>NULL</code> กลับมาอย่างสุภาพ ไม่พัง นี่คือเหตุผลที่ต้องตรวจ <code>NULL</code> แต่ใน grader จริง แต่ละข้อมีขีดจำกัดหน่วยความจำของมัน ต้องอ่านในโจทย์ และคำนวณเองว่าจองรวมกี่ byte ก่อนส่ง</p>
+
+      <h2 id="lifetime">อยู่จนกว่าจะ free</h2>
+
+      <p>แบบที่ 4 ของหน้า 10.2 คืนที่อยู่ของตัวแปรในฟังก์ชันไม่ได้ เพราะกล่องหายตอนฟังก์ชันจบ หน่วยความจำจาก <code>malloc</code> ไม่ได้เป็นของฟังก์ชันไหน มันอยู่จนกว่าจะมีคน <code>free</code> ฟังก์ชันจึงสร้างอาเรย์แล้วคืนที่อยู่ออกมาได้</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="lifetime"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int *read_array(int n)
+{
+    int *values = malloc(n * sizeof(int));
+    if (values == NULL) {
+        return NULL;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", &amp;values[i]);
+    }
+    return values; // (1)!
+}
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int *morning = read_array(n);
+    int *evening = read_array(n);
+    if (morning == NULL || evening == NULL) {
+        return 1;
+    }
+    for (int i = 0; i &lt; n; i++) {
+        if (i &gt; 0) {
+            printf(" ");
+        }
+        printf("%d", evening[i] - morning[i]);
+    }
+    printf("\n");
+    free(morning); // (2)!
+    free(evening);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ตัวแปร <code>values</code> หายไปตอนฟังก์ชันจบ แต่ค่าของมันคือที่อยู่ในส่วน heap ซึ่งยังอยู่ ส่งค่านั้นออกไปจึงปลอดภัย</li>
+        <li>คนที่ได้ที่อยู่ไปเป็นคนรับผิดชอบ <code>free</code> ฟังก์ชันที่คืนหน่วยความจำจาก <code>malloc</code> ควรบอกไว้ชัดๆ ว่าคนเรียกต้อง <code>free</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="lifetime" data-title="ข้อมูลเข้า"><pre><code>4
+24 25 23 26
+31 33 30 32
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="lifetime" data-title="C:\code\temperature.exe"><pre><code>7 8 7 6
+</code></pre></div>
+      </div>
+
+      <p>อุณหภูมิตอนเช้าและตอนเย็นของสี่วัน อ่านด้วยฟังก์ชันเดียวกันสองครั้ง ได้อาเรย์สองก้อนแยกกัน เพราะ <code>malloc</code> แต่ละครั้งได้หน่วยความจำก้อนใหม่ linked list ในบทที่ 14 ใช้หลักการนี้สร้างกล่องใหม่ทีละกล่องระหว่างรัน</p>
+
+      <h2 id="two-d">ตารางที่จองเองทีละแถว</h2>
+
+      <p>ตารางแบบจองเองคืออาเรย์ของ pointer ช่องที่ <code>r</code> เก็บที่อยู่ของแถวที่ <code>r</code> ซึ่งจองแยกกัน ชนิดของแต่ละช่องคือ <code>int *</code> ชนิดของตัวตารางจึงเป็น <code>int **</code> คือ pointer ไปยัง <code>int *</code> แต่ละแถวยาวไม่เท่ากันได้ ตัวอย่างนี้สร้างสามเหลี่ยมปาสกาล แถวที่ <code>r</code> มี <code>r + 1</code> ตัว และแต่ละตัวคือผลบวกของสองตัวที่อยู่เหนือมัน</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="pascal"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int **row = malloc(n * sizeof(int *)); // (1)!
+    for (int r = 0; r &lt; n; r++) {
+        row[r] = malloc((r + 1) * sizeof(int)); // (2)!
+        row[r][0] = 1;
+        row[r][r] = 1;
+        for (int c = 1; c &lt; r; c++) {
+            row[r][c] = row[r - 1][c - 1] + row[r - 1][c]; // (3)!
+        }
+    }
+    for (int r = 0; r &lt; n; r++) {
+        for (int c = 0; c &lt;= r; c++) {
+            if (c &gt; 0) {
+                printf(" ");
+            }
+            printf("%d", row[r][c]);
+        }
+        printf("\n");
+    }
+    for (int r = 0; r &lt; n; r++) {
+        free(row[r]); // (4)!
+    }
+    free(row);
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>จองอาเรย์ของ pointer <code>n</code> ช่อง ขนาดของแต่ละช่องคือ <code>sizeof(int *)</code> ซึ่งเป็น 8 ไม่ใช่ <code>sizeof(int)</code></li>
+        <li>จองแถวที่ <code>r</code> ยาว <code>r + 1</code> ช่องพอดี แล้วเก็บที่อยู่ไว้ใน <code>row[r]</code></li>
+        <li><code>row[r][c]</code> อ่านทีละขั้น <code>row[r]</code> คือที่อยู่ของแถว แล้ว <code>[c]</code> คือช่องที่ <code>c</code> ของแถวนั้น ใช้สองวงเล็บเหมือนอาเรย์สองมิติในบทที่ 7</li>
+        <li>คืนทุกแถวก่อน แล้วค่อยคืนอาเรย์ของ pointer ถ้าคืน <code>row</code> ก่อน ก็จะไม่มีที่อยู่ของแถวเหลือให้คืน</li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="pascal" data-title="ข้อมูลเข้า"><pre><code>6
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="pascal" data-title="C:\code\pascal.exe"><pre><code>1
+1 1
+1 2 1
+1 3 3 1
+1 4 6 4 1
+1 5 10 10 5 1
+</code></pre></div>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 470 250" width="470" style="max-width:100%;height:auto" role="img" aria-label="กล่อง row ชี้อาเรย์ของ pointer สี่ช่อง row 0 ถึง row 3 แต่ละช่องชี้แถวของตัวเอง ซึ่งยาว 1 2 3 และ 4 ช่องตามลำดับ">
+          <defs>
+            <marker id="heap-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="60" y="88" text-anchor="middle" style="fill:var(--ink);font-size:16px">row</text>
+            <rect x="20" y="98" width="80" height="40" rx="6" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="150" y="20" width="76" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="150" y="70" width="76" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="150" y="120" width="76" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <rect x="150" y="170" width="76" height="40" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="188" y="45" text-anchor="middle" style="fill:var(--muted);font-size:13px">row[0]</text>
+            <text x="188" y="95" text-anchor="middle" style="fill:var(--muted);font-size:13px">row[1]</text>
+            <text x="188" y="145" text-anchor="middle" style="fill:var(--muted);font-size:13px">row[2]</text>
+            <text x="188" y="195" text-anchor="middle" style="fill:var(--muted);font-size:13px">row[3]</text>
+            <rect x="276" y="20" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="276" y="70" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="316" y="70" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="276" y="120" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="316" y="120" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="356" y="120" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="276" y="170" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="316" y="170" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="356" y="170" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <rect x="396" y="170" width="40" height="40" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:1.5"/>
+            <text x="296" y="46" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <text x="296" y="96" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <text x="336" y="96" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <text x="296" y="146" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <text x="336" y="146" text-anchor="middle" style="fill:var(--ink);font-size:17px">2</text>
+            <text x="376" y="146" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <text x="296" y="196" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <text x="336" y="196" text-anchor="middle" style="fill:var(--ink);font-size:17px">3</text>
+            <text x="376" y="196" text-anchor="middle" style="fill:var(--ink);font-size:17px">3</text>
+            <text x="416" y="196" text-anchor="middle" style="fill:var(--ink);font-size:17px">1</text>
+            <text x="60" y="238" text-anchor="middle" style="fill:var(--muted);font-size:13px">int **</text>
+            <text x="188" y="238" text-anchor="middle" style="fill:var(--muted);font-size:13px">int *</text>
+            <text x="356" y="238" text-anchor="middle" style="fill:var(--muted);font-size:13px">int</text>
+          </g>
+          <path d="M102 112 L146 44" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#heap-arrow)"/>
+          <path d="M228 40 H272" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#heap-arrow)"/>
+          <path d="M228 90 H272" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#heap-arrow)"/>
+          <path d="M228 140 H272" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#heap-arrow)"/>
+          <path d="M228 190 H272" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#heap-arrow)"/>
+        </svg>
+      </figure>
+
+      <p>แต่ละแถวเป็นก้อนแยกกันใน heap ไม่ได้วางต่อกันเป็นแถวยาวแถวเดียวแบบอาเรย์สองมิติใน<a href="../07-2d-arrays/declare.html#memory">หน้า 7.1</a> ถ้า n เป็น 10000 ตารางสี่เหลี่ยม n × n ของ <code>int</code> ใช้ 400 MB แต่สามเหลี่ยมนี้ใช้ราวครึ่งหนึ่ง เพราะจองแค่ช่องที่ใช้จริง (ค่าในสามเหลี่ยมปาสกาลล้น <code>int</code> ตั้งแต่แถว <code>r = 34</code> ถ้าต้องการแถวลึกกว่านั้นให้ใช้ <code>long long</code> ซึ่งก็ล้นอีกทีตั้งแต่แถว <code>r = 67</code>)</p>
+
+      <h2 id="pointer-to-pointer">pointer ชี้ pointer</h2>
+
+      <p><code>int **</code> ไม่ได้มีไว้ทำตารางอย่างเดียว pointer ก็เป็นกล่องที่มีที่อยู่ ตัวแปรที่เก็บที่อยู่ของ pointer จึงมีชนิด <code>int **</code> ใส่ <code>*</code> หนึ่งตัวได้ pointer ตัวกลาง ใส่สองตัวได้กล่องปลายทาง</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="pp"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 70;
+    int *p = &amp;score;
+    int **pp = &amp;p;
+    **pp = 85;
+    printf("score = %d\n", score);
+    printf("%d %d %d\n", score, *p, **pp);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="pp" data-title="C:\code\pp.exe"><pre><code>score = 85
+85 85 85
+</code></pre></div>
+
+      <figure>
+        <svg viewBox="0 0 560 130" width="560" style="max-width:100%;height:auto" role="img" aria-label="กล่อง pp ชนิด int ดอกจันสองตัว ชี้กล่อง p ชนิด int ดอกจัน ซึ่งชี้กล่อง score ที่เก็บ 85">
+          <defs>
+            <marker id="pp-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="80" y="20" text-anchor="middle" style="fill:var(--ink);font-size:16px">pp</text>
+            <rect x="20" y="30" width="120" height="52" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="80" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">int **</text>
+            <text x="280" y="20" text-anchor="middle" style="fill:var(--ink);font-size:16px">p</text>
+            <rect x="220" y="30" width="120" height="52" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="280" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">int *</text>
+            <text x="480" y="20" text-anchor="middle" style="fill:var(--ink);font-size:16px">score</text>
+            <rect x="420" y="30" width="120" height="52" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="480" y="64" text-anchor="middle" style="fill:var(--ink);font-size:22px">85</text>
+            <text x="480" y="110" text-anchor="middle" style="fill:var(--muted);font-size:13px">int</text>
+          </g>
+          <path d="M142 56 H214" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#pp-arrow)"/>
+          <path d="M342 56 H414" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#pp-arrow)"/>
+        </svg>
+      </figure>
+
+      <p>ใช้จริงเมื่อฟังก์ชันต้อง<strong>แก้ตัว pointer</strong> ของคนเรียก ไม่ใช่แก้ค่าที่ pointer ชี้ กฎเดียวกับหน้า 10.2 ทุกอย่าง อยากให้ฟังก์ชันแก้ <code>int</code> ส่ง <code>int *</code> อยากให้แก้ <code>int *</code> ก็ส่ง <code>int **</code> ตัวอย่างนี้สลับลำดับคนพูดหน้าเสาธงในอาเรย์ <code>const char *</code> จากหน้า 10.4</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="speakers"><pre><code>#include &lt;stdio.h&gt;
+
+void swap_names(const char **x, const char **y) // (1)!
+{
+    const char *temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+int main()
+{
+    const char *speakers[4] = {"Ploy", "Ton", "Mint", "Beam"};
+    int a, b;
+    scanf("%d %d", &amp;a, &amp;b);
+    swap_names(&amp;speakers[a - 1], &amp;speakers[b - 1]); // (2)!
+    for (int i = 0; i &lt; 4; i++) {
+        printf("%s\n", speakers[i]);
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>หน้าตาเหมือน <code>swap</code> ในหน้า 10.2 ทุกบรรทัด แค่ชนิดของกล่องที่สลับเปลี่ยนจาก <code>int</code> เป็น <code>const char *</code> pointer ไปยังกล่องชนิดนั้นจึงมีดอกจันเพิ่มอีกตัว</li>
+        <li>แต่ละช่องของ <code>speakers</code> เป็น <code>const char *</code> ที่อยู่ของช่องจึงเป็น <code>const char **</code></li>
+      </ol>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="speakers" data-title="ข้อมูลเข้า"><pre><code>1 4
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="speakers" data-title="C:\code\speakers.exe"><pre><code>Beam
+Ton
+Mint
+Ploy
+</code></pre></div>
+      </div>
+
+      <p>ไม่มีตัวอักษรถูกคัดลอกเลยสักตัว สิ่งที่สลับคือที่อยู่สองค่าใน <code>speakers</code> ไม่ว่าชื่อจะยาวเท่าไรก็สลับเท่ากัน ตารางแบบ <code>int **</code> ในหัวข้อที่แล้วก็ใช้หลักเดียวกันได้ สลับ <code>row[a]</code> กับ <code>row[b]</code> คือสลับทั้งแถวโดยไม่ต้องคัดลอกทีละช่อง เร็วเท่ากันไม่ว่าแถวจะยาวแค่ไหน</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="no-stdlib">แบบที่ 1 ลืม include stdlib.h</h3>
+
+      <p>ในโปรแกรม average ลบบรรทัด <code>#include &lt;stdlib.h&gt;</code> ออก</p>
+
+      <div class="code" data-lang="gcc"><pre><code>average.c:7:19: error: implicit declaration of function 'malloc' [-Wimplicit-function-declaration]
+    7 |     int *scores = malloc(n * sizeof(int));
+      |                   ^~~~~~
+average.c:2:1: note: include '&lt;stdlib.h&gt;' or provide a declaration of 'malloc'
+    1 | #include &lt;stdio.h&gt;
+  +++ |+#include &lt;stdlib.h&gt;
+    2 |
+</code></pre></div>
+
+      <p><code>implicit declaration</code> แปลว่าใช้ฟังก์ชันที่ compiler ยังไม่รู้จัก GCC 14 ถือเป็น error และบอกวิธีแก้มาให้ถึงบรรทัดเลย คือเติม <code>#include &lt;stdlib.h&gt;</code> บรรทัดที่มี <code>+</code> คือบรรทัดที่แนะนำให้เพิ่ม ตามมาด้วยข้อความชุดเดียวกันสำหรับ <code>free</code> และคำเตือน <code>incompatible implicit declaration of built-in function</code> อีกหลายบรรทัด ซึ่งหายไปหมดเมื่อเติมบรรทัดเดียวนี้</p>
+
+      <h3 id="no-sizeof">แบบที่ 2 ลืมคูณ sizeof</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+    int n;
+    scanf("%d", &amp;n);
+    int *scores = malloc(n);
+    for (int i = 0; i &lt; n; i++) {
+        scores[i] = i;
+    }
+    long long sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        sum += scores[i];
+    }
+    free(scores);
+    printf("sum = %lld\n", sum);
+    return 0;
+}
+</code></pre></div>
+
+      <p><code>malloc(n)</code> ขอแค่ <code>n</code> byte แต่ <code>n</code> ช่องของ <code>int</code> ต้องใช้ <code>4n</code> byte ลูปจึงเขียนเลยก้อนที่ได้ไปสามเท่า คอมไพล์ด้วย <code>-Wall</code> ไม่มีคำเตือน บนเครื่องที่เขียนเอกสารนี้ ผลขึ้นกับ <code>n</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ป้อน n</th><th>ผล</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>5 10 20</td><td>พิมพ์ <code>sum = 10</code> <code>sum = 45</code> <code>sum = 190</code> ถูกทุกครั้ง</td></tr>
+            <tr><td>100 1000</td><td>ไม่พิมพ์อะไร <code>Process returned -1073740940 (0xC0000374)</code></td></tr>
+            <tr><td>100000</td><td>ไม่พิมพ์อะไร <code>Process returned -1073741819 (0xC0000005)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ตัวอย่างเล็กเขียนเกินไปแค่ไม่กี่สิบ byte บังเอิญไม่ไปทับอะไรที่ถูกตรวจ จึงดูเหมือนถูก พอ <code>n</code> ใหญ่ขึ้นก็ไปทับข้อมูลที่ระบบใช้จดว่าก้อนไหนจองแล้ว <code>0xC0000374</code> คือรหัสของ Windows ที่แปลว่า heap เสียหาย ซึ่งตรวจเจอตอน <code>free</code> และ <code>0xC0000005</code> คือเขียนไกลจนออกนอกหน่วยความจำของโปรแกรม บั๊กแบบนี้ผ่านตัวอย่างในโจทย์แต่ตกชุดทดสอบใหญ่ ให้เขียน <code>n * sizeof(int)</code> จนเป็นนิสัย</p>
+
+      <h3 id="leak">แบบที่ 3 จองในลูปแล้วไม่ free</h3>
+
+      <p>โจทย์มีข้อมูลหลายชุด แต่ละชุดจองอาเรย์ใหม่ แล้วลืมคืน</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+    int rooms, n;
+    scanf("%d %d", &amp;rooms, &amp;n);
+    long long total = 0;
+    for (int r = 0; r &lt; rooms; r++) {
+        int *scores = malloc(n * sizeof(int));
+        for (int i = 0; i &lt; n; i++) {
+            scores[i] = i % 100;
+        }
+        for (int i = 0; i &lt; n; i++) {
+            total += scores[i];
+        }
+    }
+    printf("total = %lld\n", total);
+    return 0;
+}
+</code></pre></div>
+
+      <p>ป้อน <code>1000 100000</code> ได้ <code>total = 4950000000</code> ถูกต้อง แต่ทุกรอบจอง 400 KB แล้วไม่คืน พอ <code>scores</code> หายไปตอนจบรอบ ก็ไม่มีใครรู้ที่อยู่ของก้อนนั้นอีกเลย คืนก็ไม่ได้แล้ว เรียกว่า <strong>memory leak</strong> (หน่วยความจำรั่ว) บนเครื่องที่เขียนเอกสารนี้ วัดหน่วยความจำสูงสุดที่โปรแกรมใช้ด้วย PowerShell สองครั้งได้ 348 MB และ 363 MB พอเติม <code>free(scores);</code> ท้ายลูป ได้คำตอบเท่าเดิมและใช้แค่ 4.7 MB ถ้าโจทย์จำกัดหน่วยความจำไว้ โปรแกรมที่รั่วจะตกเพราะหน่วยความจำเกิน ทั้งที่คำตอบถูก</p>
+
+      <h3 id="after-free">แบบที่ 4 ใช้หลัง free และ free ซ้ำ</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+    int *scores = malloc(3 * sizeof(int));
+    scores[0] = 70;
+    scores[1] = 85;
+    scores[2] = 90;
+    free(scores);
+    printf("%d %d %d\n", scores[0], scores[1], scores[2]);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>scores.c:11:5: warning: pointer 'scores' used after 'free' [-Wuse-after-free]
+   11 |     printf("%d %d %d\n", scores[0], scores[1], scores[2]);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+scores.c:10:5: note: call to 'free' here
+   10 |     free(scores);
+      |     ^~~~~~~~~~~~
+</code></pre></div>
+
+      <p>คำเตือนขึ้นซ้ำอีกสองชุดสำหรับ <code>scores[1]</code> กับ <code>scores[2]</code> บนเครื่องที่เขียนเอกสารนี้โปรแกรมยังพิมพ์ <code>70 85 90</code> เพราะ <code>free</code> แค่บอกว่าก้อนนี้ว่างแล้ว ไม่ได้ลบค่าทิ้ง ตัว pointer ก็ยังเก็บที่อยู่เดิม จึงดูเหมือนไม่มีอะไรผิด แต่ถ้ามี <code>malloc</code> ครั้งต่อไป ก้อนนี้อาจถูกให้คนอื่นไปใช้และค่าเปลี่ยนเมื่อไรก็ได้</p>
+
+      <p>ถ้าเปลี่ยนบรรทัดที่ 11 เป็น <code>free(scores);</code> อีกครั้ง คือคืนก้อนเดิมซ้ำ GCC เตือนแบบเดียวกัน และบนเครื่องที่เขียนเอกสารนี้โปรแกรมพังด้วย <code>Process returned -1073740940 (0xC0000374)</code> ทุกครั้ง วิธีกันทั้งสองแบบคือหลัง <code>free(p);</code> ให้ตั้ง <code>p = NULL;</code> ทันทีถ้ายังจะใช้ตัวแปรนั้นต่อ ถ้าเผลอใช้ <code>*p</code> อีกจะพังทันทีแบบที่ 5 ของหน้า 10.1 แทนที่จะได้ค่าเก่าเงียบๆ และ <code>free(NULL)</code> ไม่ทำอะไรเลย จึงไม่พังแม้เผลอเรียกซ้ำ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>malloc(n * sizeof(int))</code> จอง <code>n</code> ช่องใน heap ระหว่างรัน ใช้เหมือนอาเรย์ ต้อง <code>#include &lt;stdlib.h&gt;</code> และตรวจ <code>NULL</code></li>
+        <li><code>calloc(n, sizeof(int))</code> จองแล้วได้ 0 ทุกช่อง <code>malloc</code> ไม่รับประกันค่าเริ่มต้น</li>
+        <li>หน่วยความจำจาก <code>malloc</code> อยู่จนกว่าจะ <code>free</code> ฟังก์ชันจึงคืนที่อยู่ของมันได้ จองกี่ครั้งต้อง <code>free</code> เท่านั้นครั้ง</li>
+        <li>ตารางจองเองคือ <code>int **</code> จองอาเรย์ของ pointer ก่อน แล้วจองทีละแถว แต่ละแถวยาวไม่เท่ากันได้ คืนทุกแถวก่อนคืนตัวตาราง</li>
+        <li>อยากให้ฟังก์ชันแก้ pointer ของคนเรียก ส่ง pointer ไปยัง pointer สลับแถวหรือสลับข้อความได้โดยสลับแค่ที่อยู่</li>
+        <li>ลืม <code>sizeof</code> ใช้หลัง <code>free</code> และ <code>free</code> ซ้ำ อาจผ่านตัวอย่างเล็กแต่พังทีหลัง ลืม <code>free</code> ในลูปทำให้หน่วยความจำรั่ว</li>
+      </ul>
+
+      <p>กลับไปเช็กรายการ <a href="index.html#checklist">ผ่านบทนี้เมื่อ</a> แล้วไปทำ<a href="exercises.html">แบบฝึกหัด</a></p>
+    </article>

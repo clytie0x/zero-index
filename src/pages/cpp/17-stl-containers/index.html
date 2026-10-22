@@ -1,0 +1,32 @@
+<article class="doc">
+      <h1>บทที่ 17 stack queue deque ใน STL</h1>
+
+      <p>จบบทนี้ น้องจะใช้ <code>stack</code> <code>queue</code> <code>deque</code> และ <code>list</code> ที่ C++ ทำไว้ให้ แทนของที่เขียนเองด้วยอาเรย์ในบทที่ 14 โค้ดสั้นลงและไม่ต้องคิดขนาดอาเรย์ แล้วเอาไปแก้โจทย์ที่วิธีลูปซ้อนไม่ทันเวลา เช่น หาวันแรกที่ร้อนกว่าวันนี้ของทุกวัน หรือหาค่ามากสุดของทุกช่วงยาว k ด้วยการเดินรอบเดียว สองเทคนิคนี้คือ monotonic stack กับ monotonic deque ซึ่งโผล่ในโจทย์ค่ายและ TOI บ่อย และเป็นจุดเริ่มของบทอัลกอริทึมที่ต้องเลือกวิธีให้ทันตามขอบเขตโจทย์</p>
+
+      <h2 id="in-this-chapter">ในบทนี้</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>หน้า</th><th>ได้อะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="stack-queue.html">17.1 stack และ queue สำเร็จรูป</a></td><td>คำสั่งของ <code>stack</code> กับ <code>queue</code> เวลา O(1) ของทุกคำสั่ง เทียบความยาวและความเร็วกับบทที่ 14 และอาการจริงเมื่อ pop หรือดูตัวบนสุดตอนว่าง</td></tr>
+            <tr><td><a href="deque-list.html">17.2 deque และ list</a></td><td>เพิ่มลบได้ทั้งสองหัวด้วย <code>deque</code> ทำไมไม่แทรกหัวด้วย vector และ <code>list</code> กับ iterator แบบสั้น</td></tr>
+            <tr><td><a href="stack-uses.html">17.3 งานที่ใช้ stack</a></td><td>ตรวจวงเล็บ ปุ่ม back กับ undo คำนวณ postfix และ monotonic stack หาตัวถัดไปที่มากกว่า พร้อมเวลาที่วัดเทียบกับลูปซ้อน</td></tr>
+            <tr><td><a href="queue-uses.html">17.4 งานที่ใช้ queue และ deque</a></td><td>จำลองคิวแบบ round robin queue กับ BFS และค่ามากสุดของทุกหน้าต่างยาว k ด้วย monotonic deque</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="checklist">ผ่านบทนี้เมื่อ</h2>
+
+      <ul class="task-list">
+        <li><label><input type="checkbox"><span>เขียนโปรแกรม plates ด้วย <code>stack&lt;int&gt;</code> ได้ผลตรงหน้า 17.1 ทั้งหกบรรทัด และอธิบายได้ว่าทำไม <code>int x = plates.pop();</code> คอมไพล์ไม่ผ่าน</span></label></li>
+        <li><label><input type="checkbox"><span>เขียนโปรแกรมห้องฉุกเฉินด้วย <code>deque</code> โดยไม่ดูหน้า 17.2 แล้วป้อนข้อมูลตัวอย่างได้ผลตรงทั้งห้าบรรทัด รวมบรรทัด <code>no patient</code></span></label></li>
+        <li><label><input type="checkbox"><span>ตรวจวงเล็บด้วย <code>stack&lt;char&gt;</code> ได้ <code>YES</code> กับ <code>{[()()]}</code> และ <code>NO</code> กับ <code>([)]</code> <code>(()</code> <code>())</code> <code>)(</code> และคำนวณ postfix <code>10 2 -</code> ได้ <code>8</code></span></label></li>
+        <li><label><input type="checkbox"><span>เขียนโปรแกรมวันแรกที่ร้อนกว่าด้วย monotonic stack เองได้ <code>34 30 34 35 35 35 -1 -1</code> จากข้อมูลตัวอย่าง แล้ววัดเวลาแบบ falling ที่ n = 100,000 บนเครื่องตัวเอง เทียบกับลูปซ้อน</span></label></li>
+        <li><label><input type="checkbox"><span>หาค่ามากสุดของทุกหน้าต่างด้วย deque ได้ <code>42 51 51 51 47 40 58 58</code> และยังได้ <code>5 4 3 2</code> เมื่อป้อนข้อมูลที่ลดลงตลอด <code>5 2</code> กับ <code>5 4 3 2 1</code></span></label></li>
+        <li><label><input type="checkbox"><span>ทำ<a href="exercises.html">แบบฝึกหัด</a>ผ่านอย่างน้อย 7 ข้อจาก 10 ข้อ รวมข้อที่ใช้ monotonic stack หรือ deque อย่างน้อยสองข้อ</span></label></li>
+      </ul>
+    </article>

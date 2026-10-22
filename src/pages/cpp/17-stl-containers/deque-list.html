@@ -1,0 +1,377 @@
+<article class="doc">
+      <h1>17.2 deque และ list</h1>
+
+      <p>stack ทำงานที่หัวเดียว queue เข้าทางหนึ่งออกอีกทาง แต่บางงานต้องเพิ่มและเอาออกได้ทั้งสองหัว เช่น ห้องฉุกเฉินในหน้า 14.5 ที่คนไข้หนักแซงไปหัวคิว และคนท้ายคิวกลับบ้านได้ งานแบบนี้ใช้ <code>deque</code> ซึ่งในบทที่ 14 ต้องเขียนเองด้วย circular queue พร้อมสูตร <code>(head - 1 + capacity) % capacity</code> ท้ายหน้ามี <code>list</code> ซึ่งคือ linked list สองทางแบบหน้า 14.3 ที่ C++ ทำไว้ให้</p>
+
+      <h2 id="deque">deque</h2>
+
+      <p><code>deque</code> มีทุกอย่างที่ stack กับ queue มี และมีมากกว่านั้นอีกสองเรื่อง คือเพิ่มลบได้ทั้งสองหัว และดูหรือแก้ช่องไหนก็ได้ด้วยวงเล็บเหลี่ยมเหมือน <code>vector</code></p>
+
+      <figure>
+        <svg viewBox="0 0 560 130" width="560" style="max-width:100%;height:auto" role="img" aria-label="deque เก็บ 5 10 20 30 ในช่อง d[0] ถึง d[3] ด้านหัวทางซ้ายเพิ่มด้วย push_front และเอาออกด้วย pop_front ด้านท้ายทางขวาเพิ่มด้วย push_back และเอาออกด้วย pop_back">
+          <defs>
+            <marker id="deque-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <rect x="160" y="48" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="220" y="48" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="280" y="48" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <rect x="340" y="48" width="60" height="44" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="190" y="76" text-anchor="middle" style="fill:var(--ink);font-size:18px">5</text>
+            <text x="250" y="76" text-anchor="middle" style="fill:var(--ink);font-size:18px">10</text>
+            <text x="310" y="76" text-anchor="middle" style="fill:var(--ink);font-size:18px">20</text>
+            <text x="370" y="76" text-anchor="middle" style="fill:var(--ink);font-size:18px">30</text>
+            <text x="190" y="38" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">d[0]</text>
+            <text x="250" y="38" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">d[1]</text>
+            <text x="310" y="38" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">d[2]</text>
+            <text x="370" y="38" text-anchor="middle" style="fill:var(--brand-text);font-size:13px">d[3]</text>
+            <line x1="40" y1="60" x2="152" y2="60" style="stroke:var(--brand);stroke-width:2" marker-end="url(#deque-arrow)"/>
+            <text x="96" y="52" text-anchor="middle" style="fill:var(--ink);font-size:13px">push_front</text>
+            <line x1="152" y1="82" x2="40" y2="82" style="stroke:var(--brand);stroke-width:2" marker-end="url(#deque-arrow)"/>
+            <text x="96" y="102" text-anchor="middle" style="fill:var(--ink);font-size:13px">pop_front</text>
+            <line x1="520" y1="60" x2="408" y2="60" style="stroke:var(--brand);stroke-width:2" marker-end="url(#deque-arrow)"/>
+            <text x="464" y="52" text-anchor="middle" style="fill:var(--ink);font-size:13px">push_back</text>
+            <line x1="408" y1="82" x2="520" y2="82" style="stroke:var(--brand);stroke-width:2" marker-end="url(#deque-arrow)"/>
+            <text x="464" y="102" text-anchor="middle" style="fill:var(--ink);font-size:13px">pop_back</text>
+            <text x="190" y="118" text-anchor="middle" style="fill:var(--muted);font-size:13px">front()</text>
+            <text x="370" y="118" text-anchor="middle" style="fill:var(--muted);font-size:13px">back()</text>
+          </g>
+        </svg>
+      </figure>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="deque-basics"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    deque&lt;int&gt; d;
+    d.push_back(20);
+    d.push_back(30);
+    d.push_front(10); // (1)!
+    d.push_front(5);
+    cout &lt;&lt; "front = " &lt;&lt; d.front() &lt;&lt; ", back = " &lt;&lt; d.back() &lt;&lt; '\n';
+    cout &lt;&lt; "d[2] = " &lt;&lt; d[2] &lt;&lt; '\n'; // (2)!
+    d.pop_front();
+    d.pop_back();
+    d[0] = 15;
+    cout &lt;&lt; "size = " &lt;&lt; d.size() &lt;&lt; '\n';
+    for (int i = 0; i &lt; (int)d.size(); i++) { // (3)!
+        if (i &gt; 0) {
+            cout &lt;&lt; ' ';
+        }
+        cout &lt;&lt; d[i];
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>เพิ่มที่หัว ตัวที่เพิ่มทีหลังอยู่หน้าสุด หลังบรรทัดนี้กับบรรทัดถัดไป deque คือ 5 10 20 30</li>
+        <li>ช่องที่ 2 นับจากหัว เริ่มนับจาก 0 เหมือนอาเรย์ ได้ 20</li>
+        <li><code>(int)</code> แปลง <code>size()</code> เป็น <code>int</code> ก่อนเทียบกับ <code>i</code> แบบเดียวกับ vector ในหน้า 16.1 ถ้าไม่แปลงจะได้คำเตือน ดูในส่วนลองทำให้พัง</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="deque-basics" data-title="C:\code\deque_basics.exe"><pre><code>front = 5, back = 30
+d[2] = 20
+size = 2
+15 20
+</code></pre></div>
+
+      <p>หลัง pop หัวและท้าย เหลือ 10 20 แล้วเปลี่ยนช่อง 0 เป็น 15 ส่วนวนดูทุกตัวจะใช้ <code>for (int x : d)</code> แบบเดียวกับ <code>vector</code> ก็ได้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่ง</th><th>ทำอะไร</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>d.push_back(x)</code> <code>d.push_front(x)</code></td><td>เพิ่มที่ท้าย หรือที่หัว</td><td>O(1)</td></tr>
+            <tr><td><code>d.pop_back()</code> <code>d.pop_front()</code></td><td>ทิ้งตัวท้าย หรือตัวหัว ไม่คืนค่า</td><td>O(1)</td></tr>
+            <tr><td><code>d.front()</code> <code>d.back()</code></td><td>ดูตัวหัว ตัวท้าย</td><td>O(1)</td></tr>
+            <tr><td><code>d[i]</code></td><td>ดูหรือแก้ช่องที่ i นับจากหัว</td><td>O(1)</td></tr>
+            <tr><td><code>d.empty()</code> <code>d.size()</code></td><td>ว่างไหม มีกี่ตัว</td><td>O(1)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ความจริง <code>stack</code> กับ <code>queue</code> ในหน้าที่แล้วก็สร้างจาก <code>deque</code> ข้างในนี่เอง แค่ปิดคำสั่งที่ไม่ควรใช้ไว้ เช่น queue ไม่ให้ push ที่หัว คำถามคือ ถ้า deque ทำได้ทุกอย่าง ทำไมไม่ใช้ deque ตลอด คำตอบคือชื่อ container บอกคนอ่านโค้ดได้ทันทีว่างานนี้ใช้ของแบบไหน และ compiler ช่วยกันไม่ให้เผลอเรียกคำสั่งผิดฝั่ง</p>
+
+      <h2 id="emergency">ห้องฉุกเฉินด้วย deque</h2>
+
+      <p>โจทย์เดียวกับโปรแกรม deque ในหน้า 14.5 คนไข้ทั่วไป (<code>N x</code>) ต่อท้ายคิว คนไข้อาการหนัก (<code>U x</code>) ไปอยู่หัวคิว หมอเรียกคนหัวคิว (<code>D</code>) และคนท้ายคิวกลับบ้าน (<code>L</code>)</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-test="emergency"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int q;
+    cin &gt;&gt; q;
+    deque&lt;int&gt; patients;
+    for (int i = 0; i &lt; q; i++) {
+        char command;
+        cin &gt;&gt; command;
+        if (command == 'N' || command == 'U') {
+            int patient;
+            cin &gt;&gt; patient;
+            if (command == 'N') {
+                patients.push_back(patient);
+            } else {
+                patients.push_front(patient);
+            }
+        } else if (patients.empty()) {
+            cout &lt;&lt; "no patient\n";
+        } else if (command == 'D') {
+            cout &lt;&lt; "doctor sees " &lt;&lt; patients.front() &lt;&lt; '\n';
+            patients.pop_front();
+        } else {
+            cout &lt;&lt; patients.back() &lt;&lt; " goes home\n";
+            patients.pop_back();
+        }
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="emergency" data-title="ข้อมูลเข้า"><pre><code>9
+N 21
+N 22
+U 23
+N 24
+D
+L
+D
+D
+D
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="emergency" data-title="C:\code\emergency.exe"><pre><code>doctor sees 23
+24 goes home
+doctor sees 21
+doctor sees 22
+no patient
+</code></pre></div>
+      </div>
+
+      <p>ผลเหมือนหน้า 14.5 ทุกบรรทัด โปรแกรมในบทที่ 14 ยาว 60 บรรทัด อันนี้ 31 บรรทัด ที่หายไปคืออาเรย์แสนช่อง ตัวแปร <code>head</code> <code>tail</code> <code>count</code> และฟังก์ชันสี่ตัวที่ต้องเขียนสูตรถอยหลังแบบวนกลับให้ถูก ซึ่งเป็นที่มาของบั๊กแบบที่ 3 ในหน้า 14.5</p>
+
+      <h2 id="vector-front">ทำไมไม่ใช้ vector</h2>
+
+      <p><code>vector</code> ก็มี <code>v.insert(v.begin(), x)</code> ที่แทรกไว้หน้าสุดได้ แต่ข้างใน vector คืออาเรย์ธรรมดา แทรกหน้าสุดจึงต้องเลื่อนทุกตัวไปทางขวาหนึ่งช่องแบบหน้า 5.5 ยิ่งมีของมากยิ่งช้า ส่วน deque เก็บของเป็นก้อนหลายก้อน มีที่ว่างเผื่อไว้ทั้งสองหัว เพิ่มที่หัวจึงไม่ต้องเลื่อนใคร ลองวัดให้ทั้งสองแบบเพิ่มของที่หัว n ครั้ง</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    clock_t start = clock();
+    vector&lt;int&gt; v;
+    for (int i = 0; i &lt; n; i++) {
+        v.insert(v.begin(), i);
+    }
+    clock_t middle = clock();
+    deque&lt;int&gt; d;
+    for (int i = 0; i &lt; n; i++) {
+        d.push_front(i);
+    }
+    clock_t end = clock();
+    cout &lt;&lt; v[0] &lt;&lt; ' ' &lt;&lt; d[0] &lt;&lt; '\n';
+    cout &lt;&lt; "vector: " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    cout &lt;&lt; "deque: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p>วัดบนเครื่องเดียวกับหน้า 17.1 รันแบบละ 5 ครั้ง ตารางเป็นค่ากลาง 0.000 แปลว่าน้อยกว่าที่ <code>clock()</code> วัดได้</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>n</th><th>vector แบบ Code::Blocks</th><th>vector แบบ -O2</th><th>deque แบบ Code::Blocks</th><th>deque แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>100,000</td><td>0.252 วินาที</td><td>0.247 วินาที</td><td>0.001 วินาที</td><td>0.000 วินาที</td></tr>
+            <tr><td>300,000</td><td>2.417 วินาที</td><td>2.527 วินาที</td><td>0.002 วินาที</td><td>0.000 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>n เพิ่ม 3 เท่า vector ช้าลงราว 10 เท่า โตตาม n กำลังสองแบบ sort ในหน้า 13.3 เพราะการแทรกครั้งที่ i ต้องเลื่อน i ตัว ส่วน deque แทบไม่ใช้เวลาเลย และ <code>-O2</code> ก็ช่วย vector ไม่ได้ เพราะงานจริงคือการย้ายข้อมูลจำนวนมาก ไม่ใช่โค้ดที่เขียนไม่ดี หลักเลือกจึงง่าย ใช้แค่ท้ายใช้ vector ต้องใช้หัวด้วยใช้ deque</p>
+
+      <h2 id="list">list แบบสั้น</h2>
+
+      <p><code>list</code> คือ doubly linked list แบบหน้า 14.3 ทุกตัวรู้จักตัวก่อนหน้าและตัวถัดไป จึงแทรกหรือลบตรงกลางได้โดยไม่ต้องเลื่อนใคร แลกกับการที่ <strong>ไม่มี <code>l[i]</code></strong> อยากได้ตัวที่ i ต้องเดินจากหัวไปทีละตัว</p>
+
+      <p>การบอกตำแหน่งใน list ใช้ <strong>iterator</strong> แบบเดียวกับ <code>v.begin()</code> และ <code>v.end()</code> ที่ส่งให้ <code>sort</code> ในหน้า 16.3 <code>line.begin()</code> คือตำแหน่งของตัวแรก <code>line.end()</code> คือตำแหน่งถัดจากตัวสุดท้าย ถ้า <code>it</code> เป็น iterator แล้ว <code>*it</code> คือค่าตรงตำแหน่งนั้น</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="list-basics"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    list&lt;int&gt; line;
+    for (int i = 1; i &lt;= 5; i++) {
+        line.push_back(i);
+    }
+    line.push_front(0);
+    auto it = find(line.begin(), line.end(), 3); // (1)!
+    cout &lt;&lt; "found " &lt;&lt; *it &lt;&lt; '\n';
+    line.insert(it, 9); // (2)!
+    line.erase(it); // (3)!
+    cout &lt;&lt; "size = " &lt;&lt; line.size() &lt;&lt; '\n';
+    bool first = true;
+    for (int x : line) {
+        if (!first) {
+            cout &lt;&lt; ' ';
+        }
+        cout &lt;&lt; x;
+        first = false;
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li><code>find</code> จาก algorithm เดินหาเลข 3 ตั้งแต่หัว ได้ iterator ที่ชี้ตัวนั้น การเดินหาใช้เวลาโตตามความยาวของ list</li>
+        <li>แทรก 9 ไว้<strong>หน้า</strong>ตำแหน่ง <code>it</code> ใช้เวลาคงที่ ไม่ต้องเลื่อนใคร</li>
+        <li>ลบตัวที่ <code>it</code> ชี้ ใช้เวลาคงที่เหมือนกัน หลังลบแล้ว <code>it</code> ชี้ไปที่ที่ไม่มีอยู่แล้ว ห้ามใช้ต่อ</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="list-basics" data-title="C:\code\list_basics.exe"><pre><code>found 3
+size = 6
+0 1 2 9 4 5
+</code></pre></div>
+
+      <p>list จะเร็วจริงก็ต่อเมื่อรู้ตำแหน่งอยู่แล้ว ไม่ต้องเดินหา ตัวอย่างคือโปรแกรม line-up ในหน้า 14.3 ที่นักเรียนออกจากแถว ย้ายไปหัวแถว หรือย้ายไปท้ายแถว ถ้าเก็บ iterator ของนักเรียนทุกคนไว้ในอาเรย์ ทุกคำสั่งก็ใช้เวลาคงที่</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="line-up"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+    list&lt;int&gt; line;
+    vector&lt;list&lt;int&gt;::iterator&gt; where(n + 1); // (1)!
+    for (int i = 1; i &lt;= n; i++) {
+        where[i] = line.insert(line.end(), i); // (2)!
+    }
+    for (int i = 0; i &lt; q; i++) {
+        char command;
+        int x;
+        cin &gt;&gt; command &gt;&gt; x;
+        line.erase(where[x]);
+        if (command == 'F') {
+            where[x] = line.insert(line.begin(), x);
+        } else if (command == 'B') {
+            where[x] = line.insert(line.end(), x);
+        }
+    }
+    bool first = true;
+    for (int x : line) {
+        if (!first) {
+            cout &lt;&lt; ' ';
+        }
+        cout &lt;&lt; x;
+        first = false;
+    }
+    cout &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>vector ของ iterator ชนิดเต็มของ iterator ของ <code>list&lt;int&gt;</code> เขียนว่า <code>list&lt;int&gt;::iterator</code> ช่อง <code>where[x]</code> จำว่านักเรียน x อยู่ตรงไหนในแถว</li>
+        <li><code>insert</code> คืน iterator ของตัวที่เพิ่งแทรกมาให้ แทรกหน้า <code>line.end()</code> คือต่อท้าย</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="line-up" data-title="ข้อมูลเข้า"><pre><code>5 4
+L 3
+F 5
+B 1
+L 2
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="line-up" data-title="C:\code\line_up.exe"><pre><code>5 4 1
+</code></pre></div>
+      </div>
+
+      <p>ผลตรงกับหน้า 14.3 โปรแกรมบทที่ 14 ยาว 43 บรรทัด อันนี้ 34 บรรทัด สั้นลงไม่มากเท่า deque เพราะต้องดูแล iterator เอง ในการแข่งขัน list ถูกใช้น้อยกว่า stack queue deque มาก คนแข่งส่วนใหญ่เขียน <code>prev[]</code> กับ <code>next[]</code> แบบหน้า 14.3 ซึ่งเข้าใจง่ายกว่าและไม่ต้องจำชนิดยาวๆ ให้รู้จัก list ไว้พออ่านโค้ดคนอื่นออก</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="sign-compare">แบบที่ 1 เทียบ int กับ size()</h3>
+
+      <p>วงเล็บปีกกาหลัง <code>=</code> ใส่ค่าเริ่มต้นให้ deque ได้เหมือน <code>vector</code></p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    deque&lt;int&gt; scores = {70, 85, 90};
+    for (int i = 0; i &lt; scores.size(); i++) {
+        cout &lt;&lt; scores[i] &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>scores.cpp:7:23: warning: comparison of integer expressions of different signedness: 'int' and 'std::deque&lt;int&gt;::size_type' {aka 'long long unsigned int'} [-Wsign-compare]
+    7 |     for (int i = 0; i &lt; scores.size(); i++) {
+      |                     ~~^~~~~~~~~~~~~~~
+</code></pre></div>
+
+      <p>คำเตือนเดียวกับ vector ในหน้า 16.1 ทุกตัวอักษร ต่างกันแค่ชื่อชนิด <code>size()</code> ของ container ทุกตัวในบทนี้เป็น unsigned เหมือนกันหมด และกับดัก <code>size() - 1</code> ตอนว่างที่ได้ 18446744073709551615 ก็เกิดกับ deque ได้เหมือนกัน เลขนี้คือเลขเดียวกับที่ stack ว่างแล้วถูก pop ในแบบที่ 3 ของหน้า 17.1 นิสัยที่ปลอดภัยยังเป็นแบบเดิม คือแปลงเป็น <code>(int)scores.size()</code> ก่อนคำนวณหรือเปรียบเทียบทุกครั้ง แบบโปรแกรม deque-basics</p>
+
+      <h3 id="out-of-range">แบบที่ 2 ดูช่องที่ไม่มี</h3>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    deque&lt;int&gt; scores = {70, 85, 90};
+    cout &lt;&lt; scores[3] &lt;&lt; '\n';
+    cout &lt;&lt; scores[100] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <p>มีแค่ช่อง 0 ถึง 2 แต่คอมไพล์ผ่านโดยไม่มีคำเตือน บนเครื่องที่เขียนเอกสารนี้ รันสามครั้ง <code>scores[3]</code> ได้ 618 457 และ 555 ส่วน <code>scores[100]</code> ได้ 0 ทุกครั้ง ไม่มี error ไม่พัง แต่ค่าเปลี่ยนไปทุกครั้งที่รัน เป็นอาการเดียวกับอ่านเลยท้ายอาเรย์ในหน้า 5.5 วงเล็บเหลี่ยมของ deque และ vector ไม่ได้ตรวจขอบให้</p>
+
+      <h3 id="list-index">แบบที่ 3 ใช้วงเล็บเหลี่ยมกับ list</h3>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    list&lt;int&gt; line = {1, 2, 3};
+    cout &lt;&lt; line[1] &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>line.cpp:7:17: error: no match for 'operator[]' (operand types are 'std::__cxx11::list&lt;int&gt;' and 'int')
+    7 |     cout &lt;&lt; line[1] &lt;&lt; '\n';
+      |                 ^
+</code></pre></div>
+
+      <p>ข้อความแบบเดียวกับ stack ในหน้า 17.1 <code>std::__cxx11::list</code> คือชื่อเต็มที่ compiler ใช้เรียก list ข้างใน ถ้างานไหนต้องใช้ทั้งวงเล็บเหลี่ยมและเพิ่มที่หัว ให้ใช้ deque</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>deque</code> เพิ่มลบได้ทั้งสองหัวด้วย <code>push_front</code> <code>push_back</code> <code>pop_front</code> <code>pop_back</code> และใช้ <code>d[i]</code> ได้ ทุกคำสั่งเป็น O(1)</li>
+        <li>vector เพิ่มที่หัวต้องเลื่อนทุกตัว ช้าลงตาม n กำลังสอง ต้องใช้หัวด้วยให้ใช้ deque</li>
+        <li><code>list</code> แทรกลบตรงกลางได้ O(1) ถ้ามี iterator อยู่แล้ว แต่ไม่มี <code>l[i]</code> และการเดินหาช้า</li>
+        <li><code>size()</code> ไม่มีเครื่องหมาย แปลงเป็น <code>(int)</code> ก่อนเทียบหรือลบ</li>
+        <li>วงเล็บเหลี่ยมไม่ตรวจขอบ ช่องที่ไม่มีได้ค่าขยะเงียบๆ</li>
+      </ul>
+    </article>

@@ -1,0 +1,374 @@
+<article class="doc">
+      <h1>17.1 stack และ queue สำเร็จรูป</h1>
+
+      <p>ในบทที่ 14 น้องเขียน stack กับ queue เองด้วยอาเรย์ ต้องเลือกขนาดอาเรย์ ต้องมีตัวแปร <code>size</code> หรือ <code>head</code> กับ <code>tail</code> และต้องเขียนฟังก์ชัน push pop ทุกครั้งที่เริ่มโจทย์ใหม่ C++ มีของพวกนี้ทำไว้ให้แล้วใน STL ชุดเดียวกับ <code>vector</code> ที่ใช้ในบทที่ 16 ของที่ใช้เก็บข้อมูลหลายตัวแบบนี้เรียกรวมว่า <strong>container</strong> (ภาชนะ) หน้านี้ใช้ container สองตัวแรก คือ <code>stack</code> กับ <code>queue</code> แล้วดูว่าโค้ดสั้นลงแค่ไหน และมีอะไรที่ยังต้องระวังเองเหมือนเดิม</p>
+
+      <h2 id="stack">stack</h2>
+
+      <p>ประกาศ stack ด้วย <code>stack&lt;ชนิด&gt; ชื่อ;</code> เหมือนประกาศ <code>vector</code> ได้ stack ว่างที่ยังไม่มีของ โปรแกรมนี้ใช้ลำดับคำสั่งเดียวกับโปรแกรม plates ในหน้า 14.4 ทุกบรรทัด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="plates"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    stack&lt;int&gt; plates; // (1)!
+    plates.push(11);
+    plates.push(12);
+    plates.push(13);
+    cout &lt;&lt; "top = " &lt;&lt; plates.top() &lt;&lt; '\n';
+    cout &lt;&lt; "pop = " &lt;&lt; plates.top() &lt;&lt; '\n'; // (2)!
+    plates.pop();
+    cout &lt;&lt; "pop = " &lt;&lt; plates.top() &lt;&lt; '\n';
+    plates.pop();
+    plates.push(14);
+    cout &lt;&lt; "size = " &lt;&lt; plates.size() &lt;&lt; '\n';
+    while (!plates.empty()) { // (3)!
+        cout &lt;&lt; "pop = " &lt;&lt; plates.top() &lt;&lt; '\n';
+        plates.pop();
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>ไม่ต้องบอกขนาด stack ยืดออกเองตามจำนวนของที่ใส่ ของในวงเล็บ <code>&lt;&gt;</code> คือชนิดของที่เก็บ</li>
+        <li><code>pop()</code> ของ C++ <strong>ไม่คืนค่า</strong> มันแค่ทิ้งตัวบนสุด ถ้าอยากรู้ว่าทิ้งอะไรไป ต้องดูด้วย <code>top()</code> ก่อนแล้วค่อย <code>pop()</code> เสมอ</li>
+        <li><code>empty()</code> คืน <code>true</code> เมื่อไม่มีของเหลือ ใช้แทน <code>size == 0</code> ในบทที่ 14</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="plates" data-title="C:\code\plates.exe"><pre><code>top = 13
+pop = 13
+pop = 12
+size = 2
+pop = 14
+pop = 11
+</code></pre></div>
+
+      <p>ผลตรงกับโปรแกรมในหน้า 14.4 ทุกบรรทัด คำสั่งของ stack มีห้าตัว ตรงกับห้างานที่เขียนเองในบทที่ 14</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่ง</th><th>ทำอะไร</th><th>บทที่ 14 เขียนว่า</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>s.push(x)</code></td><td>วาง x ไว้บนสุด</td><td><code>stack[size] = x; size++;</code></td></tr>
+            <tr><td><code>s.pop()</code></td><td>ทิ้งตัวบนสุด ไม่คืนค่า</td><td><code>size--;</code></td></tr>
+            <tr><td><code>s.top()</code></td><td>ดูตัวบนสุด</td><td><code>stack[size - 1]</code></td></tr>
+            <tr><td><code>s.empty()</code></td><td>ว่างไหม</td><td><code>size == 0</code></td></tr>
+            <tr><td><code>s.size()</code></td><td>มีกี่ตัว</td><td><code>size</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>สิ่งที่ <code>stack</code> <strong>ไม่มี</strong>ให้ คือการดูตัวที่อยู่ข้างล่าง ไม่มี <code>s[0]</code> และวนดูทุกตัวด้วย for ไม่ได้ เพราะ stack ตั้งใจให้แตะได้แค่ด้านบน ถ้างานไหนต้องดูของข้างล่างด้วย ให้ใช้ <code>vector</code> แทน ซึ่งใช้เป็น stack ได้ด้วย <code>push_back</code> <code>pop_back</code> และ <code>back</code> หรือใช้ <code>deque</code> ในหน้าถัดไป</p>
+
+      <h2 id="queue">queue</h2>
+
+      <p><code>queue</code> ใช้คำว่า <code>push</code> กับ <code>pop</code> เหมือน stack แต่ push ต่อท้ายคิว และ pop เอาหัวคิวออก ดูหัวคิวด้วย <code>front()</code> และดูท้ายคิวด้วย <code>back()</code> โปรแกรมนี้ใช้ลำดับคำสั่งเดียวกับโปรแกรม queue-basics ในหน้า 14.5 และเพิ่มการดูท้ายคิวอีกหนึ่งบรรทัด</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="queue-basics"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    queue&lt;int&gt; line;
+    line.push(11); // (1)!
+    line.push(12);
+    line.push(13);
+    cout &lt;&lt; "front = " &lt;&lt; line.front() &lt;&lt; '\n';
+    cout &lt;&lt; "back = " &lt;&lt; line.back() &lt;&lt; '\n';
+    cout &lt;&lt; "dequeue = " &lt;&lt; line.front() &lt;&lt; '\n';
+    line.pop(); // (2)!
+    cout &lt;&lt; "dequeue = " &lt;&lt; line.front() &lt;&lt; '\n';
+    line.pop();
+    line.push(14);
+    cout &lt;&lt; "size = " &lt;&lt; line.size() &lt;&lt; '\n';
+    while (!line.empty()) {
+        cout &lt;&lt; "dequeue = " &lt;&lt; line.front() &lt;&lt; '\n';
+        line.pop();
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>push ของ queue คือ enqueue ในบทที่ 14 ต่อท้ายคิว</li>
+        <li>pop ของ queue คือ dequeue เอาหัวคิวออก และไม่คืนค่าเหมือน stack ต้องดู <code>front()</code> ก่อน</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="queue-basics" data-title="C:\code\queue_basics.exe"><pre><code>front = 11
+back = 13
+dequeue = 11
+dequeue = 12
+size = 2
+dequeue = 13
+dequeue = 14
+</code></pre></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>คำสั่ง</th><th>ทำอะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>q.push(x)</code></td><td>ต่อ x ท้ายคิว</td></tr>
+            <tr><td><code>q.pop()</code></td><td>เอาหัวคิวออก ไม่คืนค่า</td></tr>
+            <tr><td><code>q.front()</code></td><td>ดูหัวคิว</td></tr>
+            <tr><td><code>q.back()</code></td><td>ดูท้ายคิว คือตัวที่เพิ่ง push ล่าสุด</td></tr>
+            <tr><td><code>q.empty()</code></td><td>ว่างไหม</td></tr>
+            <tr><td><code>q.size()</code></td><td>มีกี่ตัว</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ระวังชื่อที่สับสนง่าย stack ใช้ <code>top()</code> ส่วน queue ใช้ <code>front()</code> เขียน <code>line.top()</code> กับ queue จะคอมไพล์ไม่ผ่าน และ queue ก็ไม่มี <code>line[0]</code> หรือวนดูทุกตัวเหมือน stack</p>
+
+      <h2 id="any-type">เก็บอะไรก็ได้</h2>
+
+      <p>stack ในบทที่ 14 เก็บ <code>int</code> ได้อย่างเดียว ถ้าอยากได้ stack ของ <code>char</code> ต้องเขียนใหม่ทั้งชุดแบบโปรแกรม brackets ของ C++ แค่เปลี่ยนชนิดในวงเล็บ <code>&lt;&gt;</code> จะเป็น <code>string</code> หรือ <code>pair</code> จากบทที่ 16 ก็ได้</p>
+
+      <p>ตัวอย่าง ร้านถ่ายเอกสารมีเครื่องเดียว ลูกค้าส่งงานเรียงกันมา แต่ละงานมีชื่อลูกค้ากับจำนวนหน้า เครื่องถ่ายได้นาทีละหนึ่งหน้า ทำงานตามลำดับที่ส่งมา ให้บอกว่างานของแต่ละคนเสร็จนาทีที่เท่าไร</p>
+
+      <div class="code" data-lang="cpp" data-linenums data-annotate data-test="copy-shop"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    queue&lt;pair&lt;string, int&gt;&gt; jobs; // (1)!
+    for (int i = 0; i &lt; n; i++) {
+        string name;
+        int pages;
+        cin &gt;&gt; name &gt;&gt; pages;
+        jobs.push({name, pages}); // (2)!
+    }
+    int minute = 0;
+    while (!jobs.empty()) {
+        auto job = jobs.front(); // (3)!
+        jobs.pop();
+        minute += job.second;
+        cout &lt;&lt; job.first &lt;&lt; " done at minute " &lt;&lt; minute &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>คิวที่แต่ละช่องเป็นคู่ของชื่อกับจำนวนหน้า</li>
+        <li>สร้าง pair ด้วยวงเล็บปีกกา เขียน <code>make_pair(name, pages)</code> ก็ได้ผลเหมือนกัน</li>
+        <li>คัดลอกหัวคิวเก็บไว้ก่อน แล้วค่อย pop ถ้า pop ก่อนจะไม่มีอะไรให้ดูแล้ว</li>
+      </ol>
+
+      <div class="io">
+      <div class="code" data-lang="input" data-for="copy-shop" data-title="ข้อมูลเข้า"><pre><code>4
+Ploy 12
+Krit 3
+Mint 30
+Tan 5
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="copy-shop" data-title="C:\code\copy_shop.exe"><pre><code>Ploy done at minute 12
+Krit done at minute 15
+Mint done at minute 45
+Tan done at minute 50
+</code></pre></div>
+      </div>
+
+      <p>งานนี้ใช้ลูปธรรมดาอ่านไปบวกไปก็ได้ เพราะทุกงานเข้าคิวครั้งเดียวแล้วออกเลย แต่ในหน้า 17.4 จะมีงานที่ทำไม่เสร็จในรอบเดียวแล้วต้องกลับไปต่อท้ายคิวใหม่ ซึ่งลูปธรรมดาทำไม่ได้</p>
+
+      <h2 id="constant-time">ทุกคำสั่งใช้เวลาคงที่</h2>
+
+      <p>คำสั่งทุกตัวในสองตารางข้างบนทำงานไม่กี่ขั้น ไม่ว่าในนั้นจะมีของ 10 ชิ้นหรือ 10 ล้านชิ้น เวลาที่ไม่ขึ้นกับจำนวนของแบบนี้เขียนย่อว่า <strong>O(1)</strong> อ่านว่า โอวัน ส่วนงานที่ต้องไล่ดูของทุกชิ้นใช้เวลาโตตามจำนวนของ และ sort แบบลูปซ้อนในหน้า 13.3 ยิ่งโตเร็วกว่านั้นอีก สัญลักษณ์นี้มีชื่อว่า Big O จะเรียนอย่างเป็นระบบในบทที่ 18 ตอนนี้จำแค่ว่า O(1) คือเร็วเท่ากันเสมอ</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>container</th><th>คำสั่ง</th><th>เวลา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>stack</code></td><td><code>push</code> <code>pop</code> <code>top</code> <code>empty</code> <code>size</code></td><td>O(1)</td></tr>
+            <tr><td><code>queue</code></td><td><code>push</code> <code>pop</code> <code>front</code> <code>back</code> <code>empty</code> <code>size</code></td><td>O(1)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>stack กับ queue ไม่ได้จองที่ไว้ก้อนเดียวแบบอาเรย์ แต่ขอหน่วยความจำเพิ่มเป็นก้อนๆ เมื่อของเต็ม push บางครั้งจึงช้ากว่าครั้งอื่นนิดหน่อยตอนขอก้อนใหม่ แต่เฉลี่ยทุกครั้งแล้วยังเป็นเวลาคงที่</p>
+
+      <h2 id="compare">เทียบกับที่เขียนเองในบทที่ 14</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เรื่อง</th><th>บทที่ 14 เขียนเองด้วย C</th><th>STL</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>โปรแกรม plates</td><td>42 บรรทัด</td><td>22 บรรทัด</td></tr>
+            <tr><td>เลือกขนาดอาเรย์</td><td>ต้องคิดจากขอบเขตโจทย์ ถ้าเล็กไปจะเขียนทับของอื่น</td><td>ไม่ต้อง ยืดเอง</td></tr>
+            <tr><td>เขียนฟังก์ชัน push pop top</td><td>ทุกโจทย์</td><td>มีให้แล้ว</td></tr>
+            <tr><td>เก็บ <code>char</code> <code>string</code> หรือ <code>pair</code></td><td>เขียนใหม่ทั้งชุด</td><td>เปลี่ยนชนิดใน <code>&lt;&gt;</code></td></tr>
+            <tr><td>เช็กว่างก่อน pop หรือดูตัวบนสุด</td><td>ต้องเช็กเอง</td><td><strong>ยังต้องเช็กเอง</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แถวสุดท้ายสำคัญที่สุด STL ไม่ได้ป้องกันการ pop ตอนว่างให้ ดูผลได้ในส่วนลองทำให้พัง</p>
+
+      <p>ความเร็วต่างกันไหม ลองวัดด้วย <code>clock()</code> แบบหน้า 4.5 ให้ทั้งสองแบบ push 10 ล้านตัวแล้ว pop จนหมด</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int arr[10000000];
+
+int main()
+{
+    int n = 10000000;
+    clock_t start = clock();
+    int size = 0;
+    long long sum = 0;
+    for (int i = 0; i &lt; n; i++) {
+        arr[size] = i;
+        size++;
+    }
+    while (size &gt; 0) {
+        size--;
+        sum += arr[size];
+    }
+    clock_t middle = clock();
+    stack&lt;int&gt; st;
+    for (int i = 0; i &lt; n; i++) {
+        st.push(i);
+    }
+    while (!st.empty()) {
+        sum += st.top();
+        st.pop();
+    }
+    clock_t end = clock();
+    cout &lt;&lt; "sum = " &lt;&lt; sum &lt;&lt; '\n';
+    cout &lt;&lt; "array: " &lt;&lt; (double)(middle - start) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    cout &lt;&lt; "stack: " &lt;&lt; (double)(end - middle) / CLOCKS_PER_SEC &lt;&lt; " seconds\n";
+    return 0;
+}
+</code></pre></div>
+
+      <p>วัดบนเครื่องที่เขียนเอกสารนี้ โน้ตบุ๊ก ASUS Vivobook S 14 ซีพียู AMD Ryzen AI 9 HX 370 กับ GCC 14.2 ของ Code::Blocks รันแบบละ 5 ครั้ง ตารางเป็นค่ากลาง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>วิธี</th><th>แบบ Code::Blocks</th><th>แบบ -O2</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>อาเรย์กับ <code>size</code></td><td>0.024 วินาที</td><td>0.013 วินาที</td></tr>
+            <tr><td><code>stack&lt;int&gt;</code></td><td>0.193 วินาที</td><td>0.026 วินาที</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>แบบ Code::Blocks ที่ไม่ได้เปิด <code>-O2</code> stack ช้ากว่าราว 8 เท่า เพราะทุกคำสั่งเป็นการเรียกฟังก์ชันหลายชั้นข้างใน แต่พอเปิด <code>-O2</code> แบบที่ grader ใช้ ต่างกันแค่ราวสองเท่า และ 20 ล้านคำสั่งยังใช้ไม่ถึงหนึ่งในสามสิบวินาที โจทย์ระดับค่าย 1 ไม่มีข้อไหนตกเพราะใช้ stack แทนอาเรย์ ใช้ของสำเร็จรูปได้เลย</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="pop-value">แบบที่ 1 รับค่าจาก pop</h3>
+
+      <p>คนที่เคยเขียน <code>int x = pop();</code> ในบทที่ 14 จะเขียนแบบนี้โดยไม่คิด</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    stack&lt;int&gt; plates;
+    plates.push(11);
+    plates.push(12);
+    int x = plates.pop();
+    cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>plates.cpp:9:23: error: void value not ignored as it ought to be
+    9 |     int x = plates.pop();
+      |             ~~~~~~~~~~^~
+</code></pre></div>
+
+      <p><code>void</code> คือไม่มีค่า <code>pop()</code> ไม่คืนอะไรออกมา จึงเอาไปใส่ <code>x</code> ไม่ได้ แก้เป็นสองบรรทัด <code>int x = plates.top();</code> แล้ว <code>plates.pop();</code></p>
+
+      <h3 id="top-empty">แบบที่ 2 ดูตัวบนสุดตอน stack ว่าง</h3>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    stack&lt;int&gt; plates;
+    cout &lt;&lt; plates.top() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ผ่านโดยไม่มีคำเตือน พอรัน หน้าต่างไม่พิมพ์อะไรเลย แล้ว Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p><code>0xC0000005</code> คือรหัสของ Windows ที่แปลว่าโปรแกรมไปอ่านหน่วยความจำที่ไม่ใช่ของมัน <code>top()</code> ไม่ได้ตรวจว่ามีของหรือเปล่า มันแค่ไปอ่านช่องที่ควรเป็นตัวบนสุด ซึ่งไม่มีอยู่จริง ส่งให้ grader จะได้ผล runtime error เรียก <code>front()</code> หรือ <code>back()</code> ของ queue ว่างก็พังแบบเดียวกัน</p>
+
+      <h3 id="pop-empty">แบบที่ 3 pop ตอน stack ว่าง</h3>
+
+      <p>แบบนี้อันตรายกว่า เพราะโปรแกรมไม่พังให้เห็น</p>
+
+      <div class="code" data-lang="cpp" data-linenums><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main()
+{
+    stack&lt;int&gt; plates;
+    plates.push(11);
+    plates.pop();
+    cout &lt;&lt; "size = " &lt;&lt; plates.size() &lt;&lt; '\n';
+    plates.pop();
+    cout &lt;&lt; "size = " &lt;&lt; plates.size() &lt;&lt; '\n';
+    cout &lt;&lt; "empty = " &lt;&lt; plates.empty() &lt;&lt; '\n';
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\plates.exe"><pre><code>size = 0
+size = 18446744073709551615
+empty = 0
+</code></pre></div>
+
+      <p>นี่คือผลบนเครื่องที่เขียนเอกสารนี้ ทั้งแบบ Code::Blocks และแบบ <code>-O2</code> pop ครั้งที่สองไม่มีของให้ทิ้ง แต่ตัวนับข้างในก็ยังลดลงจาก 0 <code>size()</code> เป็น unsigned ติดลบไม่ได้ เหมือน <code>size()</code> ของ vector ในหน้า 16.1 ลบหนึ่งจาก 0 จึงวนไปเป็นค่ามากสุดของมัน คือ 2<sup>64</sup> - 1 แบบเดียวกับ overflow ในหน้า 1.3 หลังจากนี้ <code>empty()</code> ตอบว่าไม่ว่าง ลูป <code>while (!plates.empty())</code> จะเรียก <code>top()</code> กับ stack ที่ไม่มีของจริง ผลเป็นได้ทุกแบบ มาตรฐานภาษาไม่ได้กำหนดว่าต้องเกิดอะไร เครื่องอื่นอาจพังทันทีก็ได้ เช่นเดียวกับ pop ของ queue ว่าง</p>
+
+      <p>ทางแก้มีทางเดียวเหมือนบทที่ 14 คือเช็กก่อนทุกครั้ง</p>
+
+      <div class="code" data-lang="cpp"><pre><code>if (plates.empty()) {
+    cout &lt;&lt; "EMPTY\n";
+} else {
+    cout &lt;&lt; plates.top() &lt;&lt; '\n';
+    plates.pop();
+}
+</code></pre></div>
+
+      <h3 id="index-stack">แบบที่ 4 ดูตัวล่างด้วยวงเล็บเหลี่ยม</h3>
+
+      <p>ในโปรแกรมแบบที่ 1 เปลี่ยนสองบรรทัดก่อน <code>return</code> เป็น <code>cout &lt;&lt; plates[0] &lt;&lt; '\n';</code> เพื่อดูจานใบล่างสุด</p>
+
+      <div class="code" data-lang="gcc"><pre><code>plates.cpp:9:19: error: no match for 'operator[]' (operand types are 'std::stack&lt;int&gt;' and 'int')
+    9 |     cout &lt;&lt; plates[0] &lt;&lt; '\n';
+      |                   ^
+</code></pre></div>
+
+      <p><code>no match for 'operator[]'</code> แปลว่าชนิดนี้ไม่มีวงเล็บเหลี่ยมให้ใช้ ถ้าลองวนด้วย <code>for (int x : plates)</code> จะได้ error ยาวหลายสิบบรรทัด บรรทัดแรกคือ <code>no matching function for call to 'begin(std::stack&lt;int&gt;&amp;)'</code> ซึ่งแปลว่าวนไม่ได้เหมือนกัน ถ้าต้องดูของข้างล่าง ให้เปลี่ยนไปใช้ <code>vector</code> หรือ <code>deque</code></p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li><code>stack&lt;int&gt; s;</code> ใช้ <code>push</code> <code>pop</code> <code>top</code> <code>empty</code> <code>size</code></li>
+        <li><code>queue&lt;int&gt; q;</code> ใช้ <code>push</code> <code>pop</code> <code>front</code> <code>back</code> <code>empty</code> <code>size</code></li>
+        <li><code>pop()</code> ไม่คืนค่า ดูด้วย <code>top()</code> หรือ <code>front()</code> ก่อนแล้วค่อย pop</li>
+        <li>ทุกคำสั่งใช้เวลาคงที่ O(1) ไม่ต้องเลือกขนาด และเก็บชนิดไหนก็ได้</li>
+        <li>ดูหรือ pop ตอนว่างยังผิดเหมือนเดิม อาจพังหรือได้ค่าเพี้ยนเงียบๆ เช็ก <code>empty()</code> ก่อนเสมอ</li>
+      </ul>
+    </article>

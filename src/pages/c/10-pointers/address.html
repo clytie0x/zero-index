@@ -1,0 +1,347 @@
+<article class="doc">
+      <h1>10.1 ที่อยู่และ pointer</h1>
+
+      <p>ตั้งแต่<a href="../01-variables/variables.html#scanf">หน้า 1.1</a> น้องเขียน <code>scanf("%d", &amp;age)</code> มานับครั้งไม่ถ้วน โดยรู้แค่ว่า <code>&amp;age</code> คือที่อยู่ของ <code>age</code> หน้านี้จะเปิดดูว่าที่อยู่หน้าตาเป็นอย่างไร เก็บไว้ในตัวแปรได้อย่างไร และใช้ที่อยู่ไปอ่านหรือแก้ตัวแปรได้อย่างไร ตัวแปรที่เก็บที่อยู่เรียกว่า <strong>pointer</strong> (ตัวชี้) เป็นเครื่องมือที่ทำให้ฟังก์ชันแก้ตัวแปรของคนเรียกได้ จองอาเรย์ตามขนาดที่ข้อมูลเข้าบอกได้ และเป็นฐานของ linked list ในบทที่ 14</p>
+
+      <h2 id="addresses">หน่วยความจำมีเลขที่บ้าน</h2>
+
+      <p>ใน<a href="../01-variables/integers.html#int-range">หน้า 1.3</a> เห็นแล้วว่า <code>int</code> ใช้ 4 byte หน่วยความจำของเครื่องคือ byte เรียงกันเป็นแถวยาวมาก แต่ละ byte มีเลขประจำตัวไม่ซ้ำกัน เรียกว่า <strong>ที่อยู่ (address)</strong> เหมือนบ้านเลขที่ในซอยที่ยาวมากๆ ตัวแปร <code>int</code> หนึ่งตัวจองบ้านติดกัน 4 หลัง และที่อยู่ของตัวแปรคือเลขที่ของหลังแรก</p>
+
+      <p>ใส่ <code>&amp;</code> หน้าชื่อตัวแปรจะได้ที่อยู่ของตัวแปรนั้น และ <code>printf</code> พิมพ์ที่อยู่ได้ด้วย <code>%p</code> ซึ่งมาจากคำว่า pointer</p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 85;
+    int age = 16;
+    printf("score = %d is at %p\n", score, &amp;score);
+    printf("age = %d is at %p\n", age, &amp;age);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\address.exe"><pre><code>score = 85 is at 0000009F2D5FFBCC
+age = 16 is at 0000009F2D5FFBC8
+</code></pre></div>
+
+      <p>ผลนี้มาจากเครื่องที่เขียนเอกสารนี้ และ<strong>เปลี่ยนทุกครั้งที่รัน</strong> รันสามครั้งได้ที่อยู่ของ <code>score</code> เป็น <code>0000009F2D5FFBCC</code> <code>000000F7A27FFD3C</code> และ <code>000000892B7FF6EC</code> ไม่ซ้ำกันเลย เพราะ Windows สุ่มตำแหน่งวางโปรแกรมใหม่ทุกครั้ง เพื่อให้โปรแกรมไม่ประสงค์ดีเดาตำแหน่งข้อมูลได้ยาก น้องรันเองก็จะได้เลขอื่น ไม่ใช่เรื่องผิดปกติ</p>
+
+      <p>ที่อยู่พิมพ์ออกมาเป็น <strong>เลขฐานสิบหก</strong> ซึ่งใช้หลัก 0 ถึง 9 แล้วต่อด้วย A ถึง F แทนค่า 10 ถึง 15 เลขฐานจะได้เรียนในบทที่ 12 ตอนนี้สังเกตแค่หลักท้าย <code>age</code> ลงท้ายด้วย 8 <code>score</code> ลงท้ายด้วย C ซึ่งคือ 12 ห่างกัน 4 พอดี เท่ากับขนาดของ <code>int</code> หนึ่งตัว สองตัวแปรนี้จึงวางชิดกัน ส่วนตัวไหนอยู่ก่อนขึ้นกับ compiler อย่าเขียนโปรแกรมที่ต้องพึ่งลำดับนี้</p>
+
+      <h2 id="pointer">ตัวแปรที่เก็บที่อยู่</h2>
+
+      <p>ที่อยู่ก็เป็นค่าค่าหนึ่ง เก็บใส่ตัวแปรได้ ตัวแปรที่เก็บที่อยู่ของ <code>int</code> ประกาศแบบนี้</p>
+
+      <div class="code" data-lang="c"><pre><code>int *p = &amp;score;
+</code></pre></div>
+
+      <p>อ่านว่า <code>p</code> มีชนิดเป็น <code>int *</code> คือ pointer ไปยัง <code>int</code> และค่าเริ่มต้นคือที่อยู่ของ <code>score</code> ดอกจันตรงนี้เป็นส่วนหนึ่งของชนิด ไม่ใช่การคูณ เวลาพูดเราบอกว่า <strong><code>p</code> ชี้ไปที่ <code>score</code></strong></p>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 85;
+    int *p = &amp;score;
+    printf("&amp;score = %p\n", &amp;score);
+    printf("p      = %p\n", p);
+    printf("&amp;p     = %p\n", &amp;p);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-title="C:\code\pointer.exe"><pre><code>&amp;score = 000000A04A9FF94C
+p      = 000000A04A9FF94C
+&amp;p     = 000000A04A9FF940
+</code></pre></div>
+
+      <p>ค่าที่เก็บใน <code>p</code> ตรงกับที่อยู่ของ <code>score</code> ทุกหลัก และ <code>p</code> เองก็เป็นกล่องในหน่วยความจำที่มีที่อยู่ของตัวเอง แผนภาพข้างล่างวาดจากการรันครั้งนี้ ตัวเลขสีจางใต้กล่องคือที่อยู่ของกล่องนั้น แสดงแค่สี่หลักท้ายให้อ่านง่าย</p>
+
+      <figure>
+        <svg viewBox="0 0 560 150" width="560" style="max-width:100%;height:auto" role="img" aria-label="กล่อง p อยู่ที่ที่อยู่ F940 เก็บค่า F94C ซึ่งเป็นที่อยู่ของกล่อง score มีลูกศรจาก p ไปที่ score ซึ่งเก็บค่า 85">
+          <defs>
+            <marker id="address-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" style="fill:var(--brand)"/>
+            </marker>
+          </defs>
+          <g style="font-family:var(--font-code)">
+            <text x="110" y="22" text-anchor="middle" style="fill:var(--ink);font-size:16px">p</text>
+            <rect x="40" y="34" width="140" height="58" rx="8" style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2"/>
+            <text x="110" y="70" text-anchor="middle" style="fill:var(--ink);font-size:18px">…F94C</text>
+            <text x="110" y="116" text-anchor="middle" style="fill:var(--muted);font-size:14px">…F940</text>
+            <text x="110" y="138" text-anchor="middle" style="fill:var(--muted);font-size:13px">int *</text>
+            <text x="450" y="22" text-anchor="middle" style="fill:var(--ink);font-size:16px">score</text>
+            <rect x="380" y="34" width="140" height="58" rx="8" style="fill:var(--brand-soft);stroke:var(--brand);stroke-width:2"/>
+            <text x="450" y="70" text-anchor="middle" style="fill:var(--ink);font-size:24px">85</text>
+            <text x="450" y="116" text-anchor="middle" style="fill:var(--muted);font-size:14px">…F94C</text>
+            <text x="450" y="138" text-anchor="middle" style="fill:var(--muted);font-size:13px">int</text>
+          </g>
+          <path d="M182 63 H374" style="fill:none;stroke:var(--brand);stroke-width:2" marker-end="url(#address-arrow)"/>
+        </svg>
+      </figure>
+
+      <p>ลูกศรไม่ได้มีอยู่จริงในหน่วยความจำ ในกล่อง <code>p</code> มีแค่ตัวเลข แต่ตัวเลขนั้นบอกว่าให้ไปที่กล่องไหน เราจึงวาดเป็นลูกศรให้เห็นภาพ ต่อจากนี้จะวาดแบบนี้ตลอดบท</p>
+
+      <h2 id="dereference">ใช้ * ตามไปที่กล่อง</h2>
+
+      <p>มีที่อยู่แล้ว ถ้าอยากอ่านหรือเขียนกล่องที่อยู่ตรงนั้น ให้ใส่ <code>*</code> หน้าชื่อ pointer การทำแบบนี้เรียกว่า <strong>dereference</strong> (ตามที่อยู่ไป) <code>*p</code> แปลว่า "กล่องที่ <code>p</code> ชี้อยู่" ตอนนี้ก็คือ <code>score</code> นั่นเอง</p>
+
+      <div class="code" data-lang="c" data-linenums data-annotate data-test="deref"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 85;
+    int *p = &amp;score;
+    printf("score = %d\n", score);
+    printf("*p = %d\n", *p); // (1)!
+    *p = 90; // (2)!
+    printf("score = %d\n", score);
+    score = score + 5;
+    printf("*p = %d\n", *p); // (3)!
+    return 0;
+}
+</code></pre></div>
+      <ol class="anno-list">
+        <li>อ่านค่า ตามที่อยู่ใน <code>p</code> ไปหยิบค่าในกล่อง <code>score</code> มา ได้ 85</li>
+        <li>เขียนค่า ตามที่อยู่ไปเขียน 90 ลงในกล่อง <code>score</code> ตัวแปร <code>p</code> ไม่เปลี่ยน ยังชี้ที่เดิม</li>
+        <li>แก้ <code>score</code> ตรงๆ แล้ว <code>*p</code> ก็เห็นค่าใหม่ทันที เพราะเป็นกล่องเดียวกัน</li>
+      </ol>
+
+      <div class="code" data-lang="output" data-for="deref" data-title="C:\code\deref.exe"><pre><code>score = 85
+*p = 85
+score = 90
+*p = 95
+</code></pre></div>
+
+      <p>บรรทัดที่ 9 ไม่ได้เขียนชื่อ <code>score</code> เลย แต่ <code>score</code> กลายเป็น 90 นี่คือพลังของ pointer คือแก้ตัวแปรได้โดยรู้แค่ที่อยู่ ไม่ต้องรู้ชื่อ หน้า 10.2 จะใช้เรื่องนี้ให้ฟังก์ชันแก้ตัวแปรใน <code>main</code></p>
+
+      <p>เครื่องหมาย <code>&amp;</code> กับ <code>*</code> ทำงานกลับกัน <code>&amp;</code> จากกล่องได้ที่อยู่ <code>*</code> จากที่อยู่ได้กล่อง</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>เขียน</th><th>ความหมาย</th><th>ชนิด</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>int *p;</code></td><td>ประกาศ <code>p</code> เป็น pointer ไปยัง <code>int</code> ดอกจันเป็นส่วนของชนิด</td><td></td></tr>
+            <tr><td><code>&amp;score</code></td><td>ที่อยู่ของ <code>score</code></td><td><code>int *</code></td></tr>
+            <tr><td><code>p</code></td><td>ค่าใน <code>p</code> คือที่อยู่ที่เก็บไว้</td><td><code>int *</code></td></tr>
+            <tr><td><code>*p</code></td><td>กล่องที่ <code>p</code> ชี้ อ่านก็ได้ เขียนก็ได้</td><td><code>int</code></td></tr>
+            <tr><td><code>a * b</code></td><td>คูณ เมื่อมีค่าทั้งสองข้าง</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="retarget">เปลี่ยนที่ชี้ และชี้ซ้ำกันได้</h2>
+
+      <p>pointer ก็เป็นตัวแปร เปลี่ยนค่าได้ คือย้ายไปชี้กล่องอื่น และ pointer หลายตัวชี้กล่องเดียวกันได้</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="retarget"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int math = 70, science = 80;
+    int *p = &amp;math;
+    *p = *p + 5;
+    p = &amp;science;
+    *p = *p + 5;
+    printf("math = %d, science = %d\n", math, science);
+    int *q = p;
+    *q = 100;
+    printf("math = %d, science = %d\n", math, science);
+    printf("%d %d\n", p == q, p == &amp;math);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="retarget" data-title="C:\code\retarget.exe"><pre><code>math = 75, science = 85
+math = 75, science = 100
+1 0
+</code></pre></div>
+
+      <ul>
+        <li>บรรทัดที่ 7 บวกคะแนนให้ <code>math</code> แล้วบรรทัดที่ 8 ย้าย <code>p</code> ไปชี้ <code>science</code> บรรทัดที่ 9 ที่หน้าตาเหมือนบรรทัดที่ 7 ทุกตัวอักษรจึงไปบวกให้ <code>science</code> แทน</li>
+        <li>บรรทัดที่ 11 <code>q = p</code> คัดลอกที่อยู่ ไม่ได้คัดลอกคะแนน ตอนนี้ <code>p</code> กับ <code>q</code> ชี้ <code>science</code> ทั้งคู่ เขียนผ่าน <code>q</code> จึงเปลี่ยน <code>science</code></li>
+        <li>เทียบ pointer ด้วย <code>==</code> คือถามว่าชี้กล่องเดียวกันไหม ได้ 1 กับ 0 ตามกฎใน<a href="../03-conditions/compare.html#comparison">หน้า 3.1</a></li>
+      </ul>
+
+      <h2 id="scanf-pointer">กลับไปดู &amp; ใน scanf</h2>
+
+      <p>ตอนนี้อ่าน <code>scanf("%d", &amp;age)</code> ได้ครบทุกตัวแล้ว คือส่งที่อยู่ของ <code>age</code> ไปให้ <code>scanf</code> แล้ว <code>scanf</code> ตามที่อยู่นั้นไปเขียนตัวเลขลงกล่อง ถ้ามี pointer ที่ชี้ <code>age</code> อยู่แล้ว ส่ง pointer ไปได้เลยโดยไม่ต้องมี <code>&amp;</code> เพราะค่าในตัว pointer คือที่อยู่อยู่แล้ว</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="scan-pointer"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int age;
+    int *p = &amp;age;
+    scanf("%d", p);
+    printf("next year you will be %d\n", age + 1);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="io">
+        <div class="code" data-lang="input" data-for="scan-pointer" data-title="ข้อมูลเข้า"><pre><code>15
+</code></pre></div>
+        <div class="code" data-lang="output" data-for="scan-pointer" data-title="C:\code\age.exe"><pre><code>next year you will be 16
+</code></pre></div>
+      </div>
+
+      <p>คำเตือนใน<a href="../01-variables/variables.html#missing-ampersand">หน้า 1.1</a> ที่บอกว่า <code>'%d' expects argument of type 'int *'</code> จึงแปลว่า <code>%d</code> ใน <code>scanf</code> ต้องการที่อยู่ของ <code>int</code> แต่ได้ <code>int</code> ธรรมดามา ส่วนเหตุผลว่าทำไม <code>scanf</code> ต้องขอที่อยู่ ทั้งที่ <code>printf</code> ขอแค่ค่า อยู่ในหน้า 10.2</p>
+
+      <h2 id="types">pointer มีชนิด</h2>
+
+      <p>pointer ไปยัง <code>double</code> มีชนิด <code>double *</code> pointer ไปยัง <code>char</code> มีชนิด <code>char *</code> ชนิดบอก compiler ว่าตอนตามไปที่กล่อง ต้องอ่านกี่ byte และตีความเป็นอะไร ส่วนตัว pointer เองเก็บแค่ที่อยู่ จึงมีขนาดเท่ากันทุกชนิด ดูได้ด้วย <code>sizeof</code> ที่ใช้มาแล้วกับ <code>fgets</code> ใน<a href="../06-strings/input.html#fgets">หน้า 6.3</a></p>
+
+      <div class="code" data-lang="c" data-linenums data-test="sizes"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf("int %d, int * %d\n", (int)sizeof(int), (int)sizeof(int *));
+    printf("double %d, double * %d\n", (int)sizeof(double), (int)sizeof(double *));
+    printf("char %d, char * %d\n", (int)sizeof(char), (int)sizeof(char *));
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="sizes" data-title="C:\code\sizes.exe"><pre><code>int 4, int * 8
+double 8, double * 8
+char 1, char * 8
+</code></pre></div>
+
+      <p>Code::Blocks ที่ติดตั้งในบทที่ 0 สร้างโปรแกรมแบบ 64 bit ที่อยู่จึงยาว 64 bit หรือ 8 byte ตรงกับที่ <code>%p</code> พิมพ์ออกมา 16 หลักฐานสิบหก <code>sizeof</code> ให้ผลเป็นชนิด <code>size_t</code> แบบเดียวกับ <code>strlen</code> ใน<a href="../06-strings/string-h.html#strlen-format">หน้า 6.4</a> จึงแปลงเป็น <code>int</code> ก่อนพิมพ์</p>
+
+      <h2 id="null">NULL ไม่ได้ชี้อะไร</h2>
+
+      <p>บางครั้ง pointer ยังไม่มีอะไรให้ชี้ ภาษา C มีค่าพิเศษชื่อ <code>NULL</code> แปลว่า pointer ตัวนี้ไม่ได้ชี้กล่องไหนเลย <code>NULL</code> ประกาศไว้ใน <code>stdio.h</code> ใช้ได้ทันที ตั้งค่าและเทียบได้ด้วย <code>=</code> กับ <code>==</code> เหมือนค่าทั่วไป</p>
+
+      <div class="code" data-lang="c" data-linenums data-test="null"><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int score = 85;
+    int *p = NULL;
+    if (p == NULL) {
+        printf("p points nowhere\n");
+    }
+    p = &amp;score;
+    if (p != NULL) {
+        printf("p points to %d\n", *p);
+    }
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="output" data-for="null" data-title="C:\code\null.exe"><pre><code>p points nowhere
+p points to 85
+</code></pre></div>
+
+      <p><code>NULL</code> ใช้เป็นคำตอบว่า "ไม่มี" หรือ "ไม่สำเร็จ" <code>fgets</code> ใน<a href="../06-strings/input.html#many-lines">หน้า 6.3</a> คืน <code>NULL</code> เมื่ออ่านต่อไม่ได้ ก็คือคืน pointer ที่ไม่ชี้อะไรเลย ในหน้า 10.5 คำสั่งจองหน่วยความจำก็คืน <code>NULL</code> เมื่อจองไม่สำเร็จเหมือนกัน ข้อสำคัญคือ <strong>ห้ามใช้ <code>*p</code> ตอนที่ <code>p</code> เป็น <code>NULL</code></strong> เพราะไม่มีกล่องให้ตามไป ดูแบบที่ 5 ข้างล่าง</p>
+
+      <h2 id="break-it">ลองทำให้พัง</h2>
+
+      <h3 id="missing-ampersand">แบบที่ 1 ลืม &amp; ตอนให้ค่า pointer</h3>
+
+      <p>ในโปรแกรม deref เขียนบรรทัดที่ 6 เป็น <code>int *p = score;</code></p>
+
+      <div class="code" data-lang="gcc"><pre><code>deref.c:6:14: error: initialization of 'int *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+    6 |     int *p = score;
+      |              ^~~~~
+</code></pre></div>
+
+      <p><code>p</code> ต้องได้ที่อยู่ (<code>int *</code>) แต่ได้คะแนน 85 ซึ่งเป็น <code>int</code> GCC 14 ถือเป็น error ทันที เทียบกับ error ของ <code>char grade = "A";</code> ใน<a href="../01-variables/double-char.html#double-quotes">หน้า 1.4</a> ที่บอกว่า <code>makes integer from pointer</code> สองข้อความนี้คือความผิดเดียวกันคนละทิศ ตอนนั้นเอาที่อยู่ไปใส่กล่องตัวเลข ตอนนี้เอาตัวเลขไปใส่กล่องที่อยู่</p>
+
+      <h3 id="star-per-name">แบบที่ 2 ประกาศ pointer สองตัวในบรรทัดเดียว</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int math = 70, science = 80;
+    int *p, q;
+    p = &amp;math;
+    q = &amp;science;
+    printf("%d %d\n", *p, *q);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>retarget.c:8:7: error: assignment to 'int' from 'int *' makes integer from pointer without a cast [-Wint-conversion]
+    8 |     q = &amp;science;
+      |       ^
+retarget.c:9:27: error: invalid type argument of unary '*' (have 'int')
+    9 |     printf("%d %d\n", *p, *q);
+      |                           ^~
+</code></pre></div>
+
+      <p>ดอกจันติดอยู่กับชื่อที่ตามหลังเท่านั้น <code>int *p, q;</code> ได้ <code>p</code> เป็น <code>int *</code> แต่ <code>q</code> เป็น <code>int</code> ธรรมดา error ที่สองบอกว่าใช้ <code>*</code> กับของที่ไม่ใช่ pointer ไม่ได้ ถ้าต้องการสองตัวต้องเขียน <code>int *p, *q;</code> แต่อ่านง่ายกว่าถ้าประกาศ pointer บรรทัดละตัว</p>
+
+      <h3 id="wrong-type">แบบที่ 3 ชี้ผิดชนิด</h3>
+
+      <div class="code" data-lang="c"><pre><code>int height = 170;
+double *p = &amp;height;
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>height.c:6:17: error: initialization of 'double *' from incompatible pointer type 'int *' [-Wincompatible-pointer-types]
+    6 |     double *p = &amp;height;
+      |                 ^
+</code></pre></div>
+
+      <p>ถ้ายอมให้ผ่าน <code>*p</code> จะอ่าน 8 byte แล้วตีความเป็นทศนิยม ทั้งที่กล่อง <code>height</code> มีแค่ 4 byte และเก็บจำนวนเต็ม GCC 14 จึงไม่ยอมคอมไพล์ ชนิดของ pointer ต้องตรงกับชนิดของกล่องที่ชี้เสมอ</p>
+
+      <h3 id="uninitialized">แบบที่ 4 pointer ที่ยังไม่ได้ชี้</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int *p;
+    *p = 90;
+    printf("*p = %d\n", *p);
+    return 0;
+}
+</code></pre></div>
+
+      <div class="code" data-lang="gcc"><pre><code>deref.c:6:8: warning: 'p' is used uninitialized [-Wuninitialized]
+    6 |     *p = 90;
+      |     ~~~^~~~
+deref.c:5:10: note: 'p' was declared here
+    5 |     int *p;
+      |          ^
+</code></pre></div>
+
+      <p>เป็นคำเตือนเดียวกับตัวแปรที่ยังไม่ใส่ค่าใน<a href="../01-variables/variables.html#uninitialized">หน้า 1.1</a> แต่ผลร้ายกว่า ตอนนั้นได้ค่าขยะมาพิมพ์ ตอนนี้ <strong>ที่อยู่</strong> เป็นค่าขยะ <code>*p = 90</code> จึงไปเขียนเลข 90 ลงที่ไหนก็ไม่รู้ บนเครื่องที่เขียนเอกสารนี้ รันกี่ครั้งโปรแกรมก็ปิดตัวทันที และ Code::Blocks ขึ้นว่า</p>
+
+      <div class="code" data-lang="text"><pre><code>Process returned -1073741819 (0xC0000005)
+</code></pre></div>
+
+      <p><code>0xC0000005</code> คือรหัส access violation ตัวเดียวกับตอนใช้ช่องของอาเรย์ที่ไกลเกินขอบใน<a href="../05-arrays/insert-delete.html#crash">หน้า 5.5</a> ถ้าโชคร้ายกว่านี้ ที่อยู่ขยะอาจบังเอิญชี้ไปที่ตัวแปรอื่นของโปรแกรมเอง โปรแกรมจะไม่พังแต่ค่าของตัวแปรนั้นเปลี่ยนไปเงียบๆ ซึ่งหาสาเหตุยากกว่ามาก จึงมีกฎว่า <strong>ประกาศ pointer แล้วให้ค่าทันที</strong> ถ้ายังไม่รู้จะชี้อะไร ให้ตั้งเป็น <code>NULL</code></p>
+
+      <h3 id="null-deref">แบบที่ 5 ใช้ *p ตอนที่ p เป็น NULL</h3>
+
+      <div class="code" data-lang="c" data-linenums><pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    int *p = NULL;
+    *p = 90;
+    printf("*p = %d\n", *p);
+    return 0;
+}
+</code></pre></div>
+
+      <p>คอมไพล์ด้วย <code>-Wall</code> ไม่มีคำเตือน แต่บนเครื่องที่เขียนเอกสารนี้ รันแล้วพังด้วย <code>Process returned -1073741819 (0xC0000005)</code> ทุกครั้ง ต่างจากแบบที่ 4 ตรงที่แบบนี้พังแน่นอน เพราะ Windows กันที่อยู่แถว <code>NULL</code> ไว้ไม่ให้โปรแกรมไหนใช้ บั๊กจึงโผล่ทันทีแทนที่จะซ่อนอยู่ นี่คือเหตุผลที่ควรตั้ง pointer ที่ยังไม่ใช้เป็น <code>NULL</code> และตรวจ <code>p != NULL</code> ก่อนใช้ <code>*p</code> ทุกครั้งที่ไม่แน่ใจ</p>
+
+      <h2 id="summary">สรุป</h2>
+
+      <ul>
+        <li>ทุกตัวแปรอยู่ที่ที่อยู่หนึ่งในหน่วยความจำ <code>&amp;x</code> ให้ที่อยู่ของ <code>x</code> พิมพ์ด้วย <code>%p</code> ได้ค่าไม่ซ้ำกันในแต่ละครั้งที่รัน</li>
+        <li><code>int *p = &amp;x;</code> ประกาศ pointer ที่เก็บที่อยู่ของ <code>x</code> เรียกว่า <code>p</code> ชี้ <code>x</code></li>
+        <li><code>*p</code> คือกล่องที่ <code>p</code> ชี้ อ่านและเขียนได้ เขียน <code>*p</code> ก็คือเขียน <code>x</code></li>
+        <li>pointer เปลี่ยนที่ชี้ได้ หลายตัวชี้กล่องเดียวกันได้ <code>p == q</code> ถามว่าชี้กล่องเดียวกันไหม</li>
+        <li>ชนิดของ pointer ต้องตรงกับกล่องที่ชี้ ตัว pointer เองยาว 8 byte บนเครื่อง 64 bit</li>
+        <li><code>NULL</code> คือไม่ได้ชี้อะไร pointer ที่ไม่ได้ให้ค่าหรือเป็น <code>NULL</code> ห้ามใช้ <code>*</code></li>
+      </ul>
+    </article>
