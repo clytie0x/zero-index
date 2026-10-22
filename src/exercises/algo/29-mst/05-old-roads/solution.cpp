@@ -50,21 +50,20 @@ int main()
     for (int i = 0; i < m; i++) {
         int a, b, cost;
         cin >> a >> b >> cost;
-        roads[i] = make_tuple(cost, a, b);
+        roads[i] = {cost, a, b};
     }
     sort(roads.begin(), roads.end());
     long long total = 0;
-    int built = 0;
+    int most = 0;
     for (auto [cost, a, b] : roads) {
         if (unite(a, b)) {
             groups--;
             total += cost;
-            built++;
+            most = max(most, cost);
         }
     }
     if (groups == 1) {
-        cout << total << '\n';
-        cout << built << '\n';
+        cout << total - most << '\n';
     } else {
         cout << -1 << '\n';
     }

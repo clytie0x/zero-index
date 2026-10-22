@@ -37,7 +37,7 @@ int main()
     for (int i = 0; i < m; i++) {
         int a, b, day;
         cin >> a >> b >> day;
-        roads[i] = make_tuple(day, a, b);
+        roads[i] = {day, a, b};
     }
     sort(roads.begin(), roads.end());
     parent.resize(n + 1);
@@ -45,23 +45,29 @@ int main()
     for (int i = 1; i <= n; i++) {
         parent[i] = i;
     }
-    int groups = n;
+    vector<vector<pair<int, int>>> tree(n + 1);
     for (auto [day, a, b] : roads) {
         if (unite(a, b)) {
-            groups--;
-            if (groups == 1) {
-                int opened = 0;
-                for (auto [other_day, x, y] : roads) {
-                    if (other_day <= day) {
-                        opened++;
-                    }
-                }
-                cout << day << '\n';
-                cout << opened << '\n';
-                return 0;
+            tree[a].push_back({b, day});
+            tree[b].push_back({a, day});
+        }
+    }
+    vector<int> first_day(n + 1, -1);
+    first_day[1] = 0;
+    queue<int> q;
+    q.push(1);
+    while (!q.empty()) {
+        int v = q.front();
+        q.pop();
+        for (auto [to, day] : tree[v]) {
+            if (first_day[to] == -1) {
+                first_day[to] = max(first_day[v], day);
+                q.push(to);
             }
         }
     }
-    cout << -1 << '\n';
+    for (int i = 2; i <= n; i++) {
+        cout << first_day[i] << (i == n ? '\n' : ' ');
+    }
     return 0;
 }

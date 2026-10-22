@@ -2,6 +2,9 @@
 
     python gen.py
     python tools/make_outputs.py src/exercises/algo/29-mst/02-first-loop   (รันที่รากของโปรเจกต์)
+
+naive.cpp เก็บถนนเป็น adjacency list แล้ว BFS ตรวจว่าสองอำเภอถึงกันแล้วหรือยังทุกครั้งที่สร้างถนน O(M(N + M))
+ชุดที่ชื่อขึ้นต้นด้วย big มีอำเภอแสนแห่ง ซึ่ง naive.cpp ไม่ทัน
 """
 
 import random

@@ -3,8 +3,9 @@
     python gen.py
     python tools/make_outputs.py src/exercises/algo/29-mst/01-study-groups   (รันที่รากของโปรเจกต์)
 
-naive.cpp คือ union-find แบบตรงไปตรงมาในหน้า 29.1 ไม่มี path compression และ union by size
-ชุดที่ชื่อขึ้นต้นด้วย big มีนักเรียนสองแสนคน big1 จับคู่ต่อกันเป็นสายยาว ทำให้ต้นไม้ของ naive.cpp เป็นเส้นตรง
+naive.cpp เก็บหมายเลขกลุ่มของทุกคน รวมกลุ่มโดยไล่เปลี่ยนหมายเลขทั้งห้อง O(N) ต่อการรวม
+ชุดที่ชื่อขึ้นต้นด้วย big มีนักเรียนสองแสนคน big1 จับคู่ต่อกันเป็นสายยาวจนทุกคนอยู่กลุ่มเดียว
+จำนวนคู่ราว 2 × 10^10 เกิน int และ naive.cpp ต้องไล่ทั้งห้องเกือบสองแสนครั้ง
 """
 
 import random
@@ -28,15 +29,19 @@ def random_pairs(n, m):
 
 
 def cases():
-    yield "sample1", "7 5\n1 2\n2 5\n3 4\n5 1\n6 7"
-    yield "sample2", "4 0"
-    yield "one-student", build(1, [])
-    yield "all-together", build(6, [(1, 2), (3, 4), (5, 6), (2, 3), (4, 5)])
-    yield "repeat-pair", build(5, [(2, 4), (4, 2), (2, 4), (4, 2)])
-    # สายยาวทั้งห้อง ทำให้ union-find แบบตรงไปตรงมาได้ต้นไม้เส้นตรง
+    yield "sample1", "6 5\n1 2\n3 4\n2 3\n1 4\n5 6"
+    yield "sample2", "4 3\n1 2\n2 1\n3 4"
+    yield "two-students", build(2, [(1, 2), (2, 1)])
+    yield "repeat-pair", build(5, [(2, 4), (4, 2), (2, 4), (1, 5), (5, 1)])
+    # สองกลุ่มสามคนรวมกัน ต้องอ่านขนาดก่อนรวม ถ้าอ่านหลังรวมจะได้ 6 × 3 แทน 3 × 3
+    yield "read-before", build(6, [(1, 2), (2, 3), (4, 5), (5, 6), (3, 4), (6, 1)])
     yield "chain", build(300, [(i, i + 1) for i in range(1, 300)])
-    yield "two-halves", build(10, [(1, 3), (3, 5), (5, 7), (7, 9), (2, 4), (4, 6), (6, 8), (8, 10)])
-    yield "rand1", build(50, random_pairs(50, 30))
+    yield "star", build(300, [(1, i) for i in range(2, 301)])
+    # สองกลุ่มกลุ่มละร้อยคนรวมกันตอนท้าย
+    odd = [(i, i + 2) for i in range(1, 198, 2)]
+    even = [(i, i + 2) for i in range(2, 199, 2)]
+    yield "two-halves", build(200, odd + even + [(199, 200)])
+    yield "rand1", build(12, random_pairs(12, 15))
     yield "rand2", build(2000, random_pairs(2000, 1500))
     yield "big1", build(200000, [(i, i + 1) for i in range(1, 200000)])
     yield "big2", build(200000, random_pairs(200000, 200000))

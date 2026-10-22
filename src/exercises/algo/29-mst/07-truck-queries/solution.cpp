@@ -36,7 +36,7 @@ int main()
     for (int i = 0; i < m; i++) {
         int a, b, limit;
         cin >> a >> b >> limit;
-        roads[i] = make_tuple(limit, a, b);
+        roads[i] = {limit, a, b};
     }
     sort(roads.begin(), roads.end(), greater<tuple<int, int, int>>());
     vector<int> from(q), to(q), weight(q), order(q);

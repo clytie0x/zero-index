@@ -3,7 +3,8 @@
     python gen.py
     python tools/make_outputs.py src/exercises/algo/29-mst/05-old-roads   (รันที่รากของโปรเจกต์)
 
-ชุดที่ชื่อขึ้นต้นด้วย big ใหญ่เกิน 300 KB จึงไม่เก็บใน git
+naive.cpp ลองให้บริษัทจ่ายทีละแนว แล้วทำ Kruskal ใหม่ทุกครั้ง O(M(N + K + M))
+ชุดที่ชื่อขึ้นต้นด้วย big มีแนวถนนใหม่สองแสนแนว ซึ่ง naive.cpp ไม่ทัน
 """
 
 import random
@@ -48,6 +49,11 @@ def cases():
     yield "old-cycle", build(5, [(1, 2), (2, 3), (3, 1)], [(3, 4, 2), (4, 5, 6), (1, 5, 9)])
     yield "no-old", build(5, [], [(1, 2, 3), (2, 3, 3), (3, 4, 3), (4, 5, 3), (5, 1, 3), (1, 3, 1)])
     yield "old-parallel", build(4, [(1, 2), (2, 1), (1, 2)], [(2, 3, 7), (3, 4, 7), (1, 4, 2), (1, 3, 9)])
+    # แนวที่แพงที่สุดในข้อมูลไม่ได้สร้าง ให้บริษัทจ่ายแนวนั้นไม่ได้ช่วยอะไร
+    yield "expensive-unused", build(4, [], [(1, 2, 5), (2, 3, 6), (3, 4, 7), (1, 4, 100), (1, 3, 90)])
+    # ต้องสร้างแนวเดียว บริษัทจ่ายให้หมด
+    yield "one-needed", build(4, [(1, 2), (3, 4)], [(2, 3, 500), (1, 4, 700)])
+    # สร้างสี่แนว แนวละ 10^9 จังหวัดจ่ายเอง 3 × 10^9 เกิน int
     yield "max-cost", build(6, [(1, 2)], [(2, 3, TOP), (3, 4, TOP), (4, 5, TOP), (5, 6, TOP), (6, 1, TOP)])
     yield "rand1", build(12, random_pairs(12, 5), priced(random_pairs(12, 20), 1, 30))
     yield "rand2", build(3000, random_pairs(3000, 1500), priced(spanning(3000) + random_pairs(3000, 3000), 1, TOP))

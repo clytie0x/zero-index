@@ -11,11 +11,12 @@ int main()
     for (int i = 0; i < m; i++) {
         int a, b, day;
         cin >> a >> b >> day;
-        roads[i] = make_tuple(day, a, b);
+        roads[i] = {day, a, b};
     }
     sort(roads.begin(), roads.end());
     vector<vector<int>> adj(n + 1);
-    vector<bool> seen(n + 1);
+    vector<int> first_day(n + 1, -1);
+    vector<char> seen(n + 1);
     int i = 0;
     while (i < m) {
         int day = get<0>(roads[i]);
@@ -24,28 +25,26 @@ int main()
             adj[get<2>(roads[i])].push_back(get<1>(roads[i]));
             i++;
         }
-        fill(seen.begin(), seen.end(), false);
+        fill(seen.begin(), seen.end(), 0);
         queue<int> q;
         q.push(1);
-        seen[1] = true;
-        int reached = 1;
+        seen[1] = 1;
         while (!q.empty()) {
             int v = q.front();
             q.pop();
+            if (v != 1 && first_day[v] == -1) {
+                first_day[v] = day;
+            }
             for (int to : adj[v]) {
                 if (!seen[to]) {
-                    seen[to] = true;
-                    reached++;
+                    seen[to] = 1;
                     q.push(to);
                 }
             }
         }
-        if (reached == n) {
-            cout << day << '\n';
-            cout << i << '\n';
-            return 0;
-        }
     }
-    cout << -1 << '\n';
+    for (int v = 2; v <= n; v++) {
+        cout << first_day[v] << (v == n ? '\n' : ' ');
+    }
     return 0;
 }

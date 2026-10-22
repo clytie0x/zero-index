@@ -12,21 +12,6 @@ int find_root(int x)
     return parent[x];
 }
 
-bool unite(int a, int b)
-{
-    int root_a = find_root(a);
-    int root_b = find_root(b);
-    if (root_a == root_b) {
-        return false;
-    }
-    if (group_size[root_a] < group_size[root_b]) {
-        swap(root_a, root_b);
-    }
-    parent[root_b] = root_a;
-    group_size[root_a] += group_size[root_b];
-    return true;
-}
-
 int main()
 {
     ios::sync_with_stdio(false);
@@ -38,17 +23,21 @@ int main()
     for (int i = 1; i <= n; i++) {
         parent[i] = i;
     }
-    int groups = n;
-    int largest = 1;
+    long long pairs = 0;
     for (int i = 0; i < m; i++) {
         int a, b;
         cin >> a >> b;
-        if (unite(a, b)) {
-            groups--;
-            largest = max(largest, group_size[find_root(a)]);
+        int root_a = find_root(a);
+        int root_b = find_root(b);
+        if (root_a != root_b) {
+            pairs += (long long)group_size[root_a] * group_size[root_b];
+            if (group_size[root_a] < group_size[root_b]) {
+                swap(root_a, root_b);
+            }
+            parent[root_b] = root_a;
+            group_size[root_a] += group_size[root_b];
         }
+        cout << pairs << '\n';
     }
-    cout << groups << '\n';
-    cout << largest << '\n';
     return 0;
 }

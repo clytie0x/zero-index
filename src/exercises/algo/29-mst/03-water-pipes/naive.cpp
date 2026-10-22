@@ -11,7 +11,7 @@ int main()
     for (int i = 0; i < m; i++) {
         int a, b, cost;
         cin >> a >> b >> cost;
-        pipes[i] = make_tuple(cost, a, b);
+        pipes[i] = {cost, a, b};
     }
     sort(pipes.begin(), pipes.end());
     vector<vector<int>> chosen(n + 1);

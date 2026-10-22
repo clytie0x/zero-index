@@ -74,7 +74,7 @@ int main()
     for (int i = 0; i &lt; m; i++) {
         int u, v, w;
         cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
-        edges[i] = make_tuple(w, u, v);
+        edges[i] = {w, u, v};
     }
     sort(edges.begin(), edges.end());
     for (auto [w, u, v] : edges) {
@@ -188,12 +188,12 @@ int main()
     for (int i = 1; i &lt;= n; i++) {
         int cost;
         cin &gt;&gt; cost;
-        edges.push_back(make_tuple(cost, 0, i)); // (1)!
+        edges.push_back({cost, 0, i}); // (1)!
     }
     for (int i = 0; i &lt; m; i++) {
         int u, v, w;
         cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
-        edges.push_back(make_tuple(w, u, v));
+        edges.push_back({w, u, v});
     }
     sort(edges.begin(), edges.end());
     parent.resize(n + 1);
@@ -293,7 +293,7 @@ int main()
     for (int i = 0; i &lt; m; i++) {
         int u, v, day;
         cin &gt;&gt; u &gt;&gt; v &gt;&gt; day;
-        roads[i] = make_tuple(day, u, v);
+        roads[i] = {day, u, v};
     }
     sort(roads.begin(), roads.end());
     parent.resize(n + 1);
@@ -383,7 +383,7 @@ int main()
     for (int i = 0; i &lt; m; i++) {
         int u, v, limit;
         cin &gt;&gt; u &gt;&gt; v &gt;&gt; limit;
-        roads[i] = make_tuple(limit, u, v);
+        roads[i] = {limit, u, v};
     }
     sort(roads.begin(), roads.end(), greater&lt;tuple&lt;int, int, int&gt;&gt;()); // (1)!
     parent.resize(n + 1);
