@@ -206,6 +206,53 @@ function copyText(text: string): Promise<void> {
   });
 }
 
+/* ---------- ปุ่มลองรันบนตัวรันโค้ดของเว็บ ---------- */
+
+/* รูปแบบลิงก์ตาม README ของ zero-ide คือ #lang=c&code=<deflate-raw แล้ว base64url>&in=<แบบเดียวกัน> */
+const IDE_URL = "https://ide.teerapat.codes/";
+const ICON_RUN = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>';
+
+async function packForIde(text: string): Promise<string> {
+  const stream = new Blob([new TextEncoder().encode(text)]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+  const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/* ข้อมูลเข้าของตัวอย่างคือกล่อง data-lang="input" ที่มี data-for ตรงกับ data-test ของโค้ด */
+function inputFor(block: HTMLElement): string {
+  const name = block.getAttribute("data-test");
+  if (!name) return "";
+  for (const box of $all('.code[data-lang="input"][data-for]')) {
+    if (box.getAttribute("data-for") === name) return $("code", box)?.textContent ?? "";
+  }
+  return "";
+}
+
+/* ใส่ปุ่มเฉพาะโค้ดที่เป็นโปรแกรมเต็ม คือมี main ส่วนโค้ดท่อนสั้นรันเองไม่ได้ */
+function addRunLink(block: HTMLElement, lang: "c" | "cpp", code: string): void {
+  if (!/\bmain\s*\(/.test(code) || typeof CompressionStream === "undefined") return;
+  const link = document.createElement("a");
+  link.className = "run-link";
+  link.href = IDE_URL;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.setAttribute("aria-label", "ลองรันโค้ดนี้บนเว็บ");
+  link.setAttribute("title", "ลองรันโค้ดนี้บนเว็บ");
+  link.innerHTML = ICON_RUN;
+  block.appendChild(link);
+  const input = inputFor(block);
+  void Promise.all([packForIde(code), input ? packForIde(input) : Promise.resolve("")]).then(
+    ([packedCode, packedInput]) => {
+      link.href = IDE_URL + "#lang=" + lang + "&code=" + packedCode + (packedInput ? "&in=" + packedInput : "");
+    },
+    () => {
+      /* บีบไม่ได้ก็ยังเปิดตัวรันเปล่าได้ */
+    },
+  );
+}
+
 function initCode(): void {
   for (const block of $all(".code")) {
     const codeEl = $("code", block);
@@ -267,6 +314,7 @@ function initCode(): void {
       );
     });
     block.appendChild(copyBtn);
+    if (lang === "c" || lang === "cpp") addRunLink(block, lang, cleanText);
 
     if (block.hasAttribute("data-annotate")) initAnnotations(block);
   }

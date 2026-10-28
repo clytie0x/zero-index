@@ -743,6 +743,25 @@ kbd {
 .copy-btn.is-done .i-copy { display: none; }
 .copy-btn.is-done .i-check { display: block; }
 
+/* ปุ่มลองรันอยู่ซ้ายของปุ่มคัดลอก เปิดโค้ดในตัวรันบนเว็บ */
+.run-link {
+  position: absolute;
+  top: 8px;
+  right: 48px;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--code-line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  opacity: .75;
+}
+.code:hover .run-link, .run-link:focus-visible { opacity: 1; }
+.run-link:hover { color: var(--brand-text); }
+.run-link svg { width: 15px; height: 15px; }
+
 /* วงกลมคำอธิบายโค้ด */
 .anno-btn {
   display: inline-grid;
