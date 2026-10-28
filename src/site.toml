@@ -6,7 +6,7 @@ name = "zero-index"
 description = "เอกสารเตรียมตัวเขียนโปรแกรม C และ C++ ตั้งแต่ศูนย์ สำหรับสายแข่งขัน"
 repo = "clytie0x/zero-index"
 author = "clytie0x"
-base = "/zero-index/"
+base = "/"
 
 [home]
 path = "index.html"
