@@ -1,6 +1,6 @@
 """สร้างเว็บจาก src/ ไปไว้ที่ dist/
 
-ใช้ Python 3.11 ขึ้นไป ไม่ต้องลงไลบรารีเพิ่ม
+ใช้ Python 3.11 ขึ้นไป กับ Node 24 ขึ้นไป (รัน npm ci ก่อนครั้งแรก) ซึ่งใช้แปลง src/scripts/site.ts
 
     python tools/build.py          สร้างเว็บแล้วตรวจลิงก์
     python tools/build.py --serve  สร้างแล้วเปิดดูที่ http://127.0.0.1:8000
@@ -177,7 +177,7 @@ def render_exercises(page: Page) -> str:
 
 
 def asset_version(name: str) -> str:
-    return hashlib.sha256((SRC / "assets" / name).read_bytes()).hexdigest()[:10]
+    return hashlib.sha256((DIST / "assets" / name).read_bytes()).hexdigest()[:10]
 
 
 def render_course_map(site: dict, current: Page) -> str:
@@ -258,9 +258,10 @@ def render(site: dict, layout: str, page: Page, home: Page, tree, prev, nxt, art
         "crumbs": crumbs,
         "article": article.rstrip("\n"),
         "pager": render_pager(page, prev, nxt),
-        # เปลี่ยนตามเนื้อไฟล์ เบราว์เซอร์จะได้ไม่ใช้ CSS JS ตัวเก่าที่เก็บไว้
+        # เปลี่ยนตามเนื้อไฟล์ เบราว์เซอร์จะได้ไม่ใช้ CSS JS และไอคอนตัวเก่าที่เก็บไว้
         "v_css": asset_version("site.css"),
         "v_js": asset_version("site.js"),
+        "v_icon": asset_version("favicon.svg"),
     }
     return re.sub(r"\{\{(\w+)\}\}", lambda m: values[m.group(1)], layout)
 
@@ -364,6 +365,14 @@ def build() -> int:
     if DIST.exists():
         shutil.rmtree(DIST)
     shutil.copytree(SRC / "assets", DIST / "assets")
+    try:
+        subprocess.run(["node", str(ROOT / "tools" / "bundle.ts"), str(DIST / "assets" / "site.js")], check=True)
+    except FileNotFoundError:
+        print("ไม่พบ node ต้องลง Node 24 ขึ้นไปแล้วรัน npm ci ก่อน", file=sys.stderr)
+        return 1
+    except subprocess.CalledProcessError:
+        print("แปลง src/scripts/site.ts ไม่สำเร็จ ลองรัน npm ci แล้ว npm run typecheck", file=sys.stderr)
+        return 1
 
     layout = (SRC / "layout.html").read_text(encoding="utf-8")
     for i, page in enumerate(order):

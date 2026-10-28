@@ -6,14 +6,15 @@
 
 ## โครงสร้าง
 
-เขียน HTML CSS และ JS เอง ไม่ใช้ framework มีสคริปต์ Python เล็กๆ ประกอบหน้าให้ จึงไม่ต้องเขียนเมนูซ้ำในทุกหน้า
+เขียน HTML CSS และ TypeScript เอง ไม่ใช้ framework มีสคริปต์ Python เล็กๆ ประกอบหน้าให้ จึงไม่ต้องเขียนเมนูซ้ำในทุกหน้า
 
 | ที่อยู่ | คืออะไร |
 |---|---|
 | `src/site.toml` | ลำดับบทและหน้าทั้งหมด เมนูซ้าย ปุ่มก่อนหน้าถัดไป และชื่อแท็บสร้างจากไฟล์นี้ |
 | `src/pages/` | เนื้อหาของแต่ละหน้า เก็บเฉพาะ `<article>` |
 | `src/layout.html` | โครงหน้าที่ทุกหน้าใช้ร่วมกัน (แถบหัว เมนู ท้ายเว็บ) |
-| `src/assets/` | `site.css` `site.js` และ favicon |
+| `src/assets/` | `site.css` และ favicon |
+| `src/scripts/site.ts` | สีโค้ด ปุ่มคัดลอก คำอธิบายโค้ด สารบัญ โหมดมืด และเช็กลิสต์ ตอน build แปลงเป็น `assets/site.js` ด้วย `tools/bundle.ts` |
 | `src/exercises/` | แบบฝึกหัด หนึ่งข้อหนึ่งโฟลเดอร์ |
 | `tools/build.py` | ประกอบหน้าทั้งหมดไปไว้ที่ `dist/` แล้วตรวจลิงก์ |
 | `tools/check_code.py` | คอมไพล์และรันโค้ดตัวอย่างกับเฉลยแบบฝึกหัดทั้งหมด |
@@ -23,11 +24,15 @@
 
 ## เปิดดูในเครื่อง
 
-ต้องมี Python 3.11 ขึ้นไป ไม่ต้องลงอะไรเพิ่ม
+ต้องมี Python 3.11 ขึ้นไป กับ Node 24 ขึ้นไป ครั้งแรกให้รัน `npm ci` ก่อน
 
 ```bash
+npm ci
+npm run typecheck
 python tools/build.py --serve
 ```
+
+`npm run typecheck` ตรวจ `src/scripts/` กับ `tools/bundle.ts` แบบ strict workflow รันขั้นนี้ก่อน build ทุกครั้ง
 
 แล้วเปิด http://127.0.0.1:8000
 
